@@ -49,8 +49,8 @@ public class Experiments {
 		// e.searchSentsByQLD();
 		// e.searchSentsByKLDFB();
 
-		// e.searchByKldFbWordVectors();
-		e.searchByKldFbWordVectorExp2();
+		e.searchByKldFbWordVectors();
+		// e.searchByKldFbWordVectorExp2();
 		// e.searchByKldFbWordVectorExp();
 		// e.searchByKldFbWordVectorPrior();
 
@@ -703,6 +703,9 @@ public class Experiments {
 				SparseVector docScores = SearcherUtils.search(lbq, is, 1000);
 
 				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, IndexFieldName.CONTENT);
+
+				ParsimoniousLanguageModelEstimator e = new ParsimoniousLanguageModelEstimator(wcb);
+				e.estimate();
 
 				RelevanceModelBuilder rmb = new RelevanceModelBuilder();
 				SparseVector rm = rmb.getRelevanceModel(wcb, docScores);
