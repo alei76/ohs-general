@@ -20,7 +20,7 @@ import org.apache.lucene.analysis.util.StopwordAnalyzerBase;
 import org.apache.lucene.util.Version;
 
 import ohs.io.IOUtils;
-import ohs.ir.task.medical.MIRPath;
+import ohs.ir.medical.general.MIRPath;
 
 /**
  * {@link Analyzer} for English.

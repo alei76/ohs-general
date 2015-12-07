@@ -6,8 +6,8 @@ import java.util.List;
 
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
-import ohs.ir.task.medical.clef.ehealth_2014.EHPath;
-import ohs.ir.task.medical.clef.ehealth_2014.RelevanceJudgementReader;
+import ohs.ir.medical.clef.ehealth_2014.EHPath;
+import ohs.ir.medical.clef.ehealth_2014.RelevanceJudgementReader;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 

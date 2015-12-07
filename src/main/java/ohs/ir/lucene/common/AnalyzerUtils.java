@@ -68,7 +68,7 @@ public class AnalyzerUtils {
 		return builder.build();
 	}
 
-	public static Counter getWordCounts(String text, Analyzer analyzer) throws Exception {
+	public static Counter<String> getWordCounts(String text, Analyzer analyzer) throws Exception {
 		Counter<String> ret = new Counter<String>();
 
 		TokenStream ts = analyzer.tokenStream(IndexFieldName.CONTENT, text);
