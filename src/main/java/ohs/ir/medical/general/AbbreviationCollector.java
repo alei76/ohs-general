@@ -58,14 +58,14 @@ public class AbbreviationCollector {
 		for (int i = 3; i < abbrFileNames.length; i++) {
 			System.out.printf("extract abbreviations from [%s].\n", indexDirs[i]);
 
-			IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(indexDirs[i]);
-			IndexReader indexReader = indexSearcher.getIndexReader();
+			IndexSearcher is = SearcherUtils.getIndexSearcher(indexDirs[i]);
+			IndexReader ir = is.getIndexReader();
 
 			TextFileWriter writer = new TextFileWriter(abbrFileNames[i]);
 
 			AbbreviationExtractor ext = new AbbreviationExtractor();
 
-			int num_docs = indexReader.maxDoc();
+			int num_docs = ir.maxDoc();
 
 			StopWatch stopWatch = new StopWatch();
 			stopWatch.start();
@@ -75,7 +75,7 @@ public class AbbreviationCollector {
 					System.out.printf("\r[%d / %d, %s]", j + 1, num_docs, stopWatch.stop());
 				}
 
-				Document doc = indexReader.document(j);
+				Document doc = ir.document(j);
 				String docId = doc.getField(IndexFieldName.DOCUMENT_ID).stringValue();
 				String content = doc.getField(IndexFieldName.CONTENT).stringValue();
 				// content = content.replaceAll("<NL>", "\n");

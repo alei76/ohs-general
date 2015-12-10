@@ -44,7 +44,28 @@ public class DocumentIdMapper {
 			for (String indexId : indexScores.keySet()) {
 				double score = indexScores.getCount(indexId);
 				String docId = docIdMap.getValue(indexId);
-				ret.setCount(queryId, docId, score);
+				if (docId != null) {
+					ret.setCount(queryId, docId, score);
+				} else {
+					System.out.printf("doc id for index id [%s] is not found.\n", indexId);
+				}
+			}
+		}
+		return ret;
+	}
+
+	public static CounterMap<String, String> mapDocIdsToIndexIds(CounterMap<String, String> resultData, BidMap<String, String> docIdMap) {
+		CounterMap<String, String> ret = new CounterMap<String, String>();
+		for (String queryId : resultData.keySet()) {
+			Counter<String> indexScores = resultData.getCounter(queryId);
+			for (String docId : indexScores.keySet()) {
+				double score = indexScores.getCount(docId);
+				String indexId = docIdMap.getKey(docId);
+				if (indexId != null) {
+					ret.setCount(queryId, indexId, score);
+				} else {
+					System.out.printf("index id for doc id [%s] is not found.\n", docId);
+				}
 			}
 		}
 		return ret;

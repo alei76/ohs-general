@@ -321,6 +321,8 @@ public class MIRPath {
 	 * Common File Name Sets
 	 */
 
+	public static String[] DataDirNames = { TREC_CDS_DIR, CLEF_EHEALTH_DIR, OHSUMED_DIR, TREC_GENOMICS_DIR };
+
 	public static String[] QueryFileNames = { TREC_CDS_QUERY_2014_FILE, CLEF_EHEALTH_QUERY_2015_FILE, OHSUMED_QUERY_FILE,
 			TREC_GENOMICS_QUERY_2007_FILE };
 

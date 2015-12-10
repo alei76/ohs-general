@@ -1,8 +1,11 @@
 package ohs.ir.medical.general;
 
 import java.io.File;
+import java.sql.Struct;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
@@ -10,6 +13,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
 
 import ohs.io.TextFileWriter;
+import ohs.ir.eval.PerformanceEvaluator;
 import ohs.ir.lucene.common.AnalyzerUtils;
 import ohs.ir.lucene.common.IndexFieldName;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
@@ -23,6 +27,7 @@ import ohs.types.BidMap;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
+import ohs.utils.StrUtils;
 
 public class RelevanceCollector {
 
@@ -30,7 +35,8 @@ public class RelevanceCollector {
 		System.out.println("process begins.");
 
 		RelevanceCollector c = new RelevanceCollector();
-		c.collect3();
+		c.collect();
+		// c.collect3();
 
 		System.out.println("process ends.");
 	}
@@ -46,81 +52,94 @@ public class RelevanceCollector {
 
 		String[] queryDocFileNames = MIRPath.QueryDocFileNames;
 
-		IndexSearcher[] indexSearchers = SearcherUtils.getIndexSearchers(indexDirNames);
+		String[] resDirNames = MIRPath.ResultDirNames;
+
+		IndexSearcher[] iss = SearcherUtils.getIndexSearchers(indexDirNames);
 
 		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
-			CounterMap<String, String> queryRels = RelevanceReader.readRelevances(relDataFileNames[i]);
+			IndexSearcher is = iss[i];
 
-			List<Counter<String>> qs = new ArrayList<Counter<String>>();
+			String qldResFileName = resDirNames[i] + "qld.txt";
+			String cbeemResFileName = resDirNames[i] + "cbeem.txt";
 
-			for (int j = 0; j < bqs.size(); j++) {
-				BaseQuery bq = bqs.get(j);
-				qs.add(AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer));
-			}
+			CounterMap<String, String> qldResData = PerformanceEvaluator.readSearchResults(qldResFileName);
+			CounterMap<String, String> cbeemResData = PerformanceEvaluator.readSearchResults(cbeemResFileName);
 
 			BidMap<String, String> docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileNames[i]);
+			CounterMap<String, String> queryRels = RelevanceReader.readRelevances(relDataFileNames[i]);
+			queryRels = DocumentIdMapper.mapDocIdsToIndexIds(queryRels, docIdMap);
 
-			// queryRelevances = RelevanceReader.filter(queryRelevances, docIdMap);
+			String dataDirName = MIRPath.DataDirNames[i];
+			String[] labels = { "QLD", "CBEEM", "REL" };
 
-			// baseQueries = QueryReader.filter(baseQueries, queryRelevances);
+			for (BaseQuery bq : bqs) {
+				String outputFileName = dataDirName + String.format("rel_analysis/%s.txt", bq.getId());
 
-			List<SparseVector> docRelData = DocumentIdMapper.mapDocIdsToIndexIds(bqs, queryRels, docIdMap);
+				String qId = bq.getId();
+				Counter<String> docScores1 = qldResData.getCounter(qId);
+				Counter<String> docScores2 = cbeemResData.getCounter(qId);
+				Counter<String> docRels = queryRels.getCounter(qId);
 
-			IndexReader indexReader = indexSearchers[i].getIndexReader();
+				CounterMap<String, String> cm = new CounterMap<>();
 
-			if (bqs.size() != docRelData.size()) {
-				throw new Exception();
-			}
-
-			TextFileWriter writer = new TextFileWriter(queryDocFileNames[i]);
-
-			for (int j = 0; j < bqs.size(); j++) {
-				BaseQuery bq = bqs.get(j);
-				SparseVector docRels = docRelData.get(j);
-
-				Indexer<String> wordIndexer = new Indexer<String>();
-
-				Counter<String> qwcs = qs.get(j);
-
-				SparseVector q = VectorUtils.toSparseVector(qs.get(j), wordIndexer, true);
-
-				{
-					SparseVector docFreqs = VectorUtils.toSparseVector(
-							WordCountBox.getDocFreqs(indexReader, IndexFieldName.CONTENT, qs.get(j).keySet()), wordIndexer, true);
-					computeTFIDFs(q, docFreqs, indexReader.maxDoc());
-
+				List<String> indexIds = docScores1.getSortedKeys();
+				for (int j = 0; j < indexIds.size(); j++) {
+					cm.setCount(indexIds.get(j), "QLD", j + 1);
 				}
 
-				WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docRels, wordIndexer);
-				SparseMatrix sm = wcb.getDocWordCounts();
-				SparseVector docFreqs = wcb.getCollDocFreqs();
-
-				for (int k = 0; k < sm.rowSize(); k++) {
-					int docId = sm.indexAtRowLoc(k);
-					SparseVector sv = sm.vectorAtRowLoc(k);
-					computeTFIDFs(sv, docFreqs, wcb.getNumDocsInCollection());
+				indexIds = docScores2.getSortedKeys();
+				for (int j = 0; j < indexIds.size(); j++) {
+					cm.setCount(indexIds.get(j), "CBEEM", j + 1);
 				}
 
-				writer.write(String.format("#Query\t%d\t%s\n", j + 1, toString(VectorUtils.toCounter(q, wordIndexer))));
+				indexIds = docRels.getSortedKeys();
 
-				docRels.sortByValue();
+				for (int j = 0; j < indexIds.size(); j++) {
+					cm.setCount(indexIds.get(j), "REL", docRels.getCount(indexIds.get(j)));
+				}
 
-				for (int k = 0; k < docRels.size(); k++) {
-					int docId = docRels.indexAtLoc(k);
-					double rel = docRels.valueAtLoc(k);
-					SparseVector sv = sm.rowAlways(docId);
+				Counter<String> allDocRels = new Counter<String>();
 
-					if (sv.size() == 0) {
-						continue;
+				for (String indexId : cm.keySet()) {
+					allDocRels.setCount(indexId, cm.getCount(indexId, "REL"));
+				}
+
+				indexIds = allDocRels.getSortedKeys();
+
+				TextFileWriter writer = new TextFileWriter(outputFileName);
+				writer.write("Rank\tIndexId\t" + StrUtils.join("\t", labels) + "\tContent");
+
+				for (int j = 0; j < indexIds.size(); j++) {
+					String indexId = indexIds.get(j);
+
+					StringBuffer sb = new StringBuffer();
+					sb.append(String.format("%d\t%s", j + 1, indexId));
+
+					for (int k = 0; k < labels.length; k++) {
+						int val = (int) cm.getCount(indexId, labels[k]);
+						sb.append("\t");
+						sb.append(val);
 					}
 
-					writer.write(String.format("%d\t%d\t%s\n", docId, (int) rel, toString(VectorUtils.toCounter(sv, wordIndexer))));
+					Document doc = is.doc(Integer.parseInt(indexId));
+					String content = "null";
+
+					if (doc != null) {
+						content = doc.get(IndexFieldName.CONTENT);
+					}
+
+					sb.append(String.format("\t%s", content.replace("\n", "\\n")));
+
+					writer.write("\n" + sb.toString());
 				}
-				writer.write("\n");
+				writer.close();
+
+				System.out.println();
 			}
+
 		}
 	}
 
