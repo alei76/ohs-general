@@ -160,7 +160,7 @@ public class IOUtils {
 	}
 
 	public static void deleteFilesUnder(String dirName) {
-		deleteFiles(new File(dirName));
+		deleteFilesUnder(new File(dirName));
 	}
 
 	public static String getCanonicalPath(File file) {
