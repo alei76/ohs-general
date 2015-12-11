@@ -202,7 +202,7 @@ public class IOUtils {
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMinimumFractionDigits(2);
 
-		System.out.println(String.format("read [%d, %s GBs] files from [%s]", files.size(), nf.format(fs.getGigaBytes()), dir.getName()));
+		System.out.println(String.format("read [%d, %s MBs] files from [%s]", files.size(), nf.format(fs.getMegaBytes()), dir.getName()));
 		return files;
 	}
 

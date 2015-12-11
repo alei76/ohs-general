@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -14,18 +15,10 @@ import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
+import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 
 public class DataHandler {
-	private static Properties getProps() {
-		Properties ret = new Properties();
-		ret.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner,parse, sentiment");
-		ret.setProperty("parse.maxlen", "100");
-		// ret.setProperty("outputDirectory",
-		// "/data2/ohs/data/news_ir/temp_nlp");
-		// ret.setProperty("annotators", "tokenize, ssplit, pos");
-		return ret;
-	}
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
@@ -175,9 +168,22 @@ public class DataHandler {
 
 	public void doNLP() throws IOException {
 
-		IOUtils.deleteFilesUnder(NSPath.TEMP_NLP_DIR);
+		// IOUtils.deleteFilesUnder(NSPath.TEMP_NLP_DIR);
 
-		StanfordCoreNLP nlp = new StanfordCoreNLP(getProps());
+		Set<String> toRemove = Generics.newHashSet();
+
+		for (File f : IOUtils.getFilesUnder(NSPath.TEMP_NLP_DIR)) {
+			toRemove.add(IOUtils.removeExtension(f.getName()));
+		}
+
+		Properties prop = new Properties();
+		prop.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner,parse, sentiment");
+		prop.setProperty("parse.maxlen", "100");
+		prop.setProperty("pos.maxlen", "100");
+		prop.setProperty("replaceExtension", "true");
+		prop.setProperty("outputFormat", "JSON");
+
+		StanfordCoreNLP nlp = new StanfordCoreNLP(prop);
 		File[] dirFiles = new File(NSPath.TEMP_DIR).listFiles();
 
 		for (int i = 0; i < dirFiles.length; i++) {
@@ -190,9 +196,8 @@ public class DataHandler {
 			String outputDir = dirFiles[i].getPath();
 			outputDir = outputDir.replace("temp", "temp_nlp");
 
-			Properties prop = nlp.getProperties();
+			prop = nlp.getProperties();
 			prop.setProperty("outputDirectory", outputDir);
-			prop.setProperty("replaceExtension", "true");
 			nlp.processFiles(files, 100);
 		}
 

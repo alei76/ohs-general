@@ -73,6 +73,37 @@ public class ByteSize {
 	public double getZettaBytes() {
 		return zetta_bytes;
 	}
+	
+	public String toHumanReaderableSize(){
+		StringBuffer sb = new StringBuffer();
+		if(kilo_bytes > 1){
+			
+		}else if(mega_bytes > 1){
+			
+		}else if(giga_bytes > 1){
+			
+		}else if(tera_bytes > 1){
+			
+		}else if(peta_bytes > 1){
+			
+		}else if(exa_bytes > 1){
+			
+		}else if(zetta_bytes > 1){
+			
+		}else if (yotta_bytes > 1){
+			
+		}
+		sb.append(String.format("[%d] BTs", bytes));
+		sb.append(String.format("\n[%f] KBs", kilo_bytes));
+		sb.append(String.format("\n[%f] MBs", mega_bytes));
+		sb.append(String.format("\n[%f] GBs", giga_bytes));
+		sb.append(String.format("\n[%f] TBs", tera_bytes));
+		sb.append(String.format("\n[%f] PBs", peta_bytes));
+		sb.append(String.format("\n[%f] EBs", exa_bytes));
+		sb.append(String.format("\n[%f] ZBs", zetta_bytes));
+		sb.append(String.format("\n[%f] YBs", yotta_bytes));
+		return sb.toString();
+	}
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
