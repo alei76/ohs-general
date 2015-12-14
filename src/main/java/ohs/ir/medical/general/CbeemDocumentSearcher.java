@@ -324,18 +324,17 @@ public class CbeemDocumentSearcher {
 		double[] mixture_for_each_qm = { 1 - hp.getMixtureForFeedbackModel(), hp.getMixtureForFeedbackModel() };
 		ArrayMath.normalize(mixture_for_each_qm);
 
-		SparseVector expQLM = VectorMath.addAfterScale(new Vector[] { qlm, cbeem }, mixture_for_each_qm);
+		SparseVector eqlm = VectorMath.addAfterScale(new Vector[] { qlm, cbeem }, mixture_for_each_qm);
+		SparseVector ret = score(colId, eqlm);
 
-		// SparseVector ret = scoreDocuments(colId, expQueryModel);
-
-		BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQLM, wordIndexer));
-		SparseVector ret = SearcherUtils.search(lbq, iss[colId], hp.getTopK());
-		ret.normalize();
+		// BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(eqlm, wordIndexer));
+		// SparseVector ret = SearcherUtils.search(lbq, iss[colId], hp.getTopK());
+		// ret.normalize();
 
 		if (makeLog) {
 			logBuf.append(bq.toString() + "\n");
 			logBuf.append(String.format("QM1:\t%s\n", VectorUtils.toCounter(qlm, wordIndexer).toString()));
-			logBuf.append(String.format("QM2:\t%s\n", VectorUtils.toCounter(expQLM, wordIndexer).toString()));
+			logBuf.append(String.format("QM2:\t%s\n", VectorUtils.toCounter(eqlm, wordIndexer).toString()));
 
 			NumberFormat nf = NumberFormat.getInstance();
 			nf.setMinimumFractionDigits(4);

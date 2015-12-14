@@ -64,11 +64,11 @@ public class IOUtils {
 			}
 		}
 	}
-	
-	public static boolean exists(String fileName){
+
+	public static boolean exists(String fileName) {
 		return new File(fileName).exists();
 	}
-	
+
 	public static File appendFileNameSuffix(File file, String suffix) {
 		String filePath = getCanonicalPath(file);
 		if (!filePath.endsWith(suffix)) {
@@ -583,6 +583,10 @@ public class IOUtils {
 
 	public static String readText(String fileName) throws Exception {
 		return readText(fileName, UTF_8);
+	}
+
+	public static String readText(File file) throws Exception {
+		return readText(file.getCanonicalPath(), UTF_8);
 	}
 
 	public static String readText(String fileName, String encoding) throws Exception {

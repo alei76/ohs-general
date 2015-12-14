@@ -11,6 +11,9 @@ public class NSPath {
 	public static final String NEWS_WORD_COUNT_TEXT_FILE = DATA_DIR + "doc_word_cnts.csv.gz";
 	public static final String CONTENT_DIR = NSPath.DATA_DIR + "content";
 	public static final String CONTENT_NLP_DIR = NSPath.DATA_DIR + "content_nlp";
+	public static final String CONTENT_NLP_CONLL_DIR = NSPath.DATA_DIR + "content_nlp_conll";
 	public static final String CONTENT_VISIT_FILE = NSPath.DATA_DIR + "content_visit.txt";
+	
+	public static final String NEWS_NER_FILE = NSPath.DATA_DIR + "ners.txt";
 
 }
