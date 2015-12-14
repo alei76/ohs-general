@@ -64,7 +64,11 @@ public class IOUtils {
 			}
 		}
 	}
-
+	
+	public static boolean exists(String fileName){
+		return new File(fileName).exists();
+	}
+	
 	public static File appendFileNameSuffix(File file, String suffix) {
 		String filePath = getCanonicalPath(file);
 		if (!filePath.endsWith(suffix)) {
@@ -545,6 +549,15 @@ public class IOUtils {
 		return new HashSet<String>(readLines(fileName));
 	}
 
+	public static String readString(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+		StringBuffer sb = new StringBuffer(size);
+		for (int j = 0; j < size; j++) {
+			sb.append((char) ois.readByte());
+		}
+		return sb.toString();
+	}
+
 	public static List<String> readStrings(ObjectInputStream ois) throws Exception {
 		List<String> ret = new ArrayList<String>();
 		int size = ois.readInt();
@@ -553,15 +566,6 @@ public class IOUtils {
 			ret.add(s);
 		}
 		return ret;
-	}
-
-	public static String readString(ObjectInputStream ois) throws Exception {
-		int size = ois.readInt();
-		StringBuffer sb = new StringBuffer(size);
-		for (int j = 0; j < size; j++) {
-			sb.append((char) ois.readByte());
-		}
-		return sb.toString();
 	}
 
 	public static String readText(Reader reader) throws Exception {

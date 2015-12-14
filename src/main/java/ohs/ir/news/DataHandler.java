@@ -1,16 +1,18 @@
 package ohs.ir.news;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
@@ -26,19 +28,25 @@ public class DataHandler {
 		// dh.makeTextDump();
 		// dh.partition();
 		dh.doNLP();
+		// dh.doNLP2();
 		System.out.println("process ends.");
 	}
 
 	public void partition() throws Exception {
-		IOUtils.deleteFilesUnder(NSPath.TEMP_DIR);
+		IOUtils.deleteFilesUnder(NSPath.CONTENT_DIR);
 
 		TextFileReader reader = new TextFileReader(NSPath.NEWS_COL_TEXT_FILE);
+		TextFileWriter writer = new TextFileWriter(NSPath.NEWS_META_FILE);
 
 		List<String> labels = new ArrayList<String>();
 
 		// id, source, published, title, media-type, content
 
 		reader.setPrintNexts(false);
+
+		Map<String, String> map = Generics.newHashMap();
+
+		int num_dirs = 0;
 
 		while (reader.hasNext()) {
 			reader.print(10000);
@@ -47,53 +55,35 @@ public class DataHandler {
 
 			if (reader.getNumLines() == 1) {
 				labels.addAll(Arrays.asList(parts));
+				writer.write(StrUtils.join("\t", labels, 0, labels.size() - 1) + "\n");
 			} else {
+				writer.write(StrUtils.join("\t", parts, 0, labels.size() - 1) + "\n");
 				String date = parts[2].substring(0, 10);
+				String id = parts[0];
 				String fileName = String.format("%s/%s.txt", date, parts[0]);
-				// String fileName = StrUtils.join("=", parts, 0, parts.length -
-				// 2);
-				// String filePath = String.format("%s/%s.txt", date, fileName);
 				String content = parts[parts.length - 1].replace("\\n", "\n").replace("\\t", "\t");
-				IOUtils.write(NSPath.TEMP_DIR + "/" + fileName, content);
-			}
 
+				map.put(id, content);
+
+				if (map.size() == 100) {
+					write(map, ++num_dirs);
+				}
+
+			}
 		}
+
+		write(map, ++num_dirs);
+
 		reader.printLast();
 		reader.close();
 	}
 
-	public void countWords() throws IOException {
-		TextFileReader reader = new TextFileReader(NSPath.NEWS_COL_TEXT_FILE);
-		TextFileWriter writer = new TextFileWriter(NSPath.NEWS_WORD_COUNT_TEXT_FILE);
-		List<String> labels = new ArrayList<>();
-
-		reader.setPrintNexts(false);
-
-		while (reader.hasNext()) {
-			reader.print(100000);
-			String line = reader.next();
-			if (reader.getNumLines() == 1) {
-				labels.addAll(Arrays.asList(line.split("\t")));
-				labels.add("word-cnts");
-				writer.write(StrUtils.join("\t", labels) + "\n");
-			} else {
-				String[] values = line.split("\t");
-				String content = values[0];
-				// Counter<String> c = getCounter(content);
-				// String s = c.toString(c.size());
-				// String output = line + "\t" + s.substring(1, s.length() - 1);
-				// if (labels.size() == output.split("\t").length) {
-				// writer.write(output + "\n");
-				// }
-			}
-
-			if (line.split("\t").length != 6) {
-				System.out.println(line);
-			}
+	private void write(Map<String, String> map, int num_dirs) throws Exception {
+		for (String id : map.keySet()) {
+			String content = map.get(id);
+			IOUtils.write(NSPath.CONTENT_DIR + "/" + String.format("%05d/%s.txt", num_dirs, id), content);
 		}
-		reader.printLast();
-		reader.close();
-		writer.close();
+		map.clear();
 	}
 
 	// public void doNLP() throws IOException {
@@ -166,42 +156,108 @@ public class DataHandler {
 	// writer.close();
 	// }
 
-	public void doNLP() throws IOException {
+	public void doNLP() throws Exception {
 
 		// IOUtils.deleteFilesUnder(NSPath.TEMP_NLP_DIR);
 
-		Set<String> toRemove = Generics.newHashSet();
+		Set<String> visited = Generics.newHashSet();
 
-		for (File f : IOUtils.getFilesUnder(NSPath.TEMP_NLP_DIR)) {
-			toRemove.add(IOUtils.removeExtension(f.getName()));
+		if (IOUtils.exists(NSPath.CONTENT_VISIT_FILE)) {
+			visited = IOUtils.readSet(NSPath.CONTENT_VISIT_FILE);
 		}
 
+		TextFileWriter writer = new TextFileWriter(NSPath.CONTENT_VISIT_FILE);
+
 		Properties prop = new Properties();
-		prop.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner,parse, sentiment");
+		prop.setProperty("annotators", "tokenize, quote, ssplit, pos, lemma, ner,parse, sentiment");
 		prop.setProperty("parse.maxlen", "100");
 		prop.setProperty("pos.maxlen", "100");
 		prop.setProperty("replaceExtension", "true");
-		prop.setProperty("outputFormat", "JSON");
+		prop.setProperty("outputFormat", "XML");
 
 		StanfordCoreNLP nlp = new StanfordCoreNLP(prop);
-		File[] dirFiles = new File(NSPath.TEMP_DIR).listFiles();
+		File[] dirFiles = new File(NSPath.CONTENT_DIR).listFiles();
+
+		Arrays.sort(dirFiles);
 
 		for (int i = 0; i < dirFiles.length; i++) {
-			if (dirFiles[i].isFile()) {
+			File dir = dirFiles[i];
+			if (dir.isFile() || visited.contains(dir.getPath())) {
 				continue;
 			}
 
-			List<File> files = IOUtils.getFilesUnder(dirFiles[i]);
+			writer.write(dir.getPath() + "\n");
 
-			String outputDir = dirFiles[i].getPath();
-			outputDir = outputDir.replace("temp", "temp_nlp");
+			String outputDir = dirFiles[i].getPath().replace("content", "content_nlp");
+			nlp.getProperties().setProperty("outputDirectory", outputDir);
+			try {
+				nlp.processFiles(IOUtils.getFilesUnder(dir), 100);
+			} catch (Exception e) {
 
-			prop = nlp.getProperties();
-			prop.setProperty("outputDirectory", outputDir);
-			nlp.processFiles(files, 100);
+			}
 		}
 
 	}
+
+	// public void doNLP2() throws Exception {
+	//
+	// Set<String> docIds = Generics.newHashSet();
+	// if (new File(NSPath.NEWS_META_FILE).exists()) {
+	// docIds = IOUtils.readSet(NSPath.TEMP_ID_FILE);
+	// }
+	//
+	// TextFileWriter writer = new TextFileWriter(NSPath.TEMP_ID_FILE,
+	// IOUtils.UTF_8, true);
+	//
+	// Properties prop = new Properties();
+	// prop.setProperty("annotators", "tokenize, quote, ssplit, pos, lemma,
+	// ner,parse, sentiment");
+	// prop.setProperty("parse.maxlen", "100");
+	// prop.setProperty("pos.maxlen", "100");
+	// prop.setProperty("replaceExtension", "true");
+	// prop.setProperty("outputFormat", "XML");
+	//
+	// StanfordCoreNLP nlp = new StanfordCoreNLP(prop);
+	// File[] dirFiles = new File(NSPath.CONTENT_DIR).listFiles();
+	//
+	// Arrays.sort(dirFiles);
+	//
+	// for (int i = 0; i < dirFiles.length; i++) {
+	// if (dirFiles[i].isFile()) {
+	// continue;
+	// }
+	//
+	// List<File> files = IOUtils.getFilesUnder(dirFiles[i]);
+	//
+	// for (File file : files) {
+	// if (docIds.contains(IOUtils.removeExtension(file.getName()))) {
+	// continue;
+	// }
+	// writer.write(IOUtils.removeExtension(file.getName()) + "\n");
+	//
+	// String content = IOUtils.readText(file.getPath());
+	// Annotation anno = null;
+	//
+	// try {
+	// anno = nlp.process(content);
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// }
+	//
+	// ByteArrayOutputStream os = new ByteArrayOutputStream();
+	// nlp.xmlPrint(anno, os);
+	//
+	// content = os.toString();
+	//
+	// String outputFile = file.getCanonicalPath().replace("temp",
+	// "temp_nlp").replace(".txt", ".xml");
+	// IOUtils.write(outputFile, content);
+	//
+	// }
+	//
+	// }
+	//
+	// }
 
 	public void makeTextDump() throws Exception {
 
