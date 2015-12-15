@@ -1,6 +1,7 @@
 package ohs.ir.wiki;
 
 import java.io.StringReader;
+import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -95,12 +96,6 @@ public class DataHandler {
 		TextFileWriter writer = new TextFileWriter(MIRPath.WIKI_TITLE_FILE);
 		writer.write("Title\tRedirected To\tDisambiguation Type\n");
 
-		MediaWikiParserFactory factory = new MediaWikiParserFactory(Language.english);
-		factory.setTemplateParserClass(FlushTemplates.class);
-		MediaWikiParser parser = factory.createParser();
-
-		ListMap<String, String> map = new ListMap<>();
-
 		while (reader.hasNext()) {
 			reader.print(10000);
 
@@ -115,20 +110,25 @@ public class DataHandler {
 			String wikiText = parts[1].replace("<NL>", "\n");
 			String redirect = "none";
 			String disamType = "none";
-			boolean isDisambiguationPage = false;
 
 			Matcher m1 = p1.matcher(wikiText);
 			Matcher m2 = p2.matcher(title);
 
-			if (m1.find()) {
+			if (wikiText.startsWith("#REDIRECT") && m1.find()) {
 				redirect = m1.group(1).trim();
+				redirect = StrUtils.normalizeSpaces(redirect);
 			}
 
 			if (m2.find()) {
 				disamType = m2.group().substring(1, m2.group().length() - 1);
 			}
 
-			writer.write(String.format("%s\t%s\t%s\n", title, redirect, disamType));
+			String output = String.format("%s\t%s\t%s", title, redirect, disamType);
+			if (output.split("\t").length != 3) {
+				System.out.println(line);
+			} else {
+				writer.write(output);
+			}
 
 		}
 		reader.printLast();

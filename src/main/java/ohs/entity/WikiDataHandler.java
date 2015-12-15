@@ -1,8 +1,12 @@
 package ohs.entity;
 
 import java.io.StringReader;
+import java.sql.Struct;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,6 +23,7 @@ import ohs.io.TextFileWriter;
 import ohs.types.Counter;
 import ohs.types.ListMap;
 import ohs.utils.Generics;
+import ohs.utils.StrUtils;
 
 public class WikiDataHandler {
 	public static void main(String[] args) throws Exception {
@@ -39,36 +44,67 @@ public class WikiDataHandler {
 
 		Counter<String> c = Generics.newCounter();
 
+		Set<String> stopPrefixes = new HashSet<String>();
+		stopPrefixes.add("File");
+		stopPrefixes.add("Wikipedia");
+		stopPrefixes.add("Category");
+		stopPrefixes.add("Template");
+		stopPrefixes.add("Portal");
+		stopPrefixes.add("MediaWiki");
+		stopPrefixes.add("Module");
+		stopPrefixes.add("Help");
+		stopPrefixes.add("Module");
+		stopPrefixes.add("P");
+		stopPrefixes.add("ISO");
+		stopPrefixes.add("UN/LOCODE");
+		stopPrefixes.add("MOS");
+		stopPrefixes.add("CAT");
+		stopPrefixes.add("TimedText");
+		stopPrefixes.add("ISO 3166-1");
+		stopPrefixes.add("ISO 3166-2");
+		stopPrefixes.add("ISO 15924");
+		stopPrefixes.add("ISO 639");
+		stopPrefixes.add("Topic");
+		stopPrefixes.add("Draft");
+
 		while (reader.hasNext()) {
-			reader.print(100000);
+			reader.print(5000000);
 			String line = reader.next();
 			if (reader.getNumLines() == 1) {
 				continue;
 			}
+
 			String[] parts = line.split("\t");
-			String title = parts[0];
-			String redirect = parts[1];
+
+			if (parts.length != 3) {
+				System.out.println(line);
+				continue;
+			}
+			String from = parts[0];
+			String to = parts[1];
 			String disamType = parts[2];
 
-			int idx = title.indexOf(":");
+			if (from.charAt(0) == ':') {
+				from = from.substring(1);
+			}
+
+			if (to.charAt(0) == ':') {
+				to = to.substring(1);
+			}
+
+			int idx = from.indexOf(":");
 			if (idx > 0) {
-				c.incrementCount(title.substring(0, idx), 1);
+				String prefix = from.substring(0, idx);
+				if (stopPrefixes.contains(prefix)) {
+					continue;
+				}
+				c.incrementCount(prefix, 1);
 			}
 
-			if (title.startsWith("File:") || title.startsWith("Wikipedia:") || title.startsWith("Category:")
-					|| title.startsWith("Template:") || title.startsWith("Portal:") || title.startsWith("MediaWiki:")
-					|| title.startsWith("Help:")) {
-				continue;
-			}
-
-			if (!title.contains(":")) {
-				continue;
-			}
-
-			if (!redirect.equals("none")) {
-				map.put(redirect, title);
+			if (!to.equals("none")) {
+				map.put(to, from);
 			} else {
-				map.put(title, "Self");
+				map.put(from, "S");
 			}
 		}
 		reader.printLast();
@@ -76,14 +112,17 @@ public class WikiDataHandler {
 
 		System.out.println(c.toStringSortedByValues(true, true, 50));
 
-		TextFileWriter writer = new TextFileWriter(ENTPath.DATA_DIR + "entities.txt");
+		TextFileWriter writer = new TextFileWriter(ENTPath.DATA_DIR + "entity.txt.gz");
 
 		List<String> desTitles = new ArrayList<String>(map.keySet());
+		Collections.sort(desTitles);
 
 		for (int i = 0; i < desTitles.size(); i++) {
 			String desTitle = desTitles.get(i);
 			List<String> srcTitles = map.get(desTitle);
-			writer.write(desTitle + "\t" + srcTitles + "\n");
+			if (srcTitles.size() > 1) {
+				writer.write(desTitle + "\t" + srcTitles + "\n");
+			}
 		}
 		writer.close();
 
@@ -112,24 +151,26 @@ public class WikiDataHandler {
 				continue;
 			}
 
-			String title = parts[0];
+			String title = StrUtils.normalizeSpaces(parts[0]);
 			String wikiText = parts[1].replace("<NL>", "\n");
 			String redirect = "none";
 			String disamType = "none";
+
+			title = StrUtils.normalizeSpaces(title);
 
 			Matcher m1 = p1.matcher(wikiText);
 			Matcher m2 = p2.matcher(title);
 
 			if (m1.find()) {
-				redirect = m1.group(1).trim();
+				redirect = StrUtils.normalizeSpaces(m1.group(1));
 			}
 
 			if (m2.find()) {
-				disamType = m2.group().substring(1, m2.group().length() - 1);
+				disamType = m2.group();
+				disamType = disamType.substring(1, disamType.length() - 1);
 			}
 
 			writer.write(String.format("%s\t%s\t%s\n", title, redirect, disamType));
-
 		}
 		reader.printLast();
 		reader.close();
