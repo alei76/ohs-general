@@ -1,6 +1,8 @@
-package ohs.ir.medical.general.wiki;
+package ohs.ir.wiki;
 
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,6 +16,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import de.tudarmstadt.ukp.wikipedia.api.WikiConstants.Language;
+import de.tudarmstadt.ukp.wikipedia.parser.Content;
+import de.tudarmstadt.ukp.wikipedia.parser.ParsedPage;
+import de.tudarmstadt.ukp.wikipedia.parser.Section;
+import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.FlushTemplates;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
 import ohs.io.TextFileReader;
@@ -21,6 +28,8 @@ import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.IndexFieldName;
 import ohs.ir.medical.general.MIRPath;
 import ohs.ir.medical.general.SearcherUtils;
+import ohs.types.ListMap;
+import ohs.utils.StrUtils;
 
 /**
  * @author ohs
@@ -28,9 +37,9 @@ import ohs.ir.medical.general.SearcherUtils;
  */
 public class DataHandler {
 
-	public static void extractRedirects() throws Exception {
-		IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
-		IndexReader indexReader = indexSearcher.getIndexReader();
+	public static void extractRedirects2() throws Exception {
+		IndexSearcher is = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
+		IndexReader ir = is.getIndexReader();
 
 		MediaWikiParser parser = new MediaWikiParserFactory().createParser();
 
@@ -40,10 +49,9 @@ public class DataHandler {
 		TextFileWriter writer = new TextFileWriter(MIRPath.WIKI_REDIRECT_TITLE_FILE);
 		writer.write("FROM\tTO\n");
 
-		for (int i = 0; i < indexReader.maxDoc(); i++) {
-			org.apache.lucene.document.Document doc = indexReader.document(i);
+		for (int i = 0; i < ir.maxDoc(); i++) {
+			org.apache.lucene.document.Document doc = ir.document(i);
 
-			String docId = doc.getField(IndexFieldName.DOCUMENT_ID).stringValue().trim();
 			String title = doc.getField(IndexFieldName.TITLE).stringValue().trim();
 			String wikiText = doc.getField(IndexFieldName.CONTENT).stringValue().replace("<NL>", "\n").trim();
 
@@ -65,14 +73,106 @@ public class DataHandler {
 	 */
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
-		makeTextDump();
+		DataHandler dh = new DataHandler();
+		// makeTextDump();
 		// extractRedirects();
+		dh.extractRedirects();
 		// SmithWatermanScorer();
 		// test2();
 		System.out.println("process ends.");
 	}
 
-	public static void makeTextDump() throws Exception {
+	public void extractRedirects() throws Exception {
+		TextFileReader reader = new TextFileReader(MIRPath.WIKI_COL_FILE);
+		reader.setPrintNexts(false);
+
+		String r1 = "#REDIRECT \\[\\[([^\\[\\]]+)\\]\\]";
+		String r2 = "\\([^\\(\\)]+\\)";
+
+		Pattern p1 = Pattern.compile(r1);
+		Pattern p2 = Pattern.compile(r2);
+
+		TextFileWriter writer1 = new TextFileWriter(MIRPath.WIKI_REDIRECT_TITLE_FILE);
+		writer1.write("FROM\tTO\n");
+
+		MediaWikiParserFactory factory = new MediaWikiParserFactory(Language.english);
+		factory.setTemplateParserClass(FlushTemplates.class);
+		MediaWikiParser parser = factory.createParser();
+		
+		ListMap<String, String> map = new ListMap<>();
+
+		while (reader.hasNext()) {
+			reader.print(1000);
+
+			String line = reader.next();
+			String[] parts = line.split("\t");
+
+			if (parts.length != 2) {
+				continue;
+			}
+
+			String title = parts[0];
+			String wikiText = parts[1].replace("<NL>", "\n");
+
+			Matcher m1 = p1.matcher(wikiText);
+			Matcher m2 = p2.matcher(title);
+
+			// if (m1.find() && m2.find()) {
+			// System.out.println(line);
+			// }
+
+			if (m1.find()) {
+				String redirect = m1.group(1).trim();
+				if (redirect.length() > 0) {
+					writer1.write(title + "\t" + redirect + "\n");
+				}
+			} else if (m2.find()) {
+				// if (m2.group().contains("disambiguation")) {
+				// parseDisambiguation(parser, title, wikiText);
+				// }
+			}
+
+		}
+		reader.printLast();
+		reader.close();
+
+		writer1.close();
+	}
+
+	private void parseDisambiguation(MediaWikiParser parser, String title, String wikiText) {
+		ParsedPage pp = parser.parse(wikiText);
+
+		StringBuffer sb = new StringBuffer();
+		sb.append(title + "\n");
+
+		for (int i = 0; i < pp.getSections().size(); i++) {
+			Section section = pp.getSection(i);
+			String secTitle = section.getTitle();
+
+			List<String> sents = new ArrayList<String>();
+
+			for (int j = 0; j < section.getContentList().size(); j++) {
+				Content content = section.getContentList().get(j);
+
+				String[] ss = content.getText().split("[\\n]+");
+
+				for (String s : ss) {
+					s = s.trim();
+					if (s.length() > 0) {
+						sents.add(s);
+					}
+				}
+			}
+
+			String s = StrUtils.join("\n", sents);
+
+			if (s.length() > 0) {
+				sb.append(s + "\n\n");
+			}
+		}
+	}
+
+	public void makeTextDump() throws Exception {
 		TextFileReader reader = new TextFileReader(MIRPath.WIKI_XML_DUMP_FILE);
 		TextFileWriter writer = new TextFileWriter(MIRPath.WIKI_COL_FILE);
 
@@ -94,7 +194,7 @@ public class DataHandler {
 
 				// System.out.println(sb.toString() + "\n\n");
 
-				String[] values = parse(sb.toString());
+				String[] values = parseXml(sb.toString());
 
 				boolean isFilled = true;
 
@@ -136,18 +236,18 @@ public class DataHandler {
 		// // get the sections
 		// for (Section section : pp.getSections()) {
 		// System.out.println("section : " + section.getTitle());
-		// System.out.println(" nr of paragraphs      : " +
+		// System.out.println(" nr of paragraphs : " +
 		// section.nrOfParagraphs());
-		// System.out.println(" nr of tables          : " +
+		// System.out.println(" nr of tables : " +
 		// section.nrOfTables());
-		// System.out.println(" nr of nested lists    : " +
+		// System.out.println(" nr of nested lists : " +
 		// section.nrOfNestedLists());
 		// System.out.println(" nr of definition lists: " +
 		// section.nrOfDefinitionLists());
 		// }
 	}
 
-	public static String[] parse(String text) throws Exception {
+	public static String[] parseXml(String text) throws Exception {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder p1 = dbf.newDocumentBuilder();
 
@@ -188,7 +288,7 @@ public class DataHandler {
 
 				// System.out.println(sb.toString() + "\n\n");
 
-				String[] values = parse(sb.toString());
+				String[] values = parseXml(sb.toString());
 
 				boolean isFilled = true;
 
@@ -204,12 +304,6 @@ public class DataHandler {
 					String title = values[1].trim();
 					String wikiText = values[2].replaceAll("\n", "<NL>").trim();
 					String output = String.format("%s\t%s\t%s", id, title, wikiText);
-
-					if (title.toLowerCase().equals("cholera")) {
-						System.out.println(title);
-						System.out.println(wikiText);
-						System.out.println();
-					}
 				}
 
 				sb = new StringBuffer();

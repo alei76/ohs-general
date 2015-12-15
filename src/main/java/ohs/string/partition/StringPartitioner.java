@@ -1,4 +1,4 @@
-package ohs.entity;
+package ohs.string.partition;
 
 import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.Gram.Type;
@@ -100,7 +100,4 @@ public class StringPartitioner {
 		return ret;
 	}
 
-	private void setNumSegments() {
-
-	}
 }

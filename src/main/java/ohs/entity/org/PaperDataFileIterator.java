@@ -1,4 +1,4 @@
-package ohs.entity;
+package ohs.entity.org;
 
 import java.util.ArrayList;
 import java.util.HashMap;

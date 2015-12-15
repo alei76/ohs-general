@@ -1,4 +1,4 @@
-package ohs.entity;
+package ohs.entity.org;
 
 public enum PaperAttr {
 

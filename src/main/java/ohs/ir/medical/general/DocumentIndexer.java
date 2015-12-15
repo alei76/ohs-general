@@ -52,7 +52,6 @@ public class DocumentIndexer {
 		// IndexWriterConfig iwc = new IndexWriterConfig(new StandardAnalyzer());
 		iwc.setOpenMode(OpenMode.CREATE);
 		iwc.setRAMBufferSizeMB(ram_size);
-
 		IndexWriter ret = new IndexWriter(FSDirectory.open(Paths.get(outputDirName)), iwc);
 		return ret;
 	}
@@ -94,8 +93,8 @@ public class DocumentIndexer {
 		// di.indexOhsumed();
 		// di.indexTrecGenomics();
 
-		// di.indexWiki();
-		di.makeDocumentIdMap();
+		di.indexWiki();
+		// di.makeDocumentIdMap();
 
 		System.out.println("process ends.");
 	}

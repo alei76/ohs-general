@@ -1,4 +1,4 @@
-package ohs.entity;
+package ohs.entity.org;
 
 import java.io.BufferedWriter;
 import java.io.Serializable;
@@ -10,9 +10,9 @@ import java.util.Map;
 import java.util.Set;
 
 import ohs.classifier.centroid.CentroidClassifier;
-import ohs.entity.OrganizationDetector.UnivComponent;
 import ohs.entity.data.struct.BilingualText;
 import ohs.entity.data.struct.Organization;
+import ohs.entity.org.OrganizationDetector.UnivComponent;
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;

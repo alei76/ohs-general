@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.Stack;
 
 import ohs.entity.ENTPath;
-import ohs.entity.StringPartitioner;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
+import ohs.string.partition.StringPartitioner;
 import ohs.string.search.ppss.Gram;
 import ohs.types.Counter;
 import ohs.types.ListMap;

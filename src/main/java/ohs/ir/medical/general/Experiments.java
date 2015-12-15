@@ -45,11 +45,11 @@ public class Experiments {
 		// e.searchByKLD();
 		// e.searchByKLDFB();
 		// e.searchByKldFbPriors();
-		// e.searchByCBEEM();
+		e.searchByCBEEM();
 		// e.searchSentsByQLD();
 		// e.searchSentsByKLDFB();
 
-		e.searchByKldFbWordVectors();
+		// e.searchByKldFbWordVectors();
 		// e.searchByKldFbWordVectorExp2();
 		// e.searchByKldFbWordVectorExp();
 		// e.searchByKldFbWordVectorPrior();
