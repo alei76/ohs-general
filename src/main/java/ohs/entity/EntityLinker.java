@@ -47,8 +47,6 @@ public class EntityLinker implements Serializable {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		test();
-
 		System.out.println("process ends.");
 	}
 

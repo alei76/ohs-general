@@ -2,7 +2,6 @@ package ohs.entity;
 
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,26 +14,130 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
-import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
-import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.types.Counter;
-import ohs.types.CounterMap;
+import ohs.types.ListMap;
+import ohs.utils.Generics;
 
 public class WikiDataHandler {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
 		WikiDataHandler dh = new WikiDataHandler();
-		dh.makeTextDump();
+		// dh.makeTextDump();
 		// dh.extractRedirects();
-
+		dh.generateEntitySet();
 		System.out.println("process ends.");
 	}
 
-	public static String[] parse(String text) throws Exception {
+	public void generateEntitySet() {
+		TextFileReader reader = new TextFileReader(ENTPath.WIKI_TITLE_FILE);
+		ListMap<String, String> map = new ListMap<>();
+
+		reader.setPrintNexts(false);
+
+		Counter<String> c = Generics.newCounter();
+
+		while (reader.hasNext()) {
+			reader.print(100000);
+			String line = reader.next();
+			if (reader.getNumLines() == 1) {
+				continue;
+			}
+			String[] parts = line.split("\t");
+			String title = parts[0];
+			String redirect = parts[1];
+			String disamType = parts[2];
+
+			int idx = title.indexOf(":");
+			if (idx > 0) {
+				c.incrementCount(title.substring(0, idx), 1);
+			}
+
+			if (title.startsWith("File:") || title.startsWith("Wikipedia:") || title.startsWith("Category:")
+					|| title.startsWith("Template:") || title.startsWith("Portal:") || title.startsWith("MediaWiki:")
+					|| title.startsWith("Help:")) {
+				continue;
+			}
+
+			if (!title.contains(":")) {
+				continue;
+			}
+
+			if (!redirect.equals("none")) {
+				map.put(redirect, title);
+			} else {
+				map.put(title, "Self");
+			}
+		}
+		reader.printLast();
+		reader.close();
+
+		System.out.println(c.toStringSortedByValues(true, true, 50));
+
+		TextFileWriter writer = new TextFileWriter(ENTPath.DATA_DIR + "entities.txt");
+
+		List<String> desTitles = new ArrayList<String>(map.keySet());
+
+		for (int i = 0; i < desTitles.size(); i++) {
+			String desTitle = desTitles.get(i);
+			List<String> srcTitles = map.get(desTitle);
+			writer.write(desTitle + "\t" + srcTitles + "\n");
+		}
+		writer.close();
+
+	}
+
+	public void extractTitles() throws Exception {
+		TextFileReader reader = new TextFileReader(ENTPath.WIKI_COL_FILE);
+		reader.setPrintNexts(false);
+
+		String r1 = "#REDIRECT \\[\\[([^\\[\\]]+)\\]\\]";
+		String r2 = "\\([^\\(\\)]+\\)";
+
+		Pattern p1 = Pattern.compile(r1);
+		Pattern p2 = Pattern.compile(r2);
+
+		TextFileWriter writer = new TextFileWriter(ENTPath.WIKI_TITLE_FILE);
+		writer.write("Title\tRedirected To\tDisambiguation Type\n");
+
+		while (reader.hasNext()) {
+			reader.print(10000);
+
+			String line = reader.next();
+			String[] parts = line.split("\t");
+
+			if (parts.length != 2) {
+				continue;
+			}
+
+			String title = parts[0];
+			String wikiText = parts[1].replace("<NL>", "\n");
+			String redirect = "none";
+			String disamType = "none";
+
+			Matcher m1 = p1.matcher(wikiText);
+			Matcher m2 = p2.matcher(title);
+
+			if (m1.find()) {
+				redirect = m1.group(1).trim();
+			}
+
+			if (m2.find()) {
+				disamType = m2.group().substring(1, m2.group().length() - 1);
+			}
+
+			writer.write(String.format("%s\t%s\t%s\n", title, redirect, disamType));
+
+		}
+		reader.printLast();
+		reader.close();
+
+		writer.close();
+	}
+
+	private static String[] parse(String text) throws Exception {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder p1 = dbf.newDocumentBuilder();
 
@@ -53,72 +156,6 @@ public class WikiDataHandler {
 			}
 		}
 		return values;
-	}
-
-	public void extractRedirects() throws Exception {
-
-		TextFileReader reader = new TextFileReader(ENTPath.KOREAN_WIKI_TEXT_FILE);
-		reader.setPrintNexts(false);
-
-		MediaWikiParser parser = new MediaWikiParserFactory().createParser();
-
-		String regex1 = "#REDIRECT \\[\\[([^\\[\\]]+)\\]\\]";
-		String regex2 = "^([^:]+)\\:";
-
-		Pattern p1 = Pattern.compile(regex1);
-		Pattern p2 = Pattern.compile(regex2);
-
-		Counter<String> c1 = new Counter<String>();
-		Counter<String> c2 = new Counter<String>();
-
-		CounterMap<String, String> cm1 = new CounterMap<String, String>();
-
-		while (reader.hasNext()) {
-			reader.print(100000);
-			String line = reader.next();
-			String[] parts = line.split("\t");
-
-			if (parts.length != 2) {
-				continue;
-			}
-			String title = parts[0];
-			String wikiText = parts[1].replace("<NL>", "\n").trim();
-
-			Matcher m2 = p2.matcher(title);
-			if (m2.find()) {
-				c1.incrementCount(m2.group(1), 1);
-				continue;
-			}
-
-			c2.incrementCount(title, 1);
-
-			Matcher m1 = p1.matcher(wikiText);
-
-			if (m1.find()) {
-				String redirect = m1.group(1).trim();
-				if (redirect.length() > 0) {
-					cm1.incrementCount(redirect, title, 1);
-				}
-			}
-		}
-		reader.printLast();
-		reader.close();
-
-		IOUtils.write(ENTPath.KOREAN_WIKI_REDIRECT_FILE, cm1);
-
-		List<String> titles = new ArrayList<String>(c2.keySet());
-		Collections.sort(titles);
-
-		TextFileWriter writer = new TextFileWriter(ENTPath.KOREAN_WIKI_TITLE_FILE);
-
-		for (int i = 0; i < titles.size(); i++) {
-			String title = titles.get(i);
-			writer.write(title + "\n");
-		}
-		writer.close();
-
-		System.out.println(c1.toStringSortedByValues(true, true, c1.size()));
-
 	}
 
 	public void makeTextDump() throws Exception {
@@ -187,11 +224,11 @@ public class WikiDataHandler {
 		// // get the sections
 		// for (Section section : pp.getSections()) {
 		// System.out.println("section : " + section.getTitle());
-		// System.out.println(" nr of paragraphs      : " +
+		// System.out.println(" nr of paragraphs : " +
 		// section.nrOfParagraphs());
-		// System.out.println(" nr of tables          : " +
+		// System.out.println(" nr of tables : " +
 		// section.nrOfTables());
-		// System.out.println(" nr of nested lists    : " +
+		// System.out.println(" nr of nested lists : " +
 		// section.nrOfNestedLists());
 		// System.out.println(" nr of definition lists: " +
 		// section.nrOfDefinitionLists());

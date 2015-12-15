@@ -43,6 +43,8 @@ public class MIRPath {
 	public static final String WIKI_CATEGORY_INDEX_DIR = WIKI_DIR + "cat_index/";
 
 	public static final String WIKI_REDIRECT_TITLE_FILE = WIKI_DIR + "redirects.txt";
+	
+	public static final String WIKI_TITLE_FILE = WIKI_DIR + "titles.txt";
 
 	public static final String WIKI_DOC_ID_MAP_FILE = WIKI_DIR + "document_id_map.txt";
 

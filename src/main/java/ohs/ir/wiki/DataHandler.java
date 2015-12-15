@@ -76,13 +76,13 @@ public class DataHandler {
 		DataHandler dh = new DataHandler();
 		// makeTextDump();
 		// extractRedirects();
-		dh.extractRedirects();
+		dh.extractTitles();
 		// SmithWatermanScorer();
 		// test2();
 		System.out.println("process ends.");
 	}
 
-	public void extractRedirects() throws Exception {
+	public void extractTitles() throws Exception {
 		TextFileReader reader = new TextFileReader(MIRPath.WIKI_COL_FILE);
 		reader.setPrintNexts(false);
 
@@ -92,17 +92,17 @@ public class DataHandler {
 		Pattern p1 = Pattern.compile(r1);
 		Pattern p2 = Pattern.compile(r2);
 
-		TextFileWriter writer1 = new TextFileWriter(MIRPath.WIKI_REDIRECT_TITLE_FILE);
-		writer1.write("FROM\tTO\n");
+		TextFileWriter writer = new TextFileWriter(MIRPath.WIKI_TITLE_FILE);
+		writer.write("Title\tRedirected To\tDisambiguation Type\n");
 
 		MediaWikiParserFactory factory = new MediaWikiParserFactory(Language.english);
 		factory.setTemplateParserClass(FlushTemplates.class);
 		MediaWikiParser parser = factory.createParser();
-		
+
 		ListMap<String, String> map = new ListMap<>();
 
 		while (reader.hasNext()) {
-			reader.print(1000);
+			reader.print(10000);
 
 			String line = reader.next();
 			String[] parts = line.split("\t");
@@ -113,30 +113,28 @@ public class DataHandler {
 
 			String title = parts[0];
 			String wikiText = parts[1].replace("<NL>", "\n");
+			String redirect = "none";
+			String disamType = "none";
+			boolean isDisambiguationPage = false;
 
 			Matcher m1 = p1.matcher(wikiText);
 			Matcher m2 = p2.matcher(title);
 
-			// if (m1.find() && m2.find()) {
-			// System.out.println(line);
-			// }
-
 			if (m1.find()) {
-				String redirect = m1.group(1).trim();
-				if (redirect.length() > 0) {
-					writer1.write(title + "\t" + redirect + "\n");
-				}
-			} else if (m2.find()) {
-				// if (m2.group().contains("disambiguation")) {
-				// parseDisambiguation(parser, title, wikiText);
-				// }
+				redirect = m1.group(1).trim();
 			}
+
+			if (m2.find()) {
+				disamType = m2.group().substring(1, m2.group().length() - 1);
+			}
+
+			writer.write(String.format("%s\t%s\t%s\n", title, redirect, disamType));
 
 		}
 		reader.printLast();
 		reader.close();
 
-		writer1.close();
+		writer.close();
 	}
 
 	private void parseDisambiguation(MediaWikiParser parser, String title, String wikiText) {

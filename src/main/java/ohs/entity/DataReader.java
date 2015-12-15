@@ -17,7 +17,7 @@ public class DataReader {
 	public static void main(String[] args) {
 		System.out.println("process begins.");
 
-		// List<Organization> orgs = readOrganizations(ENTPath.BASE_ORG_NAME_FILE);
+		// List<Entity> orgs = readOrganizations(ENTPath.BASE_ORG_NAME_FILE);
 		List<Organization> orgs2 = readOrganizationHistories(ENTPath.BASE_ORG_HISTORY_FILE);
 
 		System.out.println("process ends.");
@@ -181,7 +181,7 @@ public class DataReader {
 		System.out.printf("read [%s].\n", fileName);
 		List<Organization> ret = new ArrayList<Organization>();
 
-		// List<Organization> lines = new ArrayList<Organization>();
+		// List<Entity> lines = new ArrayList<Entity>();
 
 		Counter<String> c = new Counter<String>();
 
@@ -204,6 +204,56 @@ public class DataReader {
 
 		System.out.printf("num orgs:\t%d\n", c.size());
 
+		return ret;
+	}
+
+	public static List<Organization> readEntities(String fileName) {
+		System.out.printf("read [%s].\n", fileName);
+		List<Organization> ret = new ArrayList<Organization>();
+		TextFileReader reader = new TextFileReader(fileName, IOUtils.EUC_KR);
+		while (reader.hasNext()) {
+			if (reader.getNumLines() == 1) {
+				continue;
+			}
+
+			String line = reader.next();
+			String[] parts = split(line);
+
+			int id = Integer.parseInt(parts[0]);
+			String country = parts[1];
+			String type = parts[2];
+
+			String korName = parts[3].trim();
+			String engName = parts[4].trim();
+			BilingualText orgName = new BilingualText(korName, engName);
+
+			String korVariants = parts[5];
+
+			String korAbbrs = parts[6];
+			String engAbbrs = parts[7];
+			String year = parts[8];
+			String homepage = parts[9];
+
+			Organization org = new Organization(id, null, orgName);
+			org.setHomepage(homepage);
+
+			if (korAbbrs.length() > 0) {
+				String[] abbrs = korAbbrs.split(",");
+				for (String abbr : abbrs) {
+					org.getKoreanVariants().add(abbr.trim());
+				}
+			}
+
+			if (engAbbrs.length() > 0) {
+				String[] abbrs = engAbbrs.split(",");
+				for (String abbr : abbrs) {
+					org.getEnglishVariants().add(abbr.trim());
+				}
+			}
+
+			ret.add(org);
+		}
+		reader.close();
 		return ret;
 	}
 

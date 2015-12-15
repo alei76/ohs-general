@@ -1,5 +1,7 @@
 package ohs.io;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -26,9 +28,12 @@ import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.CompressorInputStream;
 import org.apache.commons.compress.compressors.CompressorOutputStream;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 
 import ohs.math.ArrayUtils;
 import ohs.types.Counter;
@@ -190,18 +195,18 @@ public class IOUtils {
 		return getFilesUnder(dir, true);
 	}
 
-	public static List<File> getFilesUnder(File dir, boolean recursive) {
+	private static List<File> getFilesUnder(File dir, boolean recursive) {
 		List<File> files = new ArrayList<File>();
 		addFilesUnder(dir, files, recursive);
 		// Collections.sort(files);
 
-		long totalBytes = 0;
+		long total_bytes = 0;
 
 		for (int i = 0; i < files.size(); i++) {
-			totalBytes += files.get(i).length();
+			total_bytes += files.get(i).length();
 		}
 
-		ByteSize fs = new ByteSize(totalBytes);
+		ByteSize fs = new ByteSize(total_bytes);
 
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMinimumFractionDigits(2);
@@ -212,19 +217,6 @@ public class IOUtils {
 
 	public static List<File> getFilesUnder(String dirName) {
 		return getFilesUnder(new File(dirName));
-	}
-
-	public static void main(String[] args) throws Exception {
-		String text = readText("text8");
-		System.out.println(text + "\n");
-
-		BufferedWriter bw = openBufferedWriter("text8.gz");
-		bw.write(text);
-		bw.close();
-
-		String text2 = readText("text8.gz");
-
-		System.out.println(text2);
 	}
 
 	public static void move(String inFileName, String outDirName) throws Exception {
@@ -873,6 +865,96 @@ public class IOUtils {
 			writer.flush();
 		}
 		writer.close();
+	}
+
+	public static void main(String[] args) throws Exception {
+		System.out.println("process begins.");
+
+		compress("../../data/news_ir/content_nlp", "../../data/news_ir/test.tar.gz");
+
+		System.out.println("process ends.");
+	}
+
+	public static void compress(String inputPath, String outputFileName) throws Exception {
+
+		if (!outputFileName.endsWith(".tar.gz")) {
+			outputFileName += ".tar.gz";
+		}
+
+		/** Step: 1 ---> create a TarArchiveOutputStream object. **/
+		TarArchiveOutputStream taos = new TarArchiveOutputStream(
+				new GzipCompressorOutputStream(new BufferedOutputStream(new FileOutputStream(outputFileName))));
+
+		// TAR has an 8 gig file limit by default, this gets around that
+		taos.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_STAR); // to get past the 8 gig limit
+		// TAR originally didn't support long file names, so enable the support for it
+		taos.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
+
+		/**
+		 * Step: 2 --->Open the source data and get a list of files from given directory recursively.
+		 **/
+
+		File input = new File(inputPath);
+
+		compress(input.getParentFile(), input, taos);
+
+		/** Step: 7 --->close the output stream. **/
+
+		taos.close();
+
+		System.out.println("tar.gz file created successfully!!");
+
+	}
+
+	private static void compress(File root, File input, TarArchiveOutputStream taos) throws IOException {
+
+		if (input.isFile()) {
+			System.out.println("Adding File: " + root.toURI().relativize(input.toURI()).getPath());
+
+			BufferedInputStream bis = new BufferedInputStream(new FileInputStream(input));
+
+			/** Step: 3 ---> Create a tar entry for each file that is read. **/
+
+			/**
+			 * relativize is used to to add a file to a tar, without including the entire path from root.
+			 **/
+
+			TarArchiveEntry tae = new TarArchiveEntry(input, root.getParentFile().toURI().relativize(input.toURI()).getPath());
+
+			/** Step: 4 ---> Put the tar entry using putArchiveEntry. **/
+
+			taos.putArchiveEntry(tae);
+
+			/**
+			 * Step: 5 ---> Write the data to the tar file and close the input stream.
+			 **/
+
+			int count;
+			byte data[] = new byte[2048];
+			while ((count = bis.read(data, 0, 2048)) != -1) {
+				taos.write(data, 0, count);
+			}
+			bis.close();
+
+			/** Step: 6 --->close the archive entry. **/
+
+			taos.closeArchiveEntry();
+
+		} else {
+			if (input.listFiles() != null) {
+				/** Add an empty folder to the tar **/
+				if (input.listFiles().length == 0) {
+
+					System.out.println("Adding Empty Folder: " + root.toURI().relativize(input.toURI()).getPath());
+					TarArchiveEntry entry = new TarArchiveEntry(input, root.getParentFile().toURI().relativize(input.toURI()).getPath());
+					taos.putArchiveEntry(entry);
+					taos.closeArchiveEntry();
+				}
+
+				for (File file : input.listFiles())
+					compress(root, file, taos);
+			}
+		}
 	}
 
 }

@@ -67,4 +67,8 @@ public class ENTPath {
 
 	public static final String ORG_HISTORY_SUBSET_FILE_1 = ORG_HISTORY_DIR + "base_orgs_subset_1.txt";
 
+	public static final String WIKI_TITLE_FILE = DATA_DIR + "titles.txt.gz";
+
+	public static final String WIKI_COL_FILE = "../../data/medical_ir/wiki/enwiki-20150304-pages-articles.txt.bz2";
+
 }

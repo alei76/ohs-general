@@ -17,7 +17,7 @@ public class DataReader {
 	public static void main(String[] args) {
 		System.out.println("process begins.");
 
-		// List<Organization> orgs = readOrganizations(ENTPath.BASE_ORG_NAME_FILE);
+		// List<Entity> orgs = readOrganizations(ENTPath.BASE_ORG_NAME_FILE);
 		List<Organization> orgs2 = readOrganizationHistories(ENTPath.BASE_ORG_HISTORY_FILE);
 
 		System.out.println("process ends.");
@@ -181,7 +181,7 @@ public class DataReader {
 		System.out.printf("read [%s].\n", fileName);
 		List<Organization> ret = new ArrayList<Organization>();
 
-		// List<Organization> lines = new ArrayList<Organization>();
+		// List<Entity> lines = new ArrayList<Entity>();
 
 		Counter<String> c = new Counter<String>();
 
