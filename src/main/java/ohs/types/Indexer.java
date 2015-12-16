@@ -82,6 +82,22 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 		return index;
 	}
 
+	public List<E> getObjects(List<Integer> ids) {
+		List<E> ret = new ArrayList<E>();
+		for (int i = 0; i < ids.size(); i++) {
+			ret.add(getObject(ids.get(i)));
+		}
+		return ret;
+	}
+
+	public List<Integer> getIndexes(List<E> objs) {
+		List<Integer> ret = new ArrayList<Integer>();
+		for (int i = 0; i < objs.size(); i++) {
+			ret.add(getIndex(objs.get(i)));
+		}
+		return ret;
+	}
+
 	public E getObject(int index) {
 		return objects.get(index);
 	}
@@ -114,6 +130,14 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 		if (index == null)
 			return -1;
 		return index;
+	}
+
+	public List<Integer> indexOf(List<Object> objs) {
+		List<Integer> ret = new ArrayList<>(objs.size());
+		for (int i = 0; i < objs.size(); i++) {
+			ret.add(indexOf(objs.get(i)));
+		}
+		return ret;
 	}
 
 	/**

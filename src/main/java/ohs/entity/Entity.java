@@ -1,28 +1,19 @@
 package ohs.entity;
 
 import java.io.Serializable;
-import java.util.Set;
-
-import ohs.entity.data.struct.BilingualText;
 
 public class Entity implements Serializable {
 
-	private static final long serialVersionUID = 6089009132374704108L;
-
-	private BilingualText name;
-
-	private Set<String> korVariants;
-
-	private Set<String> engVariants;
+	private String text;
 
 	private int id;
 
-	public Entity(int id, BilingualText name, Set<String> korVariants, Set<String> engVariants) {
-		super();
+	private String topic;
+
+	public Entity(int id, String text, String topic) {
 		this.id = id;
-		this.name = name;
-		this.korVariants = korVariants;
-		this.engVariants = engVariants;
+		this.text = text;
+		this.topic = topic;
 	}
 
 	@Override
@@ -36,28 +27,34 @@ public class Entity implements Serializable {
 		Entity other = (Entity) obj;
 		if (id != other.id)
 			return false;
-		if (name == null) {
-			if (other.name != null)
+		if (text == null) {
+			if (other.text != null)
 				return false;
-		} else if (!name.equals(other.name))
+		} else if (!text.equals(other.text))
+			return false;
+		if (topic == null) {
+			if (other.topic != null)
+				return false;
+		} else if (!topic.equals(other.topic))
 			return false;
 		return true;
-	}
-
-	public Set<String> getEnglishVariants() {
-		return engVariants;
 	}
 
 	public int getId() {
 		return id;
 	}
 
-	public Set<String> getKoreanVariants() {
-		return korVariants;
+	@Override
+	public String toString() {
+		return "Entity [text=" + text + ", id=" + id + ", topic=" + topic + "]";
 	}
 
-	public BilingualText getName() {
-		return name;
+	public String getText() {
+		return text;
+	}
+
+	public String getTopic() {
+		return topic;
 	}
 
 	@Override
@@ -65,37 +62,20 @@ public class Entity implements Serializable {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + id;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((text == null) ? 0 : text.hashCode());
+		result = prime * result + ((topic == null) ? 0 : topic.hashCode());
 		return result;
-	}
-
-	public void setEnglishVariants(Set<String> engVariants) {
-		this.engVariants = engVariants;
 	}
 
 	public void setId(int id) {
 		this.id = id;
 	}
 
-	public void setKoreanVariants(Set<String> korVariants) {
-		this.korVariants = korVariants;
+	public void setText(String text) {
+		this.text = text;
 	}
 
-	public void setName(BilingualText name) {
-		this.name = name;
+	public void setTopic(String topic) {
+		this.topic = topic;
 	}
-
-	@Override
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		// sb.append(String.format("ID = %d\n", id));
-		// sb.append(String.format("SID = %s\n", sid));
-		sb.append(String.format("Korean Name = %s\n", name.getKorean()));
-		// sb.append(String.format("English Name = %s\n", name.getEnglish()));
-		// sb.append(String.format("Korean Variants = %s\n", korVariants));
-		// sb.append(String.format("English Variants = %s\n", engVariants));
-		// sb.append(String.format("Homepage = %s\n", homepage));
-		return sb.toString().trim();
-	}
-
 }

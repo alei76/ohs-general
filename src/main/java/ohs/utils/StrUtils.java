@@ -185,7 +185,7 @@ public class StrUtils {
 		return join(glue, list, start, list.size());
 	}
 
-	public static String join(String glue, Collection<Object> list, int start, int end) {
+	public static String join(String glue, Collection<String> list, int start, int end) {
 		StringBuffer sb = new StringBuffer();
 		int cnt = 0;
 
@@ -197,7 +197,9 @@ public class StrUtils {
 			end = list.size();
 		}
 
-		for (Object obj : list) {
+		list.size();
+
+		for (String item : list) {
 			if (cnt < start) {
 				continue;
 			}
@@ -205,8 +207,12 @@ public class StrUtils {
 			if (cnt == end) {
 				break;
 			}
-		}
+			sb.append(item);
 
+			if (cnt == end - 1) {
+				sb.append(glue);
+			}
+		}
 		return sb.toString();
 	}
 

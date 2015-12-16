@@ -22,6 +22,7 @@ public class Study {
 				System.out.println(value);
 			}
 		});
+		
 
 		numbers.forEach((Integer value) -> System.out.println(value));
 

@@ -284,7 +284,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 
 		pivotSelector = useOptimalPivotSelector
 
-		? new OptimalPivotSelector(q, prefix_size, pivot_size) : new RandomPivotSelector(q, prefix_size, pivot_size);
+				? new OptimalPivotSelector(q, prefix_size, pivot_size) : new RandomPivotSelector(q, prefix_size, pivot_size);
 	}
 
 	private void computeCharacterWeights() {
@@ -441,7 +441,12 @@ public class PivotalPrefixStringSearcher implements Serializable {
 	}
 
 	public void index(List<StringRecord> srs) {
+		System.out.printf("index [%s] records.\n", srs.size());
+		System.out.println("sort records by length.");
+
 		StringSorter.sortByLength(srs);
+
+		System.out.println("generate q-grams.");
 
 		ss = new ArrayList<StringRecord>();
 		allGrams = new ArrayList<Gram[]>();
@@ -461,6 +466,8 @@ public class PivotalPrefixStringSearcher implements Serializable {
 			idMap.put(sr.getId(), sr);
 		}
 
+		System.out.println("determine q-grams orders.");
+
 		if (gramOrderer.getGramWeights() == null) {
 			gramOrderer.setGramWeights(GramWeighter.computeWeightsByGramCounts(allGrams));
 		}
@@ -471,6 +478,8 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		if (pivotSelector instanceof OptimalPivotSelector) {
 			((OptimalPivotSelector) pivotSelector).setGramWeights(gramOrderer.getGramWeights());
 		}
+
+		System.out.println("make an inverted index.");
 
 		L = new GramInvertedIndex();
 
@@ -661,9 +670,11 @@ public class PivotalPrefixStringSearcher implements Serializable {
 
 					if (Math.abs(p - gram.getStart()) > tau
 
-					|| (lastPrefixInS.getSecond() > lastPrefixInR.getSecond() && getIntersection(pivotsInR, prefixesInS).size() == 0)
+							|| (lastPrefixInS.getSecond() > lastPrefixInR.getSecond()
+									&& getIntersection(pivotsInR, prefixesInS).size() == 0)
 
-					|| (lastPrefixInR.getSecond() > lastPrefixInS.getSecond() && getIntersection(pivotsInS, prefixesInR).size() == 0)
+							|| (lastPrefixInR.getSecond() > lastPrefixInS.getSecond()
+									&& getIntersection(pivotsInS, prefixesInR).size() == 0)
 
 					) {
 						continue;

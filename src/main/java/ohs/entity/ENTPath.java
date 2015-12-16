@@ -67,7 +67,19 @@ public class ENTPath {
 
 	public static final String ORG_HISTORY_SUBSET_FILE_1 = ORG_HISTORY_DIR + "base_orgs_subset_1.txt";
 
-	public static final String WIKI_TITLE_FILE = DATA_DIR + "titles.txt.gz";
+	public static final String WIKI_TITLE_FILE = DATA_DIR + "wiki/titles.txt.gz";
+
+	public static final String WIKI_ENTITY_FILE = DATA_DIR + "wiki/entity.txt.gz";
+
+	public static final String WIKI_DISAM_TYPE_FILE = DATA_DIR + "wiki/disam_types.txt";
+
+	public static final String WIKI_DISAM_TYPE_INSTANCE_FILE = DATA_DIR + "wiki/disam_types_instances.txt";
+
+	public static final String JOB_WORDS_FILE = DATA_DIR + "wiki/job_words.txt";
+
+	public static final String PERSON_NAME_FILE = DATA_DIR + "wiki/person_names.txt";
+
+	public static final String JOB_ALL_WORDS_FILE = DATA_DIR + "wiki/job_all_words.txt";
 
 	public static final String WIKI_COL_FILE = "../../data/medical_ir/wiki/enwiki-20150304-pages-articles.txt.bz2";
 
