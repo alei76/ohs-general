@@ -354,7 +354,7 @@ public class CounterMap<K, V> implements java.io.Serializable {
 				break;
 			}
 			sb.append(String.format("   %s:%d -> ", key, (int) inner.totalCount()));
-			sb.append(inner.toStringSortedByValues(true, false, numPrintColumns));
+			sb.append(inner.toStringSortedByValues(true, false, numPrintColumns, " "));
 			sb.append("\n");
 		}
 		sb.append("]");

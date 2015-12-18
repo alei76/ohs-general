@@ -7,12 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ohs.entity.data.struct.Organization;
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.string.search.ppss.GramOrderer;
-import ohs.string.search.ppss.PivotalPrefixStringSearcher;
 import ohs.string.search.ppss.StringRecord;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
@@ -26,17 +24,38 @@ import ohs.types.CounterMap;
 public class EntityLinker implements Serializable {
 
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7199650129494305577L;
+
+	/**
 	 * @param args
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		EntityLinker el = new EntityLinker();
-		el.createSearchers(ENTPath.PERSON_NAME_FILE);
+		el.createSearchers(ENTPath.NAME_PERSON_FILE);
+
+		Counter<Entity> scores = el.link("Mattingly");
+
+		// System.out.println(scores.toStringSortedByValues(true, true, scores.size()));
+
+		TextFileWriter writer = new TextFileWriter(ENTPath.EX_FILE);
+		for (Entity e : scores.getSortedKeys()) {
+			writer.write(e.toString() + "\t" + scores.getCount(e) + "\n");
+		}
+		writer.close();
+
+		// TextFileReader reader = new TextFileReader("../../data/news_ir/ners.txt");
+		// while (reader.hasNext()) {
+		// String line = reader.next();
+		//
+		// }
 		System.out.println("process ends.");
 	}
 
-	private PivotalPrefixStringSearcher searcher;
+	private SimplePivotalPrefixStringSearcher searcher;
 
 	private TextFileWriter logWriter = new TextFileWriter(ENTPath.ODK_LOG_FILE);
 
@@ -44,7 +63,7 @@ public class EntityLinker implements Serializable {
 
 	private Map<Integer, Entity> ents;
 
-	private Map<Integer, Integer> recToEntId;
+	private Map<Integer, Integer> recToEntIdMap;
 
 	public EntityLinker() {
 
@@ -60,7 +79,7 @@ public class EntityLinker implements Serializable {
 	 */
 	public void createSearchers(String dataFileName) {
 		srs = new ArrayList<StringRecord>();
-		recToEntId = new HashMap<Integer, Integer>();
+		recToEntIdMap = new HashMap<Integer, Integer>();
 		ents = new HashMap<Integer, Entity>();
 
 		int q = 2;
@@ -75,16 +94,26 @@ public class EntityLinker implements Serializable {
 			}
 
 			String[] parts = line.split("\t");
+			String name = parts[0];
+			String topic = parts[1];
+			String catStr = parts[2];
+			String variantStr = parts[3];
 
-			Entity ent = null;
-			for (int i = 0; i < parts.length; i++) {
-				StringRecord sr = new StringRecord(srs.size(), parts[0]);
-				if (i == 0) {
-					ent = new Entity(ents.size(), parts[0], null);
-					ents.put(ent.getId(), ent);
+			Entity ent = new Entity(ents.size(), name, topic);
+			ents.put(ent.getId(), ent);
+
+			StringRecord sr = new StringRecord(srs.size(), name);
+			srs.add(sr);
+
+			recToEntIdMap.put(sr.getId(), ent.getId());
+
+			if (!variantStr.equals("none")) {
+				String[] variants = variantStr.split("\\|");
+				for (int i = 0; i < variants.length; i++) {
+					sr = new StringRecord(srs.size(), variants[i]);
+					srs.add(sr);
+					recToEntIdMap.put(sr.getId(), ent.getId());
 				}
-				srs.add(sr);
-				recToEntId.put(sr.getId(), ent.getId());
 			}
 		}
 
@@ -92,13 +121,12 @@ public class EntityLinker implements Serializable {
 
 		GramOrderer gramOrderer = new GramOrderer();
 
-		searcher = new PivotalPrefixStringSearcher(q, tau, true);
+		searcher = new SimplePivotalPrefixStringSearcher(q, tau, true);
 		searcher.setGramSorter(gramOrderer);
 		searcher.index(srs);
 	}
 
 	public Counter<Entity> link(String name) {
-
 		Counter<StringRecord> searchScore = searcher.search(name);
 
 		CounterMap<Integer, Integer> cm = new CounterMap<Integer, Integer>();
@@ -107,7 +135,8 @@ public class EntityLinker implements Serializable {
 		for (StringRecord sr : searchScore.keySet()) {
 			double score = searchScore.getCount(sr);
 			int rid = sr.getId();
-			int eid = recToEntId.get(rid);
+			StringRecord temp = srs.get(rid);
+			int eid = recToEntIdMap.get(rid);
 			cm.incrementCount(eid, rid, score);
 		}
 
@@ -127,7 +156,7 @@ public class EntityLinker implements Serializable {
 
 	public void write(String fileName) throws Exception {
 		BufferedWriter writer = IOUtils.openBufferedWriter(fileName);
-		searcher.write(writer);
+		searcher.writeObject(fileName);
 		writer.close();
 	}
 

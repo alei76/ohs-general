@@ -117,7 +117,7 @@ public class WikiDataHandler {
 		}
 		writer.close();
 
-		System.out.println(c1.toStringSortedByValues(true, true, c1.size()));
+		System.out.println(c1.toStringSortedByValues(true, true, c1.size(), " "));
 
 	}
 
@@ -187,11 +187,11 @@ public class WikiDataHandler {
 		// // get the sections
 		// for (Section section : pp.getSections()) {
 		// System.out.println("section : " + section.getTitle());
-		// System.out.println(" nr of paragraphs      : " +
+		// System.out.println(" nr of paragraphs : " +
 		// section.nrOfParagraphs());
-		// System.out.println(" nr of tables          : " +
+		// System.out.println(" nr of tables : " +
 		// section.nrOfTables());
-		// System.out.println(" nr of nested lists    : " +
+		// System.out.println(" nr of nested lists : " +
 		// section.nrOfNestedLists());
 		// System.out.println(" nr of definition lists: " +
 		// section.nrOfDefinitionLists());

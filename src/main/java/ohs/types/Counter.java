@@ -602,11 +602,11 @@ public class Counter<E> implements Serializable {
 	 */
 
 	public String toString() {
-		return toStringSortedByValues(true, false, 50);
+		return toStringSortedByValues(true, false, 50, " ");
 	}
 
 	public String toString(int numKeysPrinted) {
-		return toStringSortedByValues(true, false, numKeysPrinted);
+		return toStringSortedByValues(true, false, numKeysPrinted, " ");
 	}
 
 	public String toStringSortedByKeys() {
@@ -631,7 +631,7 @@ public class Counter<E> implements Serializable {
 		return sb.toString();
 	}
 
-	public String toStringSortedByValues(boolean descending, boolean printVertical, int numKeysPrinted) {
+	public String toStringSortedByValues(boolean descending, boolean printVertical, int numKeysPrinted, String delimeter) {
 		final StringBuilder sb = new StringBuilder("[");
 		if (printVertical) {
 			sb.append("\n");
@@ -647,7 +647,7 @@ public class Counter<E> implements Serializable {
 				if (printVertical) {
 					sb.append("\n");
 				} else {
-					sb.append(" ");
+					sb.append(delimeter);
 				}
 			}
 			if (++numKeys == numKeysPrinted) {

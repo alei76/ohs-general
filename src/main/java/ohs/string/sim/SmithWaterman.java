@@ -3,9 +3,9 @@ package ohs.string.sim;
 import java.util.HashSet;
 import java.util.Set;
 
-import ohs.entity.DataReader;
 import ohs.entity.ENTPath;
 import ohs.entity.data.struct.BilingualText;
+import ohs.entity.org.DataReader;
 import ohs.math.ArrayMath;
 import ohs.types.Counter;
 

@@ -1,29 +1,40 @@
-package ohs.string.search.ppss;
+package ohs.entity;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ohs.entity.ENTPath;
 import ohs.entity.data.struct.BilingualText;
 import ohs.entity.org.DataReader;
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
+import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.Gram.Type;
+import ohs.string.search.ppss.GramGenerator;
+import ohs.string.search.ppss.GramInvertedIndex;
+import ohs.string.search.ppss.GramOrderer;
+import ohs.string.search.ppss.GramPostingEntry;
+import ohs.string.search.ppss.GramPostings;
+import ohs.string.search.ppss.GramUtils;
+import ohs.string.search.ppss.GramWeighter;
+import ohs.string.search.ppss.OptimalPivotSelector;
+import ohs.string.search.ppss.PivotSelector;
+import ohs.string.search.ppss.RandomPivotSelector;
+import ohs.string.search.ppss.StringRecord;
+import ohs.string.search.ppss.StringSorter;
+import ohs.string.search.ppss.StringVerifier;
 import ohs.string.sim.SmithWaterman;
 import ohs.types.Counter;
 import ohs.types.DeepMap;
 import ohs.types.ListMap;
 import ohs.types.Pair;
-import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 
 /**
@@ -33,7 +44,12 @@ import ohs.utils.StrUtils;
  * 
  * @author Heung-Seon Oh
  */
-public class PivotalPrefixStringSearcher implements Serializable {
+public class SimplePivotalPrefixStringSearcher implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8740333778747553831L;
 
 	/**
 	 * @param args
@@ -46,78 +62,6 @@ public class PivotalPrefixStringSearcher implements Serializable {
 	// // test3();
 	// System.out.println("process ends.");
 	// }
-
-	public static void test1() throws Exception {
-
-		List<BilingualText> orgNames = DataReader.readBaseOrgNames(ENTPath.BASE_ORG_NAME_FILE);
-		Counter<BilingualText> extOrgCounts = DataReader.readBilingualTextCounter(ENTPath.DOMESTIC_PAPER_ORG_NAME_FILE);
-
-		List<StringRecord> strings = new ArrayList<StringRecord>();
-		List<StringRecord> strings2 = new ArrayList<StringRecord>();
-
-		for (int i = 0; i < orgNames.size(); i++) {
-			strings.add(new StringRecord(i, orgNames.get(i).getKorean()));
-			strings2.add(new StringRecord(i, orgNames.get(i).getKorean()));
-		}
-
-		GramOrderer gramOrderer = new GramOrderer();
-
-		// {
-		// List<StringRecord> srs = new ArrayList<StringRecord>();
-		//
-		// for (BilingualText orgName : externalOrgCounts.keySet()) {
-		// String korName = orgName.getKorean();
-		// if (korName.length() == 0) {
-		// continue;
-		// }
-		// srs.add(new StringRecord(srs.size(), korName));
-		// }
-		//
-		// Counter<String> gramWeights1 = GramWeighter.compute(new GramGenerator(2), srs);
-		// System.out.println(gramWeights1);
-		// gramOrderer.setGramWeights(gramWeights1);
-		// }
-
-		int q = 2;
-		int tau = 3;
-
-		PivotalPrefixStringSearcher ppss = new PivotalPrefixStringSearcher(q, tau, true);
-		ppss.setGramSorter(gramOrderer);
-		ppss.index(strings);
-		// ppss.write(ENTPath.PPSS_INDEX_FILE);
-		// ppss.writeObject(ENTPath.PPSS_OBJECT_FILE);
-
-		{
-
-			TextFileWriter writer = new TextFileWriter(ENTPath.PPSS_RESULT_FILE);
-			List<BilingualText> testOrgs = extOrgCounts.getSortedKeys();
-
-			for (int i = 0; i < testOrgs.size(); i++) {
-				BilingualText name = testOrgs.get(i);
-				double cnt = extOrgCounts.getCount(name);
-
-				System.out.println(name + "\n");
-				Counter<StringRecord> res = ppss.search(name.getKorean());
-				StringBuffer sb = new StringBuffer();
-				sb.append("[Input]:\n");
-				sb.append(name.toString() + "\n");
-				sb.append(String.format("[Output]:\n"));
-
-				List<StringRecord> orgs = res.getSortedKeys();
-
-				for (int j = 0; j < orgs.size() && j < 10; j++) {
-					StringRecord sr = orgs.get(j);
-					double score = res.getCount(sr);
-					sb.append(String.format("%d, %d, %s, %s\n", j + 1, sr.getId(), sr.getString(), score + ""));
-				}
-
-				System.out.println(sb.toString());
-
-				writer.write(sb.toString());
-			}
-			writer.close();
-		}
-	}
 
 	public static void test2() {
 		String[] strs = { "imyouteca", "ubuntucom", "utubbecou", "youtbecom", "yoytubeca" };
@@ -134,107 +78,12 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		int q = 2;
 		int tau = 2;
 
-		PivotalPrefixStringSearcher ppss = new PivotalPrefixStringSearcher(q, tau, true);
+		SimplePivotalPrefixStringSearcher ppss = new SimplePivotalPrefixStringSearcher(q, tau, true);
 		ppss.setGramSorter(gramOrderer);
 		ppss.index(strings);
 		Counter<StringRecord> res = ppss.search(s);
 
 		System.out.println(res.toString());
-	}
-
-	public static void test3() throws Exception {
-		List<BilingualText> orgNames = DataReader.readBaseOrgNames(ENTPath.BASE_ORG_NAME_FILE);
-		// Counter<BilingualText> externalOrgCounts = DataReader.readBilingualTextCounter(ENTPath.DOMESTIC_PAPER_ORG_NAME_FILE);
-
-		List<StringRecord> srs = new ArrayList<StringRecord>();
-		List<StringRecord> srs2 = new ArrayList<StringRecord>();
-
-		for (int i = 0; i < orgNames.size(); i++) {
-			srs.add(new StringRecord(i, orgNames.get(i).getKorean()));
-			srs2.add(new StringRecord(i, orgNames.get(i).getKorean()));
-		}
-
-		// GramOrderer gramOrderer = new GramOrderer();
-
-		// {
-		// List<StringRecord> srs = new ArrayList<StringRecord>();
-		//
-		// for (BilingualText orgName : externalOrgCounts.keySet()) {
-		// String korName = orgName.getKorean();
-		// if (korName.length() == 0) {
-		// continue;
-		// }
-		// srs.add(new StringRecord(srs.size(), korName));
-		// }
-		//
-		// Counter<String> gramWeights1 = GramWeighter.compute(new GramGenerator(2), srs);
-		// System.out.println(gramWeights1);
-		// gramOrderer.setGramWeights(gramWeights1);
-		// }
-
-		int q = 2;
-		int tau = 2;
-
-		PivotalPrefixStringSearcher ppss = new PivotalPrefixStringSearcher(q, tau, true);
-		// ppss.setGramSorter(gramOrderer);
-		ppss.index(srs);
-		// ppss.write(ENTPath.PPSS_INDEX_FILE);
-		// ppss.writeObject(ENTPath.PPSS_OBJECT_FILE);
-
-		// {
-		// TextFileWriter writer = new TextFileWriter(ENTPath.DATA_DIR + "ppss_res.txt");
-		// for (int i = 0; i < strings2.size(); i++) {
-		// String str = strings2.get(i);
-		// System.out.println(str);
-		//
-		// // if (!str.contains("경남양돈산업클러스터사업단")) {
-		// // continue;
-		// // }
-		// Counter<String> res = ext.search(str);
-		// writer.write(String.format("Input:\t%s\n", str));
-		// writer.write(String.format("Output:\t%s\n\n", res.toStringSortedByValues(false, false, res.size())));
-		// }
-		//
-		// writer.close();
-		// }
-
-		TextFileReader reader = new TextFileReader(ENTPath.PATENT_ORG_FILE_2);
-		TextFileWriter writer = new TextFileWriter(ENTPath.PPSS_RESULT_FILE);
-
-		while (reader.hasNext()) {
-			String line = reader.next();
-			String[] parts = line.split("\t");
-
-			String korName = null;
-			Counter<String> engNameCounts = new Counter<String>();
-
-			for (int i = 0; i < parts.length; i++) {
-				String[] two = StrUtils.split2Two(":", parts[i]);
-				String name = two[0];
-				double cnt = Double.parseDouble(two[1]);
-				if (i == 0) {
-					korName = name;
-				} else {
-					engNameCounts.incrementCount(name, cnt);
-				}
-			}
-
-			BilingualText orgName = new BilingualText(korName, engNameCounts.argMax());
-
-			Counter<StringRecord> ret = ppss.search(korName);
-
-			List<StringRecord> keys = ret.getSortedKeys();
-			int num_candidates = 10;
-			StringBuffer sb = new StringBuffer(line);
-			for (int i = 0; i < keys.size() && i < num_candidates; i++) {
-				StringRecord sr = keys.get(i);
-				double score = ret.getCount(sr);
-				sb.append(String.format("\n%d\t%s\t%f", i + 1, sr, score));
-			}
-
-			writer.write(sb.toString() + "\n\n");
-		}
-		writer.close();
 	}
 
 	private int q;
@@ -253,7 +102,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 
 	private Map<String, Integer> gramOrders;
 
-	private GramGenerator gramGenerator;
+	private GramGenerator gg;
 
 	private PivotSelector pivotSelector;
 
@@ -263,11 +112,11 @@ public class PivotalPrefixStringSearcher implements Serializable {
 
 	private Counter<Character> chWeights;
 
-	public PivotalPrefixStringSearcher() {
+	public SimplePivotalPrefixStringSearcher() {
 		this(2, 2, false);
 	}
 
-	public PivotalPrefixStringSearcher(int q, int tau, boolean useOptimalPivotSelector) {
+	public SimplePivotalPrefixStringSearcher(int q, int tau, boolean useOptimalPivotSelector) {
 		this.q = q;
 		this.tau = tau;
 
@@ -277,7 +126,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 
 		this.gramOrderer = new GramOrderer();
 
-		gramGenerator = new GramGenerator(q);
+		gg = new GramGenerator(q);
 
 		stringVerifier = new StringVerifier(q, tau);
 
@@ -311,55 +160,12 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		}
 	}
 
-	private int[] determineSearchRange(int len, Type indexType, GramPostings postings) {
-		int[] ret = new int[] { 0, postings.getEntries().size() };
-		int start = 0;
-		int end = postings.size();
-
-		DeepMap<Type, Integer, Integer> typeLenLocMap = postings.getTypeLengthLocs();
-		Map<Integer, Integer> M = typeLenLocMap.get(indexType);
-
-		int start_key = len - tau;
-		int end_key = len + tau + 1;
-
-		Integer t_start = M.get(start_key);
-		Integer t_end = M.get(end_key);
-
-		if (t_start == null) {
-			start_key = len - tau + 1;
-			t_start = M.get(start_key);
-		}
-
-		if (t_start == null) {
-			t_start = M.get(len);
-		}
-
-		if (t_end == null) {
-			end_key = len + tau + 2;
-			t_end = M.get(end_key);
-		}
-
-		if (t_end == null) {
-			t_end = M.get(len + 1);
-		}
-
-		if (t_start != null) {
-			start = t_start.intValue();
-		}
-
-		if (t_end != null) {
-			end = t_end.intValue();
-		}
-
-		return ret;
-	}
-
 	public List<Gram[]> getAllGrams() {
 		return allGrams;
 	}
 
 	public GramGenerator getGramGenerator() {
-		return gramGenerator;
+		return gg;
 	}
 
 	public GramOrderer getGramSorter() {
@@ -415,6 +221,49 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		return q;
 	}
 
+	private int[] getSearchRange(int len, Type indexType, GramPostings postings) {
+		int[] ret = new int[] { 0, postings.getEntries().size() };
+		int start = 0;
+		int end = postings.size();
+
+		DeepMap<Type, Integer, Integer> typeLenLocMap = postings.getTypeLengthLocs();
+		Map<Integer, Integer> M = typeLenLocMap.get(indexType);
+
+		int start_key = len - tau;
+		int end_key = len + tau + 1;
+
+		Integer t_start = M.get(start_key);
+		Integer t_end = M.get(end_key);
+
+		if (t_start == null) {
+			start_key = len - tau + 1;
+			t_start = M.get(start_key);
+		}
+
+		if (t_start == null) {
+			t_start = M.get(len);
+		}
+
+		if (t_end == null) {
+			end_key = len + tau + 2;
+			t_end = M.get(end_key);
+		}
+
+		if (t_end == null) {
+			t_end = M.get(len + 1);
+		}
+
+		if (t_start != null) {
+			start = t_start.intValue();
+		}
+
+		if (t_end != null) {
+			end = t_end.intValue();
+		}
+
+		return ret;
+	}
+
 	public List<StringRecord> getStringRecords() {
 		return srs;
 	}
@@ -448,7 +297,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		for (int i = 0; i < input.size(); i++) {
 			StringRecord sr = input.get(i);
 			String s = sr.getString();
-			Gram[] grams = gramGenerator.generate(s.toLowerCase());
+			Gram[] grams = gg.generate(s.toLowerCase());
 
 			if (grams.length == 0) {
 				continue;
@@ -546,7 +395,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		}
 
 		stringVerifier = new StringVerifier(q, tau);
-		gramGenerator = new GramGenerator(q);
+		gg = new GramGenerator(q);
 
 		srs = new ArrayList<StringRecord>();
 
@@ -560,7 +409,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 			int id = Integer.parseInt(parts[1]);
 			String s = parts[2];
 			srs.add(new StringRecord(id, s));
-			allGrams.add(gramGenerator.generate(s));
+			allGrams.add(gg.generate(s));
 		}
 
 		L = new GramInvertedIndex();
@@ -588,7 +437,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 	}
 
 	public Counter<StringRecord> search(String s) {
-		Gram[] sGrams = gramGenerator.generate(s.toLowerCase());
+		Gram[] sGrams = gg.generate(s.toLowerCase());
 
 		if (sGrams.length == 0) {
 			return new Counter<StringRecord>();
@@ -619,15 +468,13 @@ public class PivotalPrefixStringSearcher implements Serializable {
 
 			for (int loc : typeLocs.get(searchType)) {
 				Gram gram = sGrams[loc];
-				String g = gram.getString();
-				GramPostings gp = L.get(g, false);
+				GramPostings gp = L.get(gram.getString(), false);
 
 				if (gp == null) {
 					continue;
 				}
 
-				int[] range = determineSearchRange(len, indexType, gp);
-
+				int[] range = getSearchRange(len, indexType, gp);
 				int start = range[0];
 				int end = range[1];
 
@@ -660,16 +507,19 @@ public class PivotalPrefixStringSearcher implements Serializable {
 					 * If last(pre(r)) > last(pre(s)), piv(s) ∩ pre(r) != phi ; If last(pre(r)) <= last(pre(s)), piv(r) ∩ pre(s) != phi;
 					 */
 
-					if (Math.abs(p - gram.getStart()) > tau
+//					if (Math.abs(p - gram.getStart()) > tau) {
+//						continue;
+//					}
 
-							|| (lastPrefixInS.getSecond() > lastPrefixInR.getSecond()
-									&& getIntersection(pivotsInR, prefixesInS).size() == 0)
-
-							|| (lastPrefixInR.getSecond() > lastPrefixInS.getSecond()
-									&& getIntersection(pivotsInS, prefixesInR).size() == 0)
-					) {
-						continue;
-					}
+					// if (Math.abs(p - gram.getStart()) > tau
+					//
+					// || (lastPrefixInS.getSecond() > lastPrefixInR.getSecond()
+					// && getIntersection(pivotsInR, prefixesInS).size() == 0)
+					//
+					// || (lastPrefixInR.getSecond() > lastPrefixInS.getSecond()
+					// && getIntersection(pivotsInS, prefixesInR).size() == 0)) {
+					// continue;
+					// }
 
 					C.add(rid);
 				}

@@ -132,14 +132,16 @@ public class GramInvertedIndex implements Serializable {
 	public String toString() {
 		StringBuffer ret = new StringBuffer();
 		List<String> keys = new ArrayList<String>(map.keySet());
-
-		for (int i = 0; i < keys.size(); i++) {
+		
+		ret.append(String.format("gram size:\t%d\n", map.keySet().size()));
+		
+		for (int i = 0; i < keys.size() && i < 20; i++) {
 			String g = keys.get(i);
 			GramPostings p = map.get(g);
 			ret.append(g + " -> ");
 			String[] splits = p.toString(true).split("\n");
 
-			for (int j = 0; j < splits.length; j++) {
+			for (int j = 0; j < splits.length && j < 20; j++) {
 				ret.append(splits[j]);
 
 				if (j != splits.length - 1) {

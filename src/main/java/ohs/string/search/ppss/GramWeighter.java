@@ -120,6 +120,8 @@ public class GramWeighter {
 				}
 			}
 		}
+		
+		int total = (int)ret.totalCount();
 
 		for (String g : gramFirstLocs.keySet()) {
 			int id = gramFirstLocs.get(g);

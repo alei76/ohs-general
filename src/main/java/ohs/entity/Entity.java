@@ -44,11 +44,6 @@ public class Entity implements Serializable {
 		return id;
 	}
 
-	@Override
-	public String toString() {
-		return "Entity [text=" + text + ", id=" + id + ", topic=" + topic + "]";
-	}
-
 	public String getText() {
 		return text;
 	}
@@ -77,5 +72,10 @@ public class Entity implements Serializable {
 
 	public void setTopic(String topic) {
 		this.topic = topic;
+	}
+
+	@Override
+	public String toString() {
+		return "Entity [text=" + text + ", id=" + id + ", topic=" + topic + "]";
 	}
 }
