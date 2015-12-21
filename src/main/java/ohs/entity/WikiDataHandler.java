@@ -23,6 +23,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.IndexFieldName;
@@ -66,7 +67,8 @@ public class WikiDataHandler {
 		WikiDataHandler dh = new WikiDataHandler();
 		// dh.makeTextDump();
 		// dh.makeEntitySet();
-		dh.extractNames();
+		// dh.extractNames();
+		dh.extractCategories();
 		System.out.println("process ends.");
 	}
 
@@ -110,16 +112,45 @@ public class WikiDataHandler {
 		return true;
 	}
 
-	private boolean isValidTitle(int type, String catStr) {
-		boolean ret = false;
-		if (type == 1) {
-			ret = isPersonName(catStr);
-		} else if (type == 2) {
-			ret = isOrganizationName(catStr);
-		} else if (type == 3) {
-			ret = isLocationName(catStr);
+	public void extractCategories() throws Exception {
+		IndexSearcher is = SearcherUtils.getIndexSearcher("../../data/medical_ir/wiki/index");
+		IndexReader ir = is.getIndexReader();
+
+		Set<String> stopPrefixes = getStopPrefixes();
+
+		Counter<String> c = Generics.newCounter();
+
+		for (int i = 0; i < ir.maxDoc(); i++) {
+			if ((i + 1) % 100000 == 0) {
+				System.out.printf("\r[%d/%d]", i + 1, ir.maxDoc());
+			}
+
+			// if (i == 1000) {
+			// break;
+			// }
+
+			String title = ir.document(i).get(IndexFieldName.TITLE);
+
+			if (!accept(stopPrefixes, title)) {
+				continue;
+			}
+
+			String catStr = ir.document(i).get(IndexFieldName.CATEGORY).toLowerCase();
+			String redirect = ir.document(i).get(IndexFieldName.REDIRECT_TITLE);
+
+			for (String cat : catStr.split("\n")) {
+				c.incrementCount(cat, 1);
+			}
 		}
-		return ret;
+
+		// List<String> keys = new ArrayList<String>(c.keySet());
+		// Collections.sort(keys);
+
+		// TextFileWriter writer = new TextFileWriter(ENTPath.WIKI_DIR + "cats.txt");
+
+		IOUtils.write(ENTPath.WIKI_DIR + "cats.txt", c);
+
+		System.out.printf("\r[%d/%d]\n", ir.maxDoc(), ir.maxDoc());
 	}
 
 	public void extractNames() throws Exception {
@@ -130,8 +161,14 @@ public class WikiDataHandler {
 
 		ListMap<String, String> titleVariants = new ListMap<String, String>();
 
-		int type = 1;
+		int type = 2;
 		String outputFileName = ENTPath.NAME_PERSON_FILE;
+
+		if (type == 2) {
+			outputFileName = ENTPath.NAME_ORGANIZATION_FILE;
+		} else if (type == 3) {
+			outputFileName = ENTPath.NAME_LOCATION_FILE;
+		}
 
 		CounterMap<String, String> cm = Generics.newCounterMap();
 
@@ -254,21 +291,24 @@ public class WikiDataHandler {
 		return ret;
 	}
 
-	private boolean isOrganizationName(String catStr) {
-		boolean ret = false;
-
-		if (catStr.contains("establishments")
-				&& (catStr.contains("organizations") || catStr.contains("organisations") || catStr.contains("companies"))) {
-			ret = true;
-		}
-
-		return ret;
-	}
-
 	private boolean isLocationName(String catStr) {
 		boolean ret = false;
 		if (catStr.contains("places") || catStr.contains("cities") || catStr.contains("countries") || catStr.contains("provinces")
 				|| catStr.contains("states") || catStr.contains("territories")) {
+			ret = true;
+		}
+		return ret;
+	}
+
+	private Pattern lp1 = Pattern.compile("(rivers|organisations|companies|agencies|institutions|institutes|clubs) of");
+
+	private Pattern op1 = Pattern
+			.compile("(organizations|organisations|companies|agencies|institutions|institutes|clubs) (established|establishments) in");
+
+	private boolean isOrganizationName(String catStr) {
+		boolean ret = false;
+		Matcher m = op1.matcher(catStr);
+		if (m.find()) {
 			ret = true;
 		}
 		return ret;
@@ -298,6 +338,18 @@ public class WikiDataHandler {
 		boolean ret = false;
 		if (foundBirth || foundDeath) {
 			ret = true;
+		}
+		return ret;
+	}
+
+	private boolean isValidTitle(int type, String catStr) {
+		boolean ret = false;
+		if (type == 1) {
+			ret = isPersonName(catStr);
+		} else if (type == 2) {
+			ret = isOrganizationName(catStr);
+		} else if (type == 3) {
+			ret = isLocationName(catStr);
 		}
 		return ret;
 	}

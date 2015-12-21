@@ -2,7 +2,14 @@ package ohs.entity;
 
 import java.io.Serializable;
 
+import ohs.types.Counter;
+
 public class Entity implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7942144723260991716L;
 
 	private String text;
 
@@ -10,10 +17,13 @@ public class Entity implements Serializable {
 
 	private String topic;
 
-	public Entity(int id, String text, String topic) {
+	private Counter<String> topicWords;
+
+	public Entity(int id, String text, String topic, Counter<String> topicWords) {
 		this.id = id;
 		this.text = text;
 		this.topic = topic;
+		this.topicWords = topicWords;
 	}
 
 	@Override
@@ -74,8 +84,17 @@ public class Entity implements Serializable {
 		this.topic = topic;
 	}
 
+	public Counter<String> getTopicWords() {
+		return topicWords;
+	}
+
+	public void setTopicWords(Counter<String> topicWords) {
+		this.topicWords = topicWords;
+	}
+
 	@Override
 	public String toString() {
-		return "Entity [text=" + text + ", id=" + id + ", topic=" + topic + "]";
+		return "Entity [text=" + text + ", id=" + id + ", topic=" + topic + ", topicWords=" + topicWords + "]";
 	}
+
 }

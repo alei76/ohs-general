@@ -37,7 +37,11 @@ public class EntityLinker implements Serializable {
 		EntityLinker el = new EntityLinker();
 		el.createSearchers(ENTPath.NAME_PERSON_FILE);
 
-		Counter<Entity> scores = el.link("Mattingly");
+		Counter<String> contextWords = new Counter<String>();
+		contextWords.setCount("baseball", 1);
+		contextWords.setCount("dodgers", 1);
+
+		Counter<Entity> scores = el.link("Mattingly", contextWords);
 
 		// System.out.println(scores.toStringSortedByValues(true, true, scores.size()));
 
@@ -67,6 +71,32 @@ public class EntityLinker implements Serializable {
 
 	public EntityLinker() {
 
+	}
+
+	private void computeTopicWordWeights() {
+		Counter<String> dfs = new Counter<String>();
+
+		for (int i = 0; i < ents.size(); i++) {
+			for (String word : ents.get(i).getTopicWords().keySet()) {
+				dfs.incrementCount(word, 1);
+			}
+		}
+
+		for (int i = 0; i < ents.size(); i++) {
+			Counter<String> topicWords = ents.get(i).getTopicWords();
+			double norm = 0;
+			for (String word : topicWords.keySet()) {
+				double cnt = topicWords.getCount(word);
+				double tf = Math.log(cnt) + 1;
+				double num_docs = ents.size();
+				double idf = Math.log((num_docs + 1) / dfs.getCount(word));
+				double tfidf = tf * idf;
+				topicWords.setCount(word, tfidf);
+				norm += (tfidf * tfidf);
+			}
+			norm = Math.sqrt(norm);
+			topicWords.scale(1f / norm);
+		}
 	}
 
 	/**
@@ -99,7 +129,13 @@ public class EntityLinker implements Serializable {
 			String catStr = parts[2];
 			String variantStr = parts[3];
 
-			Entity ent = new Entity(ents.size(), name, topic);
+			Counter<String> topicWords = new Counter<String>();
+			for (String tok : catStr.substring(1, catStr.length() - 1).split(" ")) {
+				String[] two = tok.split(":");
+				topicWords.setCount(two[0], Double.parseDouble(two[1]));
+			}
+
+			Entity ent = new Entity(ents.size(), name, topic, topicWords);
 			ents.put(ent.getId(), ent);
 
 			StringRecord sr = new StringRecord(srs.size(), name);
@@ -117,6 +153,8 @@ public class EntityLinker implements Serializable {
 			}
 		}
 
+		computeTopicWordWeights();
+
 		System.out.printf("read [%d] records from [%d] entities at [%s].\n", srs.size(), ents.size(), dataFileName);
 
 		GramOrderer gramOrderer = new GramOrderer();
@@ -126,7 +164,7 @@ public class EntityLinker implements Serializable {
 		searcher.index(srs);
 	}
 
-	public Counter<Entity> link(String name) {
+	public Counter<Entity> link(String name, Counter<String> contextWords) {
 		Counter<StringRecord> searchScore = searcher.search(name);
 
 		CounterMap<Integer, Integer> cm = new CounterMap<Integer, Integer>();
@@ -135,7 +173,6 @@ public class EntityLinker implements Serializable {
 		for (StringRecord sr : searchScore.keySet()) {
 			double score = searchScore.getCount(sr);
 			int rid = sr.getId();
-			StringRecord temp = srs.get(rid);
 			int eid = recToEntIdMap.get(rid);
 			cm.incrementCount(eid, rid, score);
 		}
@@ -143,6 +180,23 @@ public class EntityLinker implements Serializable {
 		for (int eid : cm.keySet()) {
 			Counter<Integer> c = cm.getCounter(eid);
 			ret.setCount(ents.get(eid), c.max());
+		}
+
+		double norm = 0;
+		Counter<String> normed = new Counter<String>();
+
+		for (String word : contextWords.keySet()) {
+			double cnt = contextWords.getCount(word);
+			normed.setCount(word, cnt);
+			norm += (cnt * cnt);
+		}
+		normed.scale(1f / norm);
+
+		for (Entity e : ret.keySet()) {
+			double cosine = e.getTopicWords().dotProduct(normed);
+			double score = ret.getCount(e);
+			double new_score = score * cosine;
+			ret.setCount(e, new_score);
 		}
 
 		logWriter.write(name + "\n");

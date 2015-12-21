@@ -3,6 +3,8 @@ package ohs.entity;
 public class ENTPath {
 	public static final String DATA_DIR = "../../data/entity_iden/";
 
+	public static final String WIKI_DIR = DATA_DIR + "wiki/";
+
 	public static final String DOMESTIC_PAPER_META_DIR = DATA_DIR + "shared_data/domestic_paper";
 
 	public static final String DOMESTIC_PAPER_DATA_LOADER_LOG_FILE = DATA_DIR + "data_loader_log.txt";
