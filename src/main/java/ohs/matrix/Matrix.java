@@ -15,6 +15,8 @@ public interface Matrix extends Serializable {
 
 	public int label();
 
+	public String info();
+
 	public void normalizeColumns();
 
 	public void normalizeRows();

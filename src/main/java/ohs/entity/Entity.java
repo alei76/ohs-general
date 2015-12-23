@@ -1,8 +1,13 @@
 package ohs.entity;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
-import ohs.types.Counter;
+import ohs.io.IOUtils;
+import ohs.string.search.ppss.StringRecord;
 
 public class Entity implements Serializable {
 
@@ -11,19 +16,27 @@ public class Entity implements Serializable {
 	 */
 	private static final long serialVersionUID = -7942144723260991716L;
 
+	public static void write(ObjectOutputStream oos, List<Entity> ents) throws Exception {
+		oos.writeInt(ents.size());
+		for (int i = 0; i < ents.size(); i++) {
+			ents.get(i).write(oos);
+		}
+	}
+
 	private String text;
 
 	private int id;
 
 	private String topic;
 
-	private Counter<String> topicWords;
+	public Entity() {
 
-	public Entity(int id, String text, String topic, Counter<String> topicWords) {
+	}
+
+	public Entity(int id, String text, String topic) {
 		this.id = id;
 		this.text = text;
 		this.topic = topic;
-		this.topicWords = topicWords;
 	}
 
 	@Override
@@ -84,17 +97,22 @@ public class Entity implements Serializable {
 		this.topic = topic;
 	}
 
-	public Counter<String> getTopicWords() {
-		return topicWords;
-	}
-
-	public void setTopicWords(Counter<String> topicWords) {
-		this.topicWords = topicWords;
-	}
-
 	@Override
 	public String toString() {
-		return "Entity [text=" + text + ", id=" + id + ", topic=" + topic + ", topicWords=" + topicWords + "]";
+		return "Entity [text=" + text + ", id=" + id + ", topic=" + topic + "]";
+	}
+
+	public void read(ObjectInputStream ois) throws Exception {
+		id = ois.readInt();
+		text = ois.readUTF();
+		topic = ois.readUTF();
+	}
+
+	public void write(ObjectOutputStream oos) throws Exception {
+		oos.writeInt(id);
+		oos.writeUTF(text);
+		oos.writeUTF(topic);
+		oos.flush();
 	}
 
 }

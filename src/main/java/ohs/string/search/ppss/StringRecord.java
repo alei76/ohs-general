@@ -1,5 +1,7 @@
 package ohs.string.search.ppss;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 /**
@@ -9,9 +11,18 @@ import java.io.Serializable;
  */
 public class StringRecord implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8885615726550777336L;
+
 	private int id;
 
 	private String s;
+
+	public StringRecord() {
+
+	}
 
 	public StringRecord(int id, String s) {
 		super();
@@ -55,6 +66,11 @@ public class StringRecord implements Serializable {
 		return result;
 	}
 
+	public void read(ObjectInputStream ois) throws Exception {
+		id = ois.readInt();
+		s = ois.readUTF();
+	}
+
 	public void setId(int id) {
 		this.id = id;
 	}
@@ -66,6 +82,12 @@ public class StringRecord implements Serializable {
 	@Override
 	public String toString() {
 		return String.format("(%d, %s)", id, s);
+	}
+
+	public void write(ObjectOutputStream oos) throws Exception {
+		oos.writeInt(id);
+		oos.writeUTF(s);
+		oos.flush();
 	}
 
 }

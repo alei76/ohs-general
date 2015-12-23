@@ -14,6 +14,11 @@ import ohs.string.search.ppss.Gram.Type;
  */
 public class GramGenerator implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6931619116752996262L;
+
 	public static List<Gram[]> generate(GramGenerator gramGenerator, List<StringRecord> ss) {
 		StringSorter.sortByLength(ss);
 
@@ -51,8 +56,6 @@ public class GramGenerator implements Serializable {
 	 */
 	private int q = 2;
 
-	private boolean isCaseInsensitive = false;
-
 	public GramGenerator(int q) {
 		this.q = q;
 	}
@@ -68,11 +71,9 @@ public class GramGenerator implements Serializable {
 		} else {
 			ret = new Gram[size];
 			for (int i = 0; i < len - q + 1; i++) {
-				String substr = s.substring(i, i + q);
 				ret[i] = new Gram(s.substring(i, i + q), i, Type.NONE);
 			}
 		}
-
 		return ret;
 	}
 

@@ -67,8 +67,8 @@ public class WikiDataHandler {
 		WikiDataHandler dh = new WikiDataHandler();
 		// dh.makeTextDump();
 		// dh.makeEntitySet();
-		// dh.extractNames();
-		dh.extractCategories();
+		dh.extractNames();
+		// dh.extractCategories();
 		System.out.println("process ends.");
 	}
 
@@ -101,6 +101,11 @@ public class WikiDataHandler {
 
 	private Pattern rp2 = Pattern.compile("\\([^\\(\\)]+\\)");
 
+	private Pattern lp1 = Pattern.compile("(rivers|cities|towns|mountains|seas|bridges|airports|buildings|places) (established )?(of|in)");
+
+	private Pattern op1 = Pattern.compile(
+			"(organizations|organisations|companies|agencies|institutions|institutes|clubs|universities|schools|colleges) (established|establishments|based) in");
+
 	private boolean accept(Set<String> stopPrefixes, String title) {
 		int idx = title.indexOf(":");
 		if (idx > 0) {
@@ -109,6 +114,11 @@ public class WikiDataHandler {
 				return false;
 			}
 		}
+
+		if (title.startsWith("List of")) {
+			return false;
+		}
+
 		return true;
 	}
 
@@ -125,6 +135,10 @@ public class WikiDataHandler {
 				System.out.printf("\r[%d/%d]", i + 1, ir.maxDoc());
 			}
 
+			// if ((i + 1) % 3000000 == 0) {
+			// break;
+			// }
+
 			// if (i == 1000) {
 			// break;
 			// }
@@ -138,17 +152,17 @@ public class WikiDataHandler {
 			String catStr = ir.document(i).get(IndexFieldName.CATEGORY).toLowerCase();
 			String redirect = ir.document(i).get(IndexFieldName.REDIRECT_TITLE);
 
+			if (redirect.length() > 0) {
+				continue;
+			}
+
 			for (String cat : catStr.split("\n")) {
+				cat = cat.replaceAll("[\\d]+", "<D>");
 				c.incrementCount(cat, 1);
 			}
 		}
 
-		// List<String> keys = new ArrayList<String>(c.keySet());
-		// Collections.sort(keys);
-
-		// TextFileWriter writer = new TextFileWriter(ENTPath.WIKI_DIR + "cats.txt");
-
-		IOUtils.write(ENTPath.WIKI_DIR + "cats.txt", c);
+		IOUtils.write(ENTPath.WIKI_DIR + "cats.txt", c, false);
 
 		System.out.printf("\r[%d/%d]\n", ir.maxDoc(), ir.maxDoc());
 	}
@@ -161,7 +175,7 @@ public class WikiDataHandler {
 
 		ListMap<String, String> titleVariants = new ListMap<String, String>();
 
-		int type = 2;
+		int type = 3;
 		String outputFileName = ENTPath.NAME_PERSON_FILE;
 
 		if (type == 2) {
@@ -217,30 +231,6 @@ public class WikiDataHandler {
 				}
 			}
 		}
-
-		// Counter<String> dfs = new Counter<String>();
-		//
-		// for (String key1 : cm.keySet()) {
-		// Counter<String> c = cm.getCounter(key1);
-		// for (String key2 : c.keySet()) {
-		// dfs.incrementCount(key2, 1);
-		// }
-		// }
-		//
-		// for (String key1 : cm.keySet()) {
-		// Counter<String> c = cm.getCounter(key1);
-		// double norm = 0;
-		// for (String key2 : c.keySet()) {
-		// double tf = Math.log(c.getCount(key2)) + 1;
-		// double num_docs = cm.keySet().size();
-		// double idf = Math.log((num_docs + 1) / dfs.getCount(key2));
-		// double tfidf = tf * idf;
-		// c.setCount(key2, tfidf);
-		// norm += (tfidf * tfidf);
-		// }
-		// norm = Math.sqrt(norm);
-		// c.scale(1f / norm);
-		// }
 
 		List<String> keys = new ArrayList<String>(titleVariants.keySet());
 		Collections.sort(keys);
@@ -299,11 +289,6 @@ public class WikiDataHandler {
 		}
 		return ret;
 	}
-
-	private Pattern lp1 = Pattern.compile("(rivers|organisations|companies|agencies|institutions|institutes|clubs) of");
-
-	private Pattern op1 = Pattern
-			.compile("(organizations|organisations|companies|agencies|institutions|institutes|clubs) (established|establishments) in");
 
 	private boolean isOrganizationName(String catStr) {
 		boolean ret = false;

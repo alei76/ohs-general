@@ -9,6 +9,11 @@ import ohs.string.search.ppss.Gram.Type;
  */
 public class GramPostingEntry implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7090960881807849863L;
+
 	private int id;
 
 	private int start;

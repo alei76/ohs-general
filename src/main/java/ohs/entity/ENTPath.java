@@ -77,6 +77,6 @@ public class ENTPath {
 
 	public static final String EX_FILE = DATA_DIR + "wiki/ex_output.txt";
 
-	public static final String WIKI_COL_FILE = "../../data/medical_ir/wiki/enwiki-20150304-pages-articles.txt.bz2";
+	public static final String ENTITY_LINKER_FILE = WIKI_DIR + "entity-linker.ser.gz";
 
 }

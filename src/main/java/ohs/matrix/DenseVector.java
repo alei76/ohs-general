@@ -485,4 +485,10 @@ public class DenseVector implements Vector {
 		write(oos);
 		oos.close();
 	}
+
+	@Override
+	public String info() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

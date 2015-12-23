@@ -659,10 +659,8 @@ public class SparseVector implements Vector {
 		oos.writeInt(dim());
 
 		for (int i = 0; i < size(); i++) {
-			int index = indexAtLoc(i);
-			double value = valueAtLoc(i);
-			oos.writeInt(index);
-			oos.writeDouble(value);
+			oos.writeInt(indexAtLoc(i));
+			oos.writeDouble(valueAtLoc(i));
 		}
 	}
 
@@ -670,5 +668,10 @@ public class SparseVector implements Vector {
 		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
 		write(oos);
 		oos.close();
+	}
+
+	@Override
+	public String info() {
+		return null;
 	}
 }

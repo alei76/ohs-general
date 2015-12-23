@@ -6,10 +6,10 @@ import java.util.Map;
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 
-public class EditDistanceSet {
+public class StringDistUtils {
 
-	public static int getDamerauLevenshteinDistance(String s, String t) {
-		return getDamerauLevenshteinDistance(s, t, 1, 1, 1, 1);
+	public static int damerauLevenshteinDistance(String s, String t) {
+		return damerauLevenshteinDistance(s, t, 1, 1, 1, 1);
 	}
 
 	/**
@@ -22,7 +22,7 @@ public class EditDistanceSet {
 	 * @param alphabetLength
 	 * @return
 	 */
-	public static int getDamerauLevenshteinDistance(String a, String b, int alphabetLength) {
+	public static int damerauLevenshteinDistance(String a, String b, int alphabetLength) {
 		final int INFINITY = a.length() + b.length();
 		int[][] H = new int[a.length() + 2][b.length() + 2];
 		H[0][0] = INFINITY;
@@ -45,8 +45,8 @@ public class EditDistanceSet {
 				int d = ((a.charAt(i - 1) == b.charAt(j - 1)) ? 0 : 1);
 				if (d == 0)
 					DB = j;
-				H[i + 1][j + 1] = ArrayMath.min(new int[] { H[i][j] + d, H[i + 1][j] + 1, H[i][j + 1] + 1,
-						H[i1][j1] + (i - i1 - 1) + 1 + (j - j1 - 1) });
+				H[i + 1][j + 1] = ArrayMath
+						.min(new int[] { H[i][j] + d, H[i + 1][j] + 1, H[i][j + 1] + 1, H[i1][j1] + (i - i1 - 1) + 1 + (j - j1 - 1) });
 			}
 			DA[a.charAt(i - 1)] = i;
 		}
@@ -59,7 +59,7 @@ public class EditDistanceSet {
 	 * https://github.com/KevinStern/software-and-algorithms/blob/master/src/main/java/blogspot/software_and_algorithms/stern_library/string
 	 * /DamerauLevenshteinAlgorithm.java
 	 */
-	public static int getDamerauLevenshteinDistance(String s, String t, int insertCost, int deleteCost, int replaceCost, int swapCost) {
+	public static int damerauLevenshteinDistance(String s, String t, int insertCost, int deleteCost, int replaceCost, int swapCost) {
 		if (s.length() == 0) {
 			return t.length() * insertCost;
 		}
@@ -128,7 +128,7 @@ public class EditDistanceSet {
 	 * @param normalize
 	 * @return
 	 */
-	public static double getEditDistance(String s, String t, boolean normalize) {
+	public static double editDistance(String s, String t, boolean normalize) {
 		int len_s = s.length();
 		int len_t = t.length();
 		int d[][]; // matrix
@@ -179,7 +179,27 @@ public class EditDistanceSet {
 		return ret;
 	}
 
-	public static double getWeightedEditDistance(String s, String t, boolean normalize) {
+	public static void main(String[] args) {
+		System.out.println("process begins.");
+
+		String a = "CA";
+		String b = "ABC";
+		//
+		// for (int i = 0; i < 10; i++) {
+		// System.out.printf("%d\t%s\t%s\n", i, CommonFuncs.sigmoid(-i), 1f / Math.log(1 + i + 1));
+		// }
+
+		System.out.println(editDistance(a, b, false));
+		// System.out.println(getWeightedEditDistance(a, b, false));
+		// System.out.println(getDamerauLevenshteinDistance(a, b, 1000));
+		// System.out.println(getDamerauLevenshteinDistance(a, b, 1, 1, 1, 1));
+
+		// System.out.println(getEditDistance(a, b));
+
+		System.out.println("process ends.");
+	}
+
+	public static double weightedEditDistance(String s, String t, boolean normalize) {
 		int n = s.length();
 		int m = t.length();
 		double d[][]; // matrix
@@ -236,25 +256,5 @@ public class EditDistanceSet {
 			ret = 1 - (ret / sum);
 		}
 		return ret;
-	}
-
-	public static void main(String[] args) {
-		System.out.println("process begins.");
-
-		String a = "CA";
-		String b = "ABC";
-		//
-		// for (int i = 0; i < 10; i++) {
-		// System.out.printf("%d\t%s\t%s\n", i, CommonFuncs.sigmoid(-i), 1f / Math.log(1 + i + 1));
-		// }
-
-		System.out.println(getEditDistance(a, b, false));
-		// System.out.println(getWeightedEditDistance(a, b, false));
-		// System.out.println(getDamerauLevenshteinDistance(a, b, 1000));
-		// System.out.println(getDamerauLevenshteinDistance(a, b, 1, 1, 1, 1));
-
-		// System.out.println(getEditDistance(a, b));
-
-		System.out.println("process ends.");
 	}
 }

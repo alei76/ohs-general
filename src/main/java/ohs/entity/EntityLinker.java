@@ -1,6 +1,7 @@
 package ohs.entity;
 
-import java.io.BufferedWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,10 +11,13 @@ import java.util.Map;
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.string.search.ppss.GramOrderer;
+import ohs.math.VectorMath;
+import ohs.math.VectorUtils;
+import ohs.matrix.SparseVector;
 import ohs.string.search.ppss.StringRecord;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
+import ohs.types.Indexer;
 
 /**
  * @author Heung-Seon Oh
@@ -35,7 +39,13 @@ public class EntityLinker implements Serializable {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		EntityLinker el = new EntityLinker();
-		el.createSearchers(ENTPath.NAME_PERSON_FILE);
+
+		if (IOUtils.exists(ENTPath.ENTITY_LINKER_FILE)) {
+			el.read(ENTPath.ENTITY_LINKER_FILE);
+		} else {
+			el.createSearchers(ENTPath.NAME_PERSON_FILE);
+			el.write(ENTPath.ENTITY_LINKER_FILE);
+		}
 
 		Counter<String> contextWords = new Counter<String>();
 		contextWords.setCount("baseball", 1);
@@ -59,44 +69,18 @@ public class EntityLinker implements Serializable {
 		System.out.println("process ends.");
 	}
 
-	private SimplePivotalPrefixStringSearcher searcher;
-
-	private TextFileWriter logWriter = new TextFileWriter(ENTPath.ODK_LOG_FILE);
-
-	private List<StringRecord> srs;
+	private SimpleStringSearcher searcher;
 
 	private Map<Integer, Entity> ents;
 
 	private Map<Integer, Integer> recToEntIdMap;
 
+	private Indexer<String> wordInexer;
+
+	private List<SparseVector> topicWordData;
+
 	public EntityLinker() {
 
-	}
-
-	private void computeTopicWordWeights() {
-		Counter<String> dfs = new Counter<String>();
-
-		for (int i = 0; i < ents.size(); i++) {
-			for (String word : ents.get(i).getTopicWords().keySet()) {
-				dfs.incrementCount(word, 1);
-			}
-		}
-
-		for (int i = 0; i < ents.size(); i++) {
-			Counter<String> topicWords = ents.get(i).getTopicWords();
-			double norm = 0;
-			for (String word : topicWords.keySet()) {
-				double cnt = topicWords.getCount(word);
-				double tf = Math.log(cnt) + 1;
-				double num_docs = ents.size();
-				double idf = Math.log((num_docs + 1) / dfs.getCount(word));
-				double tfidf = tf * idf;
-				topicWords.setCount(word, tfidf);
-				norm += (tfidf * tfidf);
-			}
-			norm = Math.sqrt(norm);
-			topicWords.scale(1f / norm);
-		}
 	}
 
 	/**
@@ -108,12 +92,12 @@ public class EntityLinker implements Serializable {
 	 *            Contains external organization names. They are used to compute global gram orders employed in Searchers.
 	 */
 	public void createSearchers(String dataFileName) {
-		srs = new ArrayList<StringRecord>();
+		List<StringRecord> srs = new ArrayList<StringRecord>();
 		recToEntIdMap = new HashMap<Integer, Integer>();
 		ents = new HashMap<Integer, Entity>();
 
-		int q = 2;
-		int tau = 3;
+		wordInexer = new Indexer<String>();
+		topicWordData = new ArrayList<SparseVector>();
 
 		TextFileReader reader = new TextFileReader(dataFileName);
 		while (reader.hasNext()) {
@@ -123,19 +107,19 @@ public class EntityLinker implements Serializable {
 				continue;
 			}
 
+			// if (reader.getNumLines() > 100000) {
+			// break;
+			// }
+
 			String[] parts = line.split("\t");
 			String name = parts[0];
 			String topic = parts[1];
 			String catStr = parts[2];
 			String variantStr = parts[3];
 
-			Counter<String> topicWords = new Counter<String>();
-			for (String tok : catStr.substring(1, catStr.length() - 1).split(" ")) {
-				String[] two = tok.split(":");
-				topicWords.setCount(two[0], Double.parseDouble(two[1]));
-			}
+			topicWordData.add(VectorUtils.toSparseVector(VectorUtils.toCounter(catStr), wordInexer, true));
 
-			Entity ent = new Entity(ents.size(), name, topic, topicWords);
+			Entity ent = new Entity(ents.size(), name, topic);
 			ents.put(ent.getId(), ent);
 
 			StringRecord sr = new StringRecord(srs.size(), name);
@@ -153,15 +137,12 @@ public class EntityLinker implements Serializable {
 			}
 		}
 
-		computeTopicWordWeights();
+		// TermWeighting.computeTFIDFs(topicWordData);
 
 		System.out.printf("read [%d] records from [%d] entities at [%s].\n", srs.size(), ents.size(), dataFileName);
 
-		GramOrderer gramOrderer = new GramOrderer();
-
-		searcher = new SimplePivotalPrefixStringSearcher(q, tau, true);
-		searcher.setGramSorter(gramOrderer);
-		searcher.index(srs);
+		searcher = new SimpleStringSearcher(2);
+		searcher.index(srs, false);
 	}
 
 	public Counter<Entity> link(String name, Counter<String> contextWords) {
@@ -171,47 +152,61 @@ public class EntityLinker implements Serializable {
 		Counter<Entity> ret = new Counter<Entity>();
 
 		for (StringRecord sr : searchScore.keySet()) {
-			double score = searchScore.getCount(sr);
 			int rid = sr.getId();
-			int eid = recToEntIdMap.get(rid);
-			cm.incrementCount(eid, rid, score);
+			cm.incrementCount(recToEntIdMap.get(rid), rid, searchScore.getCount(sr));
 		}
+
+		SparseVector cv = VectorUtils.toSparseVector(contextWords, wordInexer);
+		VectorMath.unitVector(cv);
 
 		for (int eid : cm.keySet()) {
-			Counter<Integer> c = cm.getCounter(eid);
-			ret.setCount(ents.get(eid), c.max());
+			double sw_score = cm.getCounter(eid).max();
+			SparseVector tv = topicWordData.get(eid);
+			double cosine = VectorMath.cosine(cv, tv, false);
+			double new_score = sw_score * Math.exp(cosine);
+			ret.setCount(ents.get(eid), new_score);
 		}
-
-		double norm = 0;
-		Counter<String> normed = new Counter<String>();
-
-		for (String word : contextWords.keySet()) {
-			double cnt = contextWords.getCount(word);
-			normed.setCount(word, cnt);
-			norm += (cnt * cnt);
-		}
-		normed.scale(1f / norm);
-
-		for (Entity e : ret.keySet()) {
-			double cosine = e.getTopicWords().dotProduct(normed);
-			double score = ret.getCount(e);
-			double new_score = score * cosine;
-			ret.setCount(e, new_score);
-		}
-
-		logWriter.write(name + "\n");
-		logWriter.write(searchScore.toString());
-		logWriter.write("\n\n");
-
-		// logWriter.write(orgScores2.toString() + "\n\n");
 
 		return ret;
 	}
 
+	public void read(String fileName) throws Exception {
+		ObjectInputStream ois = IOUtils.openObjectInputStream(fileName);
+
+		{
+			ents = new HashMap<Integer, Entity>();
+			int size = ois.readInt();
+
+			for (int i = 0; i < size; i++) {
+				Entity ent = new Entity();
+				ent.read(ois);
+				ents.put(ent.getId(), ent);
+			}
+		}
+
+		wordInexer = IOUtils.readIndexer(ois);
+		recToEntIdMap = IOUtils.readIntegerMap(ois);
+		topicWordData = SparseVector.readList(ois);
+		searcher = new SimpleStringSearcher();
+		searcher.read(ois);
+		ois.close();
+	}
+
 	public void write(String fileName) throws Exception {
-		BufferedWriter writer = IOUtils.openBufferedWriter(fileName);
-		searcher.writeObject(fileName);
-		writer.close();
+		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
+
+		{
+			oos.writeInt(ents.size());
+			for (Entity ent : ents.values()) {
+				ent.write(oos);
+			}
+		}
+
+		IOUtils.write(oos, wordInexer);
+		IOUtils.write(oos, recToEntIdMap);
+		SparseVector.write(oos, topicWordData);
+		searcher.write(oos);
+		oos.close();
 	}
 
 }

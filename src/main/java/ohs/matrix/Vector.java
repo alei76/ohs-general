@@ -19,6 +19,8 @@ public interface Vector extends Serializable {
 
 	public int dim();
 
+	public String info();
+
 	public void increment(int i, double v);
 
 	public void incrementAll(double v);

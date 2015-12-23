@@ -21,8 +21,11 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
@@ -70,10 +73,6 @@ public class IOUtils {
 		}
 	}
 
-	public static boolean exists(String fileName) {
-		return new File(fileName).exists();
-	}
-
 	public static File appendFileNameSuffix(File file, String suffix) {
 		String filePath = getCanonicalPath(file);
 		if (!filePath.endsWith(suffix)) {
@@ -81,6 +80,88 @@ public class IOUtils {
 			file = new File(filePath);
 		}
 		return file;
+	}
+
+	private static void compress(File root, File input, TarArchiveOutputStream taos) throws IOException {
+
+		if (input.isFile()) {
+			System.out.println("Adding File: " + root.toURI().relativize(input.toURI()).getPath());
+
+			BufferedInputStream bis = new BufferedInputStream(new FileInputStream(input));
+
+			/** Step: 3 ---> Create a tar entry for each file that is read. **/
+
+			/**
+			 * relativize is used to to add a file to a tar, without including the entire path from root.
+			 **/
+
+			TarArchiveEntry tae = new TarArchiveEntry(input, root.getParentFile().toURI().relativize(input.toURI()).getPath());
+
+			/** Step: 4 ---> Put the tar entry using putArchiveEntry. **/
+
+			taos.putArchiveEntry(tae);
+
+			/**
+			 * Step: 5 ---> Write the data to the tar file and close the input stream.
+			 **/
+
+			int count;
+			byte data[] = new byte[2048];
+			while ((count = bis.read(data, 0, 2048)) != -1) {
+				taos.write(data, 0, count);
+			}
+			bis.close();
+
+			/** Step: 6 --->close the archive entry. **/
+
+			taos.closeArchiveEntry();
+
+		} else {
+			if (input.listFiles() != null) {
+				/** Add an empty folder to the tar **/
+				if (input.listFiles().length == 0) {
+
+					System.out.println("Adding Empty Folder: " + root.toURI().relativize(input.toURI()).getPath());
+					TarArchiveEntry entry = new TarArchiveEntry(input, root.getParentFile().toURI().relativize(input.toURI()).getPath());
+					taos.putArchiveEntry(entry);
+					taos.closeArchiveEntry();
+				}
+
+				for (File file : input.listFiles())
+					compress(root, file, taos);
+			}
+		}
+	}
+
+	public static void compress(String inputPath, String outputFileName) throws Exception {
+
+		if (!outputFileName.endsWith(".tar.gz")) {
+			outputFileName += ".tar.gz";
+		}
+
+		/** Step: 1 ---> create a TarArchiveOutputStream object. **/
+		TarArchiveOutputStream taos = new TarArchiveOutputStream(
+				new GzipCompressorOutputStream(new BufferedOutputStream(new FileOutputStream(outputFileName))));
+
+		// TAR has an 8 gig file limit by default, this gets around that
+		taos.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_STAR); // to get past the 8 gig limit
+		// TAR originally didn't support long file names, so enable the support for it
+		taos.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
+
+		/**
+		 * Step: 2 --->Open the source data and get a list of files from given directory recursively.
+		 **/
+
+		File input = new File(inputPath);
+
+		compress(input.getParentFile(), input, taos);
+
+		/** Step: 7 --->close the output stream. **/
+
+		taos.close();
+
+		System.out.println("tar.gz file created successfully!!");
+
 	}
 
 	public static void copy(String inFileName, String outDirName) throws Exception {
@@ -172,6 +253,10 @@ public class IOUtils {
 		deleteFilesUnder(new File(dirName));
 	}
 
+	public static boolean exists(String fileName) {
+		return new File(fileName).exists();
+	}
+
 	public static String getCanonicalPath(File file) {
 		String ret = null;
 		try {
@@ -217,6 +302,65 @@ public class IOUtils {
 
 	public static List<File> getFilesUnder(String dirName) {
 		return getFilesUnder(new File(dirName));
+	}
+
+	public static void main(String[] args) throws Exception {
+		System.out.println("process begins.");
+
+		// compress("../../data/news_ir/content_nlp", "../../data/news_ir/test.tar.gz");
+
+		String s = "ABCDE";
+
+		{
+			ObjectOutputStream oos = openObjectOutputStream("../../data/entity_iden/wiki/test1.ser");
+			oos.write(s.getBytes());
+			oos.close();
+		}
+
+		{
+			ObjectOutputStream oos = openObjectOutputStream("../../data/entity_iden/wiki/test2.ser");
+
+			for (int i = 0; i < 1; i++) {
+				oos.writeUTF(s);
+			}
+
+			oos.close();
+		}
+
+		{
+			ObjectOutputStream oos = openObjectOutputStream("../../data/entity_iden/wiki/test3.ser");
+			write(oos, s);
+
+			oos.close();
+		}
+
+		{
+			ObjectInputStream ois = openObjectInputStream("../../data/entity_iden/wiki/test2.ser");
+
+			for (int i = 0; i < 1; i++) {
+				String ss = ois.readUTF();
+				System.out.println(ss);
+			}
+		}
+
+		{
+			double[] ar = ArrayUtils.range(10000000, 0.0, 1);
+			ObjectOutputStream oos = openObjectOutputStream("../../data/entity_iden/wiki/test-a1.ser.gz");
+
+			IOUtils.write(oos, ar);
+			oos.close();
+
+		}
+
+		{
+			int[] ar = ArrayUtils.range(10, 0, 1);
+			ObjectOutputStream oos = openObjectOutputStream("../../data/entity_iden/wiki/test-a2.ser.gz");
+
+			IOUtils.write(oos, ar);
+			oos.close();
+		}
+
+		System.out.println("process ends.");
 	}
 
 	public static void move(String inFileName, String outDirName) throws Exception {
@@ -307,31 +451,33 @@ public class IOUtils {
 
 	public static ObjectInputStream openObjectInputStream(String fileName) throws Exception {
 		ObjectInputStream ret = null;
-		if (fileName.endsWith(".gz")) {
+		if (fileName.endsWith(".ser.gz")) {
 			ret = new ObjectInputStream(new GZIPInputStream(new FileInputStream(fileName)));
-		} else {
+		} else if (fileName.endsWith(".ser")) {
 			ret = new ObjectInputStream(new FileInputStream(fileName));
 		}
 		return ret;
 	}
 
 	public static ObjectOutputStream openObjectOutputStream(String fileName) throws Exception {
+		return openObjectOutputStream(fileName, false);
+	}
+
+	public static ObjectOutputStream openObjectOutputStream(String fileName, boolean append) throws Exception {
 		System.out.printf("write at [%s].\n", fileName);
 
 		File file = new File(fileName);
-
 		File parent = file.getParentFile();
 		if (!parent.exists()) {
 			parent.mkdirs();
 		}
 
 		ObjectOutputStream ret = null;
-		if (file.getName().endsWith(".gz")) {
-			ret = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream(file)));
-		} else {
+		if (file.getName().endsWith(".ser.gz")) {
+			ret = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream(file, append)));
+		} else if (file.getName().endsWith(".ser")) {
 			ret = new ObjectOutputStream(new FileOutputStream(file));
 		}
-
 		return ret;
 	}
 
@@ -383,19 +529,9 @@ public class IOUtils {
 
 	public static double[] readDoubleArray(ObjectInputStream ois) throws Exception {
 		int size = ois.readInt();
-		int num_nonzeros = ois.readInt();
 		double[] ret = new double[size];
-
-		if (size == num_nonzeros) {
-			for (int i = 0; i < size; i++) {
-				ret[i] = ois.readDouble();
-			}
-		} else {
-			for (int i = 0; i < num_nonzeros; i++) {
-				int index = ois.readInt();
-				double value = ois.readDouble();
-				ret[index] = value;
-			}
+		for (int i = 0; i < size; i++) {
+			ret[i] = ois.readDouble();
 		}
 		return ret;
 	}
@@ -413,8 +549,7 @@ public class IOUtils {
 		Indexer<String> ret = new Indexer<String>();
 		int size = ois.readInt();
 		for (int i = 0; i < size; i++) {
-			String item = readString(ois);
-			ret.add(item);
+			ret.add(ois.readUTF());
 		}
 		return ret;
 	}
@@ -422,48 +557,20 @@ public class IOUtils {
 	public static Indexer<String> readIndexer(String fileName) throws Exception {
 		System.out.printf("read [%s].\n", fileName);
 		Indexer<String> ret = new Indexer<String>();
-
-		if (fileName.endsWith(".txt")) {
-			BufferedReader br = openBufferedReader(fileName);
-			String line = null;
-			while ((line = br.readLine()) != null) {
-				ret.add(line);
-			}
-			br.close();
-		} else {
-			ObjectInputStream ois = openObjectInputStream(fileName);
-			ret = readIndexer(ois);
-			ois.close();
+		BufferedReader br = openBufferedReader(fileName);
+		String line = null;
+		while ((line = br.readLine()) != null) {
+			ret.add(line);
 		}
+		br.close();
 		return ret;
-	}
-
-	public static Object[] readIndexValuePairs(ObjectInputStream ois) throws Exception {
-		int size = ois.readInt();
-		int[] indexes = new int[size];
-		double[] values = new double[size];
-		for (int i = 0; i < size; i++) {
-			indexes[i] = ois.readInt();
-			values[i] = ois.readDouble();
-		}
-		return new Object[] { indexes, values };
 	}
 
 	public static int[] readIntegerArray(ObjectInputStream ois) throws Exception {
 		int size = ois.readInt();
-		int num_nonzeros = ois.readInt();
 		int[] ret = new int[size];
-
-		if (size == num_nonzeros) {
-			for (int i = 0; i < size; i++) {
-				ret[i] = ois.readInt();
-			}
-		} else {
-			for (int i = 0; i < num_nonzeros; i++) {
-				int index = ois.readInt();
-				int value = ois.readInt();
-				ret[index] = value;
-			}
+		for (int i = 0; i < size; i++) {
+			ret[i] = ois.readInt();
 		}
 		return ret;
 	}
@@ -472,6 +579,17 @@ public class IOUtils {
 		ObjectInputStream ois = openObjectInputStream(fileName);
 		int[] ret = readIntegerArray(ois);
 		ois.close();
+		return ret;
+	}
+
+	public static Map<Integer, Integer> readIntegerMap(ObjectInputStream ois) throws Exception {
+		Map<Integer, Integer> ret = new HashMap<Integer, Integer>();
+		int size = ois.readInt();
+		for (int i = 0; i < size; i++) {
+			int key = ois.readInt();
+			int value = ois.readInt();
+			ret.put(key, value);
+		}
 		return ret;
 	}
 
@@ -488,7 +606,7 @@ public class IOUtils {
 		ObjectInputStream ois = openObjectInputStream(fileName);
 		int[][] ret = readIntegerMatrix(ois);
 		ois.close();
-		System.out.printf("read [%d, %d] matrix from [%s].\n", ret.length, ArrayUtils.maxColumnSize(ret), fileName);
+		System.out.printf("read [%d, %d] matrix at [%s].\n", ret.length, ArrayUtils.maxColumnSize(ret), fileName);
 		return ret;
 	}
 
@@ -533,7 +651,6 @@ public class IOUtils {
 			}
 			ret.put(parts[0], parts[1]);
 		}
-
 		return ret;
 	}
 
@@ -541,23 +658,17 @@ public class IOUtils {
 		return new HashSet<String>(readLines(fileName));
 	}
 
-	public static String readString(ObjectInputStream ois) throws Exception {
-		int size = ois.readInt();
-		StringBuffer sb = new StringBuffer(size);
-		for (int j = 0; j < size; j++) {
-			sb.append((char) ois.readByte());
-		}
-		return sb.toString();
-	}
-
 	public static List<String> readStrings(ObjectInputStream ois) throws Exception {
 		List<String> ret = new ArrayList<String>();
 		int size = ois.readInt();
 		for (int i = 0; i < size; i++) {
-			String s = readString(ois);
-			ret.add(s);
+			ret.add(ois.readUTF());
 		}
 		return ret;
+	}
+
+	public static String readText(File file) throws Exception {
+		return readText(file.getCanonicalPath(), UTF_8);
 	}
 
 	public static String readText(Reader reader) throws Exception {
@@ -575,10 +686,6 @@ public class IOUtils {
 
 	public static String readText(String fileName) throws Exception {
 		return readText(fileName, UTF_8);
-	}
-
-	public static String readText(File file) throws Exception {
-		return readText(file.getCanonicalPath(), UTF_8);
 	}
 
 	public static String readText(String fileName, String encoding) throws Exception {
@@ -602,65 +709,43 @@ public class IOUtils {
 		for (int i = 0; i < x.length; i++) {
 			oos.writeBoolean(x[i]);
 		}
+		oos.flush();
+	}
+
+	public static void write(ObjectOutputStream oos, Collection<String> c) throws Exception {
+		oos.writeInt(c.size());
+
+		Iterator<String> iter = c.iterator();
+		while (iter.hasNext()) {
+			write(oos, iter.next());
+		}
+		oos.flush();
 	}
 
 	public static void write(ObjectOutputStream oos, Counter<String> x) throws Exception {
 		oos.writeInt(x.size());
 		for (String key : x.keySet()) {
-			double value = x.getCount(key);
-			write(oos, key);
-			oos.writeDouble(value);
+			oos.writeUTF(key);
+			oos.writeDouble(x.getCount(key));
 		}
+		oos.flush();
 	}
 
-	public static void write(ObjectOutputStream ois, CounterMap<String, String> x) throws Exception {
-		List<String> keys = new ArrayList<String>(x.keySet());
-		ois.writeInt(keys.size());
-
-		for (int i = 0; i < keys.size(); i++) {
-			String key = keys.get(i);
-			Counter<String> counter = x.getCounter(key);
-			write(ois, key);
-			write(ois, counter);
+	public static void write(ObjectOutputStream oos, CounterMap<String, String> cm) throws Exception {
+		oos.writeInt(cm.keySet().size());
+		Iterator<String> iter = cm.keySet().iterator();
+		while (iter.hasNext()) {
+			oos.writeUTF(iter.next());
+			write(oos, cm.getCounter(iter.next()));
 		}
+		oos.flush();
 	}
 
 	public static void write(ObjectOutputStream oos, double[] x) throws Exception {
 		int size = x.length;
 		oos.writeInt(size);
-
-		List<Integer> indexes = new ArrayList<Integer>();
-		List<Double> values = new ArrayList<Double>();
-
 		for (int i = 0; i < x.length; i++) {
-			if (x[i] != 0) {
-				indexes.add(i);
-				values.add(x[i]);
-			}
-		}
-
-		int num_nonzeros = indexes.size();
-
-		oos.writeInt(num_nonzeros);
-
-		if (num_nonzeros >= (x.length / 2f)) {
-			for (int i = 0; i < x.length; i++) {
-				oos.writeDouble(x[i]);
-			}
-		} else {
-			for (int i = 0; i < indexes.size(); i++) {
-				oos.writeInt(indexes.get(i));
-				oos.writeDouble(values.get(i));
-			}
-		}
-
-		oos.flush();
-	}
-
-	public static void write(ObjectOutputStream oos, Double[] x) throws Exception {
-		oos.writeInt(x.length);
-		for (int i = 0; i < x.length; i++) {
-			oos.writeDouble(x[i].doubleValue());
+			oos.writeDouble(x[i]);
 		}
 		oos.flush();
 	}
@@ -676,37 +761,16 @@ public class IOUtils {
 	public static void write(ObjectOutputStream oos, Indexer<String> indexer) throws Exception {
 		oos.writeInt(indexer.size());
 		for (int i = 0; i < indexer.size(); i++) {
-			write(oos, indexer.getObject(i));
+			oos.writeUTF(indexer.getObject(i));
 		}
+		oos.flush();
 	}
 
 	public static void write(ObjectOutputStream oos, int[] x) throws Exception {
 		int size = x.length;
 		oos.writeInt(size);
-
-		List<Integer> indexes = new ArrayList<Integer>();
-		List<Integer> values = new ArrayList<Integer>();
-
 		for (int i = 0; i < x.length; i++) {
-			if (x[i] != 0) {
-				indexes.add(i);
-				values.add(x[i]);
-			}
-		}
-
-		int num_nonzeros = indexes.size();
-
-		oos.writeInt(num_nonzeros);
-
-		if (num_nonzeros > (size / 2f)) {
-			for (int i = 0; i < x.length; i++) {
-				oos.writeInt(x[i]);
-			}
-		} else {
-			for (int i = 0; i < indexes.size(); i++) {
-				oos.writeInt(indexes.get(i));
-				oos.writeInt(values.get(i));
-			}
+			oos.writeInt(x[i]);
 		}
 		oos.flush();
 	}
@@ -729,28 +793,17 @@ public class IOUtils {
 		oos.flush();
 	}
 
-	public static void write(ObjectOutputStream oos, Integer[] x) throws Exception {
-		oos.writeInt(x.length);
-		for (int i = 0; i < x.length; i++) {
-			oos.writeInt(x[i].intValue());
-		}
-		oos.flush();
-	}
-
-	public static void write(ObjectOutputStream oos, List<String> list) throws Exception {
-		oos.writeInt(list.size());
-		for (int i = 0; i < list.size(); i++) {
-			write(oos, list.get(i));
+	public static void write(ObjectOutputStream oos, Map<Integer, Integer> m) throws Exception {
+		oos.writeInt(m.size());
+		for (Integer key : m.keySet()) {
+			oos.writeInt(key);
+			oos.writeInt(m.get(key));
 		}
 		oos.flush();
 	}
 
 	public static void write(ObjectOutputStream oos, String s) throws Exception {
-		oos.writeInt(s.length());
-		for (int i = 0; i < s.length(); i++) {
-			oos.writeByte(s.charAt(i));
-		}
-		oos.flush();
+		oos.writeUTF(s);
 	}
 
 	public static void write(String fileName, boolean append, String text) throws Exception {
@@ -763,20 +816,30 @@ public class IOUtils {
 		oos.close();
 	}
 
-	public static void write(String fileName, Counter<String> counter) throws Exception {
+	public static void write(String fileName, Counter<String> c) throws Exception {
+		write(fileName, c, false);
+	}
+
+	public static void write(String fileName, Counter<String> c, boolean orderAlphabetically) throws Exception {
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMinimumFractionDigits(0);
 		nf.setGroupingUsed(false);
-		write(fileName, counter, nf);
+		write(fileName, c, nf, orderAlphabetically);
 	}
 
-	public static void write(String fileName, Counter<String> counter, NumberFormat nf) throws Exception {
+	public static void write(String fileName, Counter<String> c, NumberFormat nf, boolean orderAlphabetically) throws Exception {
 		BufferedWriter bw = openBufferedWriter(fileName, UTF_8, false);
-		List<String> keys = counter.getSortedKeys();
+		List<String> keys = new ArrayList<String>();
+		if (orderAlphabetically) {
+			keys = new ArrayList<String>(c.keySet());
+			Collections.sort(keys);
+		} else {
+			keys = c.getSortedKeys();
+		}
 		for (int i = 0; i < keys.size(); i++) {
 			String key = keys.get(i);
-			double count = counter.getCount(key);
-			String output = String.format("%s\t%s", key, nf.format(count));
+			double cnt = c.getCount(key);
+			String output = String.format("%s\t%s", key, nf.format(cnt));
 			bw.write(output);
 			if (i != keys.size() - 1) {
 				bw.write("\n");
@@ -785,11 +848,11 @@ public class IOUtils {
 		bw.close();
 	}
 
-	public static void write(String fileName, CounterMap<String, String> counterMap) throws Exception {
+	public static void write(String fileName, CounterMap<String, String> cm) throws Exception {
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMinimumFractionDigits(0);
 		nf.setGroupingUsed(false);
-		write(fileName, counterMap, nf);
+		write(fileName, cm, nf);
 	}
 
 	public static void write(String fileName, CounterMap<String, String> cm, NumberFormat nf) throws Exception {
@@ -819,19 +882,12 @@ public class IOUtils {
 	}
 
 	public static void write(String fileName, Indexer<String> indexer) throws Exception {
-
-		if (fileName.endsWith(".txt")) {
-			TextFileWriter writer = new TextFileWriter(fileName);
-			for (int i = 0; i < indexer.getObjects().size(); i++) {
-				String label = indexer.getObject(i);
-				writer.write(label + "\n");
-			}
-			writer.close();
-		} else {
-			ObjectOutputStream oos = openObjectOutputStream(fileName);
-			write(oos, indexer);
-			oos.close();
+		TextFileWriter writer = new TextFileWriter(fileName);
+		for (int i = 0; i < indexer.getObjects().size(); i++) {
+			String label = indexer.getObject(i);
+			writer.write(label + "\n");
 		}
+		writer.close();
 	}
 
 	public static void write(String fileName, int[] x) throws Exception {
@@ -855,106 +911,6 @@ public class IOUtils {
 		writer.write(text);
 		writer.flush();
 		writer.close();
-	}
-
-	public static void writeText(String fileName, Indexer<String> indexer) throws Exception {
-		System.out.printf("write to %s.\n", fileName);
-		BufferedWriter writer = openBufferedWriter(fileName, UTF_8, false);
-		for (String str : indexer.getObjects()) {
-			writer.write(str + "\n");
-			writer.flush();
-		}
-		writer.close();
-	}
-
-	public static void main(String[] args) throws Exception {
-		System.out.println("process begins.");
-
-		compress("../../data/news_ir/content_nlp", "../../data/news_ir/test.tar.gz");
-
-		System.out.println("process ends.");
-	}
-
-	public static void compress(String inputPath, String outputFileName) throws Exception {
-
-		if (!outputFileName.endsWith(".tar.gz")) {
-			outputFileName += ".tar.gz";
-		}
-
-		/** Step: 1 ---> create a TarArchiveOutputStream object. **/
-		TarArchiveOutputStream taos = new TarArchiveOutputStream(
-				new GzipCompressorOutputStream(new BufferedOutputStream(new FileOutputStream(outputFileName))));
-
-		// TAR has an 8 gig file limit by default, this gets around that
-		taos.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_STAR); // to get past the 8 gig limit
-		// TAR originally didn't support long file names, so enable the support for it
-		taos.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
-
-		/**
-		 * Step: 2 --->Open the source data and get a list of files from given directory recursively.
-		 **/
-
-		File input = new File(inputPath);
-
-		compress(input.getParentFile(), input, taos);
-
-		/** Step: 7 --->close the output stream. **/
-
-		taos.close();
-
-		System.out.println("tar.gz file created successfully!!");
-
-	}
-
-	private static void compress(File root, File input, TarArchiveOutputStream taos) throws IOException {
-
-		if (input.isFile()) {
-			System.out.println("Adding File: " + root.toURI().relativize(input.toURI()).getPath());
-
-			BufferedInputStream bis = new BufferedInputStream(new FileInputStream(input));
-
-			/** Step: 3 ---> Create a tar entry for each file that is read. **/
-
-			/**
-			 * relativize is used to to add a file to a tar, without including the entire path from root.
-			 **/
-
-			TarArchiveEntry tae = new TarArchiveEntry(input, root.getParentFile().toURI().relativize(input.toURI()).getPath());
-
-			/** Step: 4 ---> Put the tar entry using putArchiveEntry. **/
-
-			taos.putArchiveEntry(tae);
-
-			/**
-			 * Step: 5 ---> Write the data to the tar file and close the input stream.
-			 **/
-
-			int count;
-			byte data[] = new byte[2048];
-			while ((count = bis.read(data, 0, 2048)) != -1) {
-				taos.write(data, 0, count);
-			}
-			bis.close();
-
-			/** Step: 6 --->close the archive entry. **/
-
-			taos.closeArchiveEntry();
-
-		} else {
-			if (input.listFiles() != null) {
-				/** Add an empty folder to the tar **/
-				if (input.listFiles().length == 0) {
-
-					System.out.println("Adding Empty Folder: " + root.toURI().relativize(input.toURI()).getPath());
-					TarArchiveEntry entry = new TarArchiveEntry(input, root.getParentFile().toURI().relativize(input.toURI()).getPath());
-					taos.putArchiveEntry(entry);
-					taos.closeArchiveEntry();
-				}
-
-				for (File file : input.listFiles())
-					compress(root, file, taos);
-			}
-		}
 	}
 
 }

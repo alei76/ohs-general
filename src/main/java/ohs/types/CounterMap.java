@@ -343,6 +343,34 @@ public class CounterMap<K, V> implements java.io.Serializable {
 		return toString(50, 50);
 	}
 
+	public String info() {
+		StringBuffer sb = new StringBuffer();
+
+		int min_keys = Integer.MAX_VALUE;
+		int max_keys = -Integer.MIN_VALUE;
+		double min = Double.MAX_VALUE;
+		double max = -Double.MAX_VALUE;
+		double sum = 0;
+		int cnt = 0;
+		for (K key1 : keySet()) {
+			Counter<V> c = getCounter(key1);
+			max = Math.max(max, c.max());
+			min = Math.min(min, c.min());
+			max_keys = Math.max(max_keys, c.size());
+			min_keys = Math.min(min_keys, c.size());
+			sum += c.totalCount();
+			cnt += c.size();
+		}
+
+		sb.append(String.format("outer keys:\t%d\n", size()));
+		sb.append(String.format("max inner keys:\t%d\n", max_keys));
+		sb.append(String.format("min inner keys:\t%d\n", min_keys));
+		sb.append(String.format("max:\t%f\n", max));
+		sb.append(String.format("min:\t%f\n", min));
+		sb.append(String.format("avg:\t%f\n", sum / cnt));
+		return sb.toString();
+	}
+
 	public String toString(int numPrintRows, int numPrintColumns) {
 		StringBuilder sb = new StringBuilder("[\n");
 		int numKeys = 0;

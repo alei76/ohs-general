@@ -22,14 +22,13 @@ import ohs.types.ListMap;
 public class TermWeighting {
 
 	public static void computeTFIDFs(List<SparseVector> docs) {
-		computeTFIDFs(docs, docFreq(docs, getMaxIndex(docs) + 1));
+		computeTFIDFs(docs, docFreq(docs, maxTermIndex(docs) + 1));
 	}
 
 	public static void computeTFIDFs(List<SparseVector> docs, DenseVector docFreqs) {
 		System.out.println("compute tfidfs.");
 		for (int i = 0; i < docs.size(); i++) {
 			SparseVector doc = docs.get(i);
-
 			for (int j = 0; j < doc.size(); j++) {
 				int w = doc.indexAtLoc(j);
 				double cnt = doc.valueAtLoc(j);
@@ -40,8 +39,8 @@ public class TermWeighting {
 				double tfidf = tf * idf;
 				doc.setAtLoc(j, tfidf);
 			}
-			ArrayMath.normalizeByL2Norm(doc.values(), doc.values());
-			doc.summation();
+			double sum = ArrayMath.normalizeByL2Norm(doc.values(), doc.values());
+			doc.setSum(sum);
 		}
 	}
 
@@ -56,7 +55,7 @@ public class TermWeighting {
 		return ret;
 	}
 
-	public static int getMaxIndex(List<SparseVector> docs) {
+	public static int maxTermIndex(List<SparseVector> docs) {
 		int ret = 0;
 		for (SparseVector x : docs) {
 			if (x.size() == 0) {
@@ -237,7 +236,7 @@ public class TermWeighting {
 
 		avgDocLen /= docs.size();
 
-		DenseVector term_docFreq = docFreq(docs, getMaxIndex(docs) + 1);
+		DenseVector term_docFreq = docFreq(docs, maxTermIndex(docs) + 1);
 
 		for (int i = 0; i < docs.size(); i++) {
 			SparseVector x = docs.get(i);

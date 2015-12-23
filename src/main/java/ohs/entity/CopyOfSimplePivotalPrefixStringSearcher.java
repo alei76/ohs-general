@@ -44,7 +44,7 @@ import ohs.utils.StrUtils;
  * 
  * @author Heung-Seon Oh
  */
-public class SimplePivotalPrefixStringSearcher implements Serializable {
+public class CopyOfSimplePivotalPrefixStringSearcher implements Serializable {
 
 	/**
 	 * 
@@ -78,7 +78,7 @@ public class SimplePivotalPrefixStringSearcher implements Serializable {
 		int q = 2;
 		int tau = 2;
 
-		SimplePivotalPrefixStringSearcher ppss = new SimplePivotalPrefixStringSearcher(q, tau, true);
+		CopyOfSimplePivotalPrefixStringSearcher ppss = new CopyOfSimplePivotalPrefixStringSearcher(q, tau, true);
 		ppss.setGramSorter(gramOrderer);
 		ppss.index(strings);
 		Counter<StringRecord> res = ppss.search(s);
@@ -112,11 +112,11 @@ public class SimplePivotalPrefixStringSearcher implements Serializable {
 
 	private Counter<Character> chWeights;
 
-	public SimplePivotalPrefixStringSearcher() {
+	public CopyOfSimplePivotalPrefixStringSearcher() {
 		this(2, 2, false);
 	}
 
-	public SimplePivotalPrefixStringSearcher(int q, int tau, boolean useOptimalPivotSelector) {
+	public CopyOfSimplePivotalPrefixStringSearcher(int q, int tau, boolean useOptimalPivotSelector) {
 		this.q = q;
 		this.tau = tau;
 

@@ -518,4 +518,9 @@ public class SparseMatrix implements Matrix {
 		oos.close();
 	}
 
+	@Override
+	public String info() {
+		return null;
+	}
+
 }
