@@ -1,12 +1,23 @@
 package ohs.string.sim;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import ohs.math.ArrayMath;
-import ohs.math.ArrayUtils;
+import ohs.math.VectorMath;
+import ohs.math.VectorUtils;
+import ohs.matrix.SparseVector;
+import ohs.types.Counter;
 
-public class StringDistUtils {
+public class StringSims {
+
+	public static double cosineSimilarity(String s, String t) {
+		SparseVector sv = VectorUtils.toSparseVector(getCharacterCounts(s));
+		SparseVector tv = VectorUtils.toSparseVector(getCharacterCounts(t));
+		return VectorMath.cosine(sv, tv, false);
+	}
 
 	public static int damerauLevenshteinDistance(String s, String t) {
 		return damerauLevenshteinDistance(s, t, 1, 1, 1, 1);
@@ -119,6 +130,14 @@ public class StringDistUtils {
 		return d[s.length() - 1][t.length() - 1];
 	}
 
+	public static double diceSimilarity(String s, String t) {
+		SparseVector sv = VectorUtils.toSparseVector(getCharacterCounts(s));
+		SparseVector tv = VectorUtils.toSparseVector(getCharacterCounts(t));
+		double sim = 2 * VectorMath.dotProduct(sv, tv);
+		double norm = VectorMath.dotProduct(sv, sv) + VectorMath.dotProduct(tv, tv);
+		return sim / norm;
+	}
+
 	/**
 	 * Strings.java in mallet
 	 * 
@@ -128,7 +147,7 @@ public class StringDistUtils {
 	 * @param normalize
 	 * @return
 	 */
-	public static double editDistance(String s, String t, boolean normalize) {
+	public static double editDistance(String s, String t) {
 		int len_s = s.length();
 		int len_t = t.length();
 		int d[][]; // matrix
@@ -164,42 +183,158 @@ public class StringDistUtils {
 				d[i][j] = ArrayMath.min(new int[] { deleteDist, insertDist, substituteDist });
 			}
 		}
-
 		double ret = d[len_s][len_t];
+		return ret;
+	}
 
-		double[][] b = new double[len_s + 1][len_t + 1];
-		ArrayUtils.copy(d, b);
+	public static double euclideanDistance(String s, String t) {
+		SparseVector sv = VectorUtils.toSparseVector(getCharacterCounts(s));
+		SparseVector tv = VectorUtils.toSparseVector(getCharacterCounts(t));
+		return VectorMath.euclideanDistance(sv, tv, false);
+	}
 
-		System.out.println(ArrayUtils.toString(b));
+	public static double jaccardSimilarity(String s, String t) {
+		SparseVector sv = VectorUtils.toSparseVector(getCharacterCounts(s));
+		SparseVector tv = VectorUtils.toSparseVector(getCharacterCounts(t));
+		double sim = VectorMath.dotProduct(sv, tv);
+		double norm = VectorMath.dotProduct(sv, sv) + VectorMath.dotProduct(tv, tv) - sim;
+		return sim / norm;
+	}
 
-		if (normalize) {
-			int longer = (len_s > len_t) ? len_s : len_t;
-			ret = 1 - (ret / longer);
+	public static double jaroWinkleDistance(String s, String t) {
+		SparseVector sv = VectorUtils.toSparseVector(getCharacterCounts(s));
+		SparseVector tv = VectorUtils.toSparseVector(getCharacterCounts(t));
+
+		double num_matches = intersection(sv, tv);
+
+		// double ret = (1f / 3) * ( num_matches / sv.sum() + num_matches / tv.sum() + (num_matches));
+		double ret = 0;
+		return ret;
+	}
+
+	private static double intersection(SparseVector sv, SparseVector tv) {
+		SparseVector small = sv;
+		SparseVector large = tv;
+
+		if (sv.size() > tv.size()) {
+			small = tv;
+			large = sv;
+		}
+		double ret = 0;
+		for (int i = 0; i < small.size(); i++) {
+			int index = small.indexAtLoc(i);
+			double v1 = small.valueAtLoc(i);
+			double v2 = large.valueAlways(index);
+			ret += Math.min(v1, v2);
+		}
+		return ret;
+	}
+
+	private static Counter<Integer> getCharacterCounts(String s) {
+		Counter<Integer> ret = new Counter<Integer>();
+		for (int i = 0; i < s.length(); i++) {
+			ret.incrementCount((int) s.charAt(i), 1);
 		}
 		return ret;
 	}
 
 	public static void main(String[] args) {
 		System.out.println("process begins.");
+		{
+			String a = "CA";
+			String b = "ABC";
+			//
+			// for (int i = 0; i < 10; i++) {
+			// System.out.printf("%d\t%s\t%s\n", i, CommonFuncs.sigmoid(-i), 1f / Math.log(1 + i + 1));
+			// }
 
-		String a = "CA";
-		String b = "ABC";
-		//
-		// for (int i = 0; i < 10; i++) {
-		// System.out.printf("%d\t%s\t%s\n", i, CommonFuncs.sigmoid(-i), 1f / Math.log(1 + i + 1));
-		// }
+			// System.out.println(editDistance(a, b));
+			// System.out.println(getWeightedEditDistance(a, b, false));
+			// System.out.println(getDamerauLevenshteinDistance(a, b, 1000));
+			// System.out.println(getDamerauLevenshteinDistance(a, b, 1, 1, 1, 1));
+		}
 
-		System.out.println(editDistance(a, b, false));
-		// System.out.println(getWeightedEditDistance(a, b, false));
-		// System.out.println(getDamerauLevenshteinDistance(a, b, 1000));
-		// System.out.println(getDamerauLevenshteinDistance(a, b, 1, 1, 1, 1));
+		{
+			String s = "BBCDG";
+			String t = "AAABCDE";
+			System.out.println(editDistance(s, t));
+			System.out.println(diceSimilarity(s, t));
+
+			System.out.println(jaccardSimilarity(s, t));
+			System.out.println(cosineSimilarity(s, t));
+			System.out.println(weightedEditDistance(s, t));
+			System.out.println(damerauLevenshteinDistance(s, t, 1000));
+			System.out.println(damerauLevenshteinDistance(s, t, 1, 1, 1, 1));
+			System.out.println(smtpSimilarity(s, t));
+		}
 
 		// System.out.println(getEditDistance(a, b));
 
 		System.out.println("process ends.");
 	}
 
-	public static double weightedEditDistance(String s, String t, boolean normalize) {
+	private static double smtpF(SparseVector s, SparseVector t, double lambda) {
+		Set<Integer> ws = new HashSet<Integer>();
+		for (SparseVector v : new SparseVector[] { s, t }) {
+			for (int i : v.indexes()) {
+				ws.add(i);
+			}
+		}
+
+		double sigma = 2;
+		double sim = 0;
+		double norm = 0;
+
+		for (int j : ws) {
+			double v1 = s.valueAlways(j);
+			double v2 = t.valueAlways(j);
+
+			double ns = 0;
+
+			if (v1 * v2 > 0) {
+				ns = 0.5 * (1 + Math.exp(-Math.pow(((v1 - v2) / sigma), 2)));
+			} else if (v1 == 0 && v2 == 0) {
+			} else {
+				ns = -lambda;
+			}
+
+			double nu = 0;
+			if (v1 == 0 && v2 == 0) {
+			} else {
+				nu = 1;
+			}
+			sim += ns;
+			norm += nu;
+		}
+
+		double ret = 0;
+
+		if (norm != 0) {
+			ret = sim / norm;
+		}
+		return ret;
+	}
+
+	/**
+	 * Similarity Measure for Text Processing
+	 *
+	 * 1. Lin, Y.-S., Jiang, J.-Y., Lee, S.-J.: A Similarity Measure for Text Classification and Clustering. IEEE Transactions on Knowledge
+	 * and Data Engineering. 26, 1575–1590 (2014).
+	 * 
+	 * 
+	 * @param s
+	 * @param t
+	 * @return
+	 */
+	public static double smtpSimilarity(String s, String t) {
+		SparseVector sv = VectorUtils.toSparseVector(getCharacterCounts(s));
+		SparseVector tv = VectorUtils.toSparseVector(getCharacterCounts(t));
+		double lambda = 1;
+		double ret = (smtpF(sv, tv, lambda) + lambda) / (1 + lambda);
+		return ret;
+	}
+
+	public static double weightedEditDistance(String s, String t) {
 		int n = s.length();
 		int m = t.length();
 		double d[][]; // matrix
@@ -251,10 +386,11 @@ public class StringDistUtils {
 
 		// System.out.println(ArrayUtils.toString(d));
 
-		if (normalize) {
-			double sum = (n > m) ? ArrayMath.sum(ws1) : ArrayMath.sum(ws2);
-			ret = 1 - (ret / sum);
-		}
+		// if (normalize) {
+		// double sum = (n > m) ? ArrayMath.sum(ws1) : ArrayMath.sum(ws2);
+		// ret = 1 - (ret / sum);
+		// }
 		return ret;
 	}
+
 }

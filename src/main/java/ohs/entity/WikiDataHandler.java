@@ -175,7 +175,7 @@ public class WikiDataHandler {
 
 		ListMap<String, String> titleVariants = new ListMap<String, String>();
 
-		int type = 3;
+		int type = 1;
 		String outputFileName = ENTPath.NAME_PERSON_FILE;
 
 		if (type == 2) {

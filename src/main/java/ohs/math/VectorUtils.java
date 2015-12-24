@@ -39,6 +39,7 @@ public class VectorUtils {
 		return ret;
 	}
 
+
 	public static void subVector(SparseVector x, int[] indexSet) {
 		List<Integer> indexList = new ArrayList<Integer>();
 		List<Double> valueList = new ArrayList<Double>();

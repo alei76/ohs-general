@@ -17,15 +17,6 @@ import ohs.types.Counter;
  */
 public class VectorMath {
 
-	public static void cumulate(Vector x) {
-		double sum = 0;
-		for (int i = 0; i < x.size(); i++) {
-			sum += x.valueAtLoc(i);
-			x.setAtLoc(i, sum);
-		}
-		x.setSum(sum);
-	}
-
 	public static SparseVector add(Vector a, Vector b) {
 		return add(new Vector[] { a, b });
 	}
@@ -132,6 +123,15 @@ public class VectorMath {
 		return cosine;
 	}
 
+	public static void cumulate(Vector x) {
+		double sum = 0;
+		for (int i = 0; i < x.size(); i++) {
+			sum += x.valueAtLoc(i);
+			x.setAtLoc(i, sum);
+		}
+		x.setSum(sum);
+	}
+
 	public static void DFRee(List<SparseVector> xs) {
 		int maxId = 0;
 
@@ -187,6 +187,10 @@ public class VectorMath {
 		Vector ret = x.copy();
 		distribute(x, sum);
 		return ret;
+	}
+
+	public static double dotProduct(Vector a, Vector b) {
+		return dotProduct(a, b, false);
 	}
 
 	public static double dotProduct(Vector a, Vector b, boolean normalizeBefore) {

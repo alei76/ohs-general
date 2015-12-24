@@ -66,6 +66,9 @@ public class EntityLinker implements Serializable {
 		// String line = reader.next();
 		//
 		// }
+		
+		
+		 
 		System.out.println("process ends.");
 	}
 

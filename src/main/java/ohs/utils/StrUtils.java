@@ -24,47 +24,7 @@ import ohs.types.Counter;
 
 public class StrUtils {
 
-	public static double DamerauLevenDistance(String s, String t, boolean normalize) {
-		int n = s.length();
-		int m = t.length();
-		int d[][]; // matrix
-		int i; // iterates through s
-		int j; // iterates through t
-		char s_i; // ith character of s
-		char t_j; // jth character of t
-		int cost; // cost
-
-		if (n == 0)
-			return 1.0;
-		if (m == 0)
-			return 1.0;
-
-		d = new int[n + 1][m + 1];
-
-		for (i = 0; i <= n; i++)
-			d[i][0] = i;
-
-		for (j = 0; j <= m; j++)
-			d[0][j] = j;
-
-		for (i = 1; i <= n; i++) {
-			s_i = s.charAt(i - 1);
-
-			for (j = 1; j <= m; j++) {
-				t_j = t.charAt(j - 1);
-
-				cost = (s_i == t_j) ? 0 : 1;
-				int delete = d[i - 1][j] + 1;
-				int insert = d[i][j - 1] + 1;
-				int substitute = d[i - 1][j - 1] + cost;
-				d[i][j] = ArrayMath.min(new int[] { delete, insert, substitute });
-			}
-		}
-
-		int longer = (n > m) ? n : m;
-		double ret = normalize ? (double) d[n][m] / longer : (double) d[n][m];
-		return ret;
-	}
+	private static Pattern p = Pattern.compile("\\d+[\\d,\\.]*");
 
 	/**
 	 * Strings.java in mallet
@@ -177,14 +137,6 @@ public class StrUtils {
 		return join(" ", getWords(text));
 	}
 
-	public static String join(String glue, List<String> list) {
-		return join(glue, list, 0, list.size());
-	}
-
-	public static String join(String glue, List<String> list, int start) {
-		return join(glue, list, start, list.size());
-	}
-
 	public static String join(String glue, Collection<String> list, int start, int end) {
 		StringBuffer sb = new StringBuffer();
 		int cnt = 0;
@@ -214,6 +166,14 @@ public class StrUtils {
 			}
 		}
 		return sb.toString();
+	}
+
+	public static String join(String glue, List<String> list) {
+		return join(glue, list, 0, list.size());
+	}
+
+	public static String join(String glue, List<String> list, int start) {
+		return join(glue, list, start, list.size());
 	}
 
 	public static String join(String glue, List<String> list, int start, int end) {
@@ -324,8 +284,6 @@ public class StrUtils {
 		regex = regex.replace("^", "\\^");
 		return regex;
 	}
-
-	private static Pattern p = Pattern.compile("\\d+[\\d,\\.]*");
 
 	public static String normalizeNumbers(String s) {
 		Matcher m = p.matcher(s);
