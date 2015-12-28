@@ -149,14 +149,14 @@ public class EntityLinker implements Serializable {
 	}
 
 	public Counter<Entity> link(String name, Counter<String> features) {
-		Counter<StringRecord> candiScores = searcher.search(name.toLowerCase());
+		Counter<StringRecord> candidates = searcher.search(name.toLowerCase());
 
 		CounterMap<Integer, Integer> cm = new CounterMap<Integer, Integer>();
 		Counter<Entity> ret = new Counter<Entity>();
 
-		for (StringRecord sr : candiScores.keySet()) {
+		for (StringRecord sr : candidates.keySet()) {
 			int rid = sr.getId();
-			cm.incrementCount(recToEntIdMap.get(rid), rid, candiScores.getCount(sr));
+			cm.incrementCount(recToEntIdMap.get(rid), rid, candidates.getCount(sr));
 		}
 
 		SparseVector cv = VectorUtils.toSparseVector(features, featInexer);

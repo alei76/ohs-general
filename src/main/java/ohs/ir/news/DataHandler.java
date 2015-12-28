@@ -35,9 +35,9 @@ public class DataHandler {
 		DataHandler dh = new DataHandler();
 		// dh.makeTextDump();
 		// dh.doBinning();
-		// dh.doNLP();
+		dh.doNLP();
 		// dh.convertFormat();
-		dh.collect();
+		// dh.collect();
 		System.out.println("process ends.");
 	}
 
@@ -304,6 +304,14 @@ public class DataHandler {
 		writer.close();
 	}
 
+	private void write(Map<String, String> map, int num_dirs) throws Exception {
+		for (String fileName : map.keySet()) {
+			String content = map.get(fileName);
+			IOUtils.write(NSPath.CONTENT_DIR + "/" + String.format("%05d/%s.txt", num_dirs, fileName), content);
+		}
+		map.clear();
+	}
+
 	public void doBinning() throws Exception {
 		IOUtils.deleteFilesUnder(NSPath.CONTENT_DIR);
 
@@ -332,9 +340,13 @@ public class DataHandler {
 				writer.write(StrUtils.join("\t", parts, 0, labels.size() - 1) + "\n");
 				String date = parts[2].substring(0, 10);
 				String id = parts[0];
-				String fileName = String.format("%s/%s.txt", date, parts[0]);
-				String content = parts[parts.length - 1].replace("\\n", "\n").replace("\\t", "\t");
+				String mediaType = parts[4];
 
+				if (!mediaType.equals("News")) {
+					continue;
+				}
+				// String fileName = String.format("%s/%s/%s", mediaType, date, id);
+				String content = parts[parts.length - 1].replace("\\n", "\n").replace("\\t", "\t");
 				map.put(id, content);
 
 				if (map.size() == 100) {
@@ -344,7 +356,7 @@ public class DataHandler {
 			}
 		}
 
-		write(map, ++num_dirs);
+		// write(map, ++num_dirs);
 
 		reader.printLast();
 		reader.close();
@@ -409,13 +421,5 @@ public class DataHandler {
 	// }
 	//
 	// }
-
-	private void write(Map<String, String> map, int num_dirs) throws Exception {
-		for (String id : map.keySet()) {
-			String content = map.get(id);
-			IOUtils.write(NSPath.CONTENT_DIR + "/" + String.format("%05d/%s.txt", num_dirs, id), content);
-		}
-		map.clear();
-	}
 
 }
