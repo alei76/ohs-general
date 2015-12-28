@@ -132,6 +132,10 @@ public class SparseVector implements Vector {
 		this.dim = dim;
 	}
 
+	public SparseVector() {
+
+	}
+
 	public SparseVector(int size) {
 		this(new int[size], new double[size], -1, size);
 	}
@@ -245,6 +249,11 @@ public class SparseVector implements Vector {
 
 	public int[] indexes() {
 		return indexes;
+	}
+
+	@Override
+	public String info() {
+		return null;
 	}
 
 	public void keepAbove(double cutoff) {
@@ -653,6 +662,22 @@ public class SparseVector implements Vector {
 		return values;
 	}
 
+	public void read(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+
+		label = ois.readInt();
+		dim = ois.readInt();
+		indexes = new int[size];
+		values = new double[size];
+		sum = 0;
+
+		for (int i = 0; i < size; i++) {
+			indexes[i] = ois.readInt();
+			values[i] = ois.readDouble();
+			sum += values[i];
+		}
+	}
+
 	public void write(ObjectOutputStream oos) throws Exception {
 		oos.writeInt(size());
 		oos.writeInt(label());
@@ -668,10 +693,5 @@ public class SparseVector implements Vector {
 		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
 		write(oos);
 		oos.close();
-	}
-
-	@Override
-	public String info() {
-		return null;
 	}
 }

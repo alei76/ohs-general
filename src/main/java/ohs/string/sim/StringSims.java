@@ -5,7 +5,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.math.stat.descriptive.SynchronizedMultivariateSummaryStatistics;
+
 import ohs.math.ArrayMath;
+import ohs.math.ArrayUtils;
 import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
@@ -13,14 +16,14 @@ import ohs.types.Counter;
 
 public class StringSims {
 
-	public static double cosineSimilarity(String s, String t) {
+	public static double CosineSimilarity(String s, String t) {
 		SparseVector sv = VectorUtils.toSparseVector(getCharacterCounts(s));
 		SparseVector tv = VectorUtils.toSparseVector(getCharacterCounts(t));
 		return VectorMath.cosine(sv, tv, false);
 	}
 
-	public static int damerauLevenshteinDistance(String s, String t) {
-		return damerauLevenshteinDistance(s, t, 1, 1, 1, 1);
+	public static int DamerauLevenshteinDistance(String s, String t) {
+		return DamerauLevenshteinDistance(s, t, 1, 1, 1, 1);
 	}
 
 	/**
@@ -33,7 +36,7 @@ public class StringSims {
 	 * @param alphabetLength
 	 * @return
 	 */
-	public static int damerauLevenshteinDistance(String a, String b, int alphabetLength) {
+	public static int DamerauLevenshteinDistance(String a, String b, int alphabetLength) {
 		final int INFINITY = a.length() + b.length();
 		int[][] H = new int[a.length() + 2][b.length() + 2];
 		H[0][0] = INFINITY;
@@ -70,42 +73,49 @@ public class StringSims {
 	 * https://github.com/KevinStern/software-and-algorithms/blob/master/src/main/java/blogspot/software_and_algorithms/stern_library/string
 	 * /DamerauLevenshteinAlgorithm.java
 	 */
-	public static int damerauLevenshteinDistance(String s, String t, int insertCost, int deleteCost, int replaceCost, int swapCost) {
+	public static int DamerauLevenshteinDistance(String s, String t, int insert_cost, int delete_cost, int replace_cost, int swap_cost) {
 		if (s.length() == 0) {
-			return t.length() * insertCost;
+			return t.length() * insert_cost;
 		}
 		if (t.length() == 0) {
-			return s.length() * deleteCost;
+			return s.length() * delete_cost;
 		}
 		int[][] d = new int[s.length()][t.length()];
 		Map<Character, Integer> sourceIndexByCharacter = new HashMap<Character, Integer>();
 		if (s.charAt(0) != t.charAt(0)) {
-			d[0][0] = Math.min(replaceCost, deleteCost + insertCost);
+			d[0][0] = Math.min(replace_cost, delete_cost + insert_cost);
 		}
 		sourceIndexByCharacter.put(s.charAt(0), 0);
 
+		int delete_dist = 0;
+		int insert_dist = 0;
+		int match_dist = 0;
+		int jSwap = 0;
+
 		for (int i = 1; i < s.length(); i++) {
-			int deleteDist = d[i - 1][0] + deleteCost;
-			int insertDist = (i + 1) * deleteCost + insertCost;
-			int matchDist = i * deleteCost + (s.charAt(i) == t.charAt(0) ? 0 : replaceCost);
-			d[i][0] = ArrayMath.min(new int[] { deleteDist, insertCost, matchDist });
+			delete_dist = d[i - 1][0] + delete_cost;
+			insert_dist = (i + 1) * delete_cost + insert_cost;
+			match_dist = i * delete_cost + (s.charAt(i) == t.charAt(0) ? 0 : replace_cost);
+			d[i][0] = ArrayMath.min(new int[] { delete_dist, insert_cost, match_dist });
 		}
+
 		for (int j = 1; j < t.length(); j++) {
-			int deleteDist = (j + 1) * insertCost + deleteCost;
-			int insertDist = d[0][j - 1] + insertCost;
-			int matchDist = j * insertCost + (s.charAt(0) == t.charAt(j) ? 0 : replaceCost);
-			d[0][j] = ArrayMath.min(new int[] { deleteDist, insertCost, matchDist });
+			delete_dist = (j + 1) * insert_cost + delete_cost;
+			insert_dist = d[0][j - 1] + insert_cost;
+			match_dist = j * insert_cost + (s.charAt(0) == t.charAt(j) ? 0 : replace_cost);
+			d[0][j] = ArrayMath.min(new int[] { delete_dist, insert_cost, match_dist });
 		}
+
 		for (int i = 1; i < s.length(); i++) {
 			int maxSourceLetterMatchIndex = s.charAt(i) == t.charAt(0) ? 0 : -1;
 			for (int j = 1; j < t.length(); j++) {
 				Integer candidateSwapIndex = sourceIndexByCharacter.get(t.charAt(j));
-				int jSwap = maxSourceLetterMatchIndex;
-				int deleteDist = d[i - 1][j] + deleteCost;
-				int insertDist = d[i][j - 1] + insertCost;
-				int matchDist = d[i - 1][j - 1];
+				jSwap = maxSourceLetterMatchIndex;
+				delete_dist = d[i - 1][j] + delete_cost;
+				insert_dist = d[i][j - 1] + insert_cost;
+				match_dist = d[i - 1][j - 1];
 				if (s.charAt(i) != t.charAt(j)) {
-					matchDist += replaceCost;
+					match_dist += replace_cost;
 				} else {
 					maxSourceLetterMatchIndex = j;
 				}
@@ -118,11 +128,11 @@ public class StringSims {
 					} else {
 						preSwapCost = d[Math.max(0, iSwap - 1)][Math.max(0, jSwap - 1)];
 					}
-					swapDist = preSwapCost + (i - iSwap - 1) * deleteCost + (j - jSwap - 1) * insertCost + swapCost;
+					swapDist = preSwapCost + (i - iSwap - 1) * delete_cost + (j - jSwap - 1) * insert_cost + swap_cost;
 				} else {
 					swapDist = Integer.MAX_VALUE;
 				}
-				d[i][j] = ArrayMath.min(new int[] { deleteDist, insertDist, matchDist, swapDist });
+				d[i][j] = ArrayMath.min(new int[] { delete_dist, insert_dist, match_dist, swapDist });
 
 			}
 			sourceIndexByCharacter.put(s.charAt(i), i);
@@ -130,7 +140,7 @@ public class StringSims {
 		return d[s.length() - 1][t.length() - 1];
 	}
 
-	public static double diceSimilarity(String s, String t) {
+	public static double DiceSimilarity(String s, String t) {
 		SparseVector sv = VectorUtils.toSparseVector(getCharacterCounts(s));
 		SparseVector tv = VectorUtils.toSparseVector(getCharacterCounts(t));
 		double sim = 2 * VectorMath.dotProduct(sv, tv);
@@ -144,7 +154,6 @@ public class StringSims {
 	 * 
 	 * @param s
 	 * @param t
-	 * @param normalize
 	 * @return
 	 */
 	public static double editDistance(String s, String t) {
@@ -155,12 +164,11 @@ public class StringSims {
 		int j; // iterates through t
 		char s_i; // ith character of s
 		char t_j; // jth character of t
-		int cost; // cost
 
 		if (len_s == 0)
-			return 1.0;
+			return len_t;
 		if (len_t == 0)
-			return 1.0;
+			return len_s;
 
 		d = new int[len_s + 1][len_t + 1];
 
@@ -170,6 +178,11 @@ public class StringSims {
 		for (j = 0; j <= len_t; j++)
 			d[0][j] = j;
 
+		int cost = 0;
+		int delete_dist = 0;
+		int insert_dist = 0;
+		int replace_dist = 0;
+
 		for (i = 1; i <= len_s; i++) {
 			s_i = s.charAt(i - 1);
 
@@ -177,23 +190,132 @@ public class StringSims {
 				t_j = t.charAt(j - 1);
 
 				cost = (s_i == t_j) ? 0 : 1;
-				int deleteDist = d[i - 1][j] + 1;
-				int insertDist = d[i][j - 1] + 1;
-				int substituteDist = d[i - 1][j - 1] + cost;
-				d[i][j] = ArrayMath.min(new int[] { deleteDist, insertDist, substituteDist });
+				delete_dist = d[i - 1][j] + 1;
+				insert_dist = d[i][j - 1] + 1;
+				replace_dist = d[i - 1][j - 1] + cost;
+				d[i][j] = ArrayMath.min(new int[] { delete_dist, insert_dist, replace_dist });
 			}
 		}
 		double ret = d[len_s][len_t];
 		return ret;
 	}
 
-	public static double euclideanDistance(String s, String t) {
+	public static double smithWatermanSimilarity(String s, String t) {
+		int len_s = s.length();
+		int len_t = t.length();
+		int d[][]; // matrix
+		int i; // iterates through s
+		int j; // iterates through t
+		char s_i; // ith character of s
+		char t_j; // jth character of t
+
+		if (len_s == 0)
+			return 0;
+		if (len_t == 0)
+			return 0;
+
+		d = new int[len_s + 1][len_t + 1];
+
+		int gap_cost = -1;
+		int match_cost = 2;
+		int unmatch_cost = -1;
+
+		int max_i = 0;
+		int max_j = 0;
+		int max = -Integer.MAX_VALUE;
+
+		int delete_dist = 0;
+		int insert_dist = 0;
+		int replace_dist = 0;
+		int cost = 0;
+		int max_at = 0;
+
+		for (i = 1; i <= len_s; i++) {
+			s_i = s.charAt(i - 1);
+
+			for (j = 1; j <= len_t; j++) {
+				t_j = t.charAt(j - 1);
+
+				cost = (s_i == t_j) ? match_cost : unmatch_cost;
+				delete_dist = d[i - 1][j] + gap_cost;
+				insert_dist = d[i][j - 1] + gap_cost;
+				replace_dist = d[i - 1][j - 1] + cost;
+				max_at = ArrayMath.max(new int[] { 0, delete_dist, insert_dist, replace_dist });
+				d[i][j] = max_at;
+				if (max_at > max) {
+					max_i = i;
+					max_j = j;
+					max = max_at;
+				}
+			}
+		}
+		double sim = d[max_i][max_j];
+		double norm = Math.min(len_s, len_t) * match_cost;
+
+		System.out.println(ArrayUtils.toString(d));
+
+		return sim;
+	}
+
+	public static double needlemanWunschSimilarity(String s, String t) {
+		int len_s = s.length();
+		int len_t = t.length();
+		int d[][]; // matrix
+		int i; // iterates through s
+		int j; // iterates through t
+		char s_i; // ith character of s
+		char t_j; // jth character of t
+
+		if (len_s == 0)
+			return 0;
+		if (len_t == 0)
+			return 0;
+
+		d = new int[len_s + 1][len_t + 1];
+
+		int cost = 0;
+		int match_cost = 1;
+		int unmatch_cost = -1;
+		int gap_cost = -1;
+
+		for (i = 0; i <= len_s; i++)
+			d[i][0] = gap_cost * i;
+		for (j = 0; j <= len_t; j++)
+			d[0][j] = gap_cost * j;
+
+		int delete_score = 0;
+		int insert_score = 0;
+		int replace_score = 0;
+
+		for (i = 1; i <= len_s; i++) {
+			s_i = s.charAt(i - 1);
+
+			for (j = 1; j <= len_t; j++) {
+				t_j = t.charAt(j - 1);
+
+				cost = (s_i == t_j) ? match_cost : unmatch_cost;
+				delete_score = d[i - 1][j] + gap_cost;
+				insert_score = d[i][j - 1] + gap_cost;
+				replace_score = d[i - 1][j - 1] + cost;
+				d[i][j] = ArrayMath.max(new int[] { delete_score, insert_score, replace_score });
+			}
+		}
+		double ret = d[len_s][len_t];
+
+		double norm = Math.min(len_s, len_t) * match_cost;
+
+		System.out.println(ArrayUtils.toString(d));
+
+		return ret;
+	}
+
+	public static double EuclideanDistance(String s, String t) {
 		SparseVector sv = VectorUtils.toSparseVector(getCharacterCounts(s));
 		SparseVector tv = VectorUtils.toSparseVector(getCharacterCounts(t));
 		return VectorMath.euclideanDistance(sv, tv, false);
 	}
 
-	public static double jaccardSimilarity(String s, String t) {
+	public static double JaccardSimilarity(String s, String t) {
 		SparseVector sv = VectorUtils.toSparseVector(getCharacterCounts(s));
 		SparseVector tv = VectorUtils.toSparseVector(getCharacterCounts(t));
 		double sim = VectorMath.dotProduct(sv, tv);
@@ -201,33 +323,71 @@ public class StringSims {
 		return sim / norm;
 	}
 
-	public static double jaroWinkleDistance(String s, String t) {
-		SparseVector sv = VectorUtils.toSparseVector(getCharacterCounts(s));
-		SparseVector tv = VectorUtils.toSparseVector(getCharacterCounts(t));
-
-		double num_matches = intersection(sv, tv);
-
-		// double ret = (1f / 3) * ( num_matches / sv.sum() + num_matches / tv.sum() + (num_matches));
-		double ret = 0;
-		return ret;
+	public static double JaroDistance(String s, String t) {
+		int halflen = halfLengthOfShorter(s, t);
+		String common1 = commonChars(s, t, halflen);
+		String common2 = commonChars(t, s, halflen);
+		if (common1.length() != common2.length())
+			return 0;
+		if (common1.length() == 0 || common2.length() == 0)
+			return 0;
+		int transpositions = transpositions(common1, common2);
+		double dist = (common1.length() / ((double) s.length()) + common2.length() / ((double) t.length())
+				+ (common1.length() - transpositions) / ((double) common1.length())) / 3.0;
+		return dist;
 	}
 
-	private static double intersection(SparseVector sv, SparseVector tv) {
-		SparseVector small = sv;
-		SparseVector large = tv;
+	public static double JaroWinklerDistance(String s, String t) {
+		double dist = JaroDistance(s, t);
+		if (dist < 0 || dist > 1)
+			throw new IllegalArgumentException("innerDistance should produce scores between 0 and 1");
+		int prefLength = commonPrefixLength(4, s, t);
+		dist = dist + prefLength * 0.1 * (1 - dist);
+		return dist;
+	}
 
-		if (sv.size() > tv.size()) {
-			small = tv;
-			large = sv;
+	public static double MongeElkan(String s, String t) {
+		return 0;
+	}
+
+	private static int commonPrefixLength(int maxLength, String common1, String common2) {
+		int n = Math.min(maxLength, Math.min(common1.length(), common2.length()));
+		for (int i = 0; i < n; i++) {
+			if (common1.charAt(i) != common2.charAt(i))
+				return i;
 		}
-		double ret = 0;
-		for (int i = 0; i < small.size(); i++) {
-			int index = small.indexAtLoc(i);
-			double v1 = small.valueAtLoc(i);
-			double v2 = large.valueAlways(index);
-			ret += Math.min(v1, v2);
+		return n; // first n characters are the same
+	}
+
+	private static int transpositions(String common1, String common2) {
+		int transpositions = 0;
+		for (int i = 0; i < common1.length(); i++) {
+			if (common1.charAt(i) != common2.charAt(i))
+				transpositions++;
 		}
-		return ret;
+		transpositions /= 2;
+		return transpositions;
+	}
+
+	private static String commonChars(String s, String t, int halflen) {
+		StringBuilder common = new StringBuilder();
+		StringBuilder copy = new StringBuilder(t);
+		for (int i = 0; i < s.length(); i++) {
+			char ch = s.charAt(i);
+			boolean foundIt = false;
+			for (int j = Math.max(0, i - halflen); !foundIt && j < Math.min(i + halflen, t.length()); j++) {
+				if (copy.charAt(j) == ch) {
+					foundIt = true;
+					common.append(ch);
+					copy.setCharAt(j, '*');
+				}
+			}
+		}
+		return common.toString();
+	}
+
+	private static int halfLengthOfShorter(String s, String t) {
+		return Math.min(s.length(), t.length()) / 2 + 1;
 	}
 
 	private static Counter<Integer> getCharacterCounts(String s) {
@@ -241,7 +401,7 @@ public class StringSims {
 	public static void main(String[] args) {
 		System.out.println("process begins.");
 		{
-			String a = "CA";
+			String a = "";
 			String b = "ABC";
 			//
 			// for (int i = 0; i < 10; i++) {
@@ -255,16 +415,21 @@ public class StringSims {
 		}
 
 		{
-			String s = "BBCDG";
-			String t = "AAABCDE";
-			System.out.println(editDistance(s, t));
-			System.out.println(diceSimilarity(s, t));
+			// String s = "BBCDG";
+			// String t = "AAABCDE";
 
-			System.out.println(jaccardSimilarity(s, t));
-			System.out.println(cosineSimilarity(s, t));
+			String s = "ABC";
+			String t = "ABCC";
+			System.out.println(editDistance(s, t));
+			System.out.println(smithWatermanSimilarity(s, t));
+			System.out.println(needlemanWunschSimilarity(s, t));
+			System.out.println(DiceSimilarity(s, t));
+
+			System.out.println(JaccardSimilarity(s, t));
+			System.out.println(CosineSimilarity(s, t));
 			System.out.println(weightedEditDistance(s, t));
-			System.out.println(damerauLevenshteinDistance(s, t, 1000));
-			System.out.println(damerauLevenshteinDistance(s, t, 1, 1, 1, 1));
+			System.out.println(DamerauLevenshteinDistance(s, t, 1000));
+			System.out.println(DamerauLevenshteinDistance(s, t, 1, 1, 1, 1));
 			System.out.println(smtpSimilarity(s, t));
 		}
 

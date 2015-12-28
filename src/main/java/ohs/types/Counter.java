@@ -77,6 +77,10 @@ public class Counter<E> implements Serializable {
 		entries = new HashMap<E, Double>();
 	}
 
+	public Counter(int size) {
+		entries = new HashMap<E, Double>(size);
+	}
+
 	public Counter(final Collection<? extends E> collection) {
 		this();
 		incrementAll(collection, 1.0);

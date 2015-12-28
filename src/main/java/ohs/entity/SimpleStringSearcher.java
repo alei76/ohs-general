@@ -1,17 +1,18 @@
 package ohs.entity;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import ohs.io.IOUtils;
+import ohs.io.TextFileWriter;
 import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.GramGenerator;
 import ohs.string.search.ppss.StringRecord;
@@ -19,7 +20,6 @@ import ohs.string.sim.SmithWaterman;
 import ohs.types.Counter;
 import ohs.types.Indexer;
 import ohs.types.SetMap;
-import ohs.utils.StrUtils;
 
 /**
  * 
@@ -42,6 +42,8 @@ public class SimpleStringSearcher implements Serializable {
 	private Indexer<String> gramIndexer;
 
 	private GramGenerator gg;
+
+	private TextFileWriter logWriter;
 
 	public SimpleStringSearcher() {
 		this(3);
@@ -81,11 +83,65 @@ public class SimpleStringSearcher implements Serializable {
 		}
 	}
 
-	public void read(ObjectInputStream ois) throws Exception {
-		srs = new HashMap<Integer, StringRecord>();
+	public String info() {
+		StringBuffer sb = new StringBuffer();
+		sb.append(String.format("Records:\t%d\n", srs.size()));
 
 		{
+			Counter<Integer> c = new Counter<Integer>();
+
+			int max = -Integer.MAX_VALUE;
+			int min = Integer.MAX_VALUE;
+			double num_chars = 0;
+
+			for (StringRecord sr : srs.values()) {
+				c.incrementCount(sr.getString().length(), 1);
+
+				if (sr.getString().length() > max) {
+					max = sr.getString().length();
+				}
+
+				if (sr.getString().length() < min) {
+					min = sr.getString().length();
+				}
+				num_chars += sr.getString().length();
+			}
+			double avg_chars = num_chars / srs.size();
+			sb.append(String.format("Max Length:\t%d\n", max));
+			sb.append(String.format("Min Length:\t%d\n", min));
+			sb.append(String.format("Avg Length:\t%f\n", avg_chars));
+		}
+
+		{
+			int max = -Integer.MAX_VALUE;
+			int min = Integer.MAX_VALUE;
+			double num_records = 0;
+
+			for (int qid : index.keySet()) {
+				Set<Integer> rids = index.get(qid);
+
+				if (rids.size() > max) {
+					max = rids.size();
+				}
+
+				if (rids.size() < min) {
+					min = rids.size();
+				}
+				num_records += rids.size();
+			}
+			double avg_records = num_records / index.size();
+			sb.append(String.format("Q-grams:\t%d\n", index.size()));
+			sb.append(String.format("Max Postings:\t%d\n", max));
+			sb.append(String.format("Min Postings:\t%d\n", min));
+			sb.append(String.format("Avg Postings:\t%f", avg_records));
+		}
+		return sb.toString();
+	}
+
+	public void read(ObjectInputStream ois) throws Exception {
+		{
 			int size = ois.readInt();
+			srs = new HashMap<Integer, StringRecord>(size);
 			for (int i = 0; i < size; i++) {
 				StringRecord sr = new StringRecord();
 				sr.read(ois);
@@ -96,22 +152,24 @@ public class SimpleStringSearcher implements Serializable {
 		int q = ois.readInt();
 		gg = new GramGenerator(q);
 		gramIndexer = IOUtils.readIndexer(ois);
-		int size1 = ois.readInt();
 
-		index = new SetMap<Integer, Integer>();
+		int size1 = ois.readInt();
+		index = new SetMap<Integer, Integer>(false, false, size1);
 
 		for (int i = 0; i < size1; i++) {
 			int gid = ois.readInt();
 			int size2 = ois.readInt();
+			Set<Integer> rids = new HashSet<Integer>(size2);
 			for (int j = 0; j < size2; j++) {
 				int rid = ois.readInt();
-				index.put(gid, rid);
+				rids.add(rid);
 			}
+			index.set(gid, rids);
 		}
 	}
 
 	public Counter<StringRecord> search(String s) {
-		Gram[] grams = gg.generate(String.format("<%s>", s.toLowerCase()));
+		Gram[] grams = gg.generate(String.format("<%s>", s));
 
 		if (grams.length == 0) {
 			return new Counter<StringRecord>();

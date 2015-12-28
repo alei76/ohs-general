@@ -949,10 +949,10 @@ public class ArrayUtils {
 	}
 
 	public static String toString(int[] x) {
-		return toString(x, x.length, false, false);
+		return toString(x, false, false);
 	}
 
-	public static String toString(int[] x, int num_print, boolean sparse, boolean vertical) {
+	public static String toString(int[] x, boolean sparse, boolean vertical) {
 		StringBuffer sb = new StringBuffer();
 		String delim = "\t";
 		if (vertical) {
@@ -960,15 +960,28 @@ public class ArrayUtils {
 		}
 
 		if (sparse) {
-			for (int i = 0; i < x.length && i < num_print; i++) {
-				sb.append(String.format("%s%d:%s", delim, i, x[i]));
+			for (int i = 0; i < x.length; i++) {
+				if (x[i] != 0) {
+					sb.append(String.format("%s%d:%s", delim, i, x[i]));
+				}
 			}
 		} else {
-			for (int i = 0; i < x.length && i < num_print; i++) {
+			for (int i = 0; i < x.length; i++) {
 				sb.append(String.format("%s%s", delim, x[i]));
 			}
 		}
 		return sb.toString().trim();
+	}
+
+	public static String toString(int[][] x) {
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < x.length; i++) {
+			sb.append(toString(x[i], false, false));
+			if (i != x.length - 1) {
+				sb.append("\n");
+			}
+		}
+		return sb.toString();
 	}
 
 	public List<Integer>[] splitInOrder(List<Integer> indexList, int[] counts) {

@@ -22,14 +22,22 @@ public class SetMap<K, V> implements Serializable {
 	private boolean useTreeSet;
 
 	public SetMap() {
-		this(false, false);
+		this(false, false, 10000);
 	}
 
 	public SetMap(boolean useTreeMap, boolean useTreeSet) {
+		this(useTreeMap, useTreeSet, 10000);
+	}
+
+	public SetMap(boolean useTreeMap, boolean useTreeSet, int size) {
 		this.useTreeMap = useTreeMap;
 		this.useTreeSet = useTreeSet;
 
-		entries = useTreeMap ? new TreeMap<K, Set<V>>() : new HashMap<K, Set<V>>();
+		if (useTreeMap) {
+			entries = new TreeMap<K, Set<V>>();
+		} else {
+			entries = new HashMap<K, Set<V>>(size);
+		}
 	}
 
 	public void addAll(SetMap<K, V> input) {
@@ -39,6 +47,10 @@ public class SetMap<K, V> implements Serializable {
 				set.add(val);
 			}
 		}
+	}
+
+	public void set(K key, Set<V> values) {
+		entries.put(key, values);
 	}
 
 	public void clear() {

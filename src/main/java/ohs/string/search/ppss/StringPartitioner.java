@@ -1,4 +1,4 @@
-package ohs.entity.org;
+package ohs.string.search.ppss;
 
 import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.Gram.Type;
@@ -98,9 +98,5 @@ public class StringPartitioner {
 			start += segment_len;
 		}
 		return ret;
-	}
-
-	private void setNumSegments() {
-
 	}
 }

@@ -66,9 +66,7 @@ public class EntityLinker implements Serializable {
 		// String line = reader.next();
 		//
 		// }
-		
-		
-		 
+
 		System.out.println("process ends.");
 	}
 
@@ -78,7 +76,7 @@ public class EntityLinker implements Serializable {
 
 	private Map<Integer, Integer> recToEntIdMap;
 
-	private Indexer<String> wordInexer;
+	private Indexer<String> featInexer;
 
 	private List<SparseVector> topicWordData;
 
@@ -99,7 +97,7 @@ public class EntityLinker implements Serializable {
 		recToEntIdMap = new HashMap<Integer, Integer>();
 		ents = new HashMap<Integer, Entity>();
 
-		wordInexer = new Indexer<String>();
+		featInexer = new Indexer<String>();
 		topicWordData = new ArrayList<SparseVector>();
 
 		TextFileReader reader = new TextFileReader(dataFileName);
@@ -120,12 +118,12 @@ public class EntityLinker implements Serializable {
 			String catStr = parts[2];
 			String variantStr = parts[3];
 
-			topicWordData.add(VectorUtils.toSparseVector(VectorUtils.toCounter(catStr), wordInexer, true));
+			topicWordData.add(VectorUtils.toSparseVector(VectorUtils.toCounter(catStr), featInexer, true));
 
 			Entity ent = new Entity(ents.size(), name, topic);
 			ents.put(ent.getId(), ent);
 
-			StringRecord sr = new StringRecord(srs.size(), name);
+			StringRecord sr = new StringRecord(srs.size(), name.toLowerCase());
 			srs.add(sr);
 
 			recToEntIdMap.put(sr.getId(), ent.getId());
@@ -133,7 +131,7 @@ public class EntityLinker implements Serializable {
 			if (!variantStr.equals("none")) {
 				String[] variants = variantStr.split("\\|");
 				for (int i = 0; i < variants.length; i++) {
-					sr = new StringRecord(srs.size(), variants[i]);
+					sr = new StringRecord(srs.size(), variants[i].toLowerCase());
 					srs.add(sr);
 					recToEntIdMap.put(sr.getId(), ent.getId());
 				}
@@ -146,20 +144,22 @@ public class EntityLinker implements Serializable {
 
 		searcher = new SimpleStringSearcher(2);
 		searcher.index(srs, false);
+
+		System.out.println(searcher.info());
 	}
 
-	public Counter<Entity> link(String name, Counter<String> contextWords) {
-		Counter<StringRecord> searchScore = searcher.search(name);
+	public Counter<Entity> link(String name, Counter<String> features) {
+		Counter<StringRecord> candiScores = searcher.search(name.toLowerCase());
 
 		CounterMap<Integer, Integer> cm = new CounterMap<Integer, Integer>();
 		Counter<Entity> ret = new Counter<Entity>();
 
-		for (StringRecord sr : searchScore.keySet()) {
+		for (StringRecord sr : candiScores.keySet()) {
 			int rid = sr.getId();
-			cm.incrementCount(recToEntIdMap.get(rid), rid, searchScore.getCount(sr));
+			cm.incrementCount(recToEntIdMap.get(rid), rid, candiScores.getCount(sr));
 		}
 
-		SparseVector cv = VectorUtils.toSparseVector(contextWords, wordInexer);
+		SparseVector cv = VectorUtils.toSparseVector(features, featInexer);
 		VectorMath.unitVector(cv);
 
 		for (int eid : cm.keySet()) {
@@ -169,7 +169,6 @@ public class EntityLinker implements Serializable {
 			double new_score = sw_score * Math.exp(cosine);
 			ret.setCount(ents.get(eid), new_score);
 		}
-
 		return ret;
 	}
 
@@ -177,9 +176,8 @@ public class EntityLinker implements Serializable {
 		ObjectInputStream ois = IOUtils.openObjectInputStream(fileName);
 
 		{
-			ents = new HashMap<Integer, Entity>();
 			int size = ois.readInt();
-
+			ents = new HashMap<Integer, Entity>(size);
 			for (int i = 0; i < size; i++) {
 				Entity ent = new Entity();
 				ent.read(ois);
@@ -187,7 +185,7 @@ public class EntityLinker implements Serializable {
 			}
 		}
 
-		wordInexer = IOUtils.readIndexer(ois);
+		featInexer = IOUtils.readIndexer(ois);
 		recToEntIdMap = IOUtils.readIntegerMap(ois);
 		topicWordData = SparseVector.readList(ois);
 		searcher = new SimpleStringSearcher();
@@ -205,7 +203,7 @@ public class EntityLinker implements Serializable {
 			}
 		}
 
-		IOUtils.write(oos, wordInexer);
+		IOUtils.write(oos, featInexer);
 		IOUtils.write(oos, recToEntIdMap);
 		SparseVector.write(oos, topicWordData);
 		searcher.write(oos);

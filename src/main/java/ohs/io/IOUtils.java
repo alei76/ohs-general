@@ -546,10 +546,28 @@ public class IOUtils {
 	}
 
 	public static Indexer<String> readIndexer(ObjectInputStream ois) throws Exception {
-		Indexer<String> ret = new Indexer<String>();
 		int size = ois.readInt();
+		Indexer<String> ret = new Indexer<String>(size);
 		for (int i = 0; i < size; i++) {
 			ret.add(ois.readUTF());
+		}
+		return ret;
+	}
+
+	public static Counter<String> readCounter(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+		Counter<String> ret = new Counter<String>(size);
+		for (int i = 0; i < size; i++) {
+			ret.setCount(ois.readUTF(), ois.readDouble());
+		}
+		return ret;
+	}
+
+	public static CounterMap<String, String> readCounterMap(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+		CounterMap<String, String> ret = new CounterMap<String, String>(size);
+		for (int i = 0; i < size; i++) {
+			ret.setCounter(ois.readUTF(), readCounter(ois));
 		}
 		return ret;
 	}
@@ -583,8 +601,8 @@ public class IOUtils {
 	}
 
 	public static Map<Integer, Integer> readIntegerMap(ObjectInputStream ois) throws Exception {
-		Map<Integer, Integer> ret = new HashMap<Integer, Integer>();
 		int size = ois.readInt();
+		Map<Integer, Integer> ret = new HashMap<Integer, Integer>(size);
 		for (int i = 0; i < size; i++) {
 			int key = ois.readInt();
 			int value = ois.readInt();

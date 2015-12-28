@@ -1,5 +1,6 @@
 package ohs.types;
 
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.AbstractList;
@@ -21,8 +22,12 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 	protected Map<E, Integer> indexes;
 
 	public Indexer() {
-		objects = new ArrayList<E>();
-		indexes = new HashMap<E, Integer>();
+		this(100);
+	}
+
+	public Indexer(int size) {
+		objects = new ArrayList<E>(size);
+		indexes = new HashMap<E, Integer>(size);
 	}
 
 	public Indexer(Collection<? extends E> c) {
