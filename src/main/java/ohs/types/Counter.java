@@ -77,18 +77,18 @@ public class Counter<E> implements Serializable {
 		entries = new HashMap<E, Double>();
 	}
 
-	public Counter(int size) {
-		entries = new HashMap<E, Double>(size);
-	}
-
 	public Counter(final Collection<? extends E> collection) {
-		this();
+		this(collection.size());
 		incrementAll(collection, 1.0);
 	}
 
 	public Counter(final Counter<? extends E> counter) {
-		this();
+		this(counter.size());
 		incrementAll(counter);
+	}
+
+	public Counter(int size) {
+		entries = new HashMap<E, Double>(size);
 	}
 
 	public boolean approxEquals(final Counter<E> other, final double tol) {
