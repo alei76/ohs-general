@@ -36,7 +36,7 @@ public class DataHandler {
 		// dh.makeTextDump();
 		// dh.doBinning();
 		dh.doNLP();
-		// dh.convertFormat();
+		// dh.changeFormat();
 		// dh.collect();
 		System.out.println("process ends.");
 	}
@@ -109,7 +109,8 @@ public class DataHandler {
 
 							k = end;
 
-							if (!(startTag.equals("PERSON") || startTag.equals("LOCATION") || startTag.equals("ORGANIZATION"))) {
+							if (!(startTag.equals("PERSON") || startTag.equals("LOCATION")
+									|| startTag.equals("ORGANIZATION"))) {
 								continue;
 							}
 							nerOffets.add(new Pair<Integer, Integer>(start, end));
@@ -156,7 +157,7 @@ public class DataHandler {
 		return map;
 	}
 
-	public void convertFormat() throws Exception {
+	public void changeFormat() throws Exception {
 		// ListMap<String, String> map = new ListMap<String, String>();
 		// for (String line : IOUtils.readLines(NSPath.NEWS_META_FILE)) {
 		// String[] parts = line.split("\t");
@@ -177,8 +178,14 @@ public class DataHandler {
 
 			for (int j = 0; j < files.size(); j++) {
 				File file = files.get(j);
-				String outputFileName = file.getCanonicalPath().replace("content_nlp", "content_nlp_conll").replace(".xml", ".conll");
-				IOUtils.write(outputFileName, getTextInConllFormat(file));
+				String outputFileName = file.getCanonicalPath().replace("content_nlp", "content_nlp_conll")
+						.replace(".xml", ".conll");
+
+				try {
+					IOUtils.write(outputFileName, getTextInConllFormat(file));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -203,7 +210,7 @@ public class DataHandler {
 		prop.setProperty("outputFormat", "XML");
 
 		StanfordCoreNLP nlp = new StanfordCoreNLP(prop);
-		File[] dirFiles = new File(NSPath.CONTENT_DIR).listFiles();
+		File[] dirFiles = new File(NSPath.CONTENT_DIR, "news").listFiles();
 
 		Arrays.sort(dirFiles);
 
@@ -304,10 +311,12 @@ public class DataHandler {
 		writer.close();
 	}
 
-	private void write(Map<String, String> map, int num_dirs) throws Exception {
+	private void write(String mediaType, Map<String, String> map, int num_dirs) throws Exception {
 		for (String fileName : map.keySet()) {
 			String content = map.get(fileName);
-			IOUtils.write(NSPath.CONTENT_DIR + "/" + String.format("%05d/%s.txt", num_dirs, fileName), content);
+			String outputFileName = NSPath.DATA_DIR
+					+ String.format("content/%s/%05d/%s.txt", mediaType, num_dirs, fileName);
+			IOUtils.write(outputFileName, content);
 		}
 		map.clear();
 	}
@@ -324,9 +333,11 @@ public class DataHandler {
 
 		reader.setPrintNexts(false);
 
-		Map<String, String> map = Generics.newHashMap();
+		Map<String, String> newsContents = Generics.newHashMap();
+		Map<String, String> blogContents = Generics.newHashMap();
 
-		int num_dirs = 0;
+		int num_news_dirs = 0;
+		int num_blog_dirs = 0;
 
 		while (reader.hasNext()) {
 			reader.print(10000);
@@ -341,22 +352,26 @@ public class DataHandler {
 				String date = parts[2].substring(0, 10);
 				String id = parts[0];
 				String mediaType = parts[4];
-
-				if (!mediaType.equals("News")) {
-					continue;
-				}
-				// String fileName = String.format("%s/%s/%s", mediaType, date, id);
 				String content = parts[parts.length - 1].replace("\\n", "\n").replace("\\t", "\t");
-				map.put(id, content);
 
-				if (map.size() == 100) {
-					write(map, ++num_dirs);
+				if (mediaType.equals("News")) {
+					newsContents.put(id, content);
+				} else {
+					blogContents.put(id, content);
 				}
 
+				if (newsContents.size() == 100) {
+					write("news", newsContents, ++num_news_dirs);
+				}
+
+				if (blogContents.size() == 100) {
+					write("blog", blogContents, ++num_blog_dirs);
+				}
 			}
 		}
 
-		// write(map, ++num_dirs);
+		write("news", newsContents, ++num_news_dirs);
+		write("blog", newsContents, ++num_blog_dirs);
 
 		reader.printLast();
 		reader.close();
