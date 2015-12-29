@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -66,7 +67,6 @@ public class WikiDataHandler {
 
 		WikiDataHandler dh = new WikiDataHandler();
 		// dh.makeTextDump();
-		// dh.makeEntitySet();
 		dh.extractNames();
 		// dh.extractCategories();
 		System.out.println("process ends.");
@@ -173,7 +173,7 @@ public class WikiDataHandler {
 
 		Set<String> stopPrefixes = getStopPrefixes();
 
-		ListMap<String, String> titleVariants = new ListMap<String, String>();
+		ListMap<String, String> titleVariantMap = new ListMap<String, String>();
 
 		int type = 1;
 		String outputFileName = ENTPath.NAME_PERSON_FILE;
@@ -185,6 +185,7 @@ public class WikiDataHandler {
 		}
 
 		CounterMap<String, String> cm = Generics.newCounterMap();
+		Map<String, Integer> titleIdMap = Generics.newHashMap();
 
 		for (int i = 0; i < ir.maxDoc(); i++) {
 			if ((i + 1) % 100000 == 0) {
@@ -211,7 +212,9 @@ public class WikiDataHandler {
 					if (hits.length == 1) {
 						String catStr2 = is.doc(hits[0].doc).get(IndexFieldName.CATEGORY).toLowerCase();
 						if (isValidTitle(type, catStr2)) {
-							titleVariants.put(redirect, title);
+							titleVariantMap.put(redirect, title);
+							titleIdMap.put(redirect, hits[0].doc);
+
 							isAdded = true;
 							Counter<String> c = Generics.newCounter();
 							for (String word : StrUtils.split("\\W+", catStr2)) {
@@ -222,7 +225,9 @@ public class WikiDataHandler {
 					}
 				}
 				if (!isAdded) {
-					titleVariants.put(title, "");
+					titleVariantMap.put(title, "");
+					titleIdMap.put(title, i);
+
 					Counter<String> c = Generics.newCounter();
 					for (String word : StrUtils.split("\\W+", catStr)) {
 						c.incrementCount(word, 1);
@@ -232,12 +237,13 @@ public class WikiDataHandler {
 			}
 		}
 
-		List<String> keys = new ArrayList<String>(titleVariants.keySet());
+		List<String> keys = new ArrayList<String>(titleVariantMap.keySet());
 		Collections.sort(keys);
 
 		TextFileWriter writer = new TextFileWriter(outputFileName);
 		for (int i = 0; i < keys.size(); i++) {
 			String title = keys.get(i);
+			int id = titleIdMap.get(title);
 			String catStr = "none";
 
 			if (cm.getCounter(title).size() > 0) {
@@ -245,7 +251,7 @@ public class WikiDataHandler {
 				catStr = c.toStringSortedByValues(true, false, c.size(), " ");
 			}
 
-			List<String> variants = titleVariants.get(title);
+			List<String> variants = titleVariantMap.get(title);
 			Iterator<String> iter = variants.iterator();
 			while (iter.hasNext()) {
 				String variant = iter.next();
@@ -254,7 +260,7 @@ public class WikiDataHandler {
 				}
 			}
 			String[] two = splitDisambiguationType(title);
-			writer.write(String.format("%s\t%s\t%s\t%s\n", two[0], two[1] == null ? "none" : two[1], catStr,
+			writer.write(String.format("%d\t%s\t%s\t%s\t%s\n", id, two[0], two[1] == null ? "none" : two[1], catStr,
 					variants.size() == 0 ? "none" : StrUtils.join("|", variants)));
 		}
 		writer.close();
