@@ -20,6 +20,7 @@ import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.medical.general.SearcherUtils;
 import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
@@ -34,7 +35,7 @@ import ohs.types.Indexer;
  * 
  * 
  */
-public class SimpleEntityLinker implements Serializable {
+public class TrieEntityLinker implements Serializable {
 
 	/**
 	 * 
@@ -47,16 +48,16 @@ public class SimpleEntityLinker implements Serializable {
 	 */
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
-		SimpleEntityLinker el = new SimpleEntityLinker();
+		TrieEntityLinker el = new TrieEntityLinker();
 
 		// if (IOUtils.exists(ENTPath.ENTITY_LINKER_FILE)) {
 		// el.read(ENTPath.ENTITY_LINKER_FILE);
 		// } else {
-		el.createSearchers(ENTPath.NAME_PERSON_FILE);
-		el.write(ENTPath.ENTITY_LINKER_FILE);
+		// el.createSearchers(ENTPath.NAME_PERSON_FILE);
+		// el.write(ENTPath.ENTITY_LINKER_FILE);
 		// }
 
-		el.read(ENTPath.ENTITY_LINKER_FILE);
+		el.read(ENTPath.ENTITY_LINKER_FILE.replace("linker.ser.gz", "linker-trie.ser.gz"));
 
 		Counter<String> features = new Counter<String>();
 		features.setCount("baseball", 1);
@@ -82,7 +83,7 @@ public class SimpleEntityLinker implements Serializable {
 		System.out.println("process ends.");
 	}
 
-	private SimpleStringSearcher searcher;
+	private TrieStringSearcher searcher;
 
 	private Map<Integer, Entity> ents;
 
@@ -92,7 +93,7 @@ public class SimpleEntityLinker implements Serializable {
 
 	private Map<Integer, SparseVector> topicWordData;
 
-	public SimpleEntityLinker() {
+	public TrieEntityLinker() {
 
 	}
 
@@ -155,9 +156,10 @@ public class SimpleEntityLinker implements Serializable {
 
 		System.out.printf("read [%d] records from [%d] entities at [%s].\n", srs.size(), ents.size(), dataFileName);
 
-		searcher = new SimpleStringSearcher(3);
+		searcher = new TrieStringSearcher(2);
 		searcher.index(srs, false);
-		System.out.println(searcher.info());
+
+		// System.out.println(searcher.info());
 	}
 
 	private Counter<String> getWordCounts(IndexReader ir, int docId, String field) throws Exception {
@@ -269,7 +271,8 @@ public class SimpleEntityLinker implements Serializable {
 			topicWordData.put(id, sv);
 		}
 
-		searcher = new SimpleStringSearcher();
+		// searcher = new SimpleStringSearcher();
+		searcher = new TrieStringSearcher();
 		searcher.read(ois);
 		ois.close();
 	}

@@ -735,7 +735,7 @@ public class IOUtils {
 
 		Iterator<String> iter = c.iterator();
 		while (iter.hasNext()) {
-			write(oos, iter.next());
+			oos.writeUTF(iter.next());
 		}
 		oos.flush();
 	}

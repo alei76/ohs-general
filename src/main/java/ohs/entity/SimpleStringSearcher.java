@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.core.env.SystemEnvironmentPropertySource;
+
 import ohs.io.IOUtils;
 import ohs.io.TextFileWriter;
 import ohs.string.search.ppss.Gram;
@@ -20,6 +22,7 @@ import ohs.string.sim.SmithWaterman;
 import ohs.types.Counter;
 import ohs.types.Indexer;
 import ohs.types.SetMap;
+import ohs.types.StringIndexer;
 
 /**
  * 
@@ -81,6 +84,7 @@ public class SimpleStringSearcher implements Serializable {
 			}
 			srs.put(sr.getId(), sr);
 		}
+
 	}
 
 	public String info() {
@@ -138,15 +142,40 @@ public class SimpleStringSearcher implements Serializable {
 		return sb.toString();
 	}
 
-	public void read(ObjectInputStream ois) throws Exception {
-		{
-			int size = ois.readInt();
-			srs = new HashMap<Integer, StringRecord>(size);
-			for (int i = 0; i < size; i++) {
-				StringRecord sr = new StringRecord();
-				sr.read(ois);
-				srs.put(sr.getId(), sr);
+	public void write(ObjectOutputStream oos) throws Exception {
+		oos.writeInt(srs.size());
+		for (StringRecord sr : srs.values()) {
+			sr.write(oos);
+		}
+
+		oos.writeInt(gg.getQ());
+		IOUtils.write(oos, gramIndexer.getObjects());
+
+		oos.writeInt(index.size());
+		Iterator<Integer> iter1 = index.keySet().iterator();
+
+		while (iter1.hasNext()) {
+			int gid = iter1.next();
+			oos.writeInt(gid);
+
+			Set<Integer> rids = index.get(gid);
+			oos.writeInt(rids.size());
+
+			Iterator<Integer> iter2 = rids.iterator();
+			while (iter2.hasNext()) {
+				oos.writeInt(iter2.next());
 			}
+		}
+		oos.flush();
+	}
+
+	public void read(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+		srs = new HashMap<Integer, StringRecord>(size);
+		for (int i = 0; i < size; i++) {
+			StringRecord sr = new StringRecord();
+			sr.read(ois);
+			srs.put(sr.getId(), sr);
 		}
 
 		int q = ois.readInt();
@@ -182,10 +211,10 @@ public class SimpleStringSearcher implements Serializable {
 			if (gid < 0) {
 				continue;
 			}
-			Set<Integer> postings = index.get(gid, false);
+			Set<Integer> rids = index.get(gid, false);
 
-			if (postings != null) {
-				for (int rid : postings) {
+			if (rids != null) {
+				for (int rid : rids) {
 					c.incrementCount(rid, 1);
 				}
 			}
@@ -199,37 +228,6 @@ public class SimpleStringSearcher implements Serializable {
 			ret.setCount(sr, sw.getNormalizedScore(s, sr.getString()));
 		}
 		return ret;
-	}
-
-	public void write(ObjectOutputStream oos) throws Exception {
-		{
-			oos.writeInt(srs.size());
-			for (StringRecord sr : srs.values()) {
-				sr.write(oos);
-			}
-		}
-
-		oos.writeInt(gg.getQ());
-		IOUtils.write(oos, gramIndexer);
-
-		{
-			oos.writeInt(index.size());
-			Iterator<Integer> iter1 = index.keySet().iterator();
-
-			while (iter1.hasNext()) {
-				int gid = iter1.next();
-				Set<Integer> rids = index.get(gid);
-
-				oos.writeInt(gid);
-				oos.writeInt(rids.size());
-
-				Iterator<Integer> iter2 = rids.iterator();
-				while (iter2.hasNext()) {
-					oos.writeInt(iter2.next());
-				}
-			}
-		}
-		oos.flush();
 	}
 
 	public void write(String fileName) throws Exception {

@@ -1,6 +1,5 @@
 package ohs.types;
 
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.AbstractList;
@@ -22,18 +21,20 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 	protected Map<E, Integer> indexes;
 
 	public Indexer() {
-		this(100);
+		objects = new ArrayList<E>();
+		indexes = new HashMap<E, Integer>();
+	}
+
+	public Indexer(Collection<? extends E> c) {
+		this();
+		for (E a : c) {
+			getIndex(a);
+		}
 	}
 
 	public Indexer(int size) {
 		objects = new ArrayList<E>(size);
 		indexes = new HashMap<E, Integer>(size);
-	}
-
-	public Indexer(Collection<? extends E> c) {
-		this();
-		for (E a : c)
-			getIndex(a);
 	}
 
 	/**
@@ -87,14 +88,6 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 		return index;
 	}
 
-	public List<E> getObjects(List<Integer> ids) {
-		List<E> ret = new ArrayList<E>();
-		for (int i = 0; i < ids.size(); i++) {
-			ret.add(getObject(ids.get(i)));
-		}
-		return ret;
-	}
-
 	public List<Integer> getIndexes(List<E> objs) {
 		List<Integer> ret = new ArrayList<Integer>();
 		for (int i = 0; i < objs.size(); i++) {
@@ -123,6 +116,22 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 		return os;
 	}
 
+	public List<E> getObjects(List<Integer> ids) {
+		List<E> ret = new ArrayList<E>();
+		for (int i = 0; i < ids.size(); i++) {
+			ret.add(getObject(ids.get(i)));
+		}
+		return ret;
+	}
+
+	public List<Integer> indexOf(List<Object> objs) {
+		List<Integer> ret = new ArrayList<>(objs.size());
+		for (int i = 0; i < objs.size(); i++) {
+			ret.add(indexOf(objs.get(i)));
+		}
+		return ret;
+	}
+
 	/**
 	 * Returns the index of the given object, or -1 if the object is not present in the indexer.
 	 * 
@@ -135,14 +144,6 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 		if (index == null)
 			return -1;
 		return index;
-	}
-
-	public List<Integer> indexOf(List<Object> objs) {
-		List<Integer> ret = new ArrayList<>(objs.size());
-		for (int i = 0; i < objs.size(); i++) {
-			ret.add(indexOf(objs.get(i)));
-		}
-		return ret;
 	}
 
 	/**

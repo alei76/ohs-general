@@ -67,9 +67,19 @@ public class WikiDataHandler {
 
 		WikiDataHandler dh = new WikiDataHandler();
 		// dh.makeTextDump();
-		dh.extractNames();
+		// dh.extractNames();
 		// dh.extractCategories();
+		// dh.test();
 		System.out.println("process ends.");
+	}
+
+	public void test() {
+		TextFileReader reader = new TextFileReader("../../data/medical_ir/wiki/enwiki-20151201-categorylinks.sql");
+		while (reader.hasNext()) {
+			String line = reader.next();
+			System.out.println(line);
+		}
+		reader.close();
 	}
 
 	private static String[] parse(String text) throws Exception {
@@ -168,6 +178,107 @@ public class WikiDataHandler {
 	}
 
 	public void extractNames() throws Exception {
+		IndexSearcher is = SearcherUtils.getIndexSearcher("../../data/medical_ir/wiki/index");
+		IndexReader ir = is.getIndexReader();
+
+		Set<String> stopPrefixes = getStopPrefixes();
+
+		ListMap<String, String> titleVariantMap = new ListMap<String, String>();
+
+		int type = 1;
+		String outputFileName = ENTPath.NAME_PERSON_FILE;
+
+		if (type == 2) {
+			outputFileName = ENTPath.NAME_ORGANIZATION_FILE;
+		} else if (type == 3) {
+			outputFileName = ENTPath.NAME_LOCATION_FILE;
+		}
+
+		CounterMap<String, String> cm = Generics.newCounterMap();
+		Map<String, Integer> titleIdMap = Generics.newHashMap();
+
+		for (int i = 0; i < ir.maxDoc(); i++) {
+			if ((i + 1) % 100000 == 0) {
+				System.out.printf("\r[%d/%d]", i + 1, ir.maxDoc());
+			}
+
+			// if (i == 1000) {
+			// break;
+			// }
+
+			String title = ir.document(i).get(IndexFieldName.TITLE);
+
+			if (!accept(stopPrefixes, title)) {
+				continue;
+			}
+
+			String catStr = ir.document(i).get(IndexFieldName.CATEGORY).toLowerCase();
+			String redirect = ir.document(i).get(IndexFieldName.REDIRECT_TITLE);
+
+			if (isValidTitle(type, catStr)) {
+				boolean isAdded = false;
+				if (redirect.length() > 0) {
+					ScoreDoc[] hits = is.search(new TermQuery(new Term(IndexFieldName.TITLE, redirect)), 1).scoreDocs;
+					if (hits.length == 1) {
+						String catStr2 = is.doc(hits[0].doc).get(IndexFieldName.CATEGORY).toLowerCase();
+						if (isValidTitle(type, catStr2)) {
+							titleVariantMap.put(redirect, title);
+							titleIdMap.put(redirect, hits[0].doc);
+
+							isAdded = true;
+							Counter<String> c = Generics.newCounter();
+							for (String word : StrUtils.split("\\W+", catStr2)) {
+								c.incrementCount(word, 1);
+							}
+							cm.setCounter(redirect, c);
+						}
+					}
+				}
+				if (!isAdded) {
+					titleVariantMap.put(title, "");
+					titleIdMap.put(title, i);
+
+					Counter<String> c = Generics.newCounter();
+					for (String word : StrUtils.split("\\W+", catStr)) {
+						c.incrementCount(word, 1);
+					}
+					cm.setCounter(title, c);
+				}
+			}
+		}
+
+		List<String> keys = new ArrayList<String>(titleVariantMap.keySet());
+		Collections.sort(keys);
+
+		TextFileWriter writer = new TextFileWriter(outputFileName);
+		for (int i = 0; i < keys.size(); i++) {
+			String title = keys.get(i);
+			int id = titleIdMap.get(title);
+			String catStr = "none";
+
+			if (cm.getCounter(title).size() > 0) {
+				Counter<String> c = cm.getCounter(title);
+				catStr = c.toStringSortedByValues(true, false, c.size(), " ");
+			}
+
+			List<String> variants = titleVariantMap.get(title);
+			Iterator<String> iter = variants.iterator();
+			while (iter.hasNext()) {
+				String variant = iter.next();
+				if (variant.length() == 0) {
+					iter.remove();
+				}
+			}
+			String[] two = splitDisambiguationType(title);
+			writer.write(String.format("%d\t%s\t%s\t%s\t%s\n", id, two[0], two[1] == null ? "none" : two[1], catStr,
+					variants.size() == 0 ? "none" : StrUtils.join("|", variants)));
+		}
+		writer.close();
+
+		System.out.printf("\r[%d/%d]\n", ir.maxDoc(), ir.maxDoc());
+	}
+
+	public void extractTitles() throws Exception {
 		IndexSearcher is = SearcherUtils.getIndexSearcher("../../data/medical_ir/wiki/index");
 		IndexReader ir = is.getIndexReader();
 
