@@ -70,6 +70,7 @@ public class WikiDataHandler {
 		// dh.extractNames();
 		// dh.extractCategories();
 		// dh.test();
+		dh.extractTitles();
 		System.out.println("process ends.");
 	}
 
@@ -177,7 +178,7 @@ public class WikiDataHandler {
 		System.out.printf("\r[%d/%d]\n", ir.maxDoc(), ir.maxDoc());
 	}
 
-	public void extractNames() throws Exception {
+	public void extractEntityNames() throws Exception {
 		IndexSearcher is = SearcherUtils.getIndexSearcher("../../data/medical_ir/wiki/index");
 		IndexReader ir = is.getIndexReader();
 
@@ -286,14 +287,7 @@ public class WikiDataHandler {
 
 		ListMap<String, String> titleVariantMap = new ListMap<String, String>();
 
-		int type = 1;
-		String outputFileName = ENTPath.NAME_PERSON_FILE;
-
-		if (type == 2) {
-			outputFileName = ENTPath.NAME_ORGANIZATION_FILE;
-		} else if (type == 3) {
-			outputFileName = ENTPath.NAME_LOCATION_FILE;
-		}
+		String outputFileName = ENTPath.TITLE_FILE;
 
 		CounterMap<String, String> cm = Generics.newCounterMap();
 		Map<String, Integer> titleIdMap = Generics.newHashMap();
@@ -316,35 +310,31 @@ public class WikiDataHandler {
 			String catStr = ir.document(i).get(IndexFieldName.CATEGORY).toLowerCase();
 			String redirect = ir.document(i).get(IndexFieldName.REDIRECT_TITLE);
 
-			if (isValidTitle(type, catStr)) {
-				boolean isAdded = false;
-				if (redirect.length() > 0) {
-					ScoreDoc[] hits = is.search(new TermQuery(new Term(IndexFieldName.TITLE, redirect)), 1).scoreDocs;
-					if (hits.length == 1) {
-						String catStr2 = is.doc(hits[0].doc).get(IndexFieldName.CATEGORY).toLowerCase();
-						if (isValidTitle(type, catStr2)) {
-							titleVariantMap.put(redirect, title);
-							titleIdMap.put(redirect, hits[0].doc);
+			boolean isAdded = false;
+			if (redirect.length() > 0) {
+				ScoreDoc[] hits = is.search(new TermQuery(new Term(IndexFieldName.TITLE, redirect)), 1).scoreDocs;
+				if (hits.length == 1) {
+					String catStr2 = is.doc(hits[0].doc).get(IndexFieldName.CATEGORY).toLowerCase();
+					titleVariantMap.put(redirect, title);
+					titleIdMap.put(redirect, hits[0].doc);
 
-							isAdded = true;
-							Counter<String> c = Generics.newCounter();
-							for (String word : StrUtils.split("\\W+", catStr2)) {
-								c.incrementCount(word, 1);
-							}
-							cm.setCounter(redirect, c);
-						}
-					}
-				}
-				if (!isAdded) {
-					titleVariantMap.put(title, "");
-					titleIdMap.put(title, i);
-
+					isAdded = true;
 					Counter<String> c = Generics.newCounter();
-					for (String word : StrUtils.split("\\W+", catStr)) {
+					for (String word : StrUtils.split("\\W+", catStr2)) {
 						c.incrementCount(word, 1);
 					}
-					cm.setCounter(title, c);
+					cm.setCounter(redirect, c);
 				}
+			}
+			if (!isAdded) {
+				titleVariantMap.put(title, "");
+				titleIdMap.put(title, i);
+
+				Counter<String> c = Generics.newCounter();
+				for (String word : StrUtils.split("\\W+", catStr)) {
+					c.incrementCount(word, 1);
+				}
+				cm.setCounter(title, c);
 			}
 		}
 
