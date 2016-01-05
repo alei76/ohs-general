@@ -52,8 +52,8 @@ public class SimpleEntityLinker implements Serializable {
 		// if (IOUtils.exists(ENTPath.ENTITY_LINKER_FILE)) {
 		// el.read(ENTPath.ENTITY_LINKER_FILE);
 		// } else {
-//		el.createSearchers(ENTPath.TITLE_FILE);
-//		el.write(ENTPath.ENTITY_LINKER_FILE);
+		el.createSearchers(ENTPath.TITLE_FILE);
+		// el.write(ENTPath.ENTITY_LINKER_FILE);
 		// }
 
 		el.read(ENTPath.ENTITY_LINKER_FILE);
@@ -120,7 +120,7 @@ public class SimpleEntityLinker implements Serializable {
 				continue;
 			}
 
-			// if (reader.getNumLines() > 1000) {
+			// if (reader.getNumLines() > 10000) {
 			// break;
 			// }
 

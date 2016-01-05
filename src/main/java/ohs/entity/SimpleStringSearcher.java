@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -102,7 +103,11 @@ public class SimpleStringSearcher implements Serializable {
 			srs.put(sr.getId(), sr);
 		}
 
-		System.out.printf("\r[%f, %s]", 100, stopWatch.stop());
+		System.out.printf("\r[%d, %s]\n", 100, stopWatch.stop());
+
+		for (int gid : index.keySet()) {
+			Collections.sort(index.get(gid));
+		}
 
 	}
 
