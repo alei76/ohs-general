@@ -1,16 +1,17 @@
 package ohs.types;
 
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
-import ohs.entity.ENTPath;
-import ohs.io.TextFileReader;
+import ohs.io.IOUtils;
+import ohs.math.ArrayMath;
 import ohs.tree.trie.TST;
 import ohs.tree.trie.TST.Node;
 
@@ -21,51 +22,86 @@ public class StringIndexer extends AbstractList<String> implements Serializable 
 	 */
 	private static final long serialVersionUID = 7056651014088801108L;
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		System.out.println("process begins");
 		// build symbol table from standard input
 
-		Set<String> names = new HashSet<String>();
+		// Set<String> names = new HashSet<String>();
+		//
+		// TextFileReader reader = new TextFileReader(ENTPath.NAME_PERSON_FILE);
+		// while (reader.hasNext()) {
+		// String line = reader.next();
+		//
+		// if (reader.getNumLines() == 1) {
+		// continue;
+		// }
+		//
+		// // if (reader.getNumLines() > 10) {
+		// // break;
+		// // }
+		//
+		// String[] parts = line.split("\t");
+		// int id = Integer.parseInt(parts[0]);
+		// String name = parts[1];
+		// String topic = parts[2];
+		// String catStr = parts[3];
+		// String variantStr = parts[4];
+		// names.add(name);
+		// }
+		// reader.close();
 
-		TextFileReader reader = new TextFileReader(ENTPath.NAME_PERSON_FILE);
-		while (reader.hasNext()) {
-			String line = reader.next();
+		// String[] names = { "ABCE", "BCED", "GEEG", "GGGEDE", "ABCCCC", "JDBEDD", "ABED;LAKSJDF" };
 
-			if (reader.getNumLines() == 1) {
-				continue;
+		List<String> names = new ArrayList<String>();
+
+		for (int i = 0; i < 1000000; i++) {
+			int[] ns = ArrayMath.random(0, 50, 100);
+
+			StringBuffer sb = new StringBuffer();
+
+			for (int j = 0; j < ns.length; j++) {
+				sb.append((char) ns[j]);
+			}
+			names.add(sb.toString());
+
+		}
+
+		{
+			StringIndexer indexer = new StringIndexer();
+			for (String name : names) {
+				indexer.add(name);
+				// System.out.printf("%d:\t%s\n", i, st.getObject(i));
 			}
 
-			// if (reader.getNumLines() > 10) {
-			// break;
+			// System.out.println("-----------------------");
+			// for (String obj : indexer1.getObjects()) {
+			// System.out.println(obj);
 			// }
+			// System.out.println();
 
-			String[] parts = line.split("\t");
-			int id = Integer.parseInt(parts[0]);
-			String name = parts[1];
-			String topic = parts[2];
-			String catStr = parts[3];
-			String variantStr = parts[4];
-			names.add(name);
-		}
-		reader.close();
-
-		StringIndexer st = new StringIndexer();
-
-		for (String name : names) {
-			st.add(name);
-			// System.out.printf("%d:\t%s\n", i, st.getObject(i));
+			indexer.write("./test.ser.gz");
 		}
 
-		System.out.println(names.size());
-		System.out.println(st.size());
-		System.out.println(st.getObjects().size());
+		{
+			Indexer<String> indexer = new Indexer<String>();
+			for (String name : names) {
+				indexer.add(name);
+			}
+
+			IOUtils.write("./test.ser-2.gz", indexer);
+		}
+
+		// System.out.println("-----------------------");
+		// for (String obj : indexer1.getObjects()) {
+		// System.out.println(obj);
+		// }
 
 		System.out.println("process ends");
 	}
 
 	private TST<Integer> indexes;
 
-	private List<TST.Node<Integer>> objects;
+	private List<Node<Integer>> objects;
 
 	public StringIndexer() {
 		objects = new ArrayList<TST.Node<Integer>>();
@@ -137,9 +173,13 @@ public class StringIndexer extends AbstractList<String> implements Serializable 
 
 	public String getObject(int index) {
 		Node<Integer> node = objects.get(index);
+		int level = node.getLevel() + 1;
 		StringBuffer sb = new StringBuffer();
 		while (node != null) {
-			sb.append(node.getCharacter());
+			if (node.getLevel() < level) {
+				sb.append(node.getCharacter());
+				level = node.getLevel();
+			}
 			node = node.getParent();
 		}
 		return sb.reverse().toString();
@@ -151,6 +191,7 @@ public class StringIndexer extends AbstractList<String> implements Serializable 
 		for (int i = 0; i < size(); i++) {
 			ret.add(getObject(i));
 		}
+
 		return ret;
 	}
 
@@ -202,8 +243,89 @@ public class StringIndexer extends AbstractList<String> implements Serializable 
 		return indexes.size();
 	}
 
-	public void write(ObjectOutputStream oos) {
+	public void write(ObjectOutputStream oos) throws Exception {
+		oos.writeInt(indexes.size());
+		writeTrie(oos, indexes.getRoot());
+		oos.flush();
+	}
+
+	private Node<Integer> readTrie(ObjectInputStream ois, Node<Integer> parent, Node<Integer> node) throws Exception {
+		if (ois.readBoolean()) {
+			node = new Node<Integer>();
+			node.setCharacter(ois.readChar());
+			node.setLevel(ois.readInt());
+			int value = ois.readInt();
+			node.setValue(value == -1 ? null : value);
+			node.setParent(parent);
+			node.setLeft(readTrie(ois, node, node.getLeft()));
+			node.setMiddle(readTrie(ois, node, node.getMiddle()));
+			node.setRight(readTrie(ois, node, node.getRight()));
+		}
+
+		return node;
+	}
+
+	private Node<Integer> readTrie(ObjectInputStream ois) throws Exception {
+		Node<Integer> root = new Node<Integer>();
+		root = readTrie(ois, null, root);
+		return root;
+	}
+
+	public void read(ObjectInputStream ois) throws Exception {
+		indexes = new TST<Integer>();
+		indexes.setSize(ois.readInt());
+		indexes.setRoot(readTrie(ois));
+		objects = new ArrayList<Node<Integer>>(indexes.size());
+
+		readObjects(indexes.getRoot());
+
+		objects.sort(new Comparator<Node<Integer>>() {
+
+			@Override
+			public int compare(Node<Integer> o1, Node<Integer> o2) {
+				return o1.getValue() < o2.getValue() ? -1 : 1;
+			}
+		});
 
 	}
 
+	private void readObjects(Node<Integer> node) {
+		if (node != null) {
+			if (node.getValue() != null) {
+				objects.add(node);
+			}
+
+			readObjects(node.getLeft());
+			readObjects(node.getMiddle());
+			readObjects(node.getRight());
+		}
+	}
+
+	public void read(String fileName) throws Exception {
+		ObjectInputStream ois = IOUtils.openObjectInputStream(fileName);
+		read(ois);
+		ois.close();
+	}
+
+	public void write(String fileName) throws Exception {
+		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
+		write(oos);
+		oos.close();
+	}
+
+	private void writeTrie(ObjectOutputStream oos, Node<Integer> node) throws Exception {
+		if (node != null) {
+			oos.writeBoolean(true);
+			oos.writeChar(node.getCharacter());
+			oos.writeInt(node.getLevel());
+			oos.writeInt(node.getValue() == null ? -1 : node.getValue());
+
+			Node<Integer>[] children = new Node[] { node.getLeft(), node.getMiddle(), node.getRight() };
+			for (int i = 0; i < children.length; i++) {
+				writeTrie(oos, children[i]);
+			}
+		} else {
+			oos.writeBoolean(false);
+		}
+	}
 }

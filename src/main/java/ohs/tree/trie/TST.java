@@ -64,6 +64,7 @@ import ohs.utils.StrUtils;
  */
 public class TST<V> {
 	public static class Node<V> {
+
 		private char c; // character
 		private Node<V> parent;
 
@@ -75,14 +76,20 @@ public class TST<V> {
 
 		}
 
-		public Node(char c, Node<V> parent, Node<V> left, Node<V> mid, Node<V> right, V val) {
+		public int getLevel() {
+			return level;
+		}
+
+		private int level = 0;
+
+		public Node(char c, Node<V> parent, Node<V> left, Node<V> middle, Node<V> right, V value) {
 			super();
 			this.c = c;
 			this.parent = parent;
 			this.left = left;
-			this.middle = mid;
+			this.middle = middle;
 			this.right = right;
-			this.value = val;
+			this.value = value;
 		}
 
 		@Override
@@ -161,20 +168,28 @@ public class TST<V> {
 			this.value = v;
 		}
 
+		public void setLevel(int level) {
+			this.level = level;
+		}
+
 		public String toString() {
 			StringBuffer sb = new StringBuffer();
 
-			List<String> list = new ArrayList<String>();
+			List<String> chs = new ArrayList<String>();
+			List<String> levels = new ArrayList<String>();
 			Node<V> node = this;
 
 			while (node != null) {
-				list.add(node.getCharacter() + "");
+				chs.add(node.getCharacter() + "");
+				levels.add(node.getLevel() + "");
 				node = node.getParent();
 			}
 
-			Collections.reverse(list);
+			Collections.reverse(chs);
+			Collections.reverse(levels);
 
-			sb.append(String.format("char:\t%s\n", StrUtils.join(" -> ", list)));
+			sb.append(String.format("level:\t%s\n", StrUtils.join(" -> ", levels)));
+			sb.append(String.format("char:\t%s\n", StrUtils.join(" -> ", chs)));
 
 			// sb.append(String.format("value:\t%s\n", value.toString()));
 			// sb.append(String.format("parent char:\t%s", parent.c));
@@ -201,6 +216,24 @@ public class TST<V> {
 
 	public void clear() {
 
+	}
+
+	public List<Node<V>> getLeaves() {
+		List<Node<V>> ret = new ArrayList<Node<V>>();
+		getLeaves(root, ret);
+		return ret;
+	}
+
+	private void getLeaves(Node<V> node, List<Node<V>> leaves) {
+		if (node != null) {
+			if (node.getLeft() == null && node.getMiddle() == null && node.getRight() == null) {
+				leaves.add(node);
+			} else {
+				getLeaves(node.getLeft(), leaves);
+				getLeaves(node.getMiddle(), leaves);
+				getLeaves(node.getRight(), leaves);
+			}
+		}
 	}
 
 	public void setRoot(Node<V> root) {
@@ -386,7 +419,11 @@ public class TST<V> {
 		if (x == null) {
 			x = new Node<V>();
 			x.setCharacter(c);
+			x.setLevel(d);
 		}
+
+		// System.out.printf("%s: %d, %c\n", key, d, c);
+
 		if (c < x.getCharacter()) {
 			x.setLeft(put(x, x.getLeft(), key, val, d));
 		} else if (c > x.getCharacter()) {
@@ -415,6 +452,8 @@ public class TST<V> {
 		if (!contains(key)) {
 			N++;
 		}
+
+		// System.out.println("#############");
 		root = put(root, root, key, val, 0);
 		root.setParent(null);
 	}
