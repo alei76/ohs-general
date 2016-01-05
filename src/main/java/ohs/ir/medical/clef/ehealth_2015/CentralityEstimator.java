@@ -10,6 +10,8 @@ import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
+import ohs.types.Counter;
+import ohs.types.Indexer;
 
 /**
  * This class implements centralities of categories.
@@ -35,13 +37,13 @@ public class CentralityEstimator {
 
 	private StringBuffer logBuff;
 
-	private StrIndexer docIndexer;
+	private Indexer<String> docIndexer;
 
 	public SparseVector estimate(SparseVector queryConceptWeights, SparseMatrix docConceptWeightData) {
 		List<SparseVector> weightVectors = new ArrayList<SparseVector>();
 		weightVectors.add(queryConceptWeights);
 
-		IntArrayList docIds = new IntArrayList();
+		List<Integer> docIds = new ArrayList<Integer>();
 
 		for (int i = 0; i < docConceptWeightData.rowSize(); i++) {
 			int docId = docConceptWeightData.indexAtRowLoc(i);
@@ -67,9 +69,11 @@ public class CentralityEstimator {
 			}
 		}
 
-		double[] cents = ArrayMath.doRandomWalkOut(sim_matrix, 100, 0.00000001, 0.85);
+		double[] cents = new double[sim_matrix.length];
 
-		IntCounter ret = new IntCounter();
+		ArrayMath.doRandomWalk(sim_matrix, cents, 100, 0.00000001, 0.85);
+
+		Counter<Integer> ret = new Counter<Integer>();
 
 		for (int i = 1; i < cents.length; i++) {
 			double cent = cents[i];

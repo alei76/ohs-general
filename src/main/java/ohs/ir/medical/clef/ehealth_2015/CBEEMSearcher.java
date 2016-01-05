@@ -39,6 +39,7 @@ import ohs.matrix.DenseVector;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
 import ohs.types.Counter;
+import ohs.types.CounterMap;
 import ohs.types.DeepMap;
 import ohs.types.Indexer;
 
@@ -309,7 +310,7 @@ public class CBEEMSearcher {
 
 	private SparseMatrix[] wordCocountData;
 
-	private IntHashSet numberWords;
+	private Set<Integer> numberWords;
 
 	private int targetId;
 
@@ -317,7 +318,7 @@ public class CBEEMSearcher {
 
 	private SparseVector queryModel;
 
-	private IntArrayList queryWords;
+	private List<Integer> queryWords;
 
 	public CBEEMSearcher(IndexSearcher[] indexSearchers, DenseVector[] docPriorData, HyperParameter hyperParameter) {
 		super();
@@ -330,7 +331,7 @@ public class CBEEMSearcher {
 	}
 
 	private SparseVector combineModels(SparseVector[] models, double[] mixtures) {
-		IntCounter counter = new IntCounter();
+		Counter<Integer> counter = new Counter<Integer>();
 		for (int i = 0; i < models.length; i++) {
 			SparseVector model = models[i];
 			double mixture = mixtures[i];
@@ -569,7 +570,7 @@ public class CBEEMSearcher {
 		this.baseQuery = baseQuery;
 
 		wordIndexer = new Indexer<String>();
-		numberWords = new IntHashSet();
+		numberWords = new HashSet<Integer>();
 
 		categoryIndexer = new Indexer<String>();
 		docScoreData = new SparseVector[num_colls];
@@ -753,8 +754,8 @@ public class CBEEMSearcher {
 	private void setupQuery() {
 		List<String> words = new ArrayList<String>();
 		extractQueryWords(baseQuery.getLuceneQuery(), words);
-		queryWords = new IntArrayList();
-		IntCounter counter = new IntCounter();
+		queryWords = new ArrayList<Integer>();
+		Counter<Integer> counter = new Counter<Integer>();
 
 		for (int i = 0; i < words.size(); i++) {
 			int w = wordIndexer.getIndex(words.get(i));
@@ -771,14 +772,14 @@ public class CBEEMSearcher {
 
 	private void setWordCountBoxes() throws Exception {
 		Set<Integer> wordsInFB = new HashSet<Integer>();
-		List<IntCounterMap> wordCountData = new ArrayList<IntCounterMap>();
+		List<CounterMap<Integer, Integer>> wordCountData = new ArrayList<CounterMap<Integer, Integer>>();
 		List<DeepMap<Integer, Integer, Integer>> wordData = new ArrayList<DeepMap<Integer, Integer, Integer>>();
 
 		for (int i = 0; i < num_colls; i++) {
 			SparseVector docScores = docScoreData[i];
 			IndexReader indexReader = indexSearchers[i].getIndexReader();
 
-			IntCounterMap docWordCountMap = new IntCounterMap();
+			CounterMap<Integer,Integer> docWordCountMap = new CounterMap<Integer,Integer>();
 			DeepMap<Integer, Integer, Integer> docWords = new DeepMap<Integer, Integer, Integer>();
 
 			for (int j = 0; j < docScores.size(); j++) {
@@ -797,7 +798,7 @@ public class CBEEMSearcher {
 
 				BytesRef bytesRef = null;
 				PostingsEnum postingsEnum = null;
-				IntCounter wordCounts = new IntCounter();
+				Counter<Integer> wordCounts = new Counter<Integer>();
 				Map<Integer, Integer> words = new TreeMap<Integer, Integer>();
 
 				while ((bytesRef = termsEnum.next()) != null) {

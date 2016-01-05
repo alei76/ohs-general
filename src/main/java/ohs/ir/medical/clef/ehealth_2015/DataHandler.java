@@ -18,6 +18,7 @@ import ohs.ir.medical.general.SearcherUtils;
 import ohs.ir.medical.query.BaseQuery;
 import ohs.ir.medical.query.QueryReader;
 import ohs.ir.medical.query.RelevanceReader;
+import ohs.types.BidMap;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.utils.StrUtils;
@@ -51,7 +52,7 @@ public class DataHandler {
 			String dataFileName = MIRPath.CLEF_EHEALTH_OUTPUT_RESULT_2015_INIT_DIR + String.format("%s.txt", collName);
 			String outputFileName = MIRPath.CLEF_EHEALTH_OUTPUT_RESULT_2015_QUERY_DOC_DIR + String.format("%s.txt", collName);
 
-			StrCounterMap queryDocScores = new StrCounterMap();
+			CounterMap<String, String> queryDocScores = new CounterMap<String, String>();
 
 			TextFileReader reader = new TextFileReader(dataFileName);
 			while (reader.hasNext()) {
@@ -101,8 +102,8 @@ public class DataHandler {
 		String docMapFileName = MIRPath.CLEF_EHEALTH_DOC_ID_MAP_FIE;
 
 		List<BaseQuery> baseQueries = QueryReader.readClefEHealthQueries(queryFileName);
-		CounterMap<String, String>  relvData = RelevanceReader.readClefEHealthRelevances(revFileName);
-		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileName);
+		CounterMap<String, String> relvData = RelevanceReader.readClefEHealthRelevances(revFileName);
+		BidMap<String, String> docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileName);
 
 		IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(MIRPath.CLEF_EHEALTH_INDEX_DIR);
 
