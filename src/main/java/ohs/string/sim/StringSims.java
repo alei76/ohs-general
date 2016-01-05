@@ -27,9 +27,11 @@ public class StringSims {
 	}
 
 	/**
-	 * http://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance#Optimal_string_alignment_distance
+	 * http://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance#
+	 * Optimal_string_alignment_distance
 	 * 
-	 * http://stackoverflow.com/questions/6033631/levenshtein-to-damerau-levenshtein/6035519#6035519
+	 * http://stackoverflow.com/questions/6033631/levenshtein-to-damerau-
+	 * levenshtein/6035519#6035519
 	 * 
 	 * @param a
 	 * @param b
@@ -59,8 +61,8 @@ public class StringSims {
 				int d = ((a.charAt(i - 1) == b.charAt(j - 1)) ? 0 : 1);
 				if (d == 0)
 					DB = j;
-				H[i + 1][j + 1] = ArrayMath
-						.min(new int[] { H[i][j] + d, H[i + 1][j] + 1, H[i][j + 1] + 1, H[i1][j1] + (i - i1 - 1) + 1 + (j - j1 - 1) });
+				H[i + 1][j + 1] = ArrayMath.min(new int[] { H[i][j] + d, H[i + 1][j] + 1, H[i][j + 1] + 1,
+						H[i1][j1] + (i - i1 - 1) + 1 + (j - j1 - 1) });
 			}
 			DA[a.charAt(i - 1)] = i;
 		}
@@ -68,12 +70,15 @@ public class StringSims {
 	}
 
 	/**
-	 * Compute the Damerau-Levenshtein distance between the specified source string and the specified target string.
+	 * Compute the Damerau-Levenshtein distance between the specified source
+	 * string and the specified target string.
 	 * 
-	 * https://github.com/KevinStern/software-and-algorithms/blob/master/src/main/java/blogspot/software_and_algorithms/stern_library/string
+	 * https://github.com/KevinStern/software-and-algorithms/blob/master/src/
+	 * main/java/blogspot/software_and_algorithms/stern_library/string
 	 * /DamerauLevenshteinAlgorithm.java
 	 */
-	public static int DamerauLevenshteinDistance(String s, String t, int insert_cost, int delete_cost, int replace_cost, int swap_cost) {
+	public static int DamerauLevenshteinDistance(String s, String t, int insert_cost, int delete_cost, int replace_cost,
+			int swap_cost) {
 		if (s.length() == 0) {
 			return t.length() * insert_cost;
 		}
@@ -200,7 +205,7 @@ public class StringSims {
 		return ret;
 	}
 
-	public static double smithWatermanSimilarity(String s, String t) {
+	public static double SmithWatermanSimilarity(String s, String t) {
 		int len_s = s.length();
 		int len_t = t.length();
 		int d[][]; // matrix
@@ -257,7 +262,7 @@ public class StringSims {
 		return sim;
 	}
 
-	public static double needlemanWunschSimilarity(String s, String t) {
+	public static double NeedlemanWunschSimilarity(String s, String t) {
 		int len_s = s.length();
 		int len_t = t.length();
 		int d[][]; // matrix
@@ -405,13 +410,15 @@ public class StringSims {
 			String b = "ABC";
 			//
 			// for (int i = 0; i < 10; i++) {
-			// System.out.printf("%d\t%s\t%s\n", i, CommonFuncs.sigmoid(-i), 1f / Math.log(1 + i + 1));
+			// System.out.printf("%d\t%s\t%s\n", i, CommonFuncs.sigmoid(-i), 1f
+			// / Math.log(1 + i + 1));
 			// }
 
 			// System.out.println(editDistance(a, b));
 			// System.out.println(getWeightedEditDistance(a, b, false));
 			// System.out.println(getDamerauLevenshteinDistance(a, b, 1000));
-			// System.out.println(getDamerauLevenshteinDistance(a, b, 1, 1, 1, 1));
+			// System.out.println(getDamerauLevenshteinDistance(a, b, 1, 1, 1,
+			// 1));
 		}
 
 		{
@@ -421,8 +428,8 @@ public class StringSims {
 			String s = "ABC";
 			String t = "ABCC";
 			System.out.println(editDistance(s, t));
-			System.out.println(smithWatermanSimilarity(s, t));
-			System.out.println(needlemanWunschSimilarity(s, t));
+			System.out.println(SmithWatermanSimilarity(s, t));
+			System.out.println(NeedlemanWunschSimilarity(s, t));
 			System.out.println(DiceSimilarity(s, t));
 
 			System.out.println(JaccardSimilarity(s, t));
@@ -483,8 +490,9 @@ public class StringSims {
 	/**
 	 * Similarity Measure for Text Processing
 	 *
-	 * 1. Lin, Y.-S., Jiang, J.-Y., Lee, S.-J.: A Similarity Measure for Text Classification and Clustering. IEEE Transactions on Knowledge
-	 * and Data Engineering. 26, 1575–1590 (2014).
+	 * 1. Lin, Y.-S., Jiang, J.-Y., Lee, S.-J.: A Similarity Measure for Text
+	 * Classification and Clustering. IEEE Transactions on Knowledge and Data
+	 * Engineering. 26, 1575–1590 (2014).
 	 * 
 	 * 
 	 * @param s

@@ -61,7 +61,8 @@ public class DataHandler {
 
 			for (int j = 0; j < files.size(); j++) {
 				File file = files.get(j);
-				String outputFileName = file.getCanonicalPath().replace("content_nlp", "content_nlp_conll").replace(".xml", ".conll");
+				String outputFileName = file.getCanonicalPath().replace("content_nlp", "content_nlp_conll")
+						.replace(".xml", ".conll");
 
 				try {
 					IOUtils.write(outputFileName, getTextInConllFormat(file));
@@ -140,7 +141,8 @@ public class DataHandler {
 
 							k = end;
 
-							if (!(startTag.equals("PERSON") || startTag.equals("LOCATION") || startTag.equals("ORGANIZATION"))) {
+							if (!(startTag.equals("PERSON") || startTag.equals("LOCATION")
+									|| startTag.equals("ORGANIZATION"))) {
 								continue;
 							}
 							nerOffets.add(new Pair<Integer, Integer>(start, end));
@@ -373,7 +375,7 @@ public class DataHandler {
 	}
 
 	private ListMap<String, String> readDateIdMap() throws Exception {
-		ListMap<String, String> map = new ListMap<String, String>(true);
+		ListMap<String, String> map = new ListMap<String, String>();
 		TextFileReader reader = new TextFileReader(NSPath.NEWS_META_FILE);
 		while (reader.hasNext()) {
 			if (reader.getNumLines() == 1) {
@@ -391,7 +393,8 @@ public class DataHandler {
 	private void write(String mediaType, Map<String, String> map, int num_dirs) throws Exception {
 		for (String fileName : map.keySet()) {
 			String content = map.get(fileName);
-			String outputFileName = NSPath.DATA_DIR + String.format("content/%s/%05d/%s.txt", mediaType, num_dirs, fileName);
+			String outputFileName = NSPath.DATA_DIR
+					+ String.format("content/%s/%05d/%s.txt", mediaType, num_dirs, fileName);
 			IOUtils.write(outputFileName, content);
 		}
 		map.clear();

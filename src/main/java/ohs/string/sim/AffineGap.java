@@ -81,8 +81,6 @@ public class AffineGap {
 	}
 
 	static public void main(String[] argv) {
-		AffineGap aligner = new AffineGap();
-
 		String[] strs = { "William W. ‘Don’t call me Dubya’ Cohen", "William W. Cohen" };
 		strs = new String[] { "ABC", "ABBBBBC" };
 		strs = new String[] { "COHEN", "MCCOHN" };

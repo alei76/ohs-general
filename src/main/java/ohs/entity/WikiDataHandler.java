@@ -67,10 +67,10 @@ public class WikiDataHandler {
 
 		WikiDataHandler dh = new WikiDataHandler();
 		// dh.makeTextDump();
-		// dh.extractNames();
+		dh.extractEntityNames();
 		// dh.extractCategories();
 		// dh.test();
-		dh.extractTitles();
+		// dh.extractTitles();
 		System.out.println("process ends.");
 	}
 
@@ -112,7 +112,8 @@ public class WikiDataHandler {
 
 	private Pattern rp2 = Pattern.compile("\\([^\\(\\)]+\\)");
 
-	private Pattern lp1 = Pattern.compile("(rivers|cities|towns|mountains|seas|bridges|airports|buildings|places) (established )?(of|in)");
+	private Pattern lp1 = Pattern
+			.compile("(rivers|cities|towns|mountains|seas|bridges|airports|buildings|places) (established )?(of|in)");
 
 	private Pattern op1 = Pattern.compile(
 			"(organizations|organisations|companies|agencies|institutions|institutes|clubs|universities|schools|colleges) (established|establishments|based) in");
@@ -186,7 +187,7 @@ public class WikiDataHandler {
 
 		ListMap<String, String> titleVariantMap = new ListMap<String, String>();
 
-		int type = 1;
+		int type = 3;
 		String outputFileName = ENTPath.NAME_PERSON_FILE;
 
 		if (type == 2) {
@@ -390,8 +391,8 @@ public class WikiDataHandler {
 
 	private boolean isLocationName(String catStr) {
 		boolean ret = false;
-		if (catStr.contains("places") || catStr.contains("cities") || catStr.contains("countries") || catStr.contains("provinces")
-				|| catStr.contains("states") || catStr.contains("territories")) {
+		if (catStr.contains("places") || catStr.contains("cities") || catStr.contains("countries")
+				|| catStr.contains("provinces") || catStr.contains("states") || catStr.contains("territories")) {
 			ret = true;
 		}
 		return ret;
@@ -448,7 +449,8 @@ public class WikiDataHandler {
 
 	public void makeTextDump() throws Exception {
 		TextFileReader reader = new TextFileReader(ENTPath.KOREAN_WIKI_XML_FILE);
-		// TextFileWriter writer = new TextFileWriter(ENTPath.KOREAN_WIKI_TEXT_FILE);
+		// TextFileWriter writer = new
+		// TextFileWriter(ENTPath.KOREAN_WIKI_TEXT_FILE);
 
 		reader.setPrintNexts(false);
 
