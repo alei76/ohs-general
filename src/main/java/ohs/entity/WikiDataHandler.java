@@ -218,7 +218,7 @@ public class WikiDataHandler {
 
 			if (isValidTitle(type, catStr)) {
 				boolean isAdded = false;
-				if (redirect.length() > 0) {
+				if (redirect.length() > 0 && accept(stopPrefixes, redirect)) {
 					ScoreDoc[] hits = is.search(new TermQuery(new Term(IndexFieldName.TITLE, redirect)), 1).scoreDocs;
 					if (hits.length == 1) {
 						String catStr2 = is.doc(hits[0].doc).get(IndexFieldName.CATEGORY).toLowerCase();
@@ -311,7 +311,7 @@ public class WikiDataHandler {
 			String redirect = ir.document(i).get(IndexFieldName.REDIRECT_TITLE);
 
 			boolean isAdded = false;
-			if (redirect.length() > 0) {
+			if (redirect.length() > 0 && accept(stopPrefixes, redirect)) {
 				ScoreDoc[] hits = is.search(new TermQuery(new Term(IndexFieldName.TITLE, redirect)), 1).scoreDocs;
 				if (hits.length == 1) {
 					String catStr2 = is.doc(hits[0].doc).get(IndexFieldName.CATEGORY).toLowerCase();

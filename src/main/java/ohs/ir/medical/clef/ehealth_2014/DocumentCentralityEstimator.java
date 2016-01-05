@@ -9,26 +9,23 @@ import ohs.math.ArrayUtils;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
 import ohs.types.Counter;
+import ohs.types.CounterMap;
 import ohs.types.Indexer;
 
 /**
  * This class implements centralities of categories.
  * 
- * The standard centralites are computed by PageRank algorithms where a graph
- * over categories are constructed.
+ * The standard centralites are computed by PageRank algorithms where a graph over categories are constructed.
  * 
  * 
  * 
  * 
- * 1. Kurland, O. and Lee, L. 2005. PageRank without hyperlinks: structural
- * re-ranking using links induced by language models. Proceedings of the 28th
- * annual international ACM SIGIR conference on Research and development in
- * information retrieval, 306–313.
+ * 1. Kurland, O. and Lee, L. 2005. PageRank without hyperlinks: structural re-ranking using links induced by language models. Proceedings
+ * of the 28th annual international ACM SIGIR conference on Research and development in information retrieval, 306–313.
  * 
  * 
- * 2. Strube, M. and Ponzetto, S.P. 2006. WikiRelate! computing semantic
- * relatedness using wikipedia. proceedings of the 21st national conference on
- * Artificial intelligence - Volume 2, AAAI Press, 1419–1424.
+ * 2. Strube, M. and Ponzetto, S.P. 2006. WikiRelate! computing semantic relatedness using wikipedia. proceedings of the 21st national
+ * conference on Artificial intelligence - Volume 2, AAAI Press, 1419–1424.
  * 
  * 
  * @author Heung-Seon Oh
@@ -83,8 +80,8 @@ public class DocumentCentralityEstimator {
 		int num_docs = docIndexer.size();
 		double[][] ret = ArrayUtils.matrix(num_docs, 0);
 
-		IntCounterMap temp1 = new IntCounterMap();
-		IntCounterMap temp2 = new IntCounterMap();
+		CounterMap<Integer, Integer> temp1 = new CounterMap<Integer, Integer>();
+		CounterMap<Integer, Integer> temp2 = new CounterMap<Integer, Integer>();
 
 		for (int i = 0; i < num_docs; i++) {
 			int docId1 = docIndexer.getObject(i);
@@ -148,7 +145,10 @@ public class DocumentCentralityEstimator {
 		}
 
 		double[][] transMatrix = computeSimilarityMatrix(docIndexer, docWordCounts);
-		double[] centralities = ArrayMath.doRandomWalkOut(transMatrix, 100, 0.000001, 0.85);
+		double[] centralities = new double[transMatrix.length];
+
+		ArrayMath.doRandomWalk(transMatrix, centralities, 100, 0.000001, 0.85);
+
 		int[] indexes = new int[docIndexer.size()];
 
 		for (int i = 0; i < docIndexer.size(); i++) {

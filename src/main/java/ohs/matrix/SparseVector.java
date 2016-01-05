@@ -133,7 +133,7 @@ public class SparseVector implements Vector {
 	}
 
 	public SparseVector() {
-
+		this(0, 0);
 	}
 
 	public SparseVector(int size) {

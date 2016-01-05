@@ -52,8 +52,8 @@ public class SimpleEntityLinker implements Serializable {
 		// if (IOUtils.exists(ENTPath.ENTITY_LINKER_FILE)) {
 		// el.read(ENTPath.ENTITY_LINKER_FILE);
 		// } else {
-		el.createSearchers(ENTPath.NAME_PERSON_FILE);
-		el.write(ENTPath.ENTITY_LINKER_FILE);
+//		el.createSearchers(ENTPath.TITLE_FILE);
+//		el.write(ENTPath.ENTITY_LINKER_FILE);
 		// }
 
 		el.read(ENTPath.ENTITY_LINKER_FILE);
@@ -131,7 +131,11 @@ public class SimpleEntityLinker implements Serializable {
 			String catStr = parts[3];
 			String variantStr = parts[4];
 
-			topicWordData.put(id, VectorUtils.toSparseVector(VectorUtils.toCounter(catStr), featInexer, true));
+			if (catStr.equals("none")) {
+				topicWordData.put(id, new SparseVector());
+			} else {
+				topicWordData.put(id, VectorUtils.toSparseVector(VectorUtils.toCounter(catStr), featInexer, true));
+			}
 
 			Entity ent = new Entity(id, name, topic);
 			ents.put(ent.getId(), ent);

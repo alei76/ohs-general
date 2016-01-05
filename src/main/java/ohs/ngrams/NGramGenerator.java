@@ -43,8 +43,8 @@ public class NGramGenerator {
 		System.out.println("process ends.");
 	}
 
-	public static StrCounter ngrams(int ngram_size, List<String> words) {
-		StrCounter ret = new StrCounter();
+	public static Counter<String> ngrams(int ngram_size, List<String> words) {
+		Counter<String> ret = new Counter<String>();
 		for (int j = 0; j < words.size() - ngram_size + 1; j++) {
 			StringBuffer sb = new StringBuffer();
 			int size = 0;
@@ -153,7 +153,7 @@ public class NGramGenerator {
 
 		File[] dataFiles = new File(NGPath.JOURNAL_DIR).listFiles();
 
-		StrCounterMap cm = new StrCounterMap();
+		CounterMap<String, String> cm = new CounterMap<String, String>();
 		Set<String> yearSet = new TreeSet<>();
 
 		for (int i = 0; i < dataFiles.length; i++) {

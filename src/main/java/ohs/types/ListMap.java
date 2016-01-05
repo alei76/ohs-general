@@ -3,6 +3,8 @@ package ohs.types;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,12 +19,16 @@ public class ListMap<K, V> implements Serializable {
 
 	protected Map<K, List<V>> entries;
 
+	protected boolean useLinkedList = false;
+
 	public ListMap() {
-		this(false);
+		this(10000, false, false);
 	}
 
-	public ListMap(boolean useTreeMap) {
-		entries = useTreeMap ? new TreeMap<K, List<V>>() : new HashMap<K, List<V>>();
+	public ListMap(int size, boolean useTreeMap, boolean useLinkedList) {
+		entries = useTreeMap ? new TreeMap<K, List<V>>() : new HashMap<K, List<V>>(size);
+
+		this.useLinkedList = useLinkedList;
 	}
 
 	public boolean containsKey(K key) {
@@ -32,7 +38,7 @@ public class ListMap<K, V> implements Serializable {
 	protected List<V> ensure(K key) {
 		List<V> list = entries.get(key);
 		if (list == null) {
-			list = new ArrayList<V>();
+			list = useLinkedList ? new LinkedList<V>() : new ArrayList<V>();
 			entries.put(key, list);
 		}
 		return list;
@@ -85,6 +91,15 @@ public class ListMap<K, V> implements Serializable {
 
 	public List<V> remove(K key) {
 		return entries.remove(key);
+	}
+
+	public void clear() {
+		Iterator<K> iter = entries.keySet().iterator();
+		while (iter.hasNext()) {
+			K key = iter.next();
+			entries.get(key).clear();
+		}
+		entries.clear();
 	}
 
 	public void set(K key, List<V> values) {

@@ -328,7 +328,7 @@ public class DocumentSearching {
 
 		EHealthQuery.tokenize(clefQueries);
 
-		StrCounterMap relevanceData = RelevanceJudgementReader.read(new File(EHPath.QUERY_2013_TEST_RELEVANCE_FILE));
+		CounterMap<String, String> relevanceData = RelevanceJudgementReader.read(new File(EHPath.QUERY_2013_TEST_RELEVANCE_FILE));
 
 		List<Similarity> simList = new ArrayList<Similarity>();
 		simList.add(new DefaultSimilarity());
@@ -361,7 +361,7 @@ public class DocumentSearching {
 			Similarity sim = simList.get(i);
 			String retModel = sim.getClass().getSimpleName();
 
-			StrCounterMap resultData = new StrCounterMap();
+			CounterMap<String, String> resultData = new CounterMap();
 
 			for (int j = 0; j < clefQueries.size(); j++) {
 				EHealthQuery clefQuery = clefQueries.get(j);

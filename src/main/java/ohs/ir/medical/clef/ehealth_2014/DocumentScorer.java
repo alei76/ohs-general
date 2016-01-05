@@ -293,7 +293,7 @@ public class DocumentScorer {
 		for (int i = 0; i < indexScoreData.size(); i++) {
 			SparseVector relevanceModel = computeRelevanceModel(
 
-			indexScoreData.get(i), docWordCountData.get(i), collWordCountData.get(i), docPriorData.get(i));
+					indexScoreData.get(i), docWordCountData.get(i), collWordCountData.get(i), docPriorData.get(i));
 
 			relevanceModels.add(relevanceModel);
 		}
@@ -399,7 +399,9 @@ public class DocumentScorer {
 
 		ArrayMath.normalizeColumns(transMat);
 
-		double[] centralities = ArrayMath.doRandomWalkOut(transMat, 100, 0.000001, 0.85);
+		double[] centralities = new double[transMat.length];
+		
+		ArrayMath.doRandomWalk(transMat, centralities, 100, 0.000001, 0.85);
 
 		SparseVector ret = new SparseVector(max_words);
 
@@ -616,7 +618,9 @@ public class DocumentScorer {
 
 		ArrayMath.normalizeColumns(m);
 
-		double[] importances = ArrayMath.doRandomWalkOut(m, 10, 0.00001, 0.85);
+		double[] importances = new double[m.length]; 
+				
+		ArrayMath.doRandomWalk(m, importances, 10, 0.00001, 0.85);
 
 		Counter<String> wordImportances = new Counter<String>();
 
@@ -665,8 +669,8 @@ public class DocumentScorer {
 		return ret;
 	}
 
-	private StrCounter getCounter(List<String> words) {
-		StrCounter ret = new StrCounter();
+	private Counter<String> getCounter(List<String> words) {
+		Counter<String> ret = new Counter<String>();
 		for (String word : words) {
 			ret.incrementCount(word, 1);
 		}
@@ -731,7 +735,7 @@ public class DocumentScorer {
 		return ret;
 	}
 
-	private SparseVector getModel(StrCounter wordCounts) {
+	private SparseVector getModel(Counter<String> wordCounts) {
 		SparseVector ret = VectorUtils.toSparseVector(wordCounts, wordIndexer);
 		ret.normalize();
 		System.out.printf("Model:\t%s\n", VectorUtils.toCounter(ret, wordIndexer));
@@ -826,8 +830,8 @@ public class DocumentScorer {
 		if (useClustering) {
 			DocumentClusterer docClusterer = new DocumentClusterer(
 
-			docScoreData.get(0), docWordCountData.get(0), collWordCountData.get(0), docFreqData.get(0), indexReaders.get(0).maxDoc(),
-					docScoreData.get(0).size(), 0.9, wordIndexer);
+					docScoreData.get(0), docWordCountData.get(0), collWordCountData.get(0), docFreqData.get(0),
+					indexReaders.get(0).maxDoc(), docScoreData.get(0).size(), 0.9, wordIndexer);
 
 			docClusterer.doClustering();
 

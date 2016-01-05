@@ -20,6 +20,7 @@ import ohs.ir.medical.general.SearcherUtils;
 import ohs.ling.struct.Span;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
+import ohs.types.Pair;
 import ohs.utils.StopWatch;
 
 public class AbbreviationExtracting {
@@ -56,7 +57,7 @@ public class AbbreviationExtracting {
 
 			for (int j = 0; j < sents.length; j++) {
 				String sent = sents[j];
-				List<StrPair> pairs = ext.extract(sent);
+				List<Pair<String, String>> pairs = ext.extract(sent);
 				List<Span[]> spansList = getSpans(pairs, sent);
 
 				for (Span[] spans : spansList) {
@@ -163,11 +164,11 @@ public class AbbreviationExtracting {
 		writer.close();
 	}
 
-	private static List<Span[]> getSpans(List<StrPair> pairs, String content) {
+	private static List<Span[]> getSpans(List<Pair<String, String>> pairs, String content) {
 		List<Span[]> ret = new ArrayList<Span[]>();
 
 		for (int i = 0; i < pairs.size(); i++) {
-			StrPair pair = pairs.get(i);
+			Pair<String, String> pair = pairs.get(i);
 			String shortForm = pair.getFirst();
 			String longForm = pair.getSecond();
 

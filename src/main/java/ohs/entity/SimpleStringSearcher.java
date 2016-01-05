@@ -7,11 +7,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.springframework.core.env.SystemEnvironmentPropertySource;
 
 import ohs.io.IOUtils;
 import ohs.io.TextFileWriter;
@@ -21,8 +20,8 @@ import ohs.string.search.ppss.StringRecord;
 import ohs.string.sim.SmithWaterman;
 import ohs.types.Counter;
 import ohs.types.Indexer;
-import ohs.types.SetMap;
-import ohs.types.StringIndexer;
+import ohs.types.ListMap;
+import ohs.utils.StopWatch;
 
 /**
  * 
@@ -40,7 +39,7 @@ public class SimpleStringSearcher implements Serializable {
 
 	private Map<Integer, StringRecord> srs;
 
-	private SetMap<Integer, Integer> index;
+	private ListMap<Integer, Integer> index;
 
 	private Indexer<String> gramIndexer;
 
@@ -69,21 +68,63 @@ public class SimpleStringSearcher implements Serializable {
 
 		if (index == null && !append) {
 			gramIndexer = new Indexer<String>();
-			index = new SetMap<Integer, Integer>();
+			index = new ListMap<Integer, Integer>(10000, false, true);
 			srs = new HashMap<Integer, StringRecord>();
 		}
 
+		StopWatch stopWatch = new StopWatch();
+		stopWatch.start();
+
+		int num_chunks = input.size() / 100;
+
 		for (int i = 0; i < input.size(); i++) {
+
+			if ((i + 1) % num_chunks == 0) {
+				System.out.printf("\r[%f, %s]", (i + 1f) / input.size() * 100, stopWatch.stop());
+			}
+
 			StringRecord sr = input.get(i);
 			Gram[] grams = gg.generate(String.format("<%s>", sr.getString()));
 			if (grams.length == 0) {
 				continue;
 			}
+
+			Set<Integer> gids = new HashSet<Integer>();
+
 			for (int j = 0; j < grams.length; j++) {
-				index.put(gramIndexer.getIndex(grams[j].getString()), sr.getId());
+				gids.add(gramIndexer.getIndex(grams[j].getString()));
 			}
+
+			for (int gid : gids) {
+				index.put(gid, sr.getId());
+			}
+
 			srs.put(sr.getId(), sr);
 		}
+
+		System.out.printf("\r[%f, %s]", 100, stopWatch.stop());
+
+	}
+
+	public void filterIndex() {
+		int max = -Integer.MAX_VALUE;
+		int min = Integer.MAX_VALUE;
+		double num_records = 0;
+
+		for (int qid : index.keySet()) {
+			List<Integer> rids = index.get(qid);
+
+			if (rids.size() > max) {
+				max = rids.size();
+			}
+
+			if (rids.size() < min) {
+				min = rids.size();
+			}
+			num_records += rids.size();
+		}
+
+		double avg_records = num_records / index.size();
 
 	}
 
@@ -122,7 +163,7 @@ public class SimpleStringSearcher implements Serializable {
 			double num_records = 0;
 
 			for (int qid : index.keySet()) {
-				Set<Integer> rids = index.get(qid);
+				List<Integer> rids = index.get(qid);
 
 				if (rids.size() > max) {
 					max = rids.size();
@@ -158,12 +199,10 @@ public class SimpleStringSearcher implements Serializable {
 			int gid = iter1.next();
 			oos.writeInt(gid);
 
-			Set<Integer> rids = index.get(gid);
+			List<Integer> rids = index.get(gid);
 			oos.writeInt(rids.size());
-
-			Iterator<Integer> iter2 = rids.iterator();
-			while (iter2.hasNext()) {
-				oos.writeInt(iter2.next());
+			for (int i = 0; i < rids.size(); i++) {
+				oos.writeInt(rids.get(i));
 			}
 		}
 		oos.flush();
@@ -183,12 +222,12 @@ public class SimpleStringSearcher implements Serializable {
 		gramIndexer = IOUtils.readIndexer(ois);
 
 		int size1 = ois.readInt();
-		index = new SetMap<Integer, Integer>(false, false, size1);
+		index = new ListMap<Integer, Integer>(size1, false, true);
 
 		for (int i = 0; i < size1; i++) {
 			int gid = ois.readInt();
 			int size2 = ois.readInt();
-			Set<Integer> rids = new HashSet<Integer>(size2);
+			List<Integer> rids = new LinkedList<Integer>();
 			for (int j = 0; j < size2; j++) {
 				int rid = ois.readInt();
 				rids.add(rid);
@@ -211,7 +250,7 @@ public class SimpleStringSearcher implements Serializable {
 			if (gid < 0) {
 				continue;
 			}
-			Set<Integer> rids = index.get(gid, false);
+			List<Integer> rids = index.get(gid, false);
 
 			if (rids != null) {
 				for (int rid : rids) {

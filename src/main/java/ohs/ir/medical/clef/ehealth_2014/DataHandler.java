@@ -185,7 +185,7 @@ public class DataHandler {
 		reader.close();
 		writer.close();
 
-		System.out.println(counter.toStringSortedByValues(true, true, counter.size()));
+		System.out.println(counter.toStringSortedByValues(true, true, counter.size(), " "));
 		System.out.printf("[%d/%d]\n", numDocs, totalDocs);
 	}
 
