@@ -112,8 +112,7 @@ public class WikiDataHandler {
 
 	private Pattern rp2 = Pattern.compile("\\([^\\(\\)]+\\)");
 
-	private Pattern lp1 = Pattern
-			.compile("(rivers|cities|towns|mountains|seas|bridges|airports|buildings|places) (established )?(of|in)");
+	private Pattern lp1 = Pattern.compile("(rivers|cities|towns|mountains|seas|bridges|airports|buildings|places) (established )?(of|in)");
 
 	private Pattern op1 = Pattern.compile(
 			"(organizations|organisations|companies|agencies|institutions|institutes|clubs|universities|schools|colleges) (established|establishments|based) in");
@@ -391,8 +390,8 @@ public class WikiDataHandler {
 
 	private boolean isLocationName(String catStr) {
 		boolean ret = false;
-		if (catStr.contains("places") || catStr.contains("cities") || catStr.contains("countries")
-				|| catStr.contains("provinces") || catStr.contains("states") || catStr.contains("territories")) {
+		if (catStr.contains("places") || catStr.contains("cities") || catStr.contains("countries") || catStr.contains("provinces")
+				|| catStr.contains("states") || catStr.contains("territories")) {
 			ret = true;
 		}
 		return ret;

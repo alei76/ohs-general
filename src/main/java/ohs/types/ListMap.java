@@ -1,14 +1,14 @@
 package ohs.types;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
+
+import ohs.utils.Generics;
+import ohs.utils.Generics.ListType;
+import ohs.utils.Generics.MapType;
 
 public class ListMap<K, V> implements Serializable {
 
@@ -19,16 +19,15 @@ public class ListMap<K, V> implements Serializable {
 
 	protected Map<K, List<V>> entries;
 
-	protected boolean useLinkedList = false;
+	private ListType lt;
 
 	public ListMap() {
-		this(10000, false, false);
+		this(10000, Generics.MapType.HASH_MAP, Generics.ListType.ARRAY_LIST);
 	}
 
-	public ListMap(int size, boolean useTreeMap, boolean useLinkedList) {
-		entries = useTreeMap ? new TreeMap<K, List<V>>() : new HashMap<K, List<V>>(size);
-
-		this.useLinkedList = useLinkedList;
+	public ListMap(int size, MapType mt, ListType lt) {
+		entries = Generics.newMap(mt, size);
+		this.lt = lt;
 	}
 
 	public boolean containsKey(K key) {
@@ -38,7 +37,7 @@ public class ListMap<K, V> implements Serializable {
 	protected List<V> ensure(K key) {
 		List<V> list = entries.get(key);
 		if (list == null) {
-			list = useLinkedList ? new LinkedList<V>() : new ArrayList<V>();
+			list = Generics.newList(lt);
 			entries.put(key, list);
 		}
 		return list;
@@ -79,10 +78,6 @@ public class ListMap<K, V> implements Serializable {
 
 	public Set<K> keySet() {
 		return entries.keySet();
-	}
-
-	public int keySize() {
-		return entries.size();
 	}
 
 	public void put(K key, V value) {

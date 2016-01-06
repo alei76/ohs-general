@@ -63,7 +63,6 @@ public class StringIndexer extends AbstractList<String> implements Serializable 
 				sb.append((char) ns[j]);
 			}
 			names.add(sb.toString());
-
 		}
 
 		{

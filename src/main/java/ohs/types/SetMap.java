@@ -1,12 +1,10 @@
 package ohs.types;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
+
+import ohs.utils.Generics;
 
 public class SetMap<K, V> implements Serializable {
 
@@ -17,27 +15,19 @@ public class SetMap<K, V> implements Serializable {
 
 	protected Map<K, Set<V>> entries;
 
-	private boolean useTreeMap;
-
-	private boolean useTreeSet;
+	private Generics.SetType st;
 
 	public SetMap() {
-		this(false, false, 10000);
+		this(100, Generics.MapType.HASH_MAP, Generics.SetType.HASH_SET);
 	}
 
-	public SetMap(boolean useTreeMap, boolean useTreeSet) {
-		this(useTreeMap, useTreeSet, 10000);
+	public SetMap(Generics.MapType mt, Generics.SetType st) {
+		this(100, mt, st);
 	}
 
-	public SetMap(boolean useTreeMap, boolean useTreeSet, int size) {
-		this.useTreeMap = useTreeMap;
-		this.useTreeSet = useTreeSet;
-
-		if (useTreeMap) {
-			entries = new TreeMap<K, Set<V>>();
-		} else {
-			entries = new HashMap<K, Set<V>>(size);
-		}
+	public SetMap(int size, Generics.MapType mt, Generics.SetType st) {
+		entries = Generics.newMap(mt, size);
+		this.st = st;
 	}
 
 	public void addAll(SetMap<K, V> input) {
@@ -47,10 +37,6 @@ public class SetMap<K, V> implements Serializable {
 				set.add(val);
 			}
 		}
-	}
-
-	public void set(K key, Set<V> values) {
-		entries.put(key, values);
 	}
 
 	public void clear() {
@@ -77,7 +63,7 @@ public class SetMap<K, V> implements Serializable {
 	protected Set<V> ensure(K key) {
 		Set<V> set = entries.get(key);
 		if (set == null) {
-			set = useTreeSet ? new TreeSet<V>() : new HashSet<V>();
+			set = Generics.newSet(st);
 			entries.put(key, set);
 		}
 		return set;
@@ -89,16 +75,6 @@ public class SetMap<K, V> implements Serializable {
 
 	public Set<V> get(K key, boolean createIfAbsent) {
 		return createIfAbsent ? ensure(key) : entries.get(key);
-	}
-
-	public SetMap<V, K> invert() {
-		SetMap<V, K> ret = new SetMap<V, K>(useTreeMap, useTreeSet);
-		for (K key : keySet()) {
-			for (V value : get(key, true)) {
-				ret.put(value, key);
-			}
-		}
-		return ret;
 	}
 
 	public Set<K> keySet() {

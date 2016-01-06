@@ -1,7 +1,6 @@
 package ohs.utils;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -10,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -27,8 +27,7 @@ import ohs.types.Triple;
 /**
  * from Stanford Core NLP
  * 
- * A collection of utilities to make dealing with Java generics less painful and
- * verbose. For example, rather than declaring
+ * A collection of utilities to make dealing with Java generics less painful and verbose. For example, rather than declaring
  *
  * <pre>
  * {@code  Map<String,ClassicCounter<List<String>>> = new HashMap<String,ClassicCounter<List<String>>>()}
@@ -40,119 +39,26 @@ import ohs.types.Triple;
  * {@code Map<String,ClassicCounter<List<String>>> = Generics.newHashMap()}
  * </pre>
  *
- * Java type-inference will almost always just <em>do the right thing</em>
- * (every once in a while, the compiler will get confused before you do, so you
- * might still occasionally have to specify the appropriate types).
+ * Java type-inference will almost always just <em>do the right thing</em> (every once in a while, the compiler will get confused before you
+ * do, so you might still occasionally have to specify the appropriate types).
  *
- * This class is based on the examples in Brian Goetz's article
- * <a href="http://www.ibm.com/developerworks/library/j-jtp02216.html">Java
+ * This class is based on the examples in Brian Goetz's article <a href="http://www.ibm.com/developerworks/library/j-jtp02216.html">Java
  * theory and practice: The pseudo-typedef antipattern</a>.
  *
  * @author Ilya Sherman
  */
 public class Generics {
 
-	public static final String HASH_SET_PROPERTY = "edu.stanford.nlp.hashset.impl";
-
-	public static final String HASH_SET_CLASSNAME = System.getProperty(HASH_SET_PROPERTY);
-
-	private static final Class<?> HASH_SET_CLASS = getHashSetClass();
-
-	private static final Constructor HASH_SET_SIZE_CONSTRUCTOR = getHashSetSizeConstructor();
-
-	private static final Constructor HASH_SET_COLLECTION_CONSTRUCTOR = getHashSetCollectionConstructor();
-
-	public static final String HASH_MAP_PROPERTY = "edu.stanford.nlp.hashmap.impl";
-
-	public static final String HASH_MAP_CLASSNAME = System.getProperty(HASH_MAP_PROPERTY);
-
-	private static final Class<?> HASH_MAP_CLASS = getHashMapClass();
-
-	private static final Class<?> COUNTER_MAP_CLASS = getCounterMapClass();
-
-	private static final Constructor HASH_MAP_SIZE_CONSTRUCTOR = getHashMapSizeConstructor();
-
-	private static final Constructor HASH_MAP_FROM_MAP_CONSTRUCTOR = getHashMapFromMapConstructor();
-
-	private static final Constructor COUNTER_MAP_FROM_MAP_CONSTRUCTOR = getHashMapFromMapConstructor();
-
-	private static Class getCounterMapClass() {
-		try {
-			return Class.forName("ohs.types.CounterMap");
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-	private static Constructor getCounterMapFromMapConstructor() {
-		try {
-			return COUNTER_MAP_CLASS.getConstructor(CounterMap.class);
-		} catch (Exception e) {
-			throw new RuntimeException("Error: could not find a constructor for objects of " + COUNTER_MAP_CLASS
-					+ " which takes an existing Map argument.", e);
-		}
-	}
-	private static Class getHashMapClass() {
-		try {
-			if (HASH_MAP_CLASSNAME == null) {
-				return HashMap.class;
-			} else {
-				return Class.forName(HASH_MAP_CLASSNAME);
-			}
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-	// must be called after HASH_MAP_CLASS is defined
-	private static Constructor getHashMapFromMapConstructor() {
-		try {
-			return HASH_MAP_CLASS.getConstructor(Map.class);
-		} catch (Exception e) {
-			throw new RuntimeException("Error: could not find a constructor for objects of " + HASH_MAP_CLASS
-					+ " which takes an existing Map argument.", e);
-		}
-	}
-	// must be called after HASH_MAP_CLASS is defined
-	private static Constructor getHashMapSizeConstructor() {
-		try {
-			return HASH_MAP_CLASS.getConstructor(Integer.TYPE);
-		} catch (Exception e) {
-			System.err.println("Warning: could not find a constructor for objects of " + HASH_MAP_CLASS
-					+ " which takes an integer argument.  Will use the no argument constructor instead.");
-		}
-		return null;
+	public static enum ListType {
+		ARRAY_LIST, LINKED_LIST;
 	}
 
-	private static Class getHashSetClass() {
-		try {
-			if (HASH_SET_CLASSNAME == null) {
-				return HashSet.class;
-			} else {
-				return Class.forName(HASH_SET_CLASSNAME);
-			}
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+	public static enum MapType {
+		HASH_MAP, TREE_MAP, WEAK_HASH_MAP, IDENTIY_HASH_MAP;
 	}
 
-	// must be called after HASH_SET_CLASS is defined
-	private static Constructor getHashSetCollectionConstructor() {
-		try {
-			return HASH_SET_CLASS.getConstructor(Collection.class);
-		} catch (Exception e) {
-			throw new RuntimeException("Error: could not find a constructor for objects of " + HASH_SET_CLASS
-					+ " which takes an existing collection argument.", e);
-		}
-	}
-
-	// must be called after HASH_SET_CLASS is defined
-	private static Constructor getHashSetSizeConstructor() {
-		try {
-			return HASH_SET_CLASS.getConstructor(Integer.TYPE);
-		} catch (Exception e) {
-			System.err.println("Warning: could not find a constructor for objects of " + HASH_SET_CLASS
-					+ " which takes an integer argument.  Will use the no argument constructor instead.");
-		}
-		return null;
+	public static enum SetType {
+		HASH_SET, TREE_SET, WEAK_HASH_SET, IDENTITY_HASH_SET;
 	}
 
 	/* Collections */
@@ -171,95 +77,70 @@ public class Generics {
 	public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap() {
 		return new ConcurrentHashMap<K, V>();
 	}
+
 	public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap(int initialCapacity) {
 		return new ConcurrentHashMap<K, V>(initialCapacity);
 	}
-	public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap(int initialCapacity, float loadFactor,
-			int concurrencyLevel) {
+
+	public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap(int initialCapacity, float loadFactor, int concurrencyLevel) {
 		return new ConcurrentHashMap<K, V>(initialCapacity, loadFactor, concurrencyLevel);
 	}
+
 	public static <E> Counter<E> newCounter() {
 		return new Counter<E>();
 	}
+
 	public static <E> Counter<E> newCounter(Counter<? extends E> c) {
 		return new Counter<E>(c);
 	}
+
 	public static <K, V> CounterMap<K, V> newCounterMap() {
-		try {
-			return ErasureUtils.uncheckedCast(COUNTER_MAP_CLASS.newInstance());
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		return new CounterMap<K, V>();
 	}
-	public static <K, V> CounterMap<K, V> newCounterMap(CounterMap<? extends K, ? extends V> c) {
-		try {
-			return ErasureUtils.uncheckedCast(COUNTER_MAP_FROM_MAP_CONSTRUCTOR.newInstance(c));
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+
+	public static <K, V> CounterMap<K, V> newCounterMap(CounterMap<K, V> cm) {
+		return new CounterMap<K, V>(cm);
 	}
 
 	/* Maps */
 	public static <K, V> Map<K, V> newHashMap() {
-		try {
-			return ErasureUtils.uncheckedCast(HASH_MAP_CLASS.newInstance());
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		return new HashMap<K, V>();
 	}
 
 	public static <K, V> Map<K, V> newHashMap(int initialCapacity) {
-		if (HASH_MAP_SIZE_CONSTRUCTOR == null) {
-			return newHashMap();
-		}
-		try {
-			return ErasureUtils.uncheckedCast(HASH_MAP_SIZE_CONSTRUCTOR.newInstance(initialCapacity));
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		return new HashMap<K, V>(initialCapacity);
 	}
 
 	public static <K, V> Map<K, V> newHashMap(Map<? extends K, ? extends V> m) {
-		try {
-			return ErasureUtils.uncheckedCast(HASH_MAP_FROM_MAP_CONSTRUCTOR.newInstance(m));
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		return new HashMap<K, V>(m);
 	}
 
 	public static <E> Set<E> newHashSet() {
-		try {
-			return ErasureUtils.uncheckedCast(HASH_SET_CLASS.newInstance());
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		return new HashSet<E>();
 	}
 
 	public static <E> Set<E> newHashSet(Collection<? extends E> c) {
-		try {
-			return ErasureUtils.uncheckedCast(HASH_SET_COLLECTION_CONSTRUCTOR.newInstance(c));
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		return new HashSet<E>(c);
 	}
 
 	public static <E> Set<E> newHashSet(int initialCapacity) {
-		if (HASH_SET_SIZE_CONSTRUCTOR == null) {
-			return newHashSet();
-		}
-		try {
-			return ErasureUtils.uncheckedCast(HASH_SET_SIZE_CONSTRUCTOR.newInstance(initialCapacity));
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		return new HashSet<E>(initialCapacity);
 	}
 
 	public static <K, V> IdentityHashMap<K, V> newIdentityHashMap() {
 		return new IdentityHashMap<K, V>();
 	}
 
+	public static <K, V> IdentityHashMap<K, V> newIdentityHashMap(int size) {
+		return new IdentityHashMap<K, V>(size);
+	}
+
 	public static <K> Set<K> newIdentityHashSet() {
 		return Collections.newSetFromMap(Generics.<K, Boolean> newIdentityHashMap());
+	}
+
+	public static <K> Set<K> newIdentityHashSet(int size) {
+		return Collections.newSetFromMap(Generics.<K, Boolean> newIdentityHashMap(size));
 	}
 
 	public static <E> LinkedList<E> newLinkedList() {
@@ -270,9 +151,57 @@ public class Generics {
 		return new LinkedList<E>(c);
 	}
 
+	public static <E> List<E> newList(ListType t) {
+		return newList(t, 0);
+	}
+
+	public static <E> List<E> newList(ListType t, int size) {
+		List<E> ret = null;
+		if (t == ListType.ARRAY_LIST) {
+			ret = size > 0 ? newArrayList(size) : newArrayList();
+		} else if (t == ListType.LINKED_LIST) {
+			ret = newLinkedList();
+		}
+		return ret;
+	}
+
+	public static <K, V> Map<K, V> newMap(MapType mt) {
+		return newMap(mt, 0);
+	}
+
+	public static <K, V> Map<K, V> newMap(MapType mt, int size) {
+		Map<K, V> ret = null;
+		if (mt == MapType.HASH_MAP) {
+			ret = size > 0 ? newHashMap(size) : newHashMap();
+		} else if (mt == MapType.TREE_MAP) {
+			ret = newTreeMap();
+		} else if (mt == MapType.WEAK_HASH_MAP) {
+			ret = size > 0 ? newWeakHashMap(size) : newWeakHashMap();
+		} else if (mt == MapType.IDENTIY_HASH_MAP) {
+			ret = size > 0 ? newIdentityHashMap(size) : newIdentityHashMap();
+		}
+		return ret;
+	}
+
 	/* Other */
 	public static <T1, T2> Pair<T1, T2> newPair(T1 first, T2 second) {
 		return new Pair<T1, T2>(first, second);
+	}
+
+	public static <E> Set<E> newSet(SetType t) {
+		return newSet(t, 0);
+	}
+
+	public static <E> Set<E> newSet(SetType t, int size) {
+		Set<E> ret = null;
+		if (t == SetType.HASH_SET) {
+			ret = size > 0 ? newHashSet(size) : newHashSet();
+		} else if (t == SetType.TREE_SET) {
+			ret = newTreeSet();
+		} else if (t == SetType.IDENTITY_HASH_SET) {
+			ret = size > 0 ? newIdentityHashSet(size) : newIdentityHashSet();
+		}
+		return ret;
 	}
 
 	public static <E> Stack<E> newStack() {
@@ -305,6 +234,10 @@ public class Generics {
 
 	public static <K, V> WeakHashMap<K, V> newWeakHashMap() {
 		return new WeakHashMap<K, V>();
+	}
+
+	public static <K, V> WeakHashMap<K, V> newWeakHashMap(int size) {
+		return new WeakHashMap<K, V>(size);
 	}
 
 	public static <T> WeakReference<T> newWeakReference(T referent) {

@@ -12,28 +12,28 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
+
+import javax.persistence.GenerationType;
 
 import ohs.io.IOUtils;
 import ohs.io.TextFileWriter;
 import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.GramGenerator;
 import ohs.string.search.ppss.StringRecord;
+import ohs.string.sim.EditDistance;
 import ohs.string.sim.SmithWaterman;
 import ohs.types.Counter;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
+import ohs.utils.Generics;
 import ohs.utils.StopWatch;
 
 /**
  * 
- * Implementation of
- * "A Pivotal Prefix Based Filtering Algorithm for String Similarity Search" at
- * SIGMOD'14
- * 
- * 
  * @author Heung-Seon Oh
  */
-public class SimpleStringSearcher implements Serializable {
+public class StringSearcher implements Serializable {
 
 	/**
 	 * 
@@ -48,12 +48,18 @@ public class SimpleStringSearcher implements Serializable {
 
 	private GramGenerator gramGenerator;
 
-	public SimpleStringSearcher() {
+	private WeakHashMap<String, Counter<StringRecord>> cache;
+
+	private int top_k;
+
+	public StringSearcher() {
 		this(3);
 	}
 
-	public SimpleStringSearcher(int q) {
+	public StringSearcher(int q) {
 		gramGenerator = new GramGenerator(q);
+		cache = Generics.newWeakHashMap(1000);
+		top_k = Integer.MAX_VALUE;
 	}
 
 	public void filter() {
@@ -87,12 +93,16 @@ public class SimpleStringSearcher implements Serializable {
 		return srs;
 	}
 
+	public int getTopK() {
+		return top_k;
+	}
+
 	public void index(List<StringRecord> input, boolean append) {
 		System.out.printf("index [%s] records.\n", input.size());
 
 		if (index == null && !append) {
 			gramIndexer = new Indexer<String>();
-			index = new ListMap<Integer, Integer>(10000, false, false);
+			index = new ListMap<Integer, Integer>(1000, Generics.MapType.HASH_MAP, Generics.ListType.ARRAY_LIST);
 			srs = new HashMap<Integer, StringRecord>();
 		}
 
@@ -189,12 +199,12 @@ public class SimpleStringSearcher implements Serializable {
 			srs.put(sr.getId(), sr);
 		}
 
-		int q = ois.readInt();
-		gramGenerator = new GramGenerator(q);
+		top_k = ois.readInt();
+		gramGenerator = new GramGenerator(ois.readInt());
 		gramIndexer = IOUtils.readIndexer(ois);
 
 		int size1 = ois.readInt();
-		index = new ListMap<Integer, Integer>(size1, false, false);
+		index = new ListMap<Integer, Integer>(size1, Generics.MapType.HASH_MAP, Generics.ListType.ARRAY_LIST);
 
 		for (int i = 0; i < size1; i++) {
 			int gid = ois.readInt();
@@ -207,40 +217,53 @@ public class SimpleStringSearcher implements Serializable {
 			index.set(gid, rids);
 		}
 
-		System.out.printf("read string searcher in [%s]\n", stopWatch.stop());
+		System.out.printf("read [%s] - [%s]\n", this.getClass().getName(), stopWatch.stop());
 	}
 
 	public Counter<StringRecord> search(String s) {
-		Gram[] grams = gramGenerator.generate(String.format("<%s>", s));
+		Counter<StringRecord> ret = cache.get(s);
 
-		if (grams.length == 0) {
-			return new Counter<StringRecord>();
-		}
+		if (ret == null) {
+			Gram[] grams = gramGenerator.generate(String.format("<%s>", s));
 
-		Counter<Integer> c = new Counter<Integer>();
-
-		for (int i = 0; i < grams.length; i++) {
-			int gid = gramIndexer.indexOf(grams[i].getString());
-			if (gid < 0) {
-				continue;
+			if (grams.length == 0) {
+				return new Counter<StringRecord>();
 			}
-			List<Integer> rids = index.get(gid, false);
 
-			if (rids != null) {
-				for (int rid : rids) {
-					c.incrementCount(rid, 1);
+			Counter<Integer> candidates = new Counter<Integer>();
+			for (int i = 0; i < grams.length; i++) {
+				int gid = gramIndexer.indexOf(grams[i].getString());
+				if (gid < 0) {
+					continue;
+				}
+				List<Integer> rids = index.get(gid, false);
+
+				if (rids != null) {
+					for (int rid : rids) {
+						candidates.incrementCount(rid, 1);
+					}
 				}
 			}
-		}
 
-		Counter<StringRecord> ret = new Counter<StringRecord>();
-		SmithWaterman sw = new SmithWaterman();
+			SmithWaterman sw = new SmithWaterman();
+			EditDistance ed = new EditDistance();
+			ret = new Counter<StringRecord>();
 
-		for (int rid : c.keySet()) {
-			StringRecord sr = srs.get(rid);
-			ret.setCount(sr, sw.getNormalizedScore(s, sr.getString()));
+			List<Integer> rids = candidates.getSortedKeys();
+
+			for (int i = 0; i < rids.size() && i < top_k; i++) {
+				StringRecord sr = srs.get(rids.get(i));
+				double score1 = sw.getNormalizedScore(s, sr.getString());
+				double score2 = ed.getNormalizedScore(s, sr.getString());
+				ret.setCount(sr, score1 * score2);
+			}
+			cache.put(s, ret);
 		}
 		return ret;
+	}
+
+	public void setTopK(int top_k) {
+		this.top_k = top_k;
 	}
 
 	public void write(ObjectOutputStream oos) throws Exception {
@@ -252,12 +275,12 @@ public class SimpleStringSearcher implements Serializable {
 			sr.write(oos);
 		}
 
+		oos.writeInt(top_k);
 		oos.writeInt(gramGenerator.getQ());
 		IOUtils.write(oos, gramIndexer.getObjects());
 
 		oos.writeInt(index.size());
 		Iterator<Integer> iter = index.keySet().iterator();
-
 		while (iter.hasNext()) {
 			int gid = iter.next();
 			oos.writeInt(gid);
@@ -270,7 +293,7 @@ public class SimpleStringSearcher implements Serializable {
 		}
 		oos.flush();
 
-		System.out.printf("write string searcher in [%s]\n", stopWatch.stop());
+		System.out.printf("write [%s] - [%s]\n", this.getClass().getName(), stopWatch.stop());
 	}
 
 	public void write(String fileName) throws Exception {

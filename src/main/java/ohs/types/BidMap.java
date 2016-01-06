@@ -1,24 +1,28 @@
 package ohs.types;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
+
+import ohs.utils.Generics;
 
 public class BidMap<K, V> implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 263626040745113538L;
 	private Map<K, V> keyToValue;
 	private Map<V, K> valueToKey;
 
 	public BidMap() {
-		this(false);
+		this(Generics.MapType.HASH_MAP);
 	}
 
-	public BidMap(boolean useTreeMap) {
-		keyToValue = useTreeMap ? new TreeMap<K, V>() : new HashMap<K, V>();
-		valueToKey = useTreeMap ? new TreeMap<V, K>() : new HashMap<V, K>();
+	public BidMap(Generics.MapType mt) {
+		keyToValue = Generics.newMap(mt);
+		valueToKey = Generics.newMap(mt);
 	}
 
 	public BidMap(Map<K, V> keyToValue, Map<V, K> valueToKey) {
