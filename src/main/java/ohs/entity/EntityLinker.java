@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.PostingsEnum;
 import org.apache.lucene.index.Terms;
@@ -18,6 +19,10 @@ import org.apache.lucene.util.BytesRef;
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
+import ohs.ir.lucene.common.AnalyzerUtils;
+import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
+import ohs.ir.medical.general.WordCountBox;
 import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
@@ -52,8 +57,8 @@ public class EntityLinker implements Serializable {
 		// if (IOUtils.exists(ENTPath.ENTITY_LINKER_FILE)) {
 		// el.read(ENTPath.ENTITY_LINKER_FILE);
 		// } else {
-		// el.createSearcher(ENTPath.NAME_PERSON_FILE);
-		// el.write(ENTPath.ENTITY_LINKER_FILE);
+		el.createSearcher(ENTPath.NAME_LOCATION_FILE);
+		el.write(ENTPath.ENTITY_LINKER_FILE);
 		// }
 
 		el.read(ENTPath.ENTITY_LINKER_FILE);
@@ -114,13 +119,19 @@ public class EntityLinker implements Serializable {
 
 	}
 
-	public void createSearcher(String dataFileName) {
+	public void setTopK(int top_k) {
+		searcher.setTopK(top_k);
+	}
+
+	public void createSearcher(String dataFileName) throws Exception {
 		List<StringRecord> srs = new ArrayList<StringRecord>();
 		recToEntIdMap = new HashMap<Integer, Integer>();
 		ents = new HashMap<Integer, Entity>();
 
 		featInexer = new Indexer<String>();
 		topicWordData = new HashMap<Integer, SparseVector>();
+
+		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
 		TextFileReader reader = new TextFileReader(dataFileName);
 		while (reader.hasNext()) {
@@ -141,10 +152,14 @@ public class EntityLinker implements Serializable {
 			String catStr = parts[3];
 			String variantStr = parts[4];
 
+			Counter<String> c = AnalyzerUtils.getWordCounts(catStr, analyzer);
+
 			if (catStr.equals("none")) {
 				topicWordData.put(id, new SparseVector());
 			} else {
-				topicWordData.put(id, VectorUtils.toSparseVector(VectorUtils.toCounter(catStr), featInexer, true));
+				SparseVector sv = VectorUtils.toSparseVector(c, featInexer, true);
+				VectorMath.unitVector(sv);
+				topicWordData.put(id, sv);
 			}
 
 			Entity ent = new Entity(id, name, topic);
@@ -180,60 +195,18 @@ public class EntityLinker implements Serializable {
 		return ents;
 	}
 
-	private Counter<String> getWordCounts(IndexReader ir, int docid, String field) throws Exception {
-		Terms termVector = ir.getTermVector(docid, field);
-
-		if (termVector == null) {
-			return new Counter<String>();
-		}
-
-		TermsEnum termsEnum = null;
-		termsEnum = termVector.iterator();
-
-		BytesRef bytesRef = null;
-		PostingsEnum postingsEnum = null;
-		Counter<String> ret = new Counter<String>();
-
-		while ((bytesRef = termsEnum.next()) != null) {
-			postingsEnum = termsEnum.postings(postingsEnum, PostingsEnum.ALL);
-
-			if (postingsEnum.nextDoc() != 0) {
-				throw new AssertionError();
-			}
-
-			String word = bytesRef.utf8ToString();
-			// if (word.startsWith("<N") && word.endsWith(">")) {
-			// continue;
-			// }
-			if (word.contains("<N")) {
-				continue;
-			}
-
-			int freq = postingsEnum.freq();
-			ret.incrementCount(word, freq);
-
-			// for (int k = 0; k < freq; k++) {
-			// final int position = postingsEnum.nextPosition();
-			// locWords.put(position, w);
-			// }
-		}
-		return ret;
-	}
-
-	public Counter<Entity> link(String mention) {
+	public Counter<Entity> link(String mention) throws Exception {
 		return link(mention, null, null);
 	}
 
-	public Counter<Entity> link(String mention, Counter<String> features) {
+	public Counter<Entity> link(String mention, Counter<String> features) throws Exception {
 		return link(mention, features, null);
 	}
 
-	public Counter<Entity> link(String mention, Counter<String> features, IndexSearcher is) {
+	public Counter<Entity> link(String mention, Counter<String> features, IndexSearcher is) throws Exception {
 		Counter<StringRecord> candidates = searcher.search(mention.toLowerCase());
 
 		CounterMap<Integer, Integer> cm = Generics.newCounterMap();
-		Counter<Entity> ret = Generics.newCounter();
-
 		for (StringRecord sr : candidates.keySet()) {
 			int rid = sr.getId();
 			cm.incrementCount(recToEntIdMap.get(rid), rid, candidates.getCount(sr));
@@ -246,24 +219,35 @@ public class EntityLinker implements Serializable {
 			VectorMath.unitVector(cv);
 		}
 
+		Counter<Integer> scores = new Counter<Integer>();
+
 		for (int eid : cm.keySet()) {
 			double score = cm.getCounter(eid).max();
 			SparseVector tv = topicWordData.get(eid);
 
 			if (cv != null) {
-				double cosine = VectorMath.cosine(cv, tv, false);
+				double cosine = VectorMath.dotProduct(cv, tv, false);
 				score *= Math.exp(cosine);
 			}
+			scores.setCount(eid, score);
+		}
 
-			// Counter<String> wordCounts = new Counter<String>();
-			//
-			// try {
-			// wordCounts = getWordCounts(is.getIndexReader(), eid, IndexFieldName.CONTENT);
-			// } catch (Exception e) {
-			// e.printStackTrace();
-			// }
+		if (is != null) {
+			CounterMap<Integer, String> docWordCounts = new CounterMap<Integer, String>();
+			Counter<String> docFreqs = new Counter<String>();
 
-			ret.setCount(ents.get(eid), score);
+			for (int eid : scores.keySet()) {
+				Counter<String> c = WordCountBox.getWordCounts(is.getIndexReader(), eid, IndexFieldName.CONTENT);
+				docWordCounts.setCounter(eid, c);
+				docFreqs.incrementAll(c);
+			}
+
+			docFreqs = WordCountBox.getDocFreqs(is.getIndexReader(), IndexFieldName.CONTENT, docFreqs.keySet());
+		}
+
+		Counter<Entity> ret = new Counter<Entity>();
+		for (int eid : scores.keySet()) {
+			ret.setCount(ents.get(eid), scores.getCount(eid));
 		}
 		return ret;
 	}

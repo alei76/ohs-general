@@ -28,22 +28,59 @@ import ohs.types.ListMap;
 
 public class WordCountBox {
 
-	public static Counter<String> getDocFreqs(IndexReader indexReader, String field, Collection<String> c) throws Exception {
-		Counter ret = new Counter();
+	public static Counter<String> getDocFreqs(IndexReader ir, String field, Collection<String> c) throws Exception {
+		Counter<String> ret = new Counter<String>();
 		for (String word : c) {
 			Term term = new Term(field, word);
-			double df = indexReader.docFreq(term);
+			double df = ir.docFreq(term);
 			ret.setCount(word, df);
 		}
 		return ret;
 	}
 
-	public static WordCountBox getWordCountBox(IndexReader ir, SparseVector docScores, Indexer<String> wordIndexer) throws Exception {
+	public static Counter<String> getWordCounts(IndexReader ir, int docid, String field) throws Exception {
+		Terms termVector = ir.getTermVector(docid, field);
+
+		if (termVector == null) {
+			return new Counter<String>();
+		}
+
+		TermsEnum termsEnum = null;
+		termsEnum = termVector.iterator();
+
+		BytesRef bytesRef = null;
+		PostingsEnum postingsEnum = null;
+		Counter<String> ret = new Counter<String>();
+
+		while ((bytesRef = termsEnum.next()) != null) {
+			postingsEnum = termsEnum.postings(postingsEnum, PostingsEnum.ALL);
+
+			if (postingsEnum.nextDoc() != 0) {
+				throw new AssertionError();
+			}
+
+			String word = bytesRef.utf8ToString();
+			if (word.contains("<N")) {
+				continue;
+			}
+
+			int freq = postingsEnum.freq();
+			ret.incrementCount(word, freq);
+			// for (int k = 0; k < freq; k++) {
+			// final int position = postingsEnum.nextPosition();
+			// locWords.put(position, w);
+			// }
+		}
+		return ret;
+	}
+
+	public static WordCountBox getWordCountBox(IndexReader ir, SparseVector docScores, Indexer<String> wordIndexer)
+			throws Exception {
 		return getWordCountBox(ir, docScores, wordIndexer, IndexFieldName.CONTENT);
 	}
 
-	public static WordCountBox getWordCountBox(IndexReader ir, SparseVector docScores, Indexer<String> wordIndexer, String field)
-			throws Exception {
+	public static WordCountBox getWordCountBox(IndexReader ir, SparseVector docScores, Indexer<String> wordIndexer,
+			String field) throws Exception {
 		Set<Integer> fbWords = new HashSet<Integer>();
 
 		CounterMap<Integer, Integer> cm = new CounterMap<Integer, Integer>();
@@ -160,8 +197,8 @@ public class WordCountBox {
 
 	private Indexer<String> wordIndexer;
 
-	public WordCountBox(SparseMatrix docWordCounts, SparseVector collWordCounts, double cnt_sum_in_coll, SparseVector docFreqs,
-			double num_docs_in_coll, ListMap<Integer, Integer> docWords) {
+	public WordCountBox(SparseMatrix docWordCounts, SparseVector collWordCounts, double cnt_sum_in_coll,
+			SparseVector docFreqs, double num_docs_in_coll, ListMap<Integer, Integer> docWords) {
 		super();
 		this.docWordCounts = docWordCounts;
 		this.collWordCounts = collWordCounts;

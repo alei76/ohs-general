@@ -64,7 +64,7 @@ public class StringSearcher implements Serializable {
 
 	public void filter() {
 		System.out.println("filter index.");
-		double filter_ratio = 0.3;
+		double filter_ratio = 0.1;
 		double max = -Double.MAX_VALUE;
 		int num_filtered = 0;
 

@@ -246,19 +246,19 @@ public class StrUtils {
 		return sb.toString();
 	}
 
-	public static Counter<String> ngrams(int ngramOrder, String[] terms) {
+	public static Counter<String> ngrams(int ngram_order, List<String> words) {
 		Counter<String> ret = new Counter<String>();
-		for (int j = 0; j < terms.length - ngramOrder + 1; j++) {
+		for (int j = 0; j < words.size() - ngram_order + 1; j++) {
 			StringBuffer sb = new StringBuffer();
 			int size = 0;
-			for (int k = j; k < j + ngramOrder; k++) {
-				sb.append(terms[k]);
-				if (k != (j + ngramOrder) - 1) {
+			for (int k = j; k < j + ngram_order; k++) {
+				sb.append(words.get(k));
+				if (k != (j + ngram_order) - 1) {
 					sb.append("_");
 				}
 				size++;
 			}
-			assert ngramOrder == size;
+			assert ngram_order == size;
 			String ngram = sb.toString();
 			ret.incrementCount(ngram, 1);
 		}
@@ -365,8 +365,8 @@ public class StrUtils {
 		for (int i = 1; i < text.length(); i++) {
 			char prevCh = text.charAt(i - 1);
 			char currCh = text.charAt(i);
-			if (prevCh == '(' || prevCh == ')' || prevCh == '[' || prevCh == ']' || prevCh == '{' || prevCh == '}' || prevCh == '<'
-					|| prevCh == '>') {
+			if (prevCh == '(' || prevCh == ')' || prevCh == '[' || prevCh == ']' || prevCh == '{' || prevCh == '}'
+					|| prevCh == '<' || prevCh == '>') {
 				sb.append(currCh);
 			}
 		}

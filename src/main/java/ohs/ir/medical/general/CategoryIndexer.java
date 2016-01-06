@@ -189,9 +189,8 @@ public class CategoryIndexer {
 			counter.incrementCount(cat, ids.size());
 		}
 
-		numAvgDocsPerCat /= ret.keySize();
-
-		System.out.printf("read [%d] categories.\n", ret.keySize());
+		numAvgDocsPerCat /= ret.size();
+		System.out.printf("read [%d] categories.\n", ret.size());
 		System.out.printf("average docs per a category [%f].\n", numAvgDocsPerCat);
 		System.out.printf("max docs for a category [%f].\n", maxDocs);
 
