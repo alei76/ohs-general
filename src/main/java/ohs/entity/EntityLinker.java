@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.IndexReader;
@@ -22,7 +24,10 @@ import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.AnalyzerUtils;
 import ohs.ir.lucene.common.IndexFieldName;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
+import ohs.ir.medical.general.MIRPath;
+import ohs.ir.medical.general.SearcherUtils;
 import ohs.ir.medical.general.WordCountBox;
+import ohs.math.ArrayMath;
 import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
@@ -32,6 +37,7 @@ import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.utils.Generics;
 import ohs.utils.StopWatch;
+import ohs.utils.TermWeighting;
 
 /**
  * @author Heung-Seon Oh
@@ -57,11 +63,14 @@ public class EntityLinker implements Serializable {
 		// if (IOUtils.exists(ENTPath.ENTITY_LINKER_FILE)) {
 		// el.read(ENTPath.ENTITY_LINKER_FILE);
 		// } else {
-		el.createSearcher(ENTPath.NAME_LOCATION_FILE);
-		el.write(ENTPath.ENTITY_LINKER_FILE);
-		// }
+		// el.createSearcher(ENTPath.NAME_PERSON_FILE);
+		// el.write(ENTPath.ENTITY_LINKER_FILE.replace("linker", "linker_per"));
+		el.read(ENTPath.ENTITY_LINKER_FILE.replace("linker", "linker_per"));
+		el.setTopK(20);
 
-		el.read(ENTPath.ENTITY_LINKER_FILE);
+		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+
+		IndexSearcher is = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
 
 		List<Entity> ents = new ArrayList<Entity>(el.getEntities().values());
 
@@ -69,7 +78,7 @@ public class EntityLinker implements Serializable {
 
 		for (int i = 0; i < ents.size() && i < 20; i++) {
 			Entity ent = ents.get(i);
-			Counter<Entity> scores = el.link(ent.getText());
+			Counter<Entity> scores = el.link(ent.getText(), AnalyzerUtils.getWordCounts(ent.getText(), analyzer), is);
 			scores.keepTopNKeys(10);
 
 			writer.write("====== input ======" + "\n");
@@ -115,8 +124,10 @@ public class EntityLinker implements Serializable {
 
 	private Map<Integer, SparseVector> topicWordData;
 
-	public EntityLinker() {
+	private WeakHashMap<Integer, SparseVector> cache;
 
+	public EntityLinker() {
+		cache = Generics.newWeakHashMap(10000);
 	}
 
 	public void setTopK(int top_k) {
@@ -204,12 +215,12 @@ public class EntityLinker implements Serializable {
 	}
 
 	public Counter<Entity> link(String mention, Counter<String> features, IndexSearcher is) throws Exception {
-		Counter<StringRecord> candidates = searcher.search(mention.toLowerCase());
+		Counter<StringRecord> srs = searcher.search(mention.toLowerCase());
 
 		CounterMap<Integer, Integer> cm = Generics.newCounterMap();
-		for (StringRecord sr : candidates.keySet()) {
+		for (StringRecord sr : srs.keySet()) {
 			int rid = sr.getId();
-			cm.incrementCount(recToEntIdMap.get(rid), rid, candidates.getCount(sr));
+			cm.incrementCount(recToEntIdMap.get(rid), rid, srs.getCount(sr));
 		}
 
 		SparseVector cv = null;
@@ -233,16 +244,39 @@ public class EntityLinker implements Serializable {
 		}
 
 		if (is != null) {
-			CounterMap<Integer, String> docWordCounts = new CounterMap<Integer, String>();
-			Counter<String> docFreqs = new Counter<String>();
+			Indexer<String> wordIndexer = new Indexer<String>();
+
+			cv = VectorUtils.toSparseVector(features, wordIndexer, true);
+			VectorMath.unitVector(cv);
+
+			Map<Integer, SparseVector> docWordWeights = Generics.newHashMap();
 
 			for (int eid : scores.keySet()) {
 				Counter<String> c = WordCountBox.getWordCounts(is.getIndexReader(), eid, IndexFieldName.CONTENT);
-				docWordCounts.setCounter(eid, c);
-				docFreqs.incrementAll(c);
+				docWordWeights.put(eid, VectorUtils.toSparseVector(c, wordIndexer, true));
+			}
+			SparseVector docFreqs = WordCountBox.getDocFreqs(is.getIndexReader(), IndexFieldName.CONTENT, wordIndexer);
+
+			for (int eid : docWordWeights.keySet()) {
+				SparseVector wcs = docWordWeights.get(eid);
+				for (int j = 0; j < wcs.size(); j++) {
+					int w = wcs.indexAtLoc(j);
+					double cnt = wcs.valueAtLoc(j);
+					double tf = Math.log(cnt) + 1;
+					double doc_freq = docFreqs.value(w);
+					double num_docs = is.getIndexReader().maxDoc();
+					double idf = doc_freq == 0 ? 0 : Math.log((num_docs + 1) / doc_freq);
+					double tfidf = tf * idf;
+					wcs.setAtLoc(j, tfidf);
+				}
+				VectorMath.unitVector(wcs);
 			}
 
-			docFreqs = WordCountBox.getDocFreqs(is.getIndexReader(), IndexFieldName.CONTENT, docFreqs.keySet());
+			for (int eid : docWordWeights.keySet()) {
+				double score = scores.getCount(eid);
+				double cosine = VectorMath.dotProduct(cv, docWordWeights.get(eid));
+				scores.setCount(eid, score * Math.exp(cosine));
+			}
 		}
 
 		Counter<Entity> ret = new Counter<Entity>();

@@ -256,7 +256,7 @@ public class Experiments {
 
 		EntityLinker el = new EntityLinker();
 		el.read("../../data/entity_iden/wiki/entity-linker_all.ser.gz");
-		el.setTopK(100);
+		el.setTopK(10);
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);

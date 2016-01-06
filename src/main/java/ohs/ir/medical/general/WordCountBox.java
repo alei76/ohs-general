@@ -38,6 +38,17 @@ public class WordCountBox {
 		return ret;
 	}
 
+	public static SparseVector getDocFreqs(IndexReader ir, String field, Indexer<String> wordIndexer) throws Exception {
+		SparseVector ret = new SparseVector(wordIndexer.size());
+		for (int i = 0; i < wordIndexer.size(); i++) {
+			String word = wordIndexer.getObject(i);
+			Term term = new Term(field, word);
+			double df = ir.docFreq(term);
+			ret.incrementAtLoc(i, i, df);
+		}
+		return ret;
+	}
+
 	public static Counter<String> getWordCounts(IndexReader ir, int docid, String field) throws Exception {
 		Terms termVector = ir.getTermVector(docid, field);
 
@@ -74,13 +85,12 @@ public class WordCountBox {
 		return ret;
 	}
 
-	public static WordCountBox getWordCountBox(IndexReader ir, SparseVector docScores, Indexer<String> wordIndexer)
-			throws Exception {
+	public static WordCountBox getWordCountBox(IndexReader ir, SparseVector docScores, Indexer<String> wordIndexer) throws Exception {
 		return getWordCountBox(ir, docScores, wordIndexer, IndexFieldName.CONTENT);
 	}
 
-	public static WordCountBox getWordCountBox(IndexReader ir, SparseVector docScores, Indexer<String> wordIndexer,
-			String field) throws Exception {
+	public static WordCountBox getWordCountBox(IndexReader ir, SparseVector docScores, Indexer<String> wordIndexer, String field)
+			throws Exception {
 		Set<Integer> fbWords = new HashSet<Integer>();
 
 		CounterMap<Integer, Integer> cm = new CounterMap<Integer, Integer>();
@@ -197,8 +207,8 @@ public class WordCountBox {
 
 	private Indexer<String> wordIndexer;
 
-	public WordCountBox(SparseMatrix docWordCounts, SparseVector collWordCounts, double cnt_sum_in_coll,
-			SparseVector docFreqs, double num_docs_in_coll, ListMap<Integer, Integer> docWords) {
+	public WordCountBox(SparseMatrix docWordCounts, SparseVector collWordCounts, double cnt_sum_in_coll, SparseVector docFreqs,
+			double num_docs_in_coll, ListMap<Integer, Integer> docWords) {
 		super();
 		this.docWordCounts = docWordCounts;
 		this.collWordCounts = collWordCounts;

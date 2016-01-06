@@ -39,7 +39,6 @@ public class VectorUtils {
 		return ret;
 	}
 
-
 	public static void subVector(SparseVector x, int[] indexSet) {
 		List<Integer> indexList = new ArrayList<Integer>();
 		List<Double> valueList = new ArrayList<Double>();
@@ -214,12 +213,12 @@ public class VectorUtils {
 	}
 
 	public static SparseVector toSparseVector(Counter<String> x, Indexer<String> indexer, boolean addIfUnseen) {
-		List<Integer> indexList = new ArrayList<Integer>();
-		List<Double> valueList = new ArrayList<Double>();
+		List<Integer> indexes = new ArrayList<Integer>();
+		List<Double> values = new ArrayList<Double>();
 
-		for (Entry<String, Double> entry : x.entrySet()) {
-			String key = entry.getKey();
-			double value = entry.getValue();
+		for (Entry<String, Double> e : x.entrySet()) {
+			String key = e.getKey();
+			double value = e.getValue();
 			int index = indexer.indexOf(key);
 
 			if (index < 0) {
@@ -229,22 +228,19 @@ public class VectorUtils {
 					continue;
 				}
 			}
-
-			indexList.add(index);
-			valueList.add(value);
+			indexes.add(index);
+			values.add(value);
 		}
-		return toSparseVector(indexList, valueList, indexer.size());
+		return toSparseVector(indexes, values, indexer.size());
 	}
 
-	public static SparseVector toSparseVector(List<Integer> indexList, List<Double> valueList, int dim) {
-		SparseVector ret = new SparseVector(indexList.size());
-		for (int i = 0; i < indexList.size(); i++) {
-			int index = indexList.get(i);
-			double value = valueList.get(i);
-			ret.incrementAtLoc(i, index, value);
+	public static SparseVector toSparseVector(List<Integer> indexes, List<Double> values, int dim) {
+		SparseVector ret = new SparseVector(indexes.size());
+		for (int i = 0; i < indexes.size(); i++) {
+			ret.incrementAtLoc(i, indexes.get(i), values.get(i));
 		}
-		ret.sortByIndex();
 		ret.setDim(dim);
+		ret.sortByIndex();
 		return ret;
 	}
 
@@ -271,20 +267,17 @@ public class VectorUtils {
 		return toSpasreMatrix(counterMap, -1, -1, -1);
 	}
 
-	public static SparseMatrix toSpasreMatrix(CounterMap<Integer, Integer> counterMap, int rowDim, int colDim, int label) {
-		int[] rowIds = new int[counterMap.keySet().size()];
+	public static SparseMatrix toSpasreMatrix(CounterMap<Integer, Integer> cm, int rowDim, int colDim, int label) {
+		int[] rowIds = new int[cm.keySet().size()];
 		SparseVector[] rows = new SparseVector[rowIds.length];
 		int loc = 0;
-
-		for (int index : counterMap.keySet()) {
+		for (int index : cm.keySet()) {
 			rowIds[loc] = index;
-			rows[loc] = toSparseVector(counterMap.getCounter(index));
+			rows[loc] = toSparseVector(cm.getCounter(index));
 			rows[loc].setLabel(index);
-
 			if (rows[loc].size() > colDim) {
 				colDim = rows[loc].size();
 			}
-
 			loc++;
 		}
 		SparseMatrix ret = new SparseMatrix(rowDim, colDim, label, rowIds, rows);

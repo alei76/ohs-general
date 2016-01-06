@@ -21,7 +21,9 @@ import ohs.io.TextFileWriter;
 import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.GramGenerator;
 import ohs.string.search.ppss.StringRecord;
+import ohs.string.sim.CharacterSequence;
 import ohs.string.sim.EditDistance;
+import ohs.string.sim.Sequence;
 import ohs.string.sim.SmithWaterman;
 import ohs.types.Counter;
 import ohs.types.Indexer;
@@ -253,8 +255,10 @@ public class StringSearcher implements Serializable {
 
 			for (int i = 0; i < rids.size() && i < top_k; i++) {
 				StringRecord sr = srs.get(rids.get(i));
-				double score1 = sw.getNormalizedScore(s, sr.getString());
-				double score2 = ed.getNormalizedScore(s, sr.getString());
+				Sequence ss = new CharacterSequence(s);
+				Sequence tt = new CharacterSequence(sr.getString());
+				double score1 = sw.getNormalizedScore(ss, tt);
+				double score2 = ed.getNormalizedScore(ss, tt);
 				ret.setCount(sr, score1 * score2);
 			}
 			cache.put(s, ret);

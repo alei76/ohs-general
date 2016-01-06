@@ -6,9 +6,8 @@ import ohs.types.Counter;
 public class NeedlemanWunsch {
 
 	private class ScoreMatrix extends MemoMatrix {
-		public ScoreMatrix(String s, String t) {
+		public ScoreMatrix(Sequence s, Sequence t) {
 			super(s, t);
-			best = -Double.MAX_VALUE;
 		}
 
 		public double compute(int i, int j) {
@@ -17,52 +16,32 @@ public class NeedlemanWunsch {
 			if (j == 0)
 				return i * gap_cost;
 
-			char si = getSource().charAt(i - 1);
-			char tj = getTarget().charAt(j - 1);
+			String si = getSource().get(i - 1);
+			String tj = getTarget().get(j - 1);
 
-			double cost = 0;
-
-			if (si == tj) {
-				cost = match_cost;
-			} else {
-				cost = unmatch_cost;
-			}
-
-			double substitute_score = get(i - 1, j - 1) + cost;
+			double cost = si.equals(tj) ? match_cost : unmatch_cost;
+			double replace_score = get(i - 1, j - 1) + cost;
 			double delete_score = get(i - 1, j) + gap_cost;
 			double insert_score = get(i, j - 1) + gap_cost;
-			double[] scores = new double[] { substitute_score, delete_score, insert_score };
-			int index = ArrayMath.argMax(scores);
-			double ret = scores[index];
+			double ret = ArrayMath.max(new double[] { replace_score, delete_score, insert_score });
+			if (ret < min) {
+				min = ret;
+				indexAtMin.set(i, j);
+			}
 			return ret;
 		}
 	}
 
 	public static void main(String[] argv) {
-		// doMain(new SmithWatermanAligner(), argv);
-
-		// String[] strs = { "William W. ‘Don’t call me Dubya’ Cohen", "William W. Cohen" };
-		String[] strs = { "MCCOHN", "COHEN" };
-		// String[] strs = { "ABG", "EFG" };
-		// String[] strs = { "부산대학교 고분자공학과", "부산대학교 병원" };
-		strs = new String[] { "국민은행", "국민대학교 금속재료공학부" };
-
-		String s = strs[0];
-		String t = strs[1];
+		// String[] strs = { "You and I love New York !!!", "I hate New Mexico !!!" };
+		String[] strs = { "I love New York !!!", "I love New York !!!" };
 
 		NeedlemanWunsch nw = new NeedlemanWunsch();
-		System.out.println(nw.compute(s, t));
-		System.out.println(nw.getNormalizedScore(s, t));
 
-		SmithWaterman sw = new SmithWaterman();
-		System.out.println(sw.compute(s, t));
-		System.out.println(sw.getNormalizedScore(s, t));
-
-		// System.out.println(ar.toString());
+		// System.out.println(nw.compute(new StringSequence(strs[0]), new StringSequence(strs[1])));
+		System.out.println(nw.getNormalizedScore(new StringSequence(strs[0]), new StringSequence(strs[1])));
 
 	}
-
-	private Counter<Character> chWeights;
 
 	private double match_cost;
 
@@ -70,53 +49,56 @@ public class NeedlemanWunsch {
 
 	private double gap_cost;
 
-	private boolean ignoreGap;
-
 	public NeedlemanWunsch() {
 		// this(1, 0, 0, false);
-		this(0, -1, -1, false);
+		this(1, -1, -1);
 	}
 
-	public NeedlemanWunsch(double match_cost, double unmatch_cost, double gap_cost, boolean ignoreGap) {
+	public NeedlemanWunsch(double match_cost, double unmatch_cost, double gap_cost) {
 		this.match_cost = match_cost;
 		this.unmatch_cost = unmatch_cost;
 		this.gap_cost = gap_cost;
-		this.ignoreGap = ignoreGap;
 	}
 
-	public MemoMatrix compute(String s, String t) {
+	public MemoMatrix compute(Sequence s, Sequence t) {
 		ScoreMatrix ret = new ScoreMatrix(s, t);
 		ret.compute(s.length(), t.length());
 		return ret;
 	}
 
-	public double getNormalizedScore(String s, String t) {
+	public double getNormalizedScore(Sequence s, Sequence t) {
 		MemoMatrix m = compute(s, t);
-		double dissam_score = m.getValues()[s.length() - 1][t.length() - 1];
-		double max_dissam_score = 0;
-		
-		if (s.length() > t.length()) {
-			max_dissam_score = m.getValues()[s.length() - 1][0];
+		double score = m.get(s.length(), t.length());
+
+		float max = Math.max(s.length(), t.length());
+		float min = max;
+		if (Math.max(match_cost, unmatch_cost) > gap_cost) {
+			max *= Math.max(match_cost, unmatch_cost);
 		} else {
-			max_dissam_score = m.getValues()[0][t.length() - 1];
+			max *= gap_cost;
 		}
-		double dissam = dissam_score / max_dissam_score;
-		double sim = 1 - dissam;
-		return sim;
+		if (Math.min(match_cost, unmatch_cost) < gap_cost) {
+			min *= Math.min(match_cost, unmatch_cost);
+		} else {
+			min *= gap_cost;
+		}
+		if (min < 0.0f) {
+			max -= min;
+			score -= min;
+		}
+
+		// check for 0 maxLen
+		if (max == 0) {
+			return 1.0f; // as both strings identically zero length
+		} else {
+			return (score / max);
+		}
 	}
 
-	public double getScore(String s, String t) {
+	public double getScore(Sequence s, Sequence t) {
 		MemoMatrix m = compute(s, t);
 		double ret = m.getValues()[s.length() - 1][t.length() - 1];
 		return ret;
-	}
-
-	public void setChWeight(Counter<Character> chWeights) {
-		this.chWeights = chWeights;
-	}
-
-	public String toString() {
-		return "[Needleman Wunsch]";
 	}
 
 }

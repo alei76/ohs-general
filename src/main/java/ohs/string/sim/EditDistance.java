@@ -5,7 +5,7 @@ import ohs.math.ArrayMath;
 public class EditDistance {
 	private class ScoreMatrix extends MemoMatrix {
 
-		public ScoreMatrix(String s, String t) {
+		public ScoreMatrix(Sequence s, Sequence t) {
 			super(s, t);
 		}
 
@@ -15,14 +15,14 @@ public class EditDistance {
 			if (j == 0)
 				return i;
 
-			char si = getSource().charAt(i - 1);
-			char tj = getTarget().charAt(j - 1);
+			String si = getSource().get(i - 1);
+			String tj = getTarget().get(j - 1);
 
-			double cost = si == tj ? 0 : 1;
-			double substitute_score = get(i - 1, j - 1) + cost;
+			double cost = si.equals(tj) ? 0 : 1;
+			double replace_score = get(i - 1, j - 1) + cost;
 			double delete_score = get(i - 1, j) + 1;
 			double insert_score = get(i, j - 1) + 1;
-			double[] scores = new double[] { delete_score, insert_score, substitute_score };
+			double[] scores = new double[] { delete_score, insert_score, replace_score };
 			int index = ArrayMath.argMin(scores);
 			double ret = scores[index];
 
@@ -35,15 +35,14 @@ public class EditDistance {
 
 		// String[] strs = { "William W. ‘Don’t call me Dubya’ Cohen", "William W. Cohen" };
 		// String[] strs = { "COHEN", "MCCOHN" };
-		String[] sr1 = { "om", "beca" };
-		String[] sr2 = { "ot", "yoytu" };
-		// String[] sr2 = { "kitten", "sitting" };
 
-		EditDistance sw = new EditDistance();
-		MemoMatrix m = sw.compute(sr1[0], sr1[1]);
-		System.out.println(m.toString());
+		// String[] strs = { "ABCD", "AD" };
 
-		m = sw.compute(sr2[0], sr2[1]);
+		String[] strs = { "I love New York !!!", "I hate New Mexico !!!" };
+
+		EditDistance ed = new EditDistance();
+		// MemoMatrix m = sw.compute(new CharacterSequence(strs[0]), new CharacterSequence(strs[1]));
+		MemoMatrix m = ed.compute(new StringSequence(strs[0]), new StringSequence(strs[1]));
 		System.out.println(m.toString());
 
 		// System.out.println(m.getBestScore());
@@ -58,24 +57,24 @@ public class EditDistance {
 
 	}
 
-	public ScoreMatrix compute(String s, String t) {
+	public ScoreMatrix compute(Sequence s, Sequence t) {
 		ScoreMatrix ret = new ScoreMatrix(s, t);
 		compute(s, t, ret);
 		return ret;
 	}
 
-	private void compute(String s, String t, ScoreMatrix m) {
+	private void compute(Sequence s, Sequence t, ScoreMatrix m) {
 		m.get(s.length(), t.length());
 	}
 
-	public double getDistance(String s, String t) {
+	public double getDistance(Sequence s, Sequence t) {
 		ScoreMatrix sm = compute(s, t);
 		return sm.get(s.length(), t.length());
 	}
 
-	public double getNormalizedScore(String s, String t) {
+	public double getNormalizedScore(Sequence s, Sequence t) {
 		double dist = getDistance(s, t);
-		double longer = (s.length() > t.length()) ? s.length() : t.length();
+		double longer = Math.max(s.length(), t.length());
 		double ret = 1 - (dist / longer);
 		return ret;
 	}

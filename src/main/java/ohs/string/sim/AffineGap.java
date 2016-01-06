@@ -73,7 +73,7 @@ public class AffineGap {
 
 			if (max > best) {
 				best = max;
-				indexAtBest.set(i, j);
+				indexAtMax.set(i, j);
 			}
 
 			return max;
@@ -128,7 +128,7 @@ public class AffineGap {
 	}
 
 	public double getScore(String s, String t) {
-		return compute(s, t).getBestScore();
+		return compute(s, t).getMaxScore();
 	}
 
 }

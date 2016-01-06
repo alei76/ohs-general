@@ -17,21 +17,27 @@ public abstract class MemoMatrix {
 
 	protected boolean[][] computed;
 
-	protected String s;
+	protected Sequence s;
 
-	protected String t;
+	protected Sequence t;
 
-	protected Pair indexAtBest;
+	protected Pair<Integer, Integer> indexAtMax;
 
-	protected double best;
+	protected Pair<Integer, Integer> indexAtMin;
 
-	protected MemoMatrix(String s, String t) {
+	protected double max;
+
+	protected double min;
+
+	protected MemoMatrix(Sequence s, Sequence t) {
 		this.s = s;
 		this.t = t;
 		values = new double[s.length() + 1][t.length() + 1];
 		computed = new boolean[s.length() + 1][t.length() + 1];
-		indexAtBest = new Pair(-1, -1);
-		best = Double.NEGATIVE_INFINITY;
+		indexAtMax = new Pair<Integer, Integer>(-1, -1);
+		indexAtMin = new Pair<Integer, Integer>(-1, -1);
+		max = -Double.MAX_VALUE;
+		min = Double.MAX_VALUE;
 	}
 
 	abstract protected double compute(int i, int j);
@@ -44,19 +50,23 @@ public abstract class MemoMatrix {
 		return values[i][j];
 	}
 
-	public double getBestScore() {
-		return get((int) indexAtBest.getFirst(), (int) indexAtBest.getSecond());
+	public Pair<Integer, Integer> getIndexAtMax() {
+		return indexAtMax;
 	}
 
-	public Pair getIndexAtBest() {
-		return indexAtBest;
+	public double getMaxScore() {
+		return get(indexAtMax.getFirst(), indexAtMax.getSecond());
+	}
+	
+	public double getMinScore(){
+		return get(indexAtMin.getFirst(), indexAtMin.getSecond());
 	}
 
-	public String getSource() {
+	public Sequence getSource() {
 		return s;
 	}
 
-	public String getTarget() {
+	public Sequence getTarget() {
 		return t;
 	}
 
@@ -64,8 +74,8 @@ public abstract class MemoMatrix {
 		return values;
 	}
 
-	public void setIndexAtBest(Pair indexAtBest) {
-		this.indexAtBest = indexAtBest;
+	public void setIndexAtBest(Pair<Integer, Integer> indexAtMax) {
+		this.indexAtMax = indexAtMax;
 	}
 
 	public String toString() {
@@ -73,7 +83,7 @@ public abstract class MemoMatrix {
 
 		sb.append("<S/T>");
 		for (int i = 0; i < t.length(); i++)
-			sb.append("\t" + t.charAt(i));
+			sb.append("\t" + t.get(i));
 		sb.append("\n");
 
 		NumberFormat nf = NumberFormat.getInstance();
@@ -81,7 +91,7 @@ public abstract class MemoMatrix {
 		nf.setGroupingUsed(false);
 
 		for (int i = 1; i <= s.length(); i++) {
-			sb.append(s.charAt(i - 1));
+			sb.append(s.get(i - 1));
 			for (int j = 1; j <= t.length(); j++) {
 				double v = get(i, j);
 				sb.append("\t" + nf.format(v));

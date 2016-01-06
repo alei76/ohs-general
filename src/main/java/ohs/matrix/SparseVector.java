@@ -87,23 +87,21 @@ public class SparseVector implements Vector {
 		}
 		SparseVector ret = new SparseVector(indexes, values, label, dim);
 		ret.setSum(sum);
-		ret.sortByIndex();
 		return ret;
 	}
 
-	public static void write(ObjectOutputStream oos, List<SparseVector> vectors) throws Exception {
-		oos.writeInt(vectors.size());
-		for (int i = 0; i < vectors.size(); i++) {
-			SparseVector vector = vectors.get(i);
-			vector.write(oos);
+	public static void write(ObjectOutputStream oos, List<SparseVector> vs) throws Exception {
+		oos.writeInt(vs.size());
+		for (int i = 0; i < vs.size(); i++) {
+			vs.get(i).write(oos);
 		}
 	}
 
-	public static void write(String fileName, List<SparseVector> vectors) throws Exception {
+	public static void write(String fileName, List<SparseVector> vs) throws Exception {
 		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
-		write(oos, vectors);
+		write(oos, vs);
 		oos.close();
-		System.out.printf("write [%d] vectors to [%s].\n", vectors.size(), fileName);
+		System.out.printf("write [%d] vectors to [%s].\n", vs.size(), fileName);
 	}
 
 	private int[] indexes;
@@ -116,24 +114,21 @@ public class SparseVector implements Vector {
 
 	private int dim;
 
-	public SparseVector(Counter<Integer> counter, int label, int dim) {
-		indexes = new int[counter.size()];
-		values = new double[counter.size()];
-		int loc = 0;
-
-		for (Entry<Integer, Double> entry : counter.entrySet()) {
-			int index = entry.getKey();
-			double value = entry.getValue();
-			setAtLoc(loc++, index, value);
-			sum += value;
-		}
-		sortByIndex();
-		this.label = label;
-		this.dim = dim;
-	}
-
 	public SparseVector() {
 		this(0, 0);
+	}
+
+	public SparseVector(Counter<Integer> c, int label, int dim) {
+		indexes = new int[c.size()];
+		values = new double[c.size()];
+		int loc = 0;
+		for (Entry<Integer, Double> e : c.entrySet()) {
+			setAtLoc(loc++, e.getKey(), e.getValue());
+			incrementAtLoc(loc++, e.getKey(), e.getValue());
+		}
+		this.label = label;
+		this.dim = dim;
+		sortByIndex();
 	}
 
 	public SparseVector(int size) {
@@ -158,7 +153,6 @@ public class SparseVector implements Vector {
 		this.label = label;
 		this.sum = 0;
 		this.dim = dim;
-
 		// sortByIndex();
 	}
 
@@ -175,11 +169,7 @@ public class SparseVector implements Vector {
 
 		for (int i = 1; i < parts.length; i++) {
 			String[] toks = parts[i].split(":");
-			int index = Integer.parseInt(toks[0]);
-			double value = Double.parseDouble(toks[1]);
-			indexes[i - 1] = index;
-			values[i - 1] = value;
-			sum += value;
+			incrementAtLoc(i - 1, Integer.parseInt(toks[0]), Double.parseDouble(toks[1]));
 		}
 		// sortByIndex();
 	}
@@ -201,9 +191,7 @@ public class SparseVector implements Vector {
 	}
 
 	public SparseVector copy() {
-		int[] newIndexes = ArrayUtils.copy(indexes);
-		double[] newValues = ArrayUtils.copy(values);
-		SparseVector ret = new SparseVector(newIndexes, newValues, label, dim);
+		SparseVector ret = new SparseVector(ArrayUtils.copy(indexes), ArrayUtils.copy(values), label, dim);
 		ret.setSum(sum);
 		return ret;
 	}
@@ -257,23 +245,23 @@ public class SparseVector implements Vector {
 	}
 
 	public void keepAbove(double cutoff) {
-		List<Integer> indexList = new ArrayList<Integer>();
-		List<Double> valueList = new ArrayList<Double>();
+		List<Integer> is = new ArrayList<Integer>();
+		List<Double> vs = new ArrayList<Double>();
 
 		for (int i = 0; i < values.length; i++) {
 			if (values[i] < cutoff) {
 				continue;
 			}
-			indexList.add(indexes[i]);
-			valueList.add(values[i]);
+			is.add(indexes[i]);
+			vs.add(values[i]);
 		}
 
-		indexes = new int[indexList.size()];
-		values = new double[indexList.size()];
+		indexes = new int[is.size()];
+		values = new double[is.size()];
 		sum = 0;
-		for (int i = 0; i < indexList.size(); i++) {
-			indexes[i] = indexList.get(i);
-			values[i] = valueList.get(i);
+		for (int i = 0; i < is.size(); i++) {
+			indexes[i] = is.get(i);
+			values[i] = vs.get(i);
 			sum += values[i];
 		}
 	}
@@ -290,7 +278,6 @@ public class SparseVector implements Vector {
 				newValues[i] = values[i];
 				sum += newValues[i];
 			}
-
 			indexes = newIndexes;
 			values = newValues;
 			sortByIndex();
@@ -355,50 +342,47 @@ public class SparseVector implements Vector {
 	}
 
 	public void prune(final Set<Integer> toRemove) {
-		List<Integer> indexList = new ArrayList<Integer>();
-		List<Double> valueList = new ArrayList<Double>();
+		List<Integer> is = new ArrayList<Integer>();
+		List<Double> vs = new ArrayList<Double>();
 		sum = 0;
+
 		for (int i = 0; i < size(); i++) {
 			int index = indexAtLoc(i);
 			double value = valueAtLoc(i);
-
 			if (toRemove.contains(index)) {
 				continue;
 			}
-			indexList.add(index);
-			valueList.add(value);
+			is.add(index);
+			vs.add(value);
 			sum += value;
 		}
-
-		indexes = new int[indexList.size()];
-		values = new double[valueList.size()];
-
-		ArrayUtils.copy(indexList, indexes);
-		ArrayUtils.copy(valueList, values);
+		indexes = new int[is.size()];
+		values = new double[vs.size()];
+		ArrayUtils.copy(is, indexes);
+		ArrayUtils.copy(vs, values);
 	}
 
 	public void pruneExcept(final Set<Integer> toKeep) {
-		List<Integer> indexList = new ArrayList<Integer>();
-		List<Double> valueList = new ArrayList<Double>();
+		List<Integer> is = new ArrayList<Integer>();
+		List<Double> vs = new ArrayList<Double>();
 		sum = 0;
 
 		for (int i = 0; i < size(); i++) {
 			int index = indexAtLoc(i);
 			double value = valueAtLoc(i);
-
 			if (!toKeep.contains(index)) {
 				continue;
 			}
-			indexList.add(index);
-			valueList.add(value);
+			is.add(index);
+			vs.add(value);
 			sum += value;
 		}
 
-		indexes = new int[indexList.size()];
-		values = new double[valueList.size()];
+		indexes = new int[is.size()];
+		values = new double[vs.size()];
 
-		ArrayUtils.copy(indexList, indexes);
-		ArrayUtils.copy(valueList, values);
+		ArrayUtils.copy(is, indexes);
+		ArrayUtils.copy(vs, values);
 	}
 
 	public int[] rankedIndexes() {
@@ -431,10 +415,24 @@ public class SparseVector implements Vector {
 		return ret;
 	}
 
+	public void read(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+		label = ois.readInt();
+		dim = ois.readInt();
+		indexes = new int[size];
+		values = new double[size];
+		sum = 0;
+		for (int i = 0; i < size; i++) {
+			indexes[i] = ois.readInt();
+			values[i] = ois.readDouble();
+			sum += values[i];
+		}
+	}
+
 	public void removeZeros() {
 		sum = 0;
-		List<Integer> indexList = new ArrayList<Integer>();
-		List<Double> valueList = new ArrayList<Double>();
+		List<Integer> is = new ArrayList<Integer>();
+		List<Double> vs = new ArrayList<Double>();
 
 		for (int i = 0; i < indexes.length; i++) {
 			int index = indexes[i];
@@ -442,17 +440,16 @@ public class SparseVector implements Vector {
 			if (value == 0) {
 				continue;
 			}
-
 			sum += values[i];
-			indexList.add(index);
-			valueList.add(value);
+			is.add(index);
+			vs.add(value);
 		}
 
-		indexes = new int[indexList.size()];
-		values = new double[valueList.size()];
+		indexes = new int[is.size()];
+		values = new double[vs.size()];
 
-		ArrayUtils.copy(indexList, indexes);
-		ArrayUtils.copy(valueList, values);
+		ArrayUtils.copy(is, indexes);
+		ArrayUtils.copy(vs, values);
 	}
 
 	public void reset() {
@@ -484,7 +481,6 @@ public class SparseVector implements Vector {
 
 	@Override
 	public void scaleAtLoc(int loc, double factor) {
-		double old = values[loc];
 		values[loc] *= factor;
 
 	}
@@ -660,22 +656,6 @@ public class SparseVector implements Vector {
 
 	public double[] values() {
 		return values;
-	}
-
-	public void read(ObjectInputStream ois) throws Exception {
-		int size = ois.readInt();
-
-		label = ois.readInt();
-		dim = ois.readInt();
-		indexes = new int[size];
-		values = new double[size];
-		sum = 0;
-
-		for (int i = 0; i < size; i++) {
-			indexes[i] = ois.readInt();
-			values[i] = ois.readDouble();
-			sum += values[i];
-		}
 	}
 
 	public void write(ObjectOutputStream oos) throws Exception {
