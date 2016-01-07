@@ -78,7 +78,23 @@ public class EntityLinker implements Serializable {
 
 		for (int i = 0; i < ents.size() && i < 20; i++) {
 			Entity ent = ents.get(i);
-			Counter<Entity> scores = el.link(ent.getText(), AnalyzerUtils.getWordCounts(ent.getText(), analyzer), is);
+			// Counter<Entity> scores = el.link(ent.getText(), AnalyzerUtils.getWordCounts(ent.getText(), analyzer), is);
+			Counter<Entity> scores = el.link(ent.getText());
+			scores.keepTopNKeys(10);
+
+			writer.write("====== input ======" + "\n");
+			writer.write(ent.toString() + "\n");
+			writer.write("====== candidates ======" + "\n");
+			for (Entity e : scores.getSortedKeys()) {
+				writer.write(e.toString() + "\t" + scores.getCount(e) + "\n");
+			}
+			writer.write("\n\n");
+		}
+
+		for (int i = 0; i < ents.size() && i < 20; i++) {
+			Entity ent = ents.get(i);
+			// Counter<Entity> scores = el.link(ent.getText(), AnalyzerUtils.getWordCounts(ent.getText(), analyzer), is);
+			Counter<Entity> scores = el.link(ent.getText());
 			scores.keepTopNKeys(10);
 
 			writer.write("====== input ======" + "\n");

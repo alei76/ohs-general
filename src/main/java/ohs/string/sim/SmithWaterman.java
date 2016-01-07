@@ -45,7 +45,7 @@ public class SmithWaterman {
 		SmithWaterman sw = new SmithWaterman();
 
 		// System.out.println(sw.compute(new StringSequence(strs[0]), new StringSequence(strs[1])));
-		System.out.println(sw.getNormalizedScore(new StringSequence(strs[0]), new StringSequence(strs[1])));
+		System.out.println(sw.getSimilarity(new StringSequence(strs[0]), new StringSequence(strs[1])));
 
 	}
 
@@ -72,21 +72,21 @@ public class SmithWaterman {
 		return ret;
 	}
 
-	public double getNormalizedScore(Sequence s, Sequence t) {
+	public double getSimilarity(Sequence s, Sequence t) {
 		MemoMatrix m = compute(s, t);
 		double score = m.getMaxScore();
-		float max = Math.min(s.length(), t.length());
+		float max_score = Math.min(s.length(), t.length());
 		if (Math.max(match_cost, unmatch_cost) > -gap_cost) {
-			max *= Math.max(match_cost, unmatch_cost);
+			max_score *= Math.max(match_cost, unmatch_cost);
 		} else {
-			max *= -gap_cost;
+			max_score *= -gap_cost;
 		}
 
 		// check for 0 maxLen
-		if (max == 0) {
+		if (max_score == 0) {
 			return 1.0f; // as both strings identically zero length
 		} else {
-			return (score / max);
+			return (score / max_score);
 		}
 	}
 

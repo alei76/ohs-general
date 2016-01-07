@@ -18,6 +18,7 @@ import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.string.search.ppss.Gram.Type;
+import ohs.string.sim.CharacterSequence;
 import ohs.string.sim.SmithWaterman;
 import ohs.types.Counter;
 import ohs.types.DeepMap;
@@ -666,8 +667,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 									&& getIntersection(pivotsInR, prefixesInS).size() == 0)
 
 							|| (lastPrefixInR.getSecond() > lastPrefixInS.getSecond()
-									&& getIntersection(pivotsInS, prefixesInR).size() == 0)
-					) {
+									&& getIntersection(pivotsInS, prefixesInR).size() == 0)) {
 						continue;
 					}
 
@@ -692,7 +692,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 			// continue;
 			// }
 
-			double swScore = sw.getNormalizedScore(s, r);
+			double swScore = sw.getSimilarity(new CharacterSequence(s), new CharacterSequence(r));
 
 			// double long_len = Math.max(s.length(), r.length());
 			// double sim = 1 - (ed / long_len);

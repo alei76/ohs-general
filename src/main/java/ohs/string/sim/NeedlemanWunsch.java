@@ -1,7 +1,7 @@
 package ohs.string.sim;
 
+import edu.stanford.nlp.semgraph.semgrex.Alignment;
 import ohs.math.ArrayMath;
-import ohs.types.Counter;
 
 public class NeedlemanWunsch {
 
@@ -34,13 +34,17 @@ public class NeedlemanWunsch {
 
 	public static void main(String[] argv) {
 		// String[] strs = { "You and I love New York !!!", "I hate New Mexico !!!" };
-		String[] strs = { "I love New York !!!", "I love New York !!!" };
-
+		// String[] strs = { "I love New York !!!", "I love New York !!!" };
+		String[] strs = { "ABCD", "ABBBBBCD" };
+		//
 		NeedlemanWunsch nw = new NeedlemanWunsch();
 
-		// System.out.println(nw.compute(new StringSequence(strs[0]), new StringSequence(strs[1])));
-		System.out.println(nw.getNormalizedScore(new StringSequence(strs[0]), new StringSequence(strs[1])));
-
+//		System.out.println(nw.compute(new CharacterSequence(strs[0]), new CharacterSequence(strs[1])));
+//		System.out.println(nw.getSimilarity(new CharacterSequence(strs[0]), new CharacterSequence(strs[1])));
+		
+		Aligner aligner = new Aligner();
+		AlignResult ar = aligner.align(nw.compute(new CharacterSequence(strs[0]), new CharacterSequence(strs[1])));
+		System.out.println(ar);
 	}
 
 	private double match_cost;
@@ -66,16 +70,15 @@ public class NeedlemanWunsch {
 		return ret;
 	}
 
-	public double getNormalizedScore(Sequence s, Sequence t) {
+	public double getSimilarity(Sequence s, Sequence t) {
 		MemoMatrix m = compute(s, t);
 		double score = m.get(s.length(), t.length());
-
-		float max = Math.max(s.length(), t.length());
-		float min = max;
+		double max_score = Math.max(s.length(), t.length());
+		double min = max_score;
 		if (Math.max(match_cost, unmatch_cost) > gap_cost) {
-			max *= Math.max(match_cost, unmatch_cost);
+			max_score *= Math.max(match_cost, unmatch_cost);
 		} else {
-			max *= gap_cost;
+			max_score *= gap_cost;
 		}
 		if (Math.min(match_cost, unmatch_cost) < gap_cost) {
 			min *= Math.min(match_cost, unmatch_cost);
@@ -83,22 +86,15 @@ public class NeedlemanWunsch {
 			min *= gap_cost;
 		}
 		if (min < 0.0f) {
-			max -= min;
+			max_score -= min;
 			score -= min;
 		}
 
 		// check for 0 maxLen
-		if (max == 0) {
+		if (max_score == 0) {
 			return 1.0f; // as both strings identically zero length
 		} else {
-			return (score / max);
+			return (score / max_score);
 		}
 	}
-
-	public double getScore(Sequence s, Sequence t) {
-		MemoMatrix m = compute(s, t);
-		double ret = m.getValues()[s.length() - 1][t.length() - 1];
-		return ret;
-	}
-
 }

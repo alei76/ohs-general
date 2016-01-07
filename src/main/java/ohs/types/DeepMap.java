@@ -1,10 +1,11 @@
 package ohs.types;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
+
+import ohs.utils.Generics;
+import ohs.utils.Generics.MapType;
 
 public class DeepMap<K, E, V> implements Serializable {
 
@@ -22,15 +23,15 @@ public class DeepMap<K, E, V> implements Serializable {
 
 	protected Map<K, Map<E, V>> entries;
 
-	private boolean useTreeMap;
+	protected MapType mt2;
 
 	public DeepMap() {
-		this(false);
+		this(100, MapType.HASH_MAP, MapType.HASH_MAP);
 	}
 
-	public DeepMap(boolean useTreeMap) {
-		this.useTreeMap = useTreeMap;
-		entries = useTreeMap ? new TreeMap<K, Map<E, V>>() : new HashMap<K, Map<E, V>>();
+	public DeepMap(int size, MapType mt1, MapType mt2) {
+		entries = Generics.newMap(mt1, size);
+		this.mt2 = mt2;
 	}
 
 	public boolean containsKey(K key) {
@@ -51,7 +52,7 @@ public class DeepMap<K, E, V> implements Serializable {
 	protected Map<E, V> ensure(K key) {
 		Map<E, V> map = entries.get(key);
 		if (map == null) {
-			map = useTreeMap ? new TreeMap<E, V>() : new HashMap<E, V>();
+			map = Generics.newMap(mt2);
 			entries.put(key, map);
 		}
 		return map;
@@ -78,8 +79,7 @@ public class DeepMap<K, E, V> implements Serializable {
 	}
 
 	public void put(K key, E elem, V value) {
-		Map<E, V> map = ensure(key);
-		map.put(elem, value);
+		ensure(key).put(elem, value);
 	}
 
 	public void put(K key, Map<E, V> map) {

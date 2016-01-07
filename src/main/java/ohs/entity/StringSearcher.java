@@ -12,12 +12,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
-
-import javax.persistence.GenerationType;
 
 import ohs.io.IOUtils;
-import ohs.io.TextFileWriter;
 import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.GramGenerator;
 import ohs.string.search.ppss.StringRecord;
@@ -26,9 +22,11 @@ import ohs.string.sim.EditDistance;
 import ohs.string.sim.Sequence;
 import ohs.string.sim.SmithWaterman;
 import ohs.types.Counter;
+import ohs.types.DeepMap;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
 import ohs.utils.Generics;
+import ohs.utils.Generics.MapType;
 import ohs.utils.StopWatch;
 
 /**
@@ -50,7 +48,7 @@ public class StringSearcher implements Serializable {
 
 	private GramGenerator gramGenerator;
 
-	private WeakHashMap<String, Counter<StringRecord>> cache;
+	private DeepMap<String, Integer, Double> cache;
 
 	private int top_k;
 
@@ -60,7 +58,7 @@ public class StringSearcher implements Serializable {
 
 	public StringSearcher(int q) {
 		gramGenerator = new GramGenerator(q);
-		cache = Generics.newWeakHashMap(1000);
+		cache = new DeepMap<String, Integer, Double>(1000, MapType.WEAK_HASH_MAP, MapType.WEAK_HASH_MAP);
 		top_k = Integer.MAX_VALUE;
 	}
 
@@ -223,45 +221,48 @@ public class StringSearcher implements Serializable {
 	}
 
 	public Counter<StringRecord> search(String s) {
-		Counter<StringRecord> ret = cache.get(s);
 
-		if (ret == null) {
-			Gram[] grams = gramGenerator.generate(String.format("<%s>", s));
+		Gram[] grams = gramGenerator.generate(String.format("<%s>", s));
 
-			if (grams.length == 0) {
-				return new Counter<StringRecord>();
+		if (grams.length == 0) {
+			return new Counter<StringRecord>();
+		}
+
+		Counter<Integer> candidates = new Counter<Integer>();
+		for (int i = 0; i < grams.length; i++) {
+			int gid = gramIndexer.indexOf(grams[i].getString());
+			if (gid < 0) {
+				continue;
 			}
-
-			Counter<Integer> candidates = new Counter<Integer>();
-			for (int i = 0; i < grams.length; i++) {
-				int gid = gramIndexer.indexOf(grams[i].getString());
-				if (gid < 0) {
-					continue;
-				}
-				List<Integer> rids = index.get(gid, false);
-
-				if (rids != null) {
-					for (int rid : rids) {
-						candidates.incrementCount(rid, 1);
-					}
+			List<Integer> rids = index.get(gid, false);
+			if (rids != null) {
+				double idf = Math.log((srs.size() + 1f) / rids.size());
+				for (int rid : rids) {
+					candidates.incrementCount(rid, idf);
 				}
 			}
+		}
 
-			SmithWaterman sw = new SmithWaterman();
-			EditDistance ed = new EditDistance();
-			ret = new Counter<StringRecord>();
+		SmithWaterman sw = new SmithWaterman();
+		EditDistance ed = new EditDistance();
+		Counter<StringRecord> ret = new Counter<StringRecord>();
+		List<Integer> rids = candidates.getSortedKeys();
 
-			List<Integer> rids = candidates.getSortedKeys();
+		for (int i = 0; i < rids.size() && i < top_k; i++) {
+			StringRecord sr = srs.get(rids.get(i));
+			double score = 0;
 
-			for (int i = 0; i < rids.size() && i < top_k; i++) {
-				StringRecord sr = srs.get(rids.get(i));
+			if (cache.containsKeys(s, sr.getId())) {
+				score = cache.get(s, sr.getId(), false);
+			} else {
 				Sequence ss = new CharacterSequence(s);
 				Sequence tt = new CharacterSequence(sr.getString());
-				double score1 = sw.getNormalizedScore(ss, tt);
-				double score2 = ed.getNormalizedScore(ss, tt);
-				ret.setCount(sr, score1 * score2);
+				double score1 = sw.getSimilarity(ss, tt);
+				double score2 = ed.getSimilarity(ss, tt);
+				score = score1 * score2;
+				cache.put(s, sr.getId(), score);
 			}
-			cache.put(s, ret);
+			ret.setCount(sr, score);
 		}
 		return ret;
 	}

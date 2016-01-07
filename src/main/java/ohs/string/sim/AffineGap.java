@@ -13,29 +13,29 @@ public class AffineGap {
 	// a set of three linked distance matrices
 	protected class MatrixTrio extends MemoMatrix {
 		protected class InsertSMatrix extends MemoMatrix {
-			public InsertSMatrix(String s, String t) {
+			public InsertSMatrix(Sequence s, Sequence t) {
 				super(s, t);
 			}
 
 			public double compute(int i, int j) {
 				if (i == 0 || j == 0)
 					return 0;
-				double score1 = m.get(i - 1, j) + open_gap_score;
-				double score2 = is.get(i - 1, j) + extend_gap_score;
+				double score1 = m.get(i - 1, j) + open_gap_cost;
+				double score2 = is.get(i - 1, j) + extend_gap_cost;
 				return ArrayMath.max(new double[] { lower_bound, score1, score2 });
 			}
 		}
 
 		protected class InsertTMatrix extends MemoMatrix {
-			public InsertTMatrix(String s, String t) {
+			public InsertTMatrix(Sequence s, Sequence t) {
 				super(s, t);
 			}
 
 			public double compute(int i, int j) {
 				if (i == 0 || j == 0)
 					return 0;
-				double score1 = m.get(i, j - 1) + open_gap_score;
-				double score2 = it.get(i, j - 1) + extend_gap_score;
+				double score1 = m.get(i, j - 1) + open_gap_cost;
+				double score2 = it.get(i, j - 1) + extend_gap_cost;
 				return ArrayMath.max(new double[] { lower_bound, score1, score2 });
 			}
 		}
@@ -46,62 +46,46 @@ public class AffineGap {
 
 		protected InsertTMatrix it;
 
-		public MatrixTrio(String s, String t) {
+		public MatrixTrio(Sequence s, Sequence t) {
 			super(s, t);
 			is = new InsertSMatrix(s, t);
 			it = new InsertTMatrix(s, t);
 			m = this;
-
-			best = -Double.MAX_VALUE;
 		}
 
 		public double compute(int i, int j) {
 			if (i == 0 || j == 0)
 				return 0;
 
-			char si = getSource().charAt(i - 1);
-			char tj = getTarget().charAt(j - 1);
-			double cost = si == tj ? match_cost : unmatch_cost;
+			String si = getSource().get(i - 1);
+			String tj = getTarget().get(j - 1);
+			double cost = si.equals(tj) ? match_cost : unmatch_cost;
 
 			double score1 = m.get(i - 1, j - 1) + cost;
 			double score2 = is.get(i - 1, j - 1) + cost;
-			// double score3 = it.get(i = 1, j - 1) + cost;
-			double score3 = it.get(i - 1, j = 1) + cost;
-			double[] scores = new double[] { lower_bound, score1, score2, score3 };
-			int max_index = ArrayMath.argMax(scores);
-			double max = scores[max_index];
-
-			if (max > best) {
-				best = max;
-				indexAtMax.set(i, j);
-			}
-
-			return max;
+			double score3 = it.get(i = 1, j - 1) + cost;
+			// double score3 = it.get(i - 1, j = 1) + cost;
+			double ret = ArrayMath.max(new double[] { lower_bound, score1, score2, score3 });
+			return ret;
 		}
 	}
 
 	static public void main(String[] argv) {
-		String[] strs = { "William W. ‘Don’t call me Dubya’ Cohen", "William W. Cohen" };
-		strs = new String[] { "ABC", "ABBBBBC" };
-		strs = new String[] { "COHEN", "MCCOHN" };
-		// String[] strs = { "국민은행", "국민대학교 금속재료공학부" };
-		String s = strs[0];
-		String t = strs[1];
+
+		// String[] strs = { "You and I love New York !!!", "I hate New Mexico !!!" };
+		// String[] strs = { "I love New York !!!", "I love New York !!!" };
+		String[] strs = { "ABCD", "ABCD" };
 
 		AffineGap af = new AffineGap();
-		MemoMatrix m = af.compute(s, t);
 
-		Aligner al = new Aligner();
-		AlignResult ar = al.align(m);
-
-		System.out.println(m.toString());
-		System.out.println(ar.toString());
+		// System.out.println(af.compute(new CharacterSequence(strs[0]), new CharacterSequence(strs[1])));
+		System.out.println(af.getSimilarity(new CharacterSequence(strs[0]), new CharacterSequence(strs[1])));
 
 	}
 
-	private double open_gap_score;
+	private double open_gap_cost;
 
-	private double extend_gap_score;
+	private double extend_gap_cost;
 
 	private double lower_bound;
 
@@ -113,22 +97,49 @@ public class AffineGap {
 		this(2, -1, 2, 1, -Double.MAX_VALUE);
 	}
 
-	public AffineGap(double match_score, double unmatch_score, double open_gap_score, double extend_gap_score, double lower_bound) {
-		this.match_cost = match_score;
-		this.unmatch_cost = unmatch_score;
-		this.open_gap_score = open_gap_score;
-		this.extend_gap_score = extend_gap_score;
+	public AffineGap(double match_cost, double unmatch_cost, double open_gap_cost, double extend_gap_cost, double lower_bound) {
+		this.match_cost = match_cost;
+		this.unmatch_cost = unmatch_cost;
+		this.open_gap_cost = open_gap_cost;
+		this.extend_gap_cost = extend_gap_cost;
 		this.lower_bound = lower_bound;
 	}
 
-	public MemoMatrix compute(String s, String t) {
+	public MemoMatrix compute(Sequence s, Sequence t) {
 		MatrixTrio ret = new MatrixTrio(s, t);
 		ret.compute(s.length(), t.length());
 		return ret;
 	}
 
-	public double getScore(String s, String t) {
-		return compute(s, t).getMaxScore();
+	public double getSimilarity(Sequence s, Sequence t) {
+		MemoMatrix m = compute(s, t);
+
+		System.out.println(m.toString());
+		double score = ArrayMath.max(m.getValues());
+		double max_score = Math.max(s.length(), t.length());
+		double min = max_score;
+		if (Math.max(match_cost, unmatch_cost) > open_gap_cost) {
+			max_score *= Math.max(match_cost, unmatch_cost);
+		} else {
+			max_score *= open_gap_cost;
+		}
+		if (Math.min(match_cost, unmatch_cost) < open_gap_cost) {
+			min *= Math.min(match_cost, unmatch_cost);
+		} else {
+			min *= open_gap_cost;
+		}
+		if (min < 0.0f) {
+			max_score -= min;
+			score -= min;
+		}
+
+		// check for 0 maxLen
+		if (max_score == 0) {
+			return 1.0f; // as both strings identically zero length
+		} else {
+			return (score / max_score);
+		}
+
 	}
 
 }

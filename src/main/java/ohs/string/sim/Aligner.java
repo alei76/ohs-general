@@ -18,10 +18,10 @@ public class Aligner {
 	}
 
 	public AlignResult align(MemoMatrix mm) {
-		List<Pair> path = getAlignmentPath(mm);
+		List<Pair<Integer, Integer>> path = getAlignmentPath(mm);
 
-		String s = mm.getSource();
-		String t = mm.getTarget();
+		Sequence s = mm.getSource();
+		Sequence t = mm.getTarget();
 
 		List<MatchType> mt = new ArrayList<MatchType>();
 
@@ -32,18 +32,18 @@ public class Aligner {
 		int pj = -1;
 
 		for (int k = 0; k < path.size(); k++) {
-			Pair index = path.get(k);
-			int i = (int) index.getFirst();
-			int j = (int) index.getSecond();
+			Pair<Integer, Integer> index = path.get(k);
+			int i = index.getFirst();
+			int j = index.getSecond();
 
-			char si = s.charAt(i);
-			char tj = t.charAt(j);
+			String si = s.get(i);
+			String tj = t.get(j);
 
 			// System.out.printf("[%d, %d = %s, %s]\n", i, j, wi, wj);
 
 			MatchType mi = null;
 
-			if (si == tj) {
+			if (si.equals(tj)) {
 				mi = MatchType.MATCH;
 			} else {
 				mi = MatchType.UNMATCH;
@@ -52,11 +52,11 @@ public class Aligner {
 			mt.add(mi);
 
 			if (i == pi) {
-				si = '#';
+				si = "#";
 			}
 
 			if (j == pj) {
-				tj = '#';
+				tj = "#";
 			}
 
 			sb.append(si);
@@ -93,17 +93,17 @@ public class Aligner {
 		return ret;
 	}
 
-	private List<Pair> getAlignmentPath(MemoMatrix mm) {
-		List<Pair> ret = new ArrayList<Pair>();
+	private List<Pair<Integer, Integer>> getAlignmentPath(MemoMatrix mm) {
+		List<Pair<Integer, Integer>> ret = new ArrayList<Pair<Integer, Integer>>();
 
-		String s = mm.getSource();
-		String t = mm.getTarget();
+		Sequence s = mm.getSource();
+		Sequence t = mm.getTarget();
 
 		int i = s.length();
 		int j = t.length();
 
 		while (i > 0 && j > 0) {
-			ret.add(new Pair(i - 1, j - 1));
+			ret.add(new Pair<Integer, Integer>(i - 1, j - 1));
 
 			// Token ti = s.getToken(i - 1);
 			// Token tj = t.getToken(j - 1);

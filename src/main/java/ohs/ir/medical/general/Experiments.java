@@ -871,8 +871,7 @@ public class Experiments {
 
 				SparseVector expQLM = qlm.copy();
 
-				WordCountBox wcb1 = WordCountBox.getWordCountBox(siss[i].getIndexReader(), sentScores, wordIndexer,
-						IndexFieldName.CONTENT);
+				WordCountBox wcb1 = WordCountBox.getWordCountBox(siss[i].getIndexReader(), sentScores, wordIndexer, IndexFieldName.CONTENT);
 
 				RelevanceModelBuilder rmb = new RelevanceModelBuilder(10, 15, 20);
 				SparseVector rm = rmb.getRelevanceModel(wcb1, sentScores);
@@ -883,8 +882,7 @@ public class Experiments {
 
 				expQLM = VectorMath.addAfterScale(qlm, rm, 1 - mixture, mixture);
 
-				WordCountBox wcb2 = WordCountBox.getWordCountBox(iss[i].getIndexReader(), docScores, wordIndexer,
-						IndexFieldName.CONTENT);
+				WordCountBox wcb2 = WordCountBox.getWordCountBox(iss[i].getIndexReader(), docScores, wordIndexer, IndexFieldName.CONTENT);
 
 				KLDivergenceScorer scorer = new KLDivergenceScorer();
 				docScores = scorer.score(wcb2, expQLM);

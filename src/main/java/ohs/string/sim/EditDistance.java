@@ -36,14 +36,14 @@ public class EditDistance {
 		// String[] strs = { "William W. ‘Don’t call me Dubya’ Cohen", "William W. Cohen" };
 		// String[] strs = { "COHEN", "MCCOHN" };
 
-		// String[] strs = { "ABCD", "AD" };
+		String[] strs = { "ABCD", "ABCD" };
 
-		String[] strs = { "I love New York !!!", "I hate New Mexico !!!" };
+		// String[] strs = { "I love New York !!!", "I hate New Mexico !!!" };
 
 		EditDistance ed = new EditDistance();
 		// MemoMatrix m = sw.compute(new CharacterSequence(strs[0]), new CharacterSequence(strs[1]));
-		MemoMatrix m = ed.compute(new StringSequence(strs[0]), new StringSequence(strs[1]));
-		System.out.println(m.toString());
+		// MemoMatrix m = ed.compute(new StringSequence(strs[0]), new StringSequence(strs[1]));
+		System.out.println(ed.getSimilarity(new StringSequence(strs[0]), new StringSequence(strs[1])));
 
 		// System.out.println(m.getBestScore());
 
@@ -59,12 +59,8 @@ public class EditDistance {
 
 	public ScoreMatrix compute(Sequence s, Sequence t) {
 		ScoreMatrix ret = new ScoreMatrix(s, t);
-		compute(s, t, ret);
+		ret.get(s.length(), t.length());
 		return ret;
-	}
-
-	private void compute(Sequence s, Sequence t, ScoreMatrix m) {
-		m.get(s.length(), t.length());
 	}
 
 	public double getDistance(Sequence s, Sequence t) {
@@ -72,15 +68,12 @@ public class EditDistance {
 		return sm.get(s.length(), t.length());
 	}
 
-	public double getNormalizedScore(Sequence s, Sequence t) {
-		double dist = getDistance(s, t);
+	public double getSimilarity(Sequence s, Sequence t) {
+		ScoreMatrix sm = compute(s, t);
+		double edit_dist = sm.get(s.length(), t.length());
 		double longer = Math.max(s.length(), t.length());
-		double ret = 1 - (dist / longer);
+		double ret = 1 - (edit_dist / longer);
 		return ret;
-	}
-
-	public String toString() {
-		return "[Edit Distance]";
 	}
 
 }
