@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.springframework.ui.Model;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.math.ArrayUtils;
 import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
@@ -23,10 +23,10 @@ public class LibLinearWrapper implements Serializable {
 	public static LibLinearWrapper read(String fileName) throws Exception {
 		System.out.printf("read [%s]\n", fileName);
 
-		ObjectInputStream ois = IOUtils.openObjectInputStream(fileName);
+		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
 
-		Indexer<String> labelIndexer = IOUtils.readIndexer(ois);
-		Indexer<String> featIndexer = IOUtils.readIndexer(ois);
+		Indexer<String> labelIndexer = FileUtils.readIndexer(ois);
+		Indexer<String> featIndexer = FileUtils.readIndexer(ois);
 
 		SolverType solver = SolverType.getById(ois.readInt());
 		int nr_class = ois.readInt();
@@ -38,7 +38,7 @@ public class LibLinearWrapper implements Serializable {
 
 		int nr_feature = ois.readInt();
 		double bias = ois.readDouble();
-		double[] w = IOUtils.readDoubleArray(ois);
+		double[] w = FileUtils.readDoubleArray(ois);
 
 		Model model = new Model();
 		model.solverType = solver;
@@ -135,10 +135,10 @@ public class LibLinearWrapper implements Serializable {
 
 	public void write(String fileName) throws Exception {
 		System.out.printf("write to [%s].\n", fileName);
-		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
+		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 
-		IOUtils.write(oos, labelIndexer);
-		IOUtils.write(oos, featureIndexer);
+		FileUtils.write(oos, labelIndexer);
+		FileUtils.write(oos, featureIndexer);
 
 		oos.writeInt(model.solverType.getId());
 		oos.writeInt(model.getNrClass());
@@ -150,7 +150,7 @@ public class LibLinearWrapper implements Serializable {
 		oos.writeInt(model.getNrFeature());
 		oos.writeDouble(model.getBias());
 
-		IOUtils.write(oos, model.getFeatureWeights());
+		FileUtils.writeStrings(oos, model.getFeatureWeights());
 		oos.close();
 	}
 }

@@ -19,7 +19,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.types.ListMap;
@@ -42,7 +42,7 @@ public class DataHandler {
 
 	public void changeFormat() throws Exception {
 		// ListMap<String, String> map = new ListMap<String, String>();
-		// for (String line : IOUtils.readLines(NSPath.NEWS_META_FILE)) {
+		// for (String line : FileUtils.readLines(NSPath.NEWS_META_FILE)) {
 		// String[] parts = line.split("\t");
 		// String date = parts[2].substring(0, 10);
 		// String id = parts[0];
@@ -52,12 +52,12 @@ public class DataHandler {
 		// List<String> dates = new ArrayList<>(map.keySet());
 		// Collections.sort(dates);
 		//
-		// IOUtils.deleteFilesUnder(NSPath.CONTENT_NLP_CONLL_DIR);
+		// FileUtils.deleteFilesUnder(NSPath.CONTENT_NLP_CONLL_DIR);
 
 		File[] dirs = new File(NSPath.CONTENT_NLP_DIR).listFiles();
 
 		for (int i = 0; i < dirs.length; i++) {
-			List<File> files = IOUtils.getFilesUnder(dirs[i]);
+			List<File> files = FileUtils.getFilesUnder(dirs[i]);
 
 			for (int j = 0; j < files.size(); j++) {
 				File file = files.get(j);
@@ -65,7 +65,7 @@ public class DataHandler {
 						.replace(".xml", ".conll");
 
 				try {
-					IOUtils.write(outputFileName, getTextInConllFormat(file));
+					FileUtils.write(outputFileName, getTextInConllFormat(file));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -90,11 +90,11 @@ public class DataHandler {
 		TextFileWriter writer = new TextFileWriter(NSPath.NEWS_NER_FILE);
 
 		for (int i = 0; i < dirs.length; i++) {
-			List<File> files = IOUtils.getFilesUnder(dirs[i]);
+			List<File> files = FileUtils.getFilesUnder(dirs[i]);
 
 			for (int j = 0; j < files.size(); j++) {
 				File file = files.get(j);
-				String id = IOUtils.removeExtension(file.getName());
+				String id = FileUtils.removeExtension(file.getName());
 				String date = idDateMap.get(id);
 
 				TextFileReader reader = new TextFileReader(file);
@@ -174,7 +174,7 @@ public class DataHandler {
 	}
 
 	public void doBinning() throws Exception {
-		IOUtils.deleteFilesUnder(NSPath.CONTENT_DIR);
+		FileUtils.deleteFilesUnder(NSPath.CONTENT_DIR);
 
 		TextFileReader reader = new TextFileReader(NSPath.NEWS_COL_TEXT_FILE);
 		TextFileWriter writer = new TextFileWriter(NSPath.NEWS_META_FILE);
@@ -247,7 +247,7 @@ public class DataHandler {
 
 	public void doNLP() throws Exception {
 
-		// IOUtils.deleteFilesUnder(NSPath.TEMP_NLP_DIR);
+		// FileUtils.deleteFilesUnder(NSPath.TEMP_NLP_DIR);
 
 		String[] types = { "news" };
 
@@ -258,11 +258,11 @@ public class DataHandler {
 
 			String visitFileName = NSPath.DATA_DIR + String.format("content_visit_%s.txt", type);
 
-			if (IOUtils.exists(visitFileName)) {
-				visited = IOUtils.readSet(visitFileName);
+			if (FileUtils.exists(visitFileName)) {
+				visited = FileUtils.readSet(visitFileName);
 			}
 
-			TextFileWriter writer = new TextFileWriter(NSPath.CONTENT_VISIT_FILE, IOUtils.UTF_8, true);
+			TextFileWriter writer = new TextFileWriter(NSPath.CONTENT_VISIT_FILE, FileUtils.UTF_8, true);
 
 			Properties prop = new Properties();
 			prop.setProperty("annotators", "tokenize, quote, ssplit, pos, lemma, ner,parse, sentiment");
@@ -287,7 +287,7 @@ public class DataHandler {
 				String outputDir = dirFiles[i].getPath().replace("content", "content_nlp");
 				nlp.getProperties().setProperty("outputDirectory", outputDir);
 				try {
-					nlp.processFiles(IOUtils.getFilesUnder(dir), 100);
+					nlp.processFiles(FileUtils.getFilesUnder(dir), 100);
 				} catch (Exception e) {
 
 				}
@@ -395,7 +395,7 @@ public class DataHandler {
 			String content = map.get(fileName);
 			String outputFileName = NSPath.DATA_DIR
 					+ String.format("content/%s/%05d/%s.txt", mediaType, num_dirs, fileName);
-			IOUtils.write(outputFileName, content);
+			FileUtils.write(outputFileName, content);
 		}
 		map.clear();
 	}
@@ -404,11 +404,11 @@ public class DataHandler {
 	//
 	// Set<String> docIds = Generics.newHashSet();
 	// if (new File(NSPath.NEWS_META_FILE).exists()) {
-	// docIds = IOUtils.readSet(NSPath.TEMP_ID_FILE);
+	// docIds = FileUtils.readSet(NSPath.TEMP_ID_FILE);
 	// }
 	//
 	// TextFileWriter writer = new TextFileWriter(NSPath.TEMP_ID_FILE,
-	// IOUtils.UTF_8, true);
+	// FileUtils.UTF_8, true);
 	//
 	// Properties prop = new Properties();
 	// prop.setProperty("annotators", "tokenize, quote, ssplit, pos, lemma,
@@ -428,15 +428,15 @@ public class DataHandler {
 	// continue;
 	// }
 	//
-	// List<File> files = IOUtils.getFilesUnder(dirFiles[i]);
+	// List<File> files = FileUtils.getFilesUnder(dirFiles[i]);
 	//
 	// for (File file : files) {
-	// if (docIds.contains(IOUtils.removeExtension(file.getName()))) {
+	// if (docIds.contains(FileUtils.removeExtension(file.getName()))) {
 	// continue;
 	// }
-	// writer.write(IOUtils.removeExtension(file.getName()) + "\n");
+	// writer.write(FileUtils.removeExtension(file.getName()) + "\n");
 	//
-	// String content = IOUtils.readText(file.getPath());
+	// String content = FileUtils.readText(file.getPath());
 	// Annotation anno = null;
 	//
 	// try {
@@ -452,7 +452,7 @@ public class DataHandler {
 	//
 	// String outputFile = file.getCanonicalPath().replace("temp",
 	// "temp_nlp").replace(".txt", ".xml");
-	// IOUtils.write(outputFile, content);
+	// FileUtils.write(outputFile, content);
 	//
 	// }
 	//

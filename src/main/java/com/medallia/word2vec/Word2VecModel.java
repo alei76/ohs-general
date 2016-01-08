@@ -13,7 +13,7 @@ import com.google.common.base.Preconditions;
 import com.medallia.word2vec.thrift.Word2VecModelThrift;
 import com.medallia.word2vec.util.Common;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
 import ohs.math.ArrayUtils;
 
@@ -38,13 +38,13 @@ public class Word2VecModel {
 
 	public static Word2VecModel fromSerFile(String fileName) throws Exception {
 
-		ObjectInputStream ois = IOUtils.openObjectInputStream(fileName);
-		int[] dims = IOUtils.readIntegerArray(ois);
+		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
+		int[] dims = FileUtils.readIntegerArray(ois);
 		int vocabSize = dims[0];
 		int layerSize = dims[1];
 
-		List<String> vocab = IOUtils.readStrings(ois);
-		double[][] vectors = IOUtils.readDoubleMatrix(ois);
+		List<String> vocab = FileUtils.readStrings(ois);
+		double[][] vectors = FileUtils.readDoubleMatrix(ois);
 		ois.close();
 
 		int[] dim = ArrayUtils.dimensions(vectors);
@@ -141,11 +141,11 @@ public class Word2VecModel {
 	 */
 
 	public void toSerFile(String outputFileName) throws Exception {
-		ObjectOutputStream oos = IOUtils.openObjectOutputStream(outputFileName);
+		ObjectOutputStream oos = FileUtils.openObjectOutputStream(outputFileName);
 		int[] dims = new int[] { vocab.size(), layerSize };
-		IOUtils.write(oos, dims);
-		IOUtils.write(oos, vocab);
-		IOUtils.write(oos, vectors);
+		FileUtils.write(oos, dims);
+		FileUtils.writeStrings(oos, vocab);
+		FileUtils.write(oos, vectors);
 		oos.close();
 
 	}

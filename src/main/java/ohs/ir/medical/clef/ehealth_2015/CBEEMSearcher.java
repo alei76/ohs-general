@@ -24,7 +24,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.BytesRef;
 
 import edu.stanford.nlp.stats.IntCounter;
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.IndexFieldName;
 import ohs.ir.medical.general.HyperParameter;
@@ -107,8 +107,8 @@ public class CBEEMSearcher {
 			docPriorData[i] = docPriors;
 		}
 
-		IOUtils.deleteFilesUnder(logDirName);
-		IOUtils.deleteFilesUnder(resultDirName);
+		FileUtils.deleteFilesUnder(logDirName);
+		FileUtils.deleteFilesUnder(resultDirName);
 
 		QueryParser queryParser = SearcherUtils.getQueryParser();
 

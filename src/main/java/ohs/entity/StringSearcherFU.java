@@ -4,11 +4,20 @@ import java.io.BufferedWriter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import ohs.io.FileUtils;
 import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.GramGenerator;
@@ -22,7 +31,6 @@ import ohs.types.DeepMap;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
 import ohs.utils.Generics;
-import ohs.utils.Generics.ListType;
 import ohs.utils.Generics.MapType;
 import ohs.utils.StopWatch;
 
@@ -30,16 +38,16 @@ import ohs.utils.StopWatch;
  * 
  * @author Heung-Seon Oh
  */
-public class StringSearcher implements Serializable {
+public class StringSearcherFU implements Serializable {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -8740333778747553831L;
 
-	private Map<Integer, StringRecord> srs;
+	private Int2ObjectOpenHashMap<StringRecord> srs;
 
-	private ListMap<Integer, Integer> index;
+	private IntListMap index;
 
 	private Indexer<String> gramIndexer;
 
@@ -47,15 +55,16 @@ public class StringSearcher implements Serializable {
 
 	private DeepMap<String, Integer, Double> cache;
 
-	private int top_k = 100;
+	private int top_k;
 
-	public StringSearcher() {
+	public StringSearcherFU() {
 		this(3);
 	}
 
-	public StringSearcher(int q) {
+	public StringSearcherFU(int q) {
 		gramGenerator = new GramGenerator(q);
 		cache = new DeepMap<String, Integer, Double>(1000, MapType.WEAK_HASH_MAP, MapType.WEAK_HASH_MAP);
+		top_k = Integer.MAX_VALUE;
 	}
 
 	public void filter() {
@@ -64,19 +73,20 @@ public class StringSearcher implements Serializable {
 		double max = -Double.MAX_VALUE;
 		int num_filtered = 0;
 
-		Iterator<Integer> iter = index.keySet().iterator();
+		IntListMap temp = new IntListMap();
+
+		IntIterator iter = index.keySet().iterator();
 
 		while (iter.hasNext()) {
 			int qid = iter.next();
-			List<Integer> rids = index.get(qid, false);
+			IntList rids = index.get(qid, false);
 			double ratio = 1f * rids.size() / srs.size();
 			if (ratio < filter_ratio) {
-				rids.clear();
-				iter.remove();
-				num_filtered++;
+				temp.set(qid, index.get(qid, false));
 			}
 			max = Math.max(ratio, max);
 		}
+		index = temp;
 	}
 
 	public GramGenerator getGramGenerator() {
@@ -96,8 +106,8 @@ public class StringSearcher implements Serializable {
 
 		if (index == null && !append) {
 			gramIndexer = new Indexer<String>();
-			index = new ListMap<Integer, Integer>(1000, MapType.HASH_MAP, ListType.ARRAY_LIST);
-			srs = Generics.newHashMap();
+			index = new IntListMap();
+			srs = new Int2ObjectOpenHashMap<StringRecord>();
 		}
 
 		StopWatch stopWatch = new StopWatch();
@@ -118,7 +128,7 @@ public class StringSearcher implements Serializable {
 				continue;
 			}
 
-			Set<Integer> gids = Generics.newHashSet();
+			IntOpenHashSet gids = new IntOpenHashSet();
 
 			for (int j = 0; j < grams.length; j++) {
 				gids.add(gramIndexer.getIndex(grams[j].getString()));
@@ -167,7 +177,7 @@ public class StringSearcher implements Serializable {
 			int num_records = 0;
 
 			for (int qid : index.keySet()) {
-				List<Integer> rids = index.get(qid, false);
+				IntList rids = index.get(qid, false);
 				max = Math.max(max, rids.size());
 				min = Math.min(min, rids.size());
 				num_records += rids.size();
@@ -186,7 +196,7 @@ public class StringSearcher implements Serializable {
 		stopWatch.start();
 
 		int size = ois.readInt();
-		srs = Generics.newHashMap(size);
+		srs = new Int2ObjectOpenHashMap<StringRecord>(size);
 		for (int i = 0; i < size; i++) {
 			StringRecord sr = new StringRecord();
 			sr.read(ois);
@@ -196,20 +206,27 @@ public class StringSearcher implements Serializable {
 		top_k = ois.readInt();
 		gramGenerator = new GramGenerator(ois.readInt());
 		gramIndexer = FileUtils.readIndexer(ois);
-
-		int size1 = ois.readInt();
-		index = new ListMap<Integer, Integer>(size1, MapType.HASH_MAP, ListType.ARRAY_LIST);
-
-		for (int i = 0; i < size1; i++) {
-			int gid = ois.readInt();
-			List<Integer> rids = FileUtils.readIntegers(ois);
-			index.set(gid, rids);
-		}
+		index = new IntListMap();
+		index.read(ois);
+		// int size1 = ois.readInt();
+		// index = new IntListMap(size1);
+		//
+		// for (int i = 0; i < size1; i++) {
+		// int gid = ois.readInt();
+		// int size2 = ois.readInt();
+		// IntList rids = new IntArrayList(size2);
+		// for (int j = 0; j < size2; j++) {
+		// int rid = ois.readInt();
+		// rids.add(rid);
+		// }
+		// index.set(gid, rids);
+		// }
 
 		System.out.printf("read [%s] - [%s]\n", this.getClass().getName(), stopWatch.stop());
 	}
 
 	public Counter<StringRecord> search(String s) {
+
 		Gram[] grams = gramGenerator.generate(String.format("<%s>", s));
 
 		if (grams.length == 0) {
@@ -271,15 +288,19 @@ public class StringSearcher implements Serializable {
 		oos.writeInt(top_k);
 		oos.writeInt(gramGenerator.getQ());
 		FileUtils.writeStrings(oos, gramIndexer.getObjects());
-
-		oos.writeInt(index.size());
-		Iterator<Integer> iter = index.keySet().iterator();
-
-		while (iter.hasNext()) {
-			int gid = iter.next();
-			oos.writeInt(gid);
-			FileUtils.writeIntegers(oos, index.get(gid));
-		}
+		index.write(oos);
+		// oos.writeInt(index.size());
+		// Iterator<Integer> iter = index.keySet().iterator();
+		//
+		// while (iter.hasNext()) {
+		// int gid = iter.next();
+		// oos.writeInt(gid);
+		// IntList rids = index.get(gid, false);
+		// oos.writeInt(rids.size());
+		// for (int i = 0; i < rids.size(); i++) {
+		// oos.writeInt(rids.get(i));
+		// }
+		// }
 		oos.flush();
 
 		System.out.printf("write [%s] - [%s]\n", this.getClass().getName(), stopWatch.stop());

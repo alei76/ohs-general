@@ -9,7 +9,7 @@ import ohs.entity.data.struct.Author;
 import ohs.entity.data.struct.BilingualText;
 import ohs.entity.data.struct.Organization;
 import ohs.entity.data.struct.Paper;
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.types.Counter;
@@ -163,7 +163,7 @@ public class PaperDataHandler {
 
 	public void process2() throws Exception {
 
-		Map<String, String> nameMap = IOUtils.readMap(ENTPath.AUTHOR_NAME_FILE);
+		Map<String, String> nameMap = FileUtils.readMap(ENTPath.AUTHOR_NAME_FILE);
 
 		TextFileReader reader = new TextFileReader(ENTPath.AUTHOR_FILE);
 		reader.setPrintNexts(false);
@@ -228,11 +228,11 @@ public class PaperDataHandler {
 		}
 		writer.close();
 
-		IOUtils.write(ENTPath.AUTHOR_SUBSET_FILE_2, cm2);
+		FileUtils.write(ENTPath.AUTHOR_SUBSET_FILE_2, cm2);
 	}
 
 	public void selectSubsetForOrgHistory() throws Exception {
-		List<String> lines = IOUtils.readLines(ENTPath.ORG_HISTORY_DIR + "base_orgs.txt", IOUtils.EUC_KR, Integer.MAX_VALUE);
+		List<String> lines = FileUtils.readLines(ENTPath.ORG_HISTORY_DIR + "base_orgs.txt", FileUtils.EUC_KR, Integer.MAX_VALUE);
 		// TextFileWriter writer = new TextFileWriter(ENTPath.ORG_HISTORY_SUBSET_FILE_1);
 
 		List<Integer> locs = new ArrayList<Integer>();
@@ -297,6 +297,6 @@ public class PaperDataHandler {
 			sublines.add(line);
 		}
 
-		IOUtils.write(ENTPath.ORG_HISTORY_SUBSET_FILE_1, StrUtils.join("\n", sublines));
+		FileUtils.write(ENTPath.ORG_HISTORY_SUBSET_FILE_1, StrUtils.join("\n", sublines));
 	}
 }

@@ -13,7 +13,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 
 public class CDSQuery {
 
@@ -36,7 +36,7 @@ public class CDSQuery {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder parser = dbf.newDocumentBuilder();
 
-		Document xmlDoc = parser.parse(new InputSource(new StringReader(IOUtils.readText(fileName))));
+		Document xmlDoc = parser.parse(new InputSource(new StringReader(FileUtils.readText(fileName))));
 
 		Element docElem = xmlDoc.getDocumentElement();
 		NodeList nodeList = docElem.getElementsByTagName("topic");

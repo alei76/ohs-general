@@ -12,6 +12,8 @@ import java.util.WeakHashMap;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.IndexSearcher;
 
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
@@ -37,7 +39,7 @@ import ohs.utils.StopWatch;
  * 
  * 
  */
-public class EntityLinker implements Serializable {
+public class EntityLinkerFU implements Serializable {
 
 	/**
 	 * 
@@ -50,7 +52,7 @@ public class EntityLinker implements Serializable {
 	 */
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
-		EntityLinker el = new EntityLinker();
+		EntityLinkerFU el = new EntityLinkerFU();
 
 		// if (FileUtils.exists(ENTPath.ENTITY_LINKER_FILE)) {
 		// el.read(ENTPath.ENTITY_LINKER_FILE);
@@ -122,29 +124,29 @@ public class EntityLinker implements Serializable {
 		System.out.println("process ends.");
 	}
 
-	private StringSearcher searcher;
+	private StringSearcherFU searcher;
 
-	private Map<Integer, Entity> ents;
+	private Int2ObjectOpenHashMap<Entity> ents;
 
-	private Map<Integer, Integer> recToEntIdMap;
+	private Int2IntOpenHashMap recToEntIdMap;
 
 	private Indexer<String> featInexer;
 
-	private Map<Integer, SparseVector> topicWordData;
+	private Int2ObjectOpenHashMap<SparseVector> topicWordData;
 
 	private WeakHashMap<Integer, SparseVector> cache;
 
-	public EntityLinker() {
+	public EntityLinkerFU() {
 		cache = Generics.newWeakHashMap(10000);
 	}
 
 	public void createSearcher(String dataFileName) throws Exception {
-		List<StringRecord> srs = Generics.newArrayList();
-		recToEntIdMap = Generics.newHashMap();
-		ents = Generics.newHashMap();
+		List<StringRecord> srs = new ArrayList<StringRecord>();
+		recToEntIdMap = new Int2IntOpenHashMap();
+		ents = new Int2ObjectOpenHashMap<Entity>();
 
-		featInexer = Generics.newIndexer();
-		topicWordData = Generics.newHashMap();
+		featInexer = new Indexer<String>();
+		topicWordData = new Int2ObjectOpenHashMap<SparseVector>();
 
 		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
@@ -198,7 +200,7 @@ public class EntityLinker implements Serializable {
 		// TermWeighting.computeTFIDFs(topicWordData);
 
 		System.out.printf("read [%d] records from [%d] entities at [%s].\n", srs.size(), ents.size(), dataFileName);
-		searcher = new StringSearcher(3);
+		searcher = new StringSearcherFU(3);
 		searcher.index(srs, false);
 		System.out.println(searcher.info() + "\n");
 
@@ -234,7 +236,7 @@ public class EntityLinker implements Serializable {
 			VectorMath.unitVector(cv);
 		}
 
-		Counter<Integer> scores = Generics.newCounter();
+		Counter<Integer> scores = new Counter<Integer>();
 
 		for (int eid : cm.keySet()) {
 			double score = cm.getCounter(eid).max();
@@ -297,7 +299,7 @@ public class EntityLinker implements Serializable {
 		stopWatch.start();
 
 		int size = ois.readInt();
-		ents = Generics.newHashMap(size);
+		ents = new Int2ObjectOpenHashMap<Entity>(size);
 		for (int i = 0; i < size; i++) {
 			Entity ent = new Entity();
 			ent.read(ois);
@@ -307,13 +309,13 @@ public class EntityLinker implements Serializable {
 		featInexer = FileUtils.readIndexer(ois);
 
 		int size2 = ois.readInt();
-		recToEntIdMap = Generics.newHashMap(size2);
+		recToEntIdMap = new Int2IntOpenHashMap(size2);
 		for (int i = 0; i < size2; i++) {
 			recToEntIdMap.put(ois.readInt(), ois.readInt());
 		}
 
 		int size3 = ois.readInt();
-		topicWordData = Generics.newHashMap(size3);
+		topicWordData = new Int2ObjectOpenHashMap<SparseVector>(size3);
 
 		for (int i = 0; i < size3; i++) {
 			int id = ois.readInt();
@@ -322,7 +324,7 @@ public class EntityLinker implements Serializable {
 			topicWordData.put(id, sv);
 		}
 
-		searcher = new StringSearcher();
+		searcher = new StringSearcherFU();
 		searcher.read(ois);
 		ois.close();
 
@@ -346,6 +348,7 @@ public class EntityLinker implements Serializable {
 		FileUtils.write(oos, featInexer);
 
 		oos.writeInt(recToEntIdMap.size());
+
 		for (Entry<Integer, Integer> e : recToEntIdMap.entrySet()) {
 			oos.writeInt(e.getKey());
 			oos.writeInt(e.getValue());

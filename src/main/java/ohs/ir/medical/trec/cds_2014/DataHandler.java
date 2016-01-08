@@ -21,7 +21,7 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.medical.general.MIRPath;
@@ -112,7 +112,7 @@ public class DataHandler {
 
 		Set<String> duplicationSet = readDuplications();
 
-		List<File> docFiles = IOUtils.getFilesUnder(CDSPath.RAW_COLLECTION_DIR);
+		List<File> docFiles = FileUtils.getFilesUnder(CDSPath.RAW_COLLECTION_DIR);
 
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		dbf.setValidating(false);
@@ -159,7 +159,7 @@ public class DataHandler {
 				continue;
 			}
 
-			String xmlText = IOUtils.readText(docFile.getPath());
+			String xmlText = FileUtils.readText(docFile.getPath());
 			// xmlText = xmlText.replace("archivearticle.dtd",
 			// "F:/data/trec/cds/JATS-archivearticle1.dtd");
 

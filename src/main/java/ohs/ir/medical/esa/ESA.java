@@ -6,7 +6,7 @@ import java.util.List;
 import org.apache.lucene.analysis.Analyzer;
 
 import edu.stanford.nlp.stats.IntCounter;
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.ir.lucene.common.AnalyzerUtils;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.ir.medical.general.MIRPath;
@@ -101,7 +101,7 @@ public class ESA {
 
 		// TextFileReader reader = new TextFileReader(esaModelFileName);
 
-		BufferedReader reader = IOUtils.openBufferedReader(esaModelFileName);
+		BufferedReader reader = FileUtils.openBufferedReader(esaModelFileName);
 
 		{
 			String line = reader.readLine();

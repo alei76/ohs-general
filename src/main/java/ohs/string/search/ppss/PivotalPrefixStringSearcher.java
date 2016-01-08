@@ -14,7 +14,7 @@ import java.util.Set;
 import ohs.entity.ENTPath;
 import ohs.entity.data.struct.BilingualText;
 import ohs.entity.org.DataReader;
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.string.search.ppss.Gram.Type;
@@ -583,7 +583,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 	}
 
 	public void read(String fileName) throws Exception {
-		BufferedReader reader = IOUtils.openBufferedReader(fileName);
+		BufferedReader reader = FileUtils.openBufferedReader(fileName);
 		read(reader);
 		reader.close();
 	}
@@ -754,13 +754,13 @@ public class PivotalPrefixStringSearcher implements Serializable {
 	}
 
 	public void write(String fileName) throws Exception {
-		BufferedWriter writer = IOUtils.openBufferedWriter(fileName);
+		BufferedWriter writer = FileUtils.openBufferedWriter(fileName);
 		write(writer);
 		writer.close();
 	}
 
 	public void writeObject(String fileName) throws Exception {
-		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
+		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 		oos.writeObject(this);
 		oos.close();
 	}

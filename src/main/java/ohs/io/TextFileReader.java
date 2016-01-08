@@ -34,16 +34,16 @@ public class TextFileReader {
 	private StopWatch stopWatch;
 
 	public TextFileReader(File file) {
-		this(file.getPath(), IOUtils.UTF_8);
+		this(file.getPath(), FileUtils.UTF_8);
 	}
 
 	public TextFileReader(String fileName) {
-		this(fileName, IOUtils.UTF_8);
+		this(fileName, FileUtils.UTF_8);
 	}
 
 	public TextFileReader(String fileName, String encoding) {
 		try {
-			reader = IOUtils.openBufferedReader(fileName, encoding);
+			reader = FileUtils.openBufferedReader(fileName, encoding);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

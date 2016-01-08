@@ -16,7 +16,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 
 public class EHealthQuery {
 
@@ -47,7 +47,7 @@ public class EHealthQuery {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder parser = dbf.newDocumentBuilder();
 
-		Document xmlDoc = parser.parse(new InputSource(new StringReader(IOUtils.readText(queryFileName))));
+		Document xmlDoc = parser.parse(new InputSource(new StringReader(FileUtils.readText(queryFileName))));
 
 		Element docElem = xmlDoc.getDocumentElement();
 		NodeList nodeList = null;
@@ -86,7 +86,7 @@ public class EHealthQuery {
 			String discharge = "";
 
 			if (dischargeFile != null) {
-				discharge = IOUtils.readText(dischargeFile.getPath());
+				discharge = FileUtils.readText(dischargeFile.getPath());
 			} else {
 				new FileNotFoundException(dischargeFileName);
 			}

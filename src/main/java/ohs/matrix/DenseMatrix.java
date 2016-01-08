@@ -3,7 +3,7 @@ package ohs.matrix;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 
 public class DenseMatrix implements Matrix {
 
@@ -39,7 +39,7 @@ public class DenseMatrix implements Matrix {
 	public static DenseMatrix read(String fileName) throws Exception {
 		System.out.printf("read [%s].\n", fileName);
 		DenseMatrix ret = null;
-		ObjectInputStream ois = IOUtils.openObjectInputStream(fileName);
+		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
 		ret = read(ois);
 		ois.close();
 		return ret;
@@ -273,7 +273,7 @@ public class DenseMatrix implements Matrix {
 
 	public void write(String fileName) throws Exception {
 		System.out.printf("write to [%s].\n", fileName);
-		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
+		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 		write(oos);
 		oos.close();
 	}

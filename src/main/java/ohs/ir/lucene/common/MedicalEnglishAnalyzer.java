@@ -19,7 +19,7 @@ import org.apache.lucene.analysis.util.CharArraySet;
 import org.apache.lucene.analysis.util.StopwordAnalyzerBase;
 import org.apache.lucene.util.Version;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.ir.medical.general.MIRPath;
 
 /**
@@ -38,7 +38,7 @@ public final class MedicalEnglishAnalyzer extends StopwordAnalyzerBase {
 	}
 
 	public static MedicalEnglishAnalyzer getAnalyzer(String stopwordFileName) throws Exception {
-		Set<String> stopwords = IOUtils.readSet(stopwordFileName);
+		Set<String> stopwords = FileUtils.readSet(stopwordFileName);
 
 
 		System.out.printf("read [%d] stopwords from [%s].\n", stopwords.size(), stopwordFileName);

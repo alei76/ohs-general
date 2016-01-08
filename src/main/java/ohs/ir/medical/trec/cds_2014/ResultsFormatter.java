@@ -3,7 +3,7 @@ package ohs.ir.medical.trec.cds_2014;
 import java.io.File;
 import java.util.List;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 
 public class ResultsFormatter {
@@ -16,7 +16,7 @@ public class ResultsFormatter {
 	}
 
 	public void convertToTrecFormat() throws Exception {
-		List<File> files = IOUtils.getFilesUnder(new File(CDSPath.OUTPUT_RERANKING_DIR));
+		List<File> files = FileUtils.getFilesUnder(new File(CDSPath.OUTPUT_RERANKING_DIR));
 
 		for (int i = 0; i < files.size(); i++) {
 			File inputFile = files.get(i);
@@ -24,7 +24,7 @@ public class ResultsFormatter {
 				continue;
 			}
 
-			String fileName = IOUtils.removeExtension(inputFile.getName());
+			String fileName = FileUtils.removeExtension(inputFile.getName());
 			String info = fileName.substring("search_results-".length());
 
 			String runId = "";
@@ -69,7 +69,7 @@ public class ResultsFormatter {
 			String outputFileName = String.format("%s.txt", runId);
 			File outputFile = new File(inputFile.getParent(), outputFileName);
 
-			IOUtils.write(outputFile.getPath(), outputBuff.toString().trim());
+			FileUtils.write(outputFile.getPath(), outputBuff.toString().trim());
 
 		}
 	}

@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.string.search.ppss.StringRecord;
 
 public class Entity implements Serializable {

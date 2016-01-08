@@ -9,7 +9,7 @@ import de.tudarmstadt.ukp.wikipedia.parser.ParsedPage;
 import de.tudarmstadt.ukp.wikipedia.parser.Section;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.AnalyzerUtils;
@@ -233,6 +233,6 @@ public class ESABuilder {
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMinimumFractionDigits(8);
 
-		IOUtils.write(MIRPath.ICD10_ESA_FILE, conceptWordCounts.invert(), null);
+		FileUtils.write(MIRPath.ICD10_ESA_FILE, conceptWordCounts.invert(), null);
 	}
 }

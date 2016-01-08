@@ -10,7 +10,7 @@ import java.util.Map;
 import org.springframework.ui.Model;
 
 import edu.stanford.nlp.math.ArrayMath;
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.medical.general.MIRPath;
@@ -95,7 +95,7 @@ public class QueryClassifierTrainer {
 		writer.close();
 
 		SparseVector.write(DATA_FILE, data);
-		IOUtils.write(WORD_INDEXER_FILE, wordIndexer);
+		FileUtils.write(WORD_INDEXER_FILE, wordIndexer);
 	}
 
 	public static void generateData2() throws Exception {
@@ -178,7 +178,7 @@ public class QueryClassifierTrainer {
 		writer.close();
 
 		SparseVector.write(DATA_FILE, data);
-		IOUtils.write(WORD_INDEXER_FILE, wordIndexer);
+		FileUtils.write(WORD_INDEXER_FILE, wordIndexer);
 	}
 
 	public static Parameter getSVMParamter() {
@@ -258,7 +258,7 @@ public class QueryClassifierTrainer {
 	public static void trainLibLinear() throws Exception {
 		System.out.println("train SVMs.");
 
-		Indexer<String> featureIndexer = IOUtils.readIndexer(WORD_INDEXER_FILE);
+		Indexer<String> featureIndexer = FileUtils.readIndexer(WORD_INDEXER_FILE);
 
 		List<SparseVector> trainData = SparseVector.readList(TRAIN_DATA_FILE);
 		List<SparseVector> testData = SparseVector.readList(TEST_DATA_FILE);
@@ -341,7 +341,7 @@ public class QueryClassifierTrainer {
 	public static void trainLibSVMs() throws Exception {
 		System.out.println("train LibSVMs.");
 
-		Indexer<String> featureIndexer = IOUtils.readIndexer(WORD_INDEXER_FILE);
+		Indexer<String> featureIndexer = FileUtils.readIndexer(WORD_INDEXER_FILE);
 		Indexer<String> labelIndexer = new Indexer<String>();
 		labelIndexer.add("Non-Relevant");
 		labelIndexer.add("Relevant");

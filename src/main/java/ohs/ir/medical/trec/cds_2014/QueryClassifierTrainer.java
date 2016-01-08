@@ -18,7 +18,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.util.BytesRef;
 import org.springframework.ui.Model;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.ir.lucene.common.IndexFieldName;
 import ohs.ir.medical.general.SearcherUtils;
@@ -176,7 +176,7 @@ public class QueryClassifierTrainer {
 				sb.append(String.format("\n%s\t%s", docId, type));
 			}
 
-			IOUtils.write(CDSPath.OUTPUT_DOC_TYPE_FILE, sb.toString());
+			FileUtils.write(CDSPath.OUTPUT_DOC_TYPE_FILE, sb.toString());
 		}
 	}
 
@@ -343,7 +343,7 @@ public class QueryClassifierTrainer {
 
 	private void write() throws Exception {
 		System.out.println("write model.");
-		IOUtils.write(CDSPath.QUERY_CLASSIFIER_TYPE_INDEXER_FILE, labelIndexer);
+		FileUtils.write(CDSPath.QUERY_CLASSIFIER_TYPE_INDEXER_FILE, labelIndexer);
 		model.save(new File(CDSPath.QUERY_CLASSIFIER_MODEL_FILE));
 	}
 }

@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import ohs.types.Counter;
 import ohs.types.CounterMap;
+import ohs.types.Indexer;
 import ohs.types.Pair;
 import ohs.types.Triple;
 
@@ -238,6 +239,10 @@ public class Generics {
 
 	public static <K, V> WeakHashMap<K, V> newWeakHashMap(int size) {
 		return new WeakHashMap<K, V>(size);
+	}
+
+	public static <T> Indexer<T> newIndexer() {
+		return new Indexer<T>();
 	}
 
 	public static <T> WeakReference<T> newWeakReference(T referent) {

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 import ohs.types.Counter;
@@ -28,7 +28,7 @@ public class SparseVector implements Vector {
 	private static final long serialVersionUID = -6671749703272005320L;
 
 	public static SparseVector read(String fileName) throws Exception {
-		ObjectInputStream ois = IOUtils.openObjectInputStream(fileName);
+		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
 		SparseVector ret = readStream(ois);
 		ois.close();
 		return ret;
@@ -55,7 +55,7 @@ public class SparseVector implements Vector {
 	}
 
 	public static List<SparseVector> readList(String fileName) throws Exception {
-		ObjectInputStream ois = IOUtils.openObjectInputStream(fileName);
+		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
 		List<SparseVector> ret = readList(ois);
 		ois.close();
 		System.out.printf("read [%d] vectors from [%s].\n", ret.size(), fileName);
@@ -98,7 +98,7 @@ public class SparseVector implements Vector {
 	}
 
 	public static void write(String fileName, List<SparseVector> vs) throws Exception {
-		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
+		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 		write(oos, vs);
 		oos.close();
 		System.out.printf("write [%d] vectors to [%s].\n", vs.size(), fileName);
@@ -662,7 +662,6 @@ public class SparseVector implements Vector {
 		oos.writeInt(size());
 		oos.writeInt(label());
 		oos.writeInt(dim());
-
 		for (int i = 0; i < size(); i++) {
 			oos.writeInt(indexAtLoc(i));
 			oos.writeDouble(valueAtLoc(i));
@@ -670,7 +669,7 @@ public class SparseVector implements Vector {
 	}
 
 	public void write(String fileName) throws Exception {
-		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
+		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 		write(oos);
 		oos.close();
 	}

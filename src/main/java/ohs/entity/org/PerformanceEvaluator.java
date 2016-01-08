@@ -3,7 +3,7 @@ package ohs.entity.org;
 import java.util.ArrayList;
 import java.util.List;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.eval.Metrics;
@@ -122,7 +122,7 @@ public class PerformanceEvaluator {
 
 	public static void refineTestData() {
 		List<String[]> lines = new ArrayList<String[]>();
-		TextFileReader reader = new TextFileReader(ENTPath.ODK_TEST_DATA_LABELDED, IOUtils.EUC_KR);
+		TextFileReader reader = new TextFileReader(ENTPath.ODK_TEST_DATA_LABELDED, FileUtils.EUC_KR);
 		TextFileWriter writer = new TextFileWriter(ENTPath.DATA_DIR + "odk_test_data_refined.txt");
 
 		while (reader.hasNext()) {

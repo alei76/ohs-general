@@ -29,7 +29,7 @@ import de.tudarmstadt.ukp.wikipedia.parser.ParsedPage;
 import de.tudarmstadt.ukp.wikipedia.parser.Section;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.IndexFieldName;
@@ -248,7 +248,7 @@ public class ExtractICD10 {
 	public void extractStructure() throws Exception {
 		Set<String> stopSectionTitleSet = getStopSectionTitleSet();
 
-		String icdText = IOUtils.readText(CDSPath.ICD10_TOP_LEVEL_CHAPTER_FILE);
+		String icdText = FileUtils.readText(CDSPath.ICD10_TOP_LEVEL_CHAPTER_FILE);
 
 		String[] lines = icdText.split("\n");
 
@@ -358,7 +358,7 @@ public class ExtractICD10 {
 	}
 
 	public void extractTopLevelChapters() throws Exception {
-		String text = IOUtils.readText(CDSPath.ICD10_HTML_FILE);
+		String text = FileUtils.readText(CDSPath.ICD10_HTML_FILE);
 
 		String prefix = "<td><a href=\"http://en.wikipedia.org/wiki/";
 		String regex = "\"([^\"]+)\"";
@@ -382,7 +382,7 @@ public class ExtractICD10 {
 			}
 		}
 
-		IOUtils.write(CDSPath.ICD10_TOP_LEVEL_CHAPTER_FILE, sb.toString().trim());
+		FileUtils.write(CDSPath.ICD10_TOP_LEVEL_CHAPTER_FILE, sb.toString().trim());
 	}
 
 	private Map<String, String> readRedirects() {
@@ -516,7 +516,7 @@ public class ExtractICD10 {
 			}
 		}
 
-		IOUtils.write(CDSPath.ICD10_REFINED_HIERARCHY_FILE, sb.toString());
+		FileUtils.write(CDSPath.ICD10_REFINED_HIERARCHY_FILE, sb.toString());
 	}
 
 	private Document searchDocument(String wikiTitle) throws Exception {

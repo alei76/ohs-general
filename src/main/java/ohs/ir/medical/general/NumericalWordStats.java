@@ -15,7 +15,7 @@ import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.util.BytesRef;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.ir.lucene.common.IndexFieldName;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
@@ -47,7 +47,7 @@ public class NumericalWordStats {
 			if (vocFileName.contains("wiki")) {
 				continue;
 			}
-			Counter<String> c = IOUtils.readCounter(vocFileName);
+			Counter<String> c = FileUtils.readCounter(vocFileName);
 
 			for (String word : c.keySet()) {
 				double cnt = c.getCount(word);

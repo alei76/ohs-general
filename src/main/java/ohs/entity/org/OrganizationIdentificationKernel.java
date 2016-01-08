@@ -13,7 +13,7 @@ import ohs.classifier.centroid.CentroidClassifier;
 import ohs.entity.data.struct.BilingualText;
 import ohs.entity.data.struct.Organization;
 import ohs.entity.org.OrganizationDetector.UnivComponent;
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.math.VectorUtils;
@@ -499,7 +499,7 @@ public class OrganizationIdentificationKernel implements Serializable {
 	}
 
 	public void write(String fileName) throws Exception {
-		BufferedWriter writer = IOUtils.openBufferedWriter(fileName);
+		BufferedWriter writer = FileUtils.openBufferedWriter(fileName);
 
 		for (int i = 0; i < searchers.length; i++) {
 			searchers[i].write(writer);

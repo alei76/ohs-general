@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
 import ohs.ir.eval.PerformanceEvaluator;
 import ohs.ir.medical.general.DocumentIdMapper;
@@ -19,7 +19,7 @@ public class ResultFormatter {
 
 	public static void main(String[] args) {
 		System.out.println("process begins.");
-		List<File> files = IOUtils.getFilesUnder(new File(MIRPath.CLEF_EHEALTH_OUTPUT_RESULT_2015_RERANK_DIR));
+		List<File> files = FileUtils.getFilesUnder(new File(MIRPath.CLEF_EHEALTH_OUTPUT_RESULT_2015_RERANK_DIR));
 
 		//
 

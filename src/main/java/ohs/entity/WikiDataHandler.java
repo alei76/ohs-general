@@ -24,7 +24,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.IndexFieldName;
@@ -164,7 +164,7 @@ public class WikiDataHandler {
 			}
 		}
 
-		IOUtils.write(ENTPath.WIKI_DIR + "cats.txt", c, false);
+		FileUtils.write(ENTPath.WIKI_DIR + "cats.txt", c, false);
 
 		System.out.printf("\r[%d/%d]\n", ir.maxDoc(), ir.maxDoc());
 	}

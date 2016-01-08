@@ -31,7 +31,7 @@ import org.apache.lucene.search.similarities.LMDirichletSimilarity;
 import org.apache.lucene.search.similarities.NormalizationH1;
 import org.apache.lucene.search.similarities.Similarity;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
 import ohs.ir.eval.PerformanceEvaluator;
 import ohs.ir.lucene.common.IndexFieldName;
@@ -90,7 +90,7 @@ public class DocumentSearching {
 
 		CounterMap<String, String> relevanceData = RelevanceJudgementReader.read(new File(EHPath.QUERY_2013_TEST_RELEVANCE_FILE));
 
-		IOUtils.deleteFilesUnder(new File(EHPath.OUTPUT_DIR));
+		FileUtils.deleteFilesUnder(new File(EHPath.OUTPUT_DIR));
 
 		MedicalEnglishAnalyzer analyzer = new MedicalEnglishAnalyzer();
 
@@ -336,7 +336,7 @@ public class DocumentSearching {
 		simList.add(new LMDirichletSimilarity());
 		simList.add(new DFRSimilarity(new BasicModelBE(), new AfterEffectL(), new NormalizationH1()));
 
-		IOUtils.deleteFilesUnder(new File(EHPath.OUTPUT_DIR));
+		FileUtils.deleteFilesUnder(new File(EHPath.OUTPUT_DIR));
 
 		MedicalEnglishAnalyzer analyzer = new MedicalEnglishAnalyzer();
 

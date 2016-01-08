@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 
@@ -33,7 +33,7 @@ public class SparseMatrix implements Matrix {
 
 	public static SparseMatrix read(String fileName) throws Exception {
 		System.out.printf("read [%s].\n", fileName);
-		ObjectInputStream ois = IOUtils.openObjectInputStream(fileName);
+		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
 		SparseMatrix ret = readStream(ois);
 		ois.close();
 		return ret;
@@ -43,7 +43,7 @@ public class SparseMatrix implements Matrix {
 		System.out.printf("read [%s].\n", fileName);
 		List<SparseMatrix> ret = new ArrayList<SparseMatrix>();
 
-		ObjectInputStream ois = IOUtils.openObjectInputStream(fileName);
+		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
 		int size = ois.readInt();
 		for (int i = 0; i < size; i++) {
 			SparseMatrix mat = readStream(ois);
@@ -76,7 +76,7 @@ public class SparseMatrix implements Matrix {
 	public static void write(String fileName, List<SparseMatrix> xs) throws Exception {
 		System.out.printf("write to [%s].\n", fileName);
 
-		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
+		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 		oos.writeInt(xs.size());
 		for (int i = 0; i < xs.size(); i++) {
 			SparseMatrix vector = xs.get(i);
@@ -518,7 +518,7 @@ public class SparseMatrix implements Matrix {
 
 	public void write(String fileName) throws Exception {
 		System.out.printf("write to [%s].\n", fileName);
-		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
+		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 		write(oos);
 		oos.close();
 	}

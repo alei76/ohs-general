@@ -20,7 +20,7 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.medical.general.MIRPath;
@@ -101,7 +101,7 @@ public class TrecCdsDumper extends TextDumper {
 
 			fileName = fileName.split("/")[2];
 
-			String docId = IOUtils.removeExtension(fileName);
+			String docId = FileUtils.removeExtension(fileName);
 
 			if (validDocIds != null && !validDocIds.contains(docId)) {
 				continue;

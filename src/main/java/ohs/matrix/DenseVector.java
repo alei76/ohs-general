@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 
@@ -21,7 +21,7 @@ public class DenseVector implements Vector {
 	private static final long serialVersionUID = 1185683442330052104L;
 
 	public static DenseVector read(String fileName) throws Exception {
-		ObjectInputStream ois = IOUtils.openObjectInputStream(fileName);
+		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
 		DenseVector ret = readStream(ois);
 		ois.close();
 		return ret;
@@ -39,7 +39,7 @@ public class DenseVector implements Vector {
 
 	public static List<DenseVector> readList(String fileName) throws Exception {
 		System.out.printf("read [%s].\n", fileName);
-		ObjectInputStream ois = IOUtils.openObjectInputStream(fileName);
+		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
 		List<DenseVector> ret = readList(ois);
 		ois.close();
 		System.out.printf("read [%d] vectors.\n", ret.size());
@@ -115,7 +115,7 @@ public class DenseVector implements Vector {
 
 	public static void write(String fileName, List<DenseVector> vectors) throws Exception {
 		System.out.printf("write to [%s].\n", fileName);
-		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
+		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 		write(oos, vectors);
 		oos.close();
 		System.out.printf("write [%d] vectors.\n", vectors.size());
@@ -487,7 +487,7 @@ public class DenseVector implements Vector {
 
 	public void write(String fileName) throws Exception {
 		System.out.printf("write to [%s].\n", fileName);
-		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
+		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 		write(oos);
 		oos.close();
 	}

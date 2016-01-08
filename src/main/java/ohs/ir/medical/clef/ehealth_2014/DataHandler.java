@@ -17,7 +17,7 @@ import edu.stanford.nlp.process.CoreLabelTokenFactory;
 import edu.stanford.nlp.process.DocumentPreprocessor;
 import edu.stanford.nlp.process.PTBTokenizer;
 import edu.stanford.nlp.process.TokenizerFactory;
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.types.Counter;
@@ -54,7 +54,7 @@ public class DataHandler {
 
 		int totalDocs = 0;
 
-		List<File> inputFiles = IOUtils.getFilesUnder(inputDir);
+		List<File> inputFiles = FileUtils.getFilesUnder(inputDir);
 
 		for (int i = 0; i < inputFiles.size(); i++) {
 			File inputFile = inputFiles.get(i);

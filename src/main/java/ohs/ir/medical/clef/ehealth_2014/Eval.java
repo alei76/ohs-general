@@ -7,7 +7,7 @@ import java.util.TreeSet;
 
 import org.apache.commons.math.stat.inference.TTestImpl;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 
@@ -69,7 +69,7 @@ public class Eval {
 	public static Counter<String> getValues(String fn, String type) throws Exception {
 		Counter<String> ret = new Counter<String>();
 
-		List<String> lines = IOUtils.readLines(fn);
+		List<String> lines = FileUtils.readLines(fn);
 
 		for (String line : lines) {
 			String[] parts = line.split("\t");

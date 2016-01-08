@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.ir.lucene.common.AnalyzerUtils;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
@@ -21,7 +21,7 @@ public class AbbreviationExpander {
 			String inputFileName = collDirs[i] + "abbrs_filter.txt";
 			String outputFileName = collDirs[i] + "abbrs_cm.txt";
 			CounterMap<String, String> cm = readAbbreviationData(inputFileName);
-			IOUtils.write(outputFileName, cm);
+			FileUtils.write(outputFileName, cm);
 		}
 	}
 

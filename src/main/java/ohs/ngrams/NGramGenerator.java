@@ -24,7 +24,7 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.types.Counter;
@@ -139,11 +139,11 @@ public class NGramGenerator {
 		for (int i = 0; i < ngram_sizes.length; i++) {
 			int ngram_size = ngram_sizes[i];
 
-			ObjectInputStream ois = IOUtils.openObjectInputStream(NGPath.JOURNAL_SER_FILE);
+			ObjectInputStream ois = FileUtils.openObjectInputStream(NGPath.JOURNAL_SER_FILE);
 			int num_docs = ois.readInt();
 
 			for (int j = 0; j < num_docs; j++) {
-				int[][] doc = IOUtils.readIntegerMatrix(ois);
+				int[][] doc = FileUtils.readIntegerMatrix(ois);
 			}
 		}
 	}
@@ -267,7 +267,7 @@ public class NGramGenerator {
 
 	public void serialize() throws Exception {
 
-		int num_docs = IOUtils.countLines(NGPath.JOURNAL_TEXT_FILE);
+		int num_docs = FileUtils.countLines(NGPath.JOURNAL_TEXT_FILE);
 
 		Indexer<String> wordIndexer = new Indexer<String>();
 
@@ -276,7 +276,7 @@ public class NGramGenerator {
 
 		TextFileWriter writer = new TextFileWriter(NGPath.JOURNAL_SER_FILE);
 
-		ObjectOutputStream oos = IOUtils.openObjectOutputStream(NGPath.JOURNAL_SER_FILE);
+		ObjectOutputStream oos = FileUtils.openObjectOutputStream(NGPath.JOURNAL_SER_FILE);
 		oos.writeInt(num_docs);
 
 		while (reader.hasNext()) {
@@ -304,12 +304,12 @@ public class NGramGenerator {
 				doc[i] = ws;
 			}
 
-			IOUtils.write(oos, doc);
+			FileUtils.write(oos, doc);
 		}
 		reader.printLast();
 		oos.close();
 
-		IOUtils.write(NGPath.VOC_FILE, wordIndexer);
+		FileUtils.write(NGPath.VOC_FILE, wordIndexer);
 	}
 
 	private void writeBlock(CounterMap<String, Integer> cm, TextFileWriter writer, int block_id, int block_size) {

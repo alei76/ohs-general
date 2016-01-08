@@ -23,7 +23,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.similarities.LMDirichletSimilarity;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.IndexFieldName;
@@ -160,7 +160,7 @@ public class SearchDocuments {
 	}
 
 	public void changeFormats() {
-		List<File> files = IOUtils.getFilesUnder(new File(CDSPath.OUTPUT_RERANKING_DIR));
+		List<File> files = FileUtils.getFilesUnder(new File(CDSPath.OUTPUT_RERANKING_DIR));
 
 		BidMap<String, Integer> documentIdMap = readDocumentIdMap();
 
@@ -199,7 +199,7 @@ public class SearchDocuments {
 	public void doInitialSearch() throws Exception {
 		System.out.println("do initial search.");
 
-		// IOUtils.deleteFilesUnder(new File(CDSPath.OUTPUT_DIR));
+		// FileUtils.deleteFilesUnder(new File(CDSPath.OUTPUT_DIR));
 
 		int top_k = 1000;
 

@@ -10,7 +10,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.eval.Performance;
@@ -55,7 +55,7 @@ public class TrecSearcher {
 
 			File file = new File(lines.get(0));
 			String fileName = file.getName();
-			fileName = IOUtils.removeExtension(fileName);
+			fileName = FileUtils.removeExtension(fileName);
 			fileName = fileName.replace("kld_fb", "kld-fb");
 
 			int num_fb_iters = 0;
@@ -108,7 +108,7 @@ public class TrecSearcher {
 		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(MIRPath.TREC_CDS_DOC_ID_MAP_FILE);
 		StrCounterMap relevanceData = RelevanceReader.readTrecCdsRelevances(MIRPath.TREC_CDS_RELEVANCE_JUDGE_2014_FILE);
 
-		List<File> files = IOUtils.getFilesUnder(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR);
+		List<File> files = FileUtils.getFilesUnder(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR);
 
 		StringBuffer sb = new StringBuffer();
 
@@ -134,16 +134,16 @@ public class TrecSearcher {
 			sb.append("\n\n");
 		}
 
-		IOUtils.write(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_PERFORMANCE_FILE, sb.toString().trim());
+		FileUtils.write(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_PERFORMANCE_FILE, sb.toString().trim());
 	}
 
 	public static void format() throws Exception {
-		List<File> files = IOUtils.getFilesUnder(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR);
+		List<File> files = FileUtils.getFilesUnder(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR);
 		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(MIRPath.TREC_CDS_DOC_ID_MAP_FILE);
 
 		for (File file : files) {
 			String fileName = file.getName();
-			fileName = IOUtils.removeExtension(fileName);
+			fileName = FileUtils.removeExtension(fileName);
 
 			if (fileName.equals("qld") || fileName.equals("cbeem") || fileName.equals("kld_fb_1_0.5_50_30_20_15_10")) {
 				if (fileName.startsWith("kld_fb")) {
@@ -197,7 +197,7 @@ public class TrecSearcher {
 
 			String outputFileName = String.format("%s.txt", runId);
 			File outputFile = new File(MIRPath.TREC_CDS_OUTPUT_DIR + "/result-2015-submit", outputFileName);
-			IOUtils.write(outputFile.getPath(), sb.toString().trim());
+			FileUtils.write(outputFile.getPath(), sb.toString().trim());
 
 		}
 

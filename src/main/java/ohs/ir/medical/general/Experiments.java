@@ -14,7 +14,7 @@ import com.medallia.word2vec.Word2VecModel;
 
 import ohs.entity.Entity;
 import ohs.entity.EntityLinker;
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.AnalyzerUtils;
 import ohs.ir.lucene.common.IndexFieldName;
@@ -628,7 +628,7 @@ public class Experiments {
 
 			String outputFileName = resDirNames[i] + "kld-fb_wv-priors.txt";
 
-			// IOUtils.deleteFilesUnder(resDirNames[i]);
+			// FileUtils.deleteFilesUnder(resDirNames[i]);
 
 			TextFileWriter writer = new TextFileWriter(outputFileName);
 
@@ -794,7 +794,7 @@ public class Experiments {
 			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
 			IndexSearcher is = iss[i];
 
-			IOUtils.deleteFilesUnder(resDirNames[i]);
+			FileUtils.deleteFilesUnder(resDirNames[i]);
 
 			String outFileName = resDirNames[i] + "qld.txt";
 
@@ -824,7 +824,7 @@ public class Experiments {
 
 			BidMap<String, String> docIdMap = DocumentIdMapper.readDocumentIdMap(docIdMapFileNames[i]);
 
-			// IOUtils.deleteFilesUnder(resDirNames[i]);
+			// FileUtils.deleteFilesUnder(resDirNames[i]);
 
 			TextFileWriter resWriter = new TextFileWriter(outFileName);
 			// TextFileWriter logWriter = new TextFileWriter(logFileName);
@@ -908,7 +908,7 @@ public class Experiments {
 
 			BidMap<String, String> docIdMap = DocumentIdMapper.readDocumentIdMap(docIdMapFileNames[i]);
 
-			// IOUtils.deleteFilesUnder(resDirNames[i]);
+			// FileUtils.deleteFilesUnder(resDirNames[i]);
 
 			TextFileWriter resWriter = new TextFileWriter(outputFileName);
 			TextFileWriter logWriter = new TextFileWriter(logFileName);

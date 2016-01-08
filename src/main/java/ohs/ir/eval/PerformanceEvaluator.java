@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.ir.medical.clef.ehealth_2014.EHPath;
 import ohs.ir.medical.clef.ehealth_2014.RelevanceJudgementReader;
@@ -19,7 +19,7 @@ public class PerformanceEvaluator {
 		CounterMap<String, String> relevanceData = RelevanceJudgementReader.read(new File(EHPath.QUERY_2013_TEST_RELEVANCE_FILE));
 
 		for (File file : new File(EHPath.OUTPUT_BASIC_DIR).listFiles()) {
-			String retModel = IOUtils.removeExtension(file.getName());
+			String retModel = FileUtils.removeExtension(file.getName());
 
 			CounterMap<String, String> resultData = new CounterMap<String, String>();
 

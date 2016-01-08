@@ -23,16 +23,16 @@ public class TextFileWriter {
 	private Writer writer;
 
 	public TextFileWriter(File file) {
-		this(file.getPath(), IOUtils.UTF_8, false);
+		this(file.getPath(), FileUtils.UTF_8, false);
 	}
 
 	public TextFileWriter(String fileName) {
-		this(fileName, IOUtils.UTF_8, false);
+		this(fileName, FileUtils.UTF_8, false);
 	}
 
 	public TextFileWriter(String fileName, String encoding, boolean append) {
 		try {
-			writer = IOUtils.openBufferedWriter(fileName, encoding, append);
+			writer = FileUtils.openBufferedWriter(fileName, encoding, append);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

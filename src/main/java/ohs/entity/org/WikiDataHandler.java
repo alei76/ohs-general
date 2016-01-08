@@ -17,7 +17,7 @@ import org.xml.sax.InputSource;
 
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.types.Counter;
@@ -104,7 +104,7 @@ public class WikiDataHandler {
 		reader.printLast();
 		reader.close();
 
-		IOUtils.write(ENTPath.KOREAN_WIKI_REDIRECT_FILE, cm1);
+		FileUtils.write(ENTPath.KOREAN_WIKI_REDIRECT_FILE, cm1);
 
 		List<String> titles = new ArrayList<String>(c2.keySet());
 		Collections.sort(titles);

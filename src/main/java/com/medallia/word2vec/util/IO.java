@@ -245,7 +245,7 @@ public final class IO {
 		}
 	}
 
-	/** Similar to {@link IOUtils#toByteArray(InputStream)} but closes the stream. */
+	/** Similar to {@link FileUtils#toByteArray(InputStream)} but closes the stream. */
 	public static byte[] toByteArray(InputStream is) throws IOException {
 		ByteArrayOutputStream bao = new ByteArrayOutputStream();
 		IO.copyAndCloseBoth(is, bao);

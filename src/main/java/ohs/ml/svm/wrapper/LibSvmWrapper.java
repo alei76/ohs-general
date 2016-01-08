@@ -9,7 +9,7 @@ import libsvm.svm;
 import libsvm.svm_model;
 import libsvm.svm_node;
 import libsvm.svm_parameter;
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.math.ArrayUtils;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
@@ -23,9 +23,9 @@ public class LibSvmWrapper implements Serializable {
 	public static LibSvmWrapper read(String fileName) throws Exception {
 		System.out.printf("read [%s]\n", fileName);
 
-		ObjectInputStream ois = IOUtils.openObjectInputStream(fileName);
-		Indexer<String> labelIndexer = IOUtils.readIndexer(ois);
-		Indexer<String> featIndexer = IOUtils.readIndexer(ois);
+		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
+		Indexer<String> labelIndexer = FileUtils.readIndexer(ois);
+		Indexer<String> featIndexer = FileUtils.readIndexer(ois);
 
 		svm_model model = new svm_model();
 		svm_parameter param = new svm_parameter();
@@ -241,10 +241,10 @@ public class LibSvmWrapper implements Serializable {
 
 	public void write(String fileName) throws Exception {
 		System.out.printf("write to [%s].\n", fileName);
-		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
+		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 
-		IOUtils.write(oos, labelIndexer);
-		IOUtils.write(oos, termIndexer);
+		FileUtils.write(oos, labelIndexer);
+		FileUtils.write(oos, termIndexer);
 
 		oos.writeInt(model.param.svm_type);
 		oos.writeInt(model.param.kernel_type);

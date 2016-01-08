@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 import ohs.entity.data.struct.BilingualText;
 import ohs.entity.data.struct.Organization;
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.types.Counter;
 import ohs.types.ListMap;
@@ -41,7 +41,7 @@ public class OrgDataMerger {
 
 		ListMap<String, String[]> newOrgMap = new ListMap<String, String[]>();
 
-		TextFileReader reader = new TextFileReader(ENTPath.BASE_ORG_HISTORY_FILE, IOUtils.EUC_KR);
+		TextFileReader reader = new TextFileReader(ENTPath.BASE_ORG_HISTORY_FILE, FileUtils.EUC_KR);
 		while (reader.hasNext()) {
 			List<String> lines = reader.getNextLines();
 
@@ -168,7 +168,7 @@ public class OrgDataMerger {
 			}
 		}
 
-		IOUtils.write(ENTPath.DATA_DIR + "temp.txt", sb.toString().trim());
+		FileUtils.write(ENTPath.DATA_DIR + "temp.txt", sb.toString().trim());
 
 	}
 }

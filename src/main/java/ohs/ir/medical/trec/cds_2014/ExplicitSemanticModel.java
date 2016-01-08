@@ -1,6 +1,6 @@
 package ohs.ir.medical.trec.cds_2014;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseMatrix;
@@ -13,8 +13,8 @@ public class ExplicitSemanticModel {
 	public static ExplicitSemanticModel read(Indexer<String> wordIndexer, SparseVector wordDocFreqs, int numDocs) throws Exception {
 		System.out.println("read ESA.");
 
-		Indexer<String> conceptIndexer = IOUtils.readIndexer(CDSPath.ICD10_CONCEPT_INDEXER_FILE);
-		Indexer<String> categoryIndexer = IOUtils.readIndexer(CDSPath.ICD10_CATEGORY_INDEXER_FILE);
+		Indexer<String> conceptIndexer = FileUtils.readIndexer(CDSPath.ICD10_CONCEPT_INDEXER_FILE);
+		Indexer<String> categoryIndexer = FileUtils.readIndexer(CDSPath.ICD10_CATEGORY_INDEXER_FILE);
 
 		SparseMatrix wordConceptWeights = SparseMatrix.read(CDSPath.ICD10_WORD_CONCEPT_MAP_FILE);
 		SparseMatrix conceptCategoryWeights = SparseMatrix.read(CDSPath.ICD10_CONCEPT_CATEGORY_MAP_FILE);

@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.ir.medical.general.MIRPath;
 import ohs.types.CounterMap;
@@ -62,7 +62,7 @@ public class QueryReader {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder parser = dbf.newDocumentBuilder();
 
-		Document xmlDoc = parser.parse(new InputSource(new StringReader(IOUtils.readText(queryFileName))));
+		Document xmlDoc = parser.parse(new InputSource(new StringReader(FileUtils.readText(queryFileName))));
 
 		Element docElem = xmlDoc.getDocumentElement();
 		NodeList nodeList = null;
@@ -141,7 +141,7 @@ public class QueryReader {
 				String discharge = "";
 
 				if (dischargeFile != null) {
-					discharge = IOUtils.readText(dischargeFile.getPath());
+					discharge = FileUtils.readText(dischargeFile.getPath());
 				} else {
 					new FileNotFoundException(dischargeFileName);
 				}
@@ -233,7 +233,7 @@ public class QueryReader {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder parser = dbf.newDocumentBuilder();
 
-		Document xmlDoc = parser.parse(new InputSource(new StringReader(IOUtils.readText(fileName))));
+		Document xmlDoc = parser.parse(new InputSource(new StringReader(FileUtils.readText(fileName))));
 
 		Element docElem = xmlDoc.getDocumentElement();
 		NodeList nodeList = docElem.getElementsByTagName("topic");
@@ -274,7 +274,7 @@ public class QueryReader {
 
 	public static List<BaseQuery> readTrecGenomicsQueries(String queryFileName) throws Exception {
 		List<BaseQuery> ret = new ArrayList<BaseQuery>();
-		List<String> lines = IOUtils.readLines(queryFileName);
+		List<String> lines = FileUtils.readLines(queryFileName);
 
 		for (int i = 0; i < lines.size(); i++) {
 			String line = lines.get(i);

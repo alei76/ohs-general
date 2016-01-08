@@ -8,7 +8,7 @@ import java.util.TreeMap;
 
 import ohs.entity.data.struct.BilingualText;
 import ohs.entity.data.struct.Organization;
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.types.Counter;
 
@@ -185,7 +185,7 @@ public class DataReader {
 
 		Counter<String> c = new Counter<String>();
 
-		TextFileReader reader = new TextFileReader(fileName, IOUtils.EUC_KR);
+		TextFileReader reader = new TextFileReader(fileName, FileUtils.EUC_KR);
 		while (reader.hasNext()) {
 			List<String> lines = reader.getNextLines();
 
@@ -210,7 +210,7 @@ public class DataReader {
 	public static List<Organization> readOrganizations(String fileName) {
 		System.out.printf("read [%s].\n", fileName);
 		List<Organization> ret = new ArrayList<Organization>();
-		TextFileReader reader = new TextFileReader(fileName, IOUtils.EUC_KR);
+		TextFileReader reader = new TextFileReader(fileName, FileUtils.EUC_KR);
 		while (reader.hasNext()) {
 			if (reader.getNumLines() == 1) {
 				continue;

@@ -8,7 +8,7 @@ import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.util.BytesRef;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.ir.lucene.common.IndexFieldName;
 import ohs.types.Counter;
 
@@ -43,7 +43,7 @@ public class VocabBuilder {
 			c.incrementCount(word, cnt);
 		}
 
-		IOUtils.write(outputFileName, c);
+		FileUtils.write(outputFileName, c);
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -67,10 +67,10 @@ public class VocabBuilder {
 		Counter<String> c = new Counter<String>();
 
 		for (String inputFileName : inputFileNames) {
-			c.incrementAll(IOUtils.readCounter(inputFileName));
+			c.incrementAll(FileUtils.readCounter(inputFileName));
 		}
 
-		IOUtils.write(outputFileName, c);
+		FileUtils.write(outputFileName, c);
 	}
 
 }

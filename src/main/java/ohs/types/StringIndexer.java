@@ -10,7 +10,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.math.ArrayMath;
 import ohs.tree.trie.TST;
 import ohs.tree.trie.TST.Node;
@@ -87,7 +87,7 @@ public class StringIndexer extends AbstractList<String> implements Serializable 
 				indexer.add(name);
 			}
 
-			IOUtils.write("./test.ser-2.gz", indexer);
+			FileUtils.write("./test.ser-2.gz", indexer);
 		}
 
 		// System.out.println("-----------------------");
@@ -253,7 +253,7 @@ public class StringIndexer extends AbstractList<String> implements Serializable 
 	}
 
 	public void read(String fileName) throws Exception {
-		ObjectInputStream ois = IOUtils.openObjectInputStream(fileName);
+		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
 		read(ois);
 		ois.close();
 	}
@@ -307,7 +307,7 @@ public class StringIndexer extends AbstractList<String> implements Serializable 
 	}
 
 	public void write(String fileName) throws Exception {
-		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
+		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 		write(oos);
 		oos.close();
 	}

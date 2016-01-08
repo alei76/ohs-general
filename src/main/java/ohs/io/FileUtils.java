@@ -51,7 +51,7 @@ import ohs.utils.ByteSize.Type;
  * @date 2009. 5. 10
  * 
  */
-public class IOUtils {
+public class FileUtils {
 
 	public static final String UTF_8 = "UTF-8";
 
@@ -348,7 +348,7 @@ public class IOUtils {
 			double[] ar = ArrayUtils.range(10000000, 0.0, 1);
 			ObjectOutputStream oos = openObjectOutputStream("../../data/entity_iden/wiki/test-a1.ser.gz");
 
-			IOUtils.write(oos, ar);
+			FileUtils.write(oos, ar);
 			oos.close();
 
 		}
@@ -357,7 +357,7 @@ public class IOUtils {
 			int[] ar = ArrayUtils.range(10, 0, 1);
 			ObjectOutputStream oos = openObjectOutputStream("../../data/entity_iden/wiki/test-a2.ser.gz");
 
-			IOUtils.write(oos, ar);
+			FileUtils.write(oos, ar);
 			oos.close();
 		}
 
@@ -686,6 +686,24 @@ public class IOUtils {
 		return ret;
 	}
 
+	public static List<Integer> readIntegers(ObjectInputStream ois) throws Exception {
+		List<Integer> ret = new ArrayList<Integer>();
+		int size = ois.readInt();
+		for (int i = 0; i < size; i++) {
+			ret.add(ois.readInt());
+		}
+		return ret;
+	}
+
+	public static List<Double> readDoubles(ObjectInputStream ois) throws Exception {
+		List<Double> ret = new ArrayList<Double>();
+		int size = ois.readInt();
+		for (int i = 0; i < size; i++) {
+			ret.add(ois.readDouble());
+		}
+		return ret;
+	}
+
 	public static String readText(File file) throws Exception {
 		return readText(file.getCanonicalPath(), UTF_8);
 	}
@@ -731,12 +749,31 @@ public class IOUtils {
 		oos.flush();
 	}
 
-	public static void write(ObjectOutputStream oos, Collection<String> c) throws Exception {
+	public static void writeStrings(ObjectOutputStream oos, Collection<String> c) throws Exception {
 		oos.writeInt(c.size());
 
 		Iterator<String> iter = c.iterator();
 		while (iter.hasNext()) {
 			oos.writeUTF(iter.next());
+		}
+		oos.flush();
+	}
+
+	public static void writeIntegers(ObjectOutputStream oos, Collection<Integer> c) throws Exception {
+		oos.writeInt(c.size());
+
+		Iterator<Integer> iter = c.iterator();
+		while (iter.hasNext()) {
+			oos.writeInt(iter.next());
+		}
+		oos.flush();
+	}
+
+	public static void writeDoubles(ObjectOutputStream oos, Collection<Double> c) throws Exception {
+		oos.writeInt(c.size());
+		Iterator<Double> iter = c.iterator();
+		while (iter.hasNext()) {
+			oos.writeDouble(iter.next());
 		}
 		oos.flush();
 	}

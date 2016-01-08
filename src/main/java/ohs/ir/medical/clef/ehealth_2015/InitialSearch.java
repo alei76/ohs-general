@@ -7,7 +7,7 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
 import ohs.ir.medical.general.MIRPath;
 import ohs.ir.medical.general.SearcherUtils;
@@ -38,7 +38,7 @@ public class InitialSearch {
 
 		List<BaseQuery> baseQueries = QueryReader.readClefEHealthQueries(MIRPath.CLEF_EHEALTH_QUERY_2015_FILE);
 
-		IOUtils.deleteFilesUnder(new File(MIRPath.CLEF_EHEALTH_OUTPUT_RESULT_2015_INIT_DIR));
+		FileUtils.deleteFilesUnder(new File(MIRPath.CLEF_EHEALTH_OUTPUT_RESULT_2015_INIT_DIR));
 
 		String resultFileName = MIRPath.CLEF_EHEALTH_OUTPUT_RESULT_2015_INIT_DIR + "lm_dirichlet.txt";
 

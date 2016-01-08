@@ -3,7 +3,7 @@ package ohs.entity.org;
 import java.util.Comparator;
 
 import ohs.entity.data.struct.BilingualText;
-import ohs.io.IOUtils;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.types.CounterMap;
 
@@ -58,7 +58,7 @@ public class PatentDataHandler {
 		}
 		reader.close();
 
-		IOUtils.write(ENTPath.PATENT_ORG_FILE_2, cm);
+		FileUtils.write(ENTPath.PATENT_ORG_FILE_2, cm);
 
 		// List<String> korNames = new ArrayList<String>(listMap.keySet());
 		// Collections.sort(korNames);
