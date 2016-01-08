@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import ohs.utils.ByteSize;
+
 public class ArrayUtils {
 
 	public static double[] array(int size, double init) {
@@ -30,6 +32,14 @@ public class ArrayUtils {
 			loc++;
 		}
 		return sum;
+	}
+
+	public ByteSize byteSize(double[] a) {
+		return new ByteSize(Double.BYTES * a.length);
+	}
+
+	public ByteSize byteSize(int[] a) {
+		return new ByteSize(Integer.BYTES * a.length);
 	}
 
 	public static double copy(Collection<Float> a, float[] b) {

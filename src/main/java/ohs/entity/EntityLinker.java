@@ -4,14 +4,16 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.WeakHashMap;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.IndexSearcher;
 
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
@@ -55,8 +57,8 @@ public class EntityLinker implements Serializable {
 		// if (IOUtils.exists(ENTPath.ENTITY_LINKER_FILE)) {
 		// el.read(ENTPath.ENTITY_LINKER_FILE);
 		// } else {
-		// el.createSearcher(ENTPath.NAME_PERSON_FILE);
-		// el.write(ENTPath.ENTITY_LINKER_FILE);
+		el.createSearcher(ENTPath.NAME_PERSON_FILE);
+		el.write(ENTPath.ENTITY_LINKER_FILE);
 		el.read(ENTPath.ENTITY_LINKER_FILE);
 		// el.setTopK(20);
 
@@ -124,13 +126,13 @@ public class EntityLinker implements Serializable {
 
 	private StringSearcher searcher;
 
-	private Map<Integer, Entity> ents;
+	private Int2ObjectOpenHashMap<Entity> ents;
 
-	private Map<Integer, Integer> recToEntIdMap;
+	private Int2IntOpenHashMap recToEntIdMap;
 
 	private Indexer<String> featInexer;
 
-	private Map<Integer, SparseVector> topicWordData;
+	private Int2ObjectOpenHashMap<SparseVector> topicWordData;
 
 	private WeakHashMap<Integer, SparseVector> cache;
 
@@ -140,11 +142,11 @@ public class EntityLinker implements Serializable {
 
 	public void createSearcher(String dataFileName) throws Exception {
 		List<StringRecord> srs = new ArrayList<StringRecord>();
-		recToEntIdMap = new HashMap<Integer, Integer>();
-		ents = new HashMap<Integer, Entity>();
+		recToEntIdMap = new Int2IntOpenHashMap();
+		ents = new Int2ObjectOpenHashMap<Entity>();
 
 		featInexer = new Indexer<String>();
-		topicWordData = new HashMap<Integer, SparseVector>();
+		topicWordData = new Int2ObjectOpenHashMap<SparseVector>();
 
 		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
@@ -297,7 +299,7 @@ public class EntityLinker implements Serializable {
 		stopWatch.start();
 
 		int size = ois.readInt();
-		ents = new HashMap<Integer, Entity>(size);
+		ents = new Int2ObjectOpenHashMap<Entity>(size);
 		for (int i = 0; i < size; i++) {
 			Entity ent = new Entity();
 			ent.read(ois);
@@ -305,12 +307,17 @@ public class EntityLinker implements Serializable {
 		}
 
 		featInexer = IOUtils.readIndexer(ois);
-		recToEntIdMap = IOUtils.readIntegerMap(ois);
 
 		int size2 = ois.readInt();
-		topicWordData = new HashMap<Integer, SparseVector>(size2);
-
+		recToEntIdMap = new Int2IntOpenHashMap(size2);
 		for (int i = 0; i < size2; i++) {
+			recToEntIdMap.put(ois.readInt(), ois.readInt());
+		}
+
+		int size3 = ois.readInt();
+		topicWordData = new Int2ObjectOpenHashMap<SparseVector>(size3);
+
+		for (int i = 0; i < size3; i++) {
 			int id = ois.readInt();
 			SparseVector sv = new SparseVector();
 			sv.read(ois);
@@ -339,7 +346,13 @@ public class EntityLinker implements Serializable {
 		}
 
 		IOUtils.write(oos, featInexer);
-		IOUtils.write(oos, recToEntIdMap);
+
+		oos.writeInt(recToEntIdMap.size());
+
+		for (Entry<Integer, Integer> e : recToEntIdMap.entrySet()) {
+			oos.writeInt(e.getKey());
+			oos.writeInt(e.getValue());
+		}
 
 		oos.writeInt(topicWordData.size());
 		for (int id : topicWordData.keySet()) {
