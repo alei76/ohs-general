@@ -61,6 +61,7 @@ public class Experiments {
 		// e.searchByKldFbWordVectorExp();
 		// e.searchByKldFbWordVectorPrior();
 		// e.searchByEntityLinking();
+		// e.testKLDFBWiki();
 		e.searchByKLDFBWiki();
 		SearchResultEvaluator.main(args);
 
@@ -254,6 +255,80 @@ public class Experiments {
 
 	}
 
+	public void testKLDFBWiki() throws Exception {
+		System.out.println("search by KLD FB.");
+		IndexSearcher wis = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
+
+		Set<String> stopPrefixes = WikiDataHandler.getStopPrefixes();
+
+		for (int i = 0; i < queryFileNames.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
+			IndexSearcher is = iss[i];
+			IndexReader ir = is.getIndexReader();
+
+			String outputFileName = MIRPath.OutputDirNames[i] + "wiki/titles.txt";
+
+			TextFileWriter writer = new TextFileWriter(outputFileName);
+
+			for (int j = 0; j < bqs.size(); j++) {
+				BaseQuery bq = bqs.get(j);
+
+				Indexer<String> wordIndexer = new Indexer<String>();
+				Counter<String> qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+
+				SparseVector qlm = VectorUtils.toSparseVector(qwcs, wordIndexer, true);
+				qlm.normalize();
+
+				SparseVector eqlm = qlm.copy();
+				SparseVector docScores = null;
+
+				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(eqlm, wordIndexer));
+				docScores = SearcherUtils.search(lbq, wis, 50);
+
+				docScores.sortByValue();
+
+				Counter<String> titleScores = Generics.newCounter();
+
+				for (int k = 0; k < docScores.size(); k++) {
+					int docid = docScores.indexAtLoc(k);
+					double score = docScores.valueAtLoc(k);
+					String title = wis.getIndexReader().document(docid).get(IndexFieldName.TITLE);
+					if (WikiDataHandler.accept(stopPrefixes, title)) {
+						titleScores.setCount(title, score);
+					}
+				}
+
+				StringBuffer sb = new StringBuffer(bq.toString());
+				sb.append("\nTitles:\n" + titleScores.toStringSortedByValues(true, true, titleScores.size(), " "));
+
+				Counter<String> wwcs = Generics.newCounter();
+
+				for (String title : titleScores.keySet()) {
+					Counter<String> c = AnalyzerUtils.getWordCounts(title, analyzer);
+					for (Entry<String, Double> e : c.entrySet()) {
+						wwcs.incrementCount(e.getKey(), e.getValue());
+					}
+				}
+
+				sb.append("\nQWCS:");
+
+				int loc = 0;
+				for (String word : qwcs.getSortedKeys()) {
+					int cnt1 = (int) qwcs.getCount(word);
+					int cnt2 = (int) wwcs.getCount(word);
+					if (cnt2 > 0) {
+						sb.append(String.format("\n%d\t%s\t%d\t%d", ++loc, word, cnt1, cnt2));
+					}
+				}
+				sb.append("\n\n");
+
+				writer.write(sb.toString());
+			}
+
+			writer.close();
+		}
+	}
+
 	public void searchByKLDFBWiki() throws Exception {
 		System.out.println("search by KLD FB.");
 		IndexSearcher wis = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
@@ -278,39 +353,34 @@ public class Experiments {
 				SparseVector qlm = VectorUtils.toSparseVector(qwcs, wordIndexer, true);
 				qlm.normalize();
 
-				SparseVector eqlm = qlm.copy();
-				SparseVector docScores = null;
+				// SparseVector eqlm = qlm.copy();
 
-				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(eqlm, wordIndexer));
-				docScores = SearcherUtils.search(lbq, wis, 100);
+				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(qlm, wordIndexer));
+				SparseVector docScores = SearcherUtils.search(lbq, wis, 100);
 
-				Counter<String> titleScores = Generics.newCounter();
+				Counter<String> wwcs = Generics.newCounter();
 
 				for (int k = 0; k < docScores.size(); k++) {
 					int docid = docScores.indexAtLoc(k);
 					double score = docScores.valueAtLoc(k);
 					String title = wis.getIndexReader().document(docid).get(IndexFieldName.TITLE);
 					if (WikiDataHandler.accept(stopPrefixes, title)) {
-						titleScores.setCount(title, score);
+						wwcs.incrementAll(AnalyzerUtils.getWordCounts(title, analyzer));
 					}
 				}
 
-				List<String> titles = titleScores.getSortedKeys();
-				Counter<String> wwcs = Generics.newCounter();
-				for (int k = 0; k < titles.size() && k < 5; k++) {
-					String title = titles.get(k);
-					double score = titleScores.getCount(title);
-					Counter<String> c = AnalyzerUtils.getWordCounts(title, analyzer);
+				Counter<String> nqwcs = Generics.newCounter();
 
-					for (Entry<String, Double> e : c.entrySet()) {
-						wwcs.incrementCount(e.getKey(), e.getValue() * score);
-					}
+				for (String word : qwcs.keySet()) {
+					double cnt1 = qwcs.getCount(word);
+					double cnt2 = wwcs.getCount(word);
+					nqwcs.incrementCount(word, cnt1 + cnt2);
 				}
 
-				SparseVector wlm = VectorUtils.toSparseVector(wwcs, wordIndexer, true);
-				wlm.keepTopN(20);
-				wlm.normalize();
+				qlm = VectorUtils.toSparseVector(nqwcs, wordIndexer, true);
+				qlm.normalize();
 
+				lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(qlm, wordIndexer));
 				docScores = SearcherUtils.search(lbq, is, 500);
 
 				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, IndexFieldName.CONTENT);
@@ -320,10 +390,10 @@ public class Experiments {
 				// SparseVector prm = rmb.getPositionalRelevanceModel(qLM, wcb3,
 				// docScores);
 
-				double[] mixtures = { 1, 1, 1 };
+				double[] mixtures = { 1, 1 };
 				ArrayMath.normalize(mixtures);
 
-				eqlm = VectorMath.addAfterScale(new SparseVector[] { qlm, wlm, rm }, mixtures);
+				SparseVector eqlm = VectorMath.addAfterScale(new SparseVector[] { qlm, rm }, mixtures);
 
 				KLDivergenceScorer scorer = new KLDivergenceScorer();
 				docScores = scorer.score(wcb, eqlm);
@@ -338,7 +408,6 @@ public class Experiments {
 
 			writer.close();
 		}
-
 	}
 
 	public void searchByEntityLinking() throws Exception {
