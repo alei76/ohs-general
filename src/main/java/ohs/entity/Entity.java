@@ -85,6 +85,12 @@ public class Entity implements Serializable {
 		return result;
 	}
 
+	public void read(ObjectInputStream ois) throws Exception {
+		id = ois.readInt();
+		text = ois.readUTF();
+		topic = ois.readUTF();
+	}
+
 	public void setId(int id) {
 		this.id = id;
 	}
@@ -100,12 +106,6 @@ public class Entity implements Serializable {
 	@Override
 	public String toString() {
 		return "Entity [text=" + text + ", id=" + id + ", topic=" + topic + "]";
-	}
-
-	public void read(ObjectInputStream ois) throws Exception {
-		id = ois.readInt();
-		text = ois.readUTF();
-		topic = ois.readUTF();
 	}
 
 	public void write(ObjectOutputStream oos) throws Exception {

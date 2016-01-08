@@ -74,15 +74,6 @@ public class WikiDataHandler {
 		System.out.println("process ends.");
 	}
 
-	public void test() {
-		TextFileReader reader = new TextFileReader("../../data/medical_ir/wiki/enwiki-20151201-categorylinks.sql");
-		while (reader.hasNext()) {
-			String line = reader.next();
-			System.out.println(line);
-		}
-		reader.close();
-	}
-
 	private static String[] parse(String text) throws Exception {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder p1 = dbf.newDocumentBuilder();
@@ -537,5 +528,14 @@ public class WikiDataHandler {
 			ret[0] = title;
 		}
 		return ret;
+	}
+
+	public void test() {
+		TextFileReader reader = new TextFileReader("../../data/medical_ir/wiki/enwiki-20151201-categorylinks.sql");
+		while (reader.hasNext()) {
+			String line = reader.next();
+			System.out.println(line);
+		}
+		reader.close();
 	}
 }

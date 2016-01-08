@@ -11,11 +11,6 @@ import ohs.utils.StopWatch;
 
 public class OhsumedDumper extends TextDumper {
 
-	public OhsumedDumper(String inputDir, String outputFileName) {
-		super(inputDir, outputFileName);
-		// TODO Auto-generated constructor stub
-	}
-
 	public static final String[] TAGS = { ".I", ".U", ".M", ".T", ".P", ".W", ".A", ".S" };
 
 	public static void main(String[] args) throws Exception {
@@ -25,24 +20,9 @@ public class OhsumedDumper extends TextDumper {
 		System.out.println("process ends.");
 	}
 
-	private String makeOutput(Map<String, String> map) {
-		String seqId = map.get(".I");
-		String medlineId = map.get(".U");
-		String meshTerms = map.get(".M");
-		String title = map.get(".T");
-		String publicationType = map.get(".P");
-		String abs = map.get(".W");
-		String authors = map.get(".A");
-		String source = map.get(".S");
-
-		String output = String.format("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s", seqId, medlineId, meshTerms, title, publicationType, abs, authors,
-				source);
-
-		return output;
-	}
-
-	public void makeTextDump() throws Exception {
-
+	public OhsumedDumper(String inputDir, String outputFileName) {
+		super(inputDir, outputFileName);
+		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -111,5 +91,25 @@ public class OhsumedDumper extends TextDumper {
 		writer.close();
 
 		System.out.printf("read [%d] docs from [%s]\n", numDocs, inputDirName);
+	}
+
+	private String makeOutput(Map<String, String> map) {
+		String seqId = map.get(".I");
+		String medlineId = map.get(".U");
+		String meshTerms = map.get(".M");
+		String title = map.get(".T");
+		String publicationType = map.get(".P");
+		String abs = map.get(".W");
+		String authors = map.get(".A");
+		String source = map.get(".S");
+
+		String output = String.format("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s", seqId, medlineId, meshTerms, title, publicationType, abs, authors,
+				source);
+
+		return output;
+	}
+
+	public void makeTextDump() throws Exception {
+
 	}
 }

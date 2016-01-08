@@ -97,6 +97,11 @@ class SearcherImpl implements Searcher {
 	}
 
 	@Override
+	public Word2VecModel getModel() {
+		return model;
+	}
+
+	@Override
 	public ImmutableList<Double> getRawVector(String word) throws UnknownWordException {
 		return ImmutableList.copyOf(Doubles.asList(getVector(word)));
 	}
@@ -137,10 +142,5 @@ class SearcherImpl implements Searcher {
 				return SearcherImpl.this.getMatches(target, maxMatches);
 			}
 		};
-	}
-
-	@Override
-	public Word2VecModel getModel() {
-		return model;
 	}
 }

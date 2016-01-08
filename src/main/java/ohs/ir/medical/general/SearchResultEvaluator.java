@@ -138,6 +138,279 @@ public class SearchResultEvaluator {
 		}
 	}
 
+	public static void evaluate(String[] resDirNames, String[] relDataFileNames, String[] docIdMapFileNames, String perfFileName,
+			String perfDetailFileName) throws Exception {
+
+		TextFileWriter writer1 = new TextFileWriter(perfFileName);
+		TextFileWriter writer2 = new TextFileWriter(perfDetailFileName);
+
+		StringBuffer sb = new StringBuffer();
+		sb.append("Collection\tQueries\tModel\tTop-K");
+
+		sb.append(String.format("\t%s", MetricType.RELEVANT));
+		sb.append(String.format("\t%s", MetricType.RETRIEVED));
+		sb.append(String.format("\t%s", MetricType.RELEVANT_IN_RET));
+		sb.append(String.format("\t%s", MetricType.RELEVANT_AT));
+		sb.append(String.format("\t%s", MetricType.P));
+		sb.append(String.format("\t%s", MetricType.MAP));
+		sb.append(String.format("\t%s", MetricType.NDCG));
+
+		sb.append(String.format("\t%s-0.05", MetricType.P));
+		sb.append(String.format("\t%s-0.01", MetricType.P));
+		sb.append(String.format("\t%s-0.05", MetricType.MAP));
+		sb.append(String.format("\t%s-0.01", MetricType.MAP));
+		sb.append(String.format("\t%s-0.05", MetricType.NDCG));
+		sb.append(String.format("\t%s-0.01", MetricType.NDCG));
+
+		sb.append(String.format("\t%s-Gain", MetricType.P));
+		sb.append(String.format("\t%s-Reward", MetricType.P));
+		sb.append(String.format("\t%s-Risk", MetricType.P));
+
+		sb.append(String.format("\t%s-Gain", MetricType.MAP));
+		sb.append(String.format("\t%s-Reward", MetricType.MAP));
+		sb.append(String.format("\t%s-Risk", MetricType.MAP));
+
+		sb.append(String.format("\t%s-Gain", MetricType.NDCG));
+		sb.append(String.format("\t%s-Reward", MetricType.NDCG));
+		sb.append(String.format("\t%s-Risk", MetricType.NDCG));
+
+		writer1.write(sb.toString());
+
+		DeepMap<String, String, List<Performance>> perfMap = new DeepMap<String, String, List<Performance>>();
+
+		for (int i = 0; i < resDirNames.length; i++) {
+			String resDirName = resDirNames[i];
+			String relFileName = relDataFileNames[i];
+			String docMapFileName = docIdMapFileNames[i];
+			String collName = "";
+
+			{
+				File f = new File(resDirName);
+				collName = f.getParentFile().getParentFile().getName();
+			}
+
+			BidMap<String, String> docIdMap = new BidMap<String, String>();
+			if (docMapFileName != null && docMapFileName.length() > 0) {
+				docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileName);
+			}
+
+			CounterMap<String, String> relData = RelevanceReader.readRelevances(relFileName);
+
+			if (docIdMap.size() > 0) {
+				relData = RelevanceReader.filter(relData, docIdMap);
+			}
+
+			PerformanceEvaluator pe = new PerformanceEvaluator();
+
+			File blFile = null;
+
+			TreeSet<File> resFileSet = new TreeSet<File>();
+
+			for (File resFile : new File(resDirName).listFiles()) {
+				String paramStr = resFile.getName().replace(".txt", "");
+				String[] parts = paramStr.split("_");
+				String modelName = parts[0];
+
+				if (modelName.equals("qld")) {
+					blFile = resFile;
+				} else {
+					resFileSet.add(resFile);
+				}
+			}
+
+			List<File> resFiles = new ArrayList<File>();
+			resFiles.add(blFile);
+			resFiles.addAll(resFileSet);
+
+			List<Performance> baselines = new ArrayList<Performance>();
+
+			for (int j = 0; j < resFiles.size(); j++) {
+				File resFile = resFiles.get(j);
+
+				CounterMap<String, String> resData = PerformanceEvaluator.readSearchResults(resFile.getPath());
+
+				if (docIdMap.size() > 0) {
+					resData = DocumentIdMapper.mapIndexIdsToDocIds(resData, docIdMap);
+				}
+
+				String modelName = resFile.getName();
+
+				List<Performance> targets = pe.evalute(resData, relData);
+
+				if (j == 0) {
+					baselines = targets;
+				}
+
+				writer2.write(String.format("Collection:\t%s\n", collName));
+				writer2.write(String.format("FileName:\t%s\n", resFile.getName()));
+
+				NumberFormat nf = NumberFormat.getInstance();
+				nf.setMinimumFractionDigits(4);
+
+				for (int k = 0; k < targets.size(); k++) {
+					Performance baseline = baselines.get(k);
+					Performance target = targets.get(k);
+
+					{
+						StringBuffer sb2 = new StringBuffer();
+						sb2.append(String.format("%s\t%d\t%s\t%d", collName, resData.keySet().size(), modelName, target.getTopN()));
+
+						sb2.append(String.format("\t%d", (int) target.getTotalRelevant()));
+						sb2.append(String.format("\t%d", (int) target.getTotalRetrieved()));
+						sb2.append(String.format("\t%d", (int) target.getTotalCorrect()));
+						sb2.append(String.format("\t%d", (int) target.getTotalCorrectAtN()));
+						sb2.append(String.format("\t%s", nf.format(target.getPrecisionAtN())));
+						sb2.append(String.format("\t%s", nf.format(target.getMAP())));
+						sb2.append(String.format("\t%s", nf.format((target.getNDCG()))));
+
+						{
+							MetricType[] mts = { MetricType.P, MetricType.AP, MetricType.NDCG };
+
+							for (int l = 0; l < mts.length; l++) {
+								MetricType mt = mts[l];
+								Counter<String> c1 = baseline.getMetricQueryScores().getCounter(mt);
+								Counter<String> c2 = target.getMetricQueryScores().getCounter(mt);
+								int size1 = c1.size();
+								int size2 = c2.size();
+
+								double[] scores1 = new double[c1.size()];
+								double[] scores2 = new double[c2.size()];
+								int loc = 0;
+
+								for (String qId : c1.keySet()) {
+									scores1[loc] = c1.getCount(qId);
+									scores2[loc] = c2.getCount(qId);
+									loc++;
+								}
+
+								TTestImpl tt = new TTestImpl();
+								boolean improved1 = tt.pairedTTest(scores1, scores2, 0.05);
+								boolean improved2 = tt.pairedTTest(scores1, scores2, 0.01);
+								sb2.append(String.format("\t%s\t%s", improved1, improved2));
+							}
+						}
+
+						{
+							MetricType[] mts = { MetricType.P, MetricType.AP, MetricType.NDCG };
+
+							NumberFormat nf2 = NumberFormat.getInstance();
+							nf2.setMinimumFractionDigits(6);
+
+							for (int l = 0; l < mts.length; l++) {
+								MetricType mt = mts[l];
+								Counter<String> c1 = baseline.getMetricQueryScores().getCounter(mt);
+								Counter<String> c2 = target.getMetricQueryScores().getCounter(mt);
+
+								double risk = 0;
+								double reward = 0;
+								double num_pos = 0;
+								double num_neg = 0;
+
+								for (String qId : c1.keySet()) {
+									double score1 = c1.getCount(qId);
+									double score2 = c2.getCount(qId);
+									risk += Math.max(0, score1 - score2);
+									reward += Math.max(0, score2 - score1);
+
+									if (score2 > score1) {
+										num_pos++;
+									} else {
+										num_neg++;
+									}
+								}
+								risk /= c1.size();
+								reward /= c1.size();
+
+								double gain = reward - risk;
+								double ri = (num_pos - num_neg) / c1.size();
+
+								sb2.append(String.format("\t%s\t%s\t%s", nf2.format(gain), nf2.format(reward), nf2.format(risk)));
+							}
+						}
+
+						writer1.write("\n" + sb2.toString());
+					}
+
+					{
+						MetricType[] mts = new MetricType[] { MetricType.RETRIEVED, MetricType.RELEVANT, MetricType.RELEVANT_IN_RET,
+								MetricType.RELEVANT_AT, MetricType.P, MetricType.AP, MetricType.NDCG };
+
+						StringBuffer sb3 = new StringBuffer();
+						sb3.append(String.format("Top-%d", target.getTopN()));
+						sb3.append("\nQID");
+
+						for (MetricType mt : mts) {
+							sb3.append("\t" + mt);
+						}
+						sb3.append("\n");
+
+						CounterMap<String, MetricType> qmvs = target.getMetricQueryScores().invert();
+
+						List<String> qids = new ArrayList<String>(new TreeSet<String>(qmvs.keySet()));
+
+						BidMap<String, Integer> map = new BidMap<String, Integer>();
+
+						for (int l = 0; l < qids.size(); l++) {
+							String qid = qids.get(l);
+							int qid2 = 0;
+							if (collName.equals("clef_ehealth")) {
+								int idx = qid.lastIndexOf(".") + 1;
+								qid2 = Integer.parseInt(qid.substring(idx));
+							} else {
+								qid2 = Integer.parseInt(qid);
+							}
+							map.put(qid, qid2);
+						}
+
+						List<Integer> qIds = new ArrayList<Integer>(map.getValues());
+						Collections.sort(qIds);
+
+						Counter<MetricType> overallValues = new Counter<MetricType>();
+
+						for (int l = 0; l < qIds.size(); l++) {
+							int qId = qIds.get(l);
+							String qid = map.getKey(qId);
+							sb3.append(qid);
+
+							Counter<MetricType> metricValues = qmvs.getCounter(qid);
+
+							for (int m = 0; m < mts.length; m++) {
+								MetricType type = mts[m];
+								double score = metricValues.getCount(type);
+								if (type == MetricType.P || type == MetricType.AP || type == MetricType.NDCG) {
+									sb3.append(String.format("\t%s", nf.format(score)));
+								} else {
+									sb3.append(String.format("\t%d", (int) score));
+								}
+								overallValues.incrementCount(mts[m], score);
+							}
+							sb3.append("\n");
+						}
+
+						sb3.append("Overall");
+
+						for (int l = 0; l < mts.length; l++) {
+							MetricType type = mts[l];
+							double score = overallValues.getCount(mts[l]);
+
+							if (type == MetricType.P || type == MetricType.AP || type == MetricType.NDCG) {
+								score /= qids.size();
+								sb3.append(String.format("\t%s", nf.format(score)));
+							} else {
+								sb3.append(String.format("\t%d", (int) score));
+							}
+						}
+						sb3.append("\n");
+
+						writer2.write(sb3.toString() + "\n");
+					}
+				}
+			}
+		}
+
+		writer1.close();
+	}
+
 	public static void evaluateForJBICBEEM() throws Exception {
 		String[] resultDirNames = MIRPath.ResultDirNames;
 		String[] relDataFileNames = MIRPath.RelevanceFileNames;
@@ -410,279 +683,6 @@ public class SearchResultEvaluator {
 
 							if (type == MetricType.P || type == MetricType.AP || type == MetricType.NDCG) {
 								score /= queryIds.size();
-								sb3.append(String.format("\t%s", nf.format(score)));
-							} else {
-								sb3.append(String.format("\t%d", (int) score));
-							}
-						}
-						sb3.append("\n");
-
-						writer2.write(sb3.toString() + "\n");
-					}
-				}
-			}
-		}
-
-		writer1.close();
-	}
-
-	public static void evaluate(String[] resDirNames, String[] relDataFileNames, String[] docIdMapFileNames, String perfFileName,
-			String perfDetailFileName) throws Exception {
-
-		TextFileWriter writer1 = new TextFileWriter(perfFileName);
-		TextFileWriter writer2 = new TextFileWriter(perfDetailFileName);
-
-		StringBuffer sb = new StringBuffer();
-		sb.append("Collection\tQueries\tModel\tTop-K");
-
-		sb.append(String.format("\t%s", MetricType.RELEVANT));
-		sb.append(String.format("\t%s", MetricType.RETRIEVED));
-		sb.append(String.format("\t%s", MetricType.RELEVANT_IN_RET));
-		sb.append(String.format("\t%s", MetricType.RELEVANT_AT));
-		sb.append(String.format("\t%s", MetricType.P));
-		sb.append(String.format("\t%s", MetricType.MAP));
-		sb.append(String.format("\t%s", MetricType.NDCG));
-
-		sb.append(String.format("\t%s-0.05", MetricType.P));
-		sb.append(String.format("\t%s-0.01", MetricType.P));
-		sb.append(String.format("\t%s-0.05", MetricType.MAP));
-		sb.append(String.format("\t%s-0.01", MetricType.MAP));
-		sb.append(String.format("\t%s-0.05", MetricType.NDCG));
-		sb.append(String.format("\t%s-0.01", MetricType.NDCG));
-
-		sb.append(String.format("\t%s-Gain", MetricType.P));
-		sb.append(String.format("\t%s-Reward", MetricType.P));
-		sb.append(String.format("\t%s-Risk", MetricType.P));
-
-		sb.append(String.format("\t%s-Gain", MetricType.MAP));
-		sb.append(String.format("\t%s-Reward", MetricType.MAP));
-		sb.append(String.format("\t%s-Risk", MetricType.MAP));
-
-		sb.append(String.format("\t%s-Gain", MetricType.NDCG));
-		sb.append(String.format("\t%s-Reward", MetricType.NDCG));
-		sb.append(String.format("\t%s-Risk", MetricType.NDCG));
-
-		writer1.write(sb.toString());
-
-		DeepMap<String, String, List<Performance>> perfMap = new DeepMap<String, String, List<Performance>>();
-
-		for (int i = 0; i < resDirNames.length; i++) {
-			String resDirName = resDirNames[i];
-			String relFileName = relDataFileNames[i];
-			String docMapFileName = docIdMapFileNames[i];
-			String collName = "";
-
-			{
-				File f = new File(resDirName);
-				collName = f.getParentFile().getParentFile().getName();
-			}
-
-			BidMap<String, String> docIdMap = new BidMap<String, String>();
-			if (docMapFileName != null && docMapFileName.length() > 0) {
-				docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileName);
-			}
-
-			CounterMap<String, String> relData = RelevanceReader.readRelevances(relFileName);
-
-			if (docIdMap.size() > 0) {
-				relData = RelevanceReader.filter(relData, docIdMap);
-			}
-
-			PerformanceEvaluator pe = new PerformanceEvaluator();
-
-			File blFile = null;
-
-			TreeSet<File> resFileSet = new TreeSet<File>();
-
-			for (File resFile : new File(resDirName).listFiles()) {
-				String paramStr = resFile.getName().replace(".txt", "");
-				String[] parts = paramStr.split("_");
-				String modelName = parts[0];
-
-				if (modelName.equals("qld")) {
-					blFile = resFile;
-				} else {
-					resFileSet.add(resFile);
-				}
-			}
-
-			List<File> resFiles = new ArrayList<File>();
-			resFiles.add(blFile);
-			resFiles.addAll(resFileSet);
-
-			List<Performance> baselines = new ArrayList<Performance>();
-
-			for (int j = 0; j < resFiles.size(); j++) {
-				File resFile = resFiles.get(j);
-
-				CounterMap<String, String> resData = PerformanceEvaluator.readSearchResults(resFile.getPath());
-
-				if (docIdMap.size() > 0) {
-					resData = DocumentIdMapper.mapIndexIdsToDocIds(resData, docIdMap);
-				}
-
-				String modelName = resFile.getName();
-
-				List<Performance> targets = pe.evalute(resData, relData);
-
-				if (j == 0) {
-					baselines = targets;
-				}
-
-				writer2.write(String.format("Collection:\t%s\n", collName));
-				writer2.write(String.format("FileName:\t%s\n", resFile.getName()));
-
-				NumberFormat nf = NumberFormat.getInstance();
-				nf.setMinimumFractionDigits(4);
-
-				for (int k = 0; k < targets.size(); k++) {
-					Performance baseline = baselines.get(k);
-					Performance target = targets.get(k);
-
-					{
-						StringBuffer sb2 = new StringBuffer();
-						sb2.append(String.format("%s\t%d\t%s\t%d", collName, resData.keySet().size(), modelName, target.getTopN()));
-
-						sb2.append(String.format("\t%d", (int) target.getTotalRelevant()));
-						sb2.append(String.format("\t%d", (int) target.getTotalRetrieved()));
-						sb2.append(String.format("\t%d", (int) target.getTotalCorrect()));
-						sb2.append(String.format("\t%d", (int) target.getTotalCorrectAtN()));
-						sb2.append(String.format("\t%s", nf.format(target.getPrecisionAtN())));
-						sb2.append(String.format("\t%s", nf.format(target.getMAP())));
-						sb2.append(String.format("\t%s", nf.format((target.getNDCG()))));
-
-						{
-							MetricType[] mts = { MetricType.P, MetricType.AP, MetricType.NDCG };
-
-							for (int l = 0; l < mts.length; l++) {
-								MetricType mt = mts[l];
-								Counter<String> c1 = baseline.getMetricQueryScores().getCounter(mt);
-								Counter<String> c2 = target.getMetricQueryScores().getCounter(mt);
-								int size1 = c1.size();
-								int size2 = c2.size();
-
-								double[] scores1 = new double[c1.size()];
-								double[] scores2 = new double[c2.size()];
-								int loc = 0;
-
-								for (String qId : c1.keySet()) {
-									scores1[loc] = c1.getCount(qId);
-									scores2[loc] = c2.getCount(qId);
-									loc++;
-								}
-
-								TTestImpl tt = new TTestImpl();
-								boolean improved1 = tt.pairedTTest(scores1, scores2, 0.05);
-								boolean improved2 = tt.pairedTTest(scores1, scores2, 0.01);
-								sb2.append(String.format("\t%s\t%s", improved1, improved2));
-							}
-						}
-
-						{
-							MetricType[] mts = { MetricType.P, MetricType.AP, MetricType.NDCG };
-
-							NumberFormat nf2 = NumberFormat.getInstance();
-							nf2.setMinimumFractionDigits(6);
-
-							for (int l = 0; l < mts.length; l++) {
-								MetricType mt = mts[l];
-								Counter<String> c1 = baseline.getMetricQueryScores().getCounter(mt);
-								Counter<String> c2 = target.getMetricQueryScores().getCounter(mt);
-
-								double risk = 0;
-								double reward = 0;
-								double num_pos = 0;
-								double num_neg = 0;
-
-								for (String qId : c1.keySet()) {
-									double score1 = c1.getCount(qId);
-									double score2 = c2.getCount(qId);
-									risk += Math.max(0, score1 - score2);
-									reward += Math.max(0, score2 - score1);
-
-									if (score2 > score1) {
-										num_pos++;
-									} else {
-										num_neg++;
-									}
-								}
-								risk /= c1.size();
-								reward /= c1.size();
-
-								double gain = reward - risk;
-								double ri = (num_pos - num_neg) / c1.size();
-
-								sb2.append(String.format("\t%s\t%s\t%s", nf2.format(gain), nf2.format(reward), nf2.format(risk)));
-							}
-						}
-
-						writer1.write("\n" + sb2.toString());
-					}
-
-					{
-						MetricType[] mts = new MetricType[] { MetricType.RETRIEVED, MetricType.RELEVANT, MetricType.RELEVANT_IN_RET,
-								MetricType.RELEVANT_AT, MetricType.P, MetricType.AP, MetricType.NDCG };
-
-						StringBuffer sb3 = new StringBuffer();
-						sb3.append(String.format("Top-%d", target.getTopN()));
-						sb3.append("\nQID");
-
-						for (MetricType mt : mts) {
-							sb3.append("\t" + mt);
-						}
-						sb3.append("\n");
-
-						CounterMap<String, MetricType> qmvs = target.getMetricQueryScores().invert();
-
-						List<String> qids = new ArrayList<String>(new TreeSet<String>(qmvs.keySet()));
-
-						BidMap<String, Integer> map = new BidMap<String, Integer>();
-
-						for (int l = 0; l < qids.size(); l++) {
-							String qid = qids.get(l);
-							int qid2 = 0;
-							if (collName.equals("clef_ehealth")) {
-								int idx = qid.lastIndexOf(".") + 1;
-								qid2 = Integer.parseInt(qid.substring(idx));
-							} else {
-								qid2 = Integer.parseInt(qid);
-							}
-							map.put(qid, qid2);
-						}
-
-						List<Integer> qIds = new ArrayList<Integer>(map.getValues());
-						Collections.sort(qIds);
-
-						Counter<MetricType> overallValues = new Counter<MetricType>();
-
-						for (int l = 0; l < qIds.size(); l++) {
-							int qId = qIds.get(l);
-							String qid = map.getKey(qId);
-							sb3.append(qid);
-
-							Counter<MetricType> metricValues = qmvs.getCounter(qid);
-
-							for (int m = 0; m < mts.length; m++) {
-								MetricType type = mts[m];
-								double score = metricValues.getCount(type);
-								if (type == MetricType.P || type == MetricType.AP || type == MetricType.NDCG) {
-									sb3.append(String.format("\t%s", nf.format(score)));
-								} else {
-									sb3.append(String.format("\t%d", (int) score));
-								}
-								overallValues.incrementCount(mts[m], score);
-							}
-							sb3.append("\n");
-						}
-
-						sb3.append("Overall");
-
-						for (int l = 0; l < mts.length; l++) {
-							MetricType type = mts[l];
-							double score = overallValues.getCount(mts[l]);
-
-							if (type == MetricType.P || type == MetricType.AP || type == MetricType.NDCG) {
-								score /= qids.size();
 								sb3.append(String.format("\t%s", nf.format(score)));
 							} else {
 								sb3.append(String.format("\t%d", (int) score));

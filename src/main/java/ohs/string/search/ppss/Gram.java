@@ -10,11 +10,6 @@ import java.io.Serializable;
  */
 public class Gram implements Serializable {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -7094138314372356349L;
-
 	public static enum Type {
 		NONE, PREFIX, SUFFIX, PIVOT;
 
@@ -48,6 +43,11 @@ public class Gram implements Serializable {
 			return ret;
 		}
 	}
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7094138314372356349L;
 
 	/**
 	 * a string for gram

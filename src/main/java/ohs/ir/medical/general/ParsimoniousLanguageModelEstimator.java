@@ -41,6 +41,8 @@ public class ParsimoniousLanguageModelEstimator {
 
 	private double coll_mixture = 0.5;
 
+	private boolean printLogs;
+
 	public ParsimoniousLanguageModelEstimator(WordCountBox wcb) {
 		this.wcb = wcb;
 	}
@@ -111,8 +113,6 @@ public class ParsimoniousLanguageModelEstimator {
 		}
 		return plm;
 	}
-
-	private boolean printLogs;
 
 	public void setPrintLogs(boolean printLogs) {
 		this.printLogs = printLogs;

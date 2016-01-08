@@ -118,6 +118,12 @@ public class DenseMatrix implements Matrix {
 		return 0;
 	}
 
+	@Override
+	public String info() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	public int label() {
 		return label;
 	}
@@ -270,12 +276,6 @@ public class DenseMatrix implements Matrix {
 		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
 		write(oos);
 		oos.close();
-	}
-
-	@Override
-	public String info() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

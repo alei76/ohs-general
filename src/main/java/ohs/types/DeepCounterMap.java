@@ -63,6 +63,10 @@ public class DeepCounterMap<K, V, F> implements Serializable {
 		return cm;
 	}
 
+	public Set<Entry<K, CounterMap<V, F>>> entrySet() {
+		return entries.entrySet();
+	}
+
 	/**
 	 * Gets the total count of the given key, or zero if that key is not present. Does not create any objects.
 	 */
@@ -90,10 +94,6 @@ public class DeepCounterMap<K, V, F> implements Serializable {
 	 */
 	public CounterMap<V, F> getCounterMap(K key) {
 		return ensure(key);
-	}
-
-	public Set<Entry<K, CounterMap<V, F>>> entrySet() {
-		return entries.entrySet();
 	}
 
 	public Counter<K> getInnerCountSums() {

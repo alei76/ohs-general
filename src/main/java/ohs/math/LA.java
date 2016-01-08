@@ -1420,6 +1420,19 @@ public class LA {
 		return sum;
 	}
 
+	public static double[][] product(double[][] a, double[][] b) {
+		if (!ArrayChecker.isProductable(a, b)) {
+			throw new IllegalArgumentException();
+		}
+
+		int[] dimA = ArrayUtils.dimensions(a);
+		int[] dimB = ArrayUtils.dimensions(a);
+		double[][] c = new double[dimA[0]][dimB[1]];
+		product(a, b, c);
+		return c;
+
+	}
+
 	/**
 	 * 
 	 * /** [Theorem 2.1]
@@ -1489,19 +1502,6 @@ public class LA {
 				c[i][j] = dotProduct(a[i], bc);
 			}
 		}
-	}
-
-	public static double[][] product(double[][] a, double[][] b) {
-		if (!ArrayChecker.isProductable(a, b)) {
-			throw new IllegalArgumentException();
-		}
-
-		int[] dimA = ArrayUtils.dimensions(a);
-		int[] dimB = ArrayUtils.dimensions(a);
-		double[][] c = new double[dimA[0]][dimB[1]];
-		product(a, b, c);
-		return c;
-
 	}
 
 	/**

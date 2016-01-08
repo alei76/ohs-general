@@ -7,16 +7,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.PostingsEnum;
-import org.apache.lucene.index.Terms;
-import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.util.BytesRef;
 
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
@@ -27,7 +21,6 @@ import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.ir.medical.general.MIRPath;
 import ohs.ir.medical.general.SearcherUtils;
 import ohs.ir.medical.general.WordCountBox;
-import ohs.math.ArrayMath;
 import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
@@ -37,7 +30,6 @@ import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.utils.Generics;
 import ohs.utils.StopWatch;
-import ohs.utils.TermWeighting;
 
 /**
  * @author Heung-Seon Oh
@@ -64,9 +56,9 @@ public class EntityLinker implements Serializable {
 		// el.read(ENTPath.ENTITY_LINKER_FILE);
 		// } else {
 		// el.createSearcher(ENTPath.NAME_PERSON_FILE);
-		// el.write(ENTPath.ENTITY_LINKER_FILE.replace("linker", "linker_per"));
-		el.read(ENTPath.ENTITY_LINKER_FILE.replace("linker", "linker_per"));
-		el.setTopK(20);
+		// el.write(ENTPath.ENTITY_LINKER_FILE);
+		el.read(ENTPath.ENTITY_LINKER_FILE);
+		// el.setTopK(20);
 
 		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
@@ -146,10 +138,6 @@ public class EntityLinker implements Serializable {
 		cache = Generics.newWeakHashMap(10000);
 	}
 
-	public void setTopK(int top_k) {
-		searcher.setTopK(top_k);
-	}
-
 	public void createSearcher(String dataFileName) throws Exception {
 		List<StringRecord> srs = new ArrayList<StringRecord>();
 		recToEntIdMap = new HashMap<Integer, Integer>();
@@ -214,8 +202,8 @@ public class EntityLinker implements Serializable {
 		searcher.index(srs, false);
 		System.out.println(searcher.info() + "\n");
 
-		searcher.filter();
-		System.out.println(searcher.info() + "\n");
+		// searcher.filter();
+		// System.out.println(searcher.info() + "\n");
 	}
 
 	public Map<Integer, Entity> getEntities() {
@@ -334,6 +322,10 @@ public class EntityLinker implements Serializable {
 		ois.close();
 
 		System.out.printf("read [%s] - [%s]\n", getClass().getName(), stopWatch.stop());
+	}
+
+	public void setTopK(int top_k) {
+		searcher.setTopK(top_k);
 	}
 
 	public void write(String fileName) throws Exception {

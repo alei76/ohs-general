@@ -208,10 +208,6 @@ public class VectorUtils {
 		return toSparseVector(x, indexer, false);
 	}
 
-	public static SparseVector toSparseVector(String s, Indexer<String> indexer) {
-		return toSparseVector(toCounter(s), indexer);
-	}
-
 	public static SparseVector toSparseVector(Counter<String> x, Indexer<String> indexer, boolean addIfUnseen) {
 		List<Integer> indexes = new ArrayList<Integer>();
 		List<Double> values = new ArrayList<Double>();
@@ -261,6 +257,10 @@ public class VectorUtils {
 			ret.incrementCount(index, 1);
 		}
 		return toSparseVector(ret);
+	}
+
+	public static SparseVector toSparseVector(String s, Indexer<String> indexer) {
+		return toSparseVector(toCounter(s), indexer);
 	}
 
 	public static SparseMatrix toSpasreMatrix(CounterMap<Integer, Integer> counterMap) {

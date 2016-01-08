@@ -187,6 +187,11 @@ public class SparseMatrix implements Matrix {
 		return rowIndexes[loc];
 	}
 
+	@Override
+	public String info() {
+		return null;
+	}
+
 	public int label() {
 		return label;
 	}
@@ -516,11 +521,6 @@ public class SparseMatrix implements Matrix {
 		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
 		write(oos);
 		oos.close();
-	}
-
-	@Override
-	public String info() {
-		return null;
 	}
 
 }

@@ -23,6 +23,7 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 	public Indexer() {
 		objects = new ArrayList<E>();
 		indexes = new HashMap<E, Integer>();
+		
 	}
 
 	public Indexer(Collection<? extends E> c) {

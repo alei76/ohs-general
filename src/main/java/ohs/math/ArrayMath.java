@@ -377,20 +377,6 @@ public class ArrayMath {
 		}
 	}
 
-	public static double tfidf(double[] word_cnts, double[] doc_freqs, double max_docs, double[] tfidfs) {
-		if (!ArrayChecker.isSameDim(word_cnts, doc_freqs, tfidfs)) {
-			throw new IllegalArgumentException();
-		}
-		double sum = 0;
-		for (int i = 0; i < word_cnts.length; i++) {
-			double tf = Math.log(word_cnts[i]) + 1;
-			double idf = Math.log((max_docs + 1) / doc_freqs[i]);
-			tfidfs[i] = tf * idf;
-			sum += tfidfs[i];
-		}
-		return sum;
-	}
-
 	/**
 	 * @param trans_probs
 	 *            Column-normalized transition probabilities
@@ -1608,6 +1594,20 @@ public class ArrayMath {
 		for (int i = 0; i < a.length; i++) {
 			diff = a[i] - b[i];
 			sum += diff * diff;
+		}
+		return sum;
+	}
+
+	public static double tfidf(double[] word_cnts, double[] doc_freqs, double max_docs, double[] tfidfs) {
+		if (!ArrayChecker.isSameDim(word_cnts, doc_freqs, tfidfs)) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		for (int i = 0; i < word_cnts.length; i++) {
+			double tf = Math.log(word_cnts[i]) + 1;
+			double idf = Math.log((max_docs + 1) / doc_freqs[i]);
+			tfidfs[i] = tf * idf;
+			sum += tfidfs[i];
 		}
 		return sum;
 	}

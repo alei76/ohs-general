@@ -83,168 +83,6 @@ public class DataHandler {
 		System.out.println("process ends.");
 	}
 
-	public void extractTitles() throws Exception {
-		TextFileReader reader = new TextFileReader(MIRPath.WIKI_COL_FILE);
-		reader.setPrintNexts(false);
-
-		String r1 = "#REDIRECT \\[\\[([^\\[\\]]+)\\]\\]";
-		String r2 = "\\([^\\(\\)]+\\)";
-
-		Pattern p1 = Pattern.compile(r1);
-		Pattern p2 = Pattern.compile(r2);
-
-		TextFileWriter writer = new TextFileWriter(MIRPath.WIKI_TITLE_FILE);
-		writer.write("Title\tRedirected To\tDisambiguation Type\n");
-
-		while (reader.hasNext()) {
-			reader.print(10000);
-
-			String line = reader.next();
-			String[] parts = line.split("\t");
-
-			if (parts.length != 2) {
-				continue;
-			}
-
-			String title = parts[0];
-			String wikiText = parts[1].replace("<NL>", "\n");
-			String redirect = "none";
-			String disamType = "none";
-
-			Matcher m1 = p1.matcher(wikiText);
-			Matcher m2 = p2.matcher(title);
-
-			if (wikiText.startsWith("#REDIRECT") && m1.find()) {
-				redirect = m1.group(1).trim();
-				redirect = StrUtils.normalizeSpaces(redirect);
-			}
-
-			if (m2.find()) {
-				disamType = m2.group().substring(1, m2.group().length() - 1);
-			}
-
-			String output = String.format("%s\t%s\t%s", title, redirect, disamType);
-			if (output.split("\t").length != 3) {
-				System.out.println(line);
-			} else {
-				writer.write(output);
-			}
-
-		}
-		reader.printLast();
-		reader.close();
-
-		writer.close();
-	}
-
-	private void parseDisambiguation(MediaWikiParser parser, String title, String wikiText) {
-		ParsedPage pp = parser.parse(wikiText);
-
-		StringBuffer sb = new StringBuffer();
-		sb.append(title + "\n");
-
-		for (int i = 0; i < pp.getSections().size(); i++) {
-			Section section = pp.getSection(i);
-			String secTitle = section.getTitle();
-
-			List<String> sents = new ArrayList<String>();
-
-			for (int j = 0; j < section.getContentList().size(); j++) {
-				Content content = section.getContentList().get(j);
-
-				String[] ss = content.getText().split("[\\n]+");
-
-				for (String s : ss) {
-					s = s.trim();
-					if (s.length() > 0) {
-						sents.add(s);
-					}
-				}
-			}
-
-			String s = StrUtils.join("\n", sents);
-
-			if (s.length() > 0) {
-				sb.append(s + "\n\n");
-			}
-		}
-	}
-
-	public void makeTextDump() throws Exception {
-		TextFileReader reader = new TextFileReader(MIRPath.WIKI_XML_DUMP_FILE);
-		TextFileWriter writer = new TextFileWriter(MIRPath.WIKI_COL_FILE);
-
-		reader.setPrintNexts(false);
-
-		StringBuffer sb = new StringBuffer();
-		boolean isPage = false;
-		int num_docs = 0;
-
-		while (reader.hasNext()) {
-			reader.print(100000);
-			String line = reader.next();
-
-			if (line.trim().startsWith("<page>")) {
-				isPage = true;
-				sb.append(line + "\n");
-			} else if (line.trim().startsWith("</page>")) {
-				sb.append(line);
-
-				// System.out.println(sb.toString() + "\n\n");
-
-				String[] values = parseXml(sb.toString());
-
-				boolean isFilled = true;
-
-				for (String v : values) {
-					if (v == null) {
-						isFilled = false;
-						break;
-					}
-				}
-
-				if (isFilled) {
-					String title = values[0].trim();
-					String wikiText = values[1].replaceAll("\n", "<NL>").trim();
-					String output = String.format("%s\t%s", title, wikiText);
-					writer.write(output + "\n");
-				}
-
-				sb = new StringBuffer();
-				isPage = false;
-			} else {
-				if (isPage) {
-					sb.append(line + "\n");
-				}
-			}
-		}
-		reader.printLast();
-		reader.close();
-		writer.close();
-
-		System.out.printf("# of documents:%d\n", num_docs);
-
-		// MediaWikiParserFactory pf = new MediaWikiParserFactory();
-		// MediaWikiParser parser = pf.createParser();
-		// ParsedPage pp = parser.parse(wikiText);
-		//
-		// ParsedPage pp2 = new ParsedPage();
-
-		//
-		// // get the sections
-		// for (Section section : pp.getSections()) {
-		// System.out.println("section : " + section.getTitle());
-		// System.out.println(" nr of paragraphs : " +
-		// section.nrOfParagraphs());
-		// System.out.println(" nr of tables : " +
-		// section.nrOfTables());
-		// System.out.println(" nr of nested lists : " +
-		// section.nrOfNestedLists());
-		// System.out.println(" nr of definition lists: " +
-		// section.nrOfDefinitionLists());
-		// }
-	}
-
 	public static String[] parseXml(String text) throws Exception {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder p1 = dbf.newDocumentBuilder();
@@ -345,6 +183,168 @@ public class DataHandler {
 		reader.close();
 
 		System.out.printf("# of documents:%d\n", num_docs);
+	}
+
+	public void extractTitles() throws Exception {
+		TextFileReader reader = new TextFileReader(MIRPath.WIKI_COL_FILE);
+		reader.setPrintNexts(false);
+
+		String r1 = "#REDIRECT \\[\\[([^\\[\\]]+)\\]\\]";
+		String r2 = "\\([^\\(\\)]+\\)";
+
+		Pattern p1 = Pattern.compile(r1);
+		Pattern p2 = Pattern.compile(r2);
+
+		TextFileWriter writer = new TextFileWriter(MIRPath.WIKI_TITLE_FILE);
+		writer.write("Title\tRedirected To\tDisambiguation Type\n");
+
+		while (reader.hasNext()) {
+			reader.print(10000);
+
+			String line = reader.next();
+			String[] parts = line.split("\t");
+
+			if (parts.length != 2) {
+				continue;
+			}
+
+			String title = parts[0];
+			String wikiText = parts[1].replace("<NL>", "\n");
+			String redirect = "none";
+			String disamType = "none";
+
+			Matcher m1 = p1.matcher(wikiText);
+			Matcher m2 = p2.matcher(title);
+
+			if (wikiText.startsWith("#REDIRECT") && m1.find()) {
+				redirect = m1.group(1).trim();
+				redirect = StrUtils.normalizeSpaces(redirect);
+			}
+
+			if (m2.find()) {
+				disamType = m2.group().substring(1, m2.group().length() - 1);
+			}
+
+			String output = String.format("%s\t%s\t%s", title, redirect, disamType);
+			if (output.split("\t").length != 3) {
+				System.out.println(line);
+			} else {
+				writer.write(output);
+			}
+
+		}
+		reader.printLast();
+		reader.close();
+
+		writer.close();
+	}
+
+	public void makeTextDump() throws Exception {
+		TextFileReader reader = new TextFileReader(MIRPath.WIKI_XML_DUMP_FILE);
+		TextFileWriter writer = new TextFileWriter(MIRPath.WIKI_COL_FILE);
+
+		reader.setPrintNexts(false);
+
+		StringBuffer sb = new StringBuffer();
+		boolean isPage = false;
+		int num_docs = 0;
+
+		while (reader.hasNext()) {
+			reader.print(100000);
+			String line = reader.next();
+
+			if (line.trim().startsWith("<page>")) {
+				isPage = true;
+				sb.append(line + "\n");
+			} else if (line.trim().startsWith("</page>")) {
+				sb.append(line);
+
+				// System.out.println(sb.toString() + "\n\n");
+
+				String[] values = parseXml(sb.toString());
+
+				boolean isFilled = true;
+
+				for (String v : values) {
+					if (v == null) {
+						isFilled = false;
+						break;
+					}
+				}
+
+				if (isFilled) {
+					String title = values[0].trim();
+					String wikiText = values[1].replaceAll("\n", "<NL>").trim();
+					String output = String.format("%s\t%s", title, wikiText);
+					writer.write(output + "\n");
+				}
+
+				sb = new StringBuffer();
+				isPage = false;
+			} else {
+				if (isPage) {
+					sb.append(line + "\n");
+				}
+			}
+		}
+		reader.printLast();
+		reader.close();
+		writer.close();
+
+		System.out.printf("# of documents:%d\n", num_docs);
+
+		// MediaWikiParserFactory pf = new MediaWikiParserFactory();
+		// MediaWikiParser parser = pf.createParser();
+		// ParsedPage pp = parser.parse(wikiText);
+		//
+		// ParsedPage pp2 = new ParsedPage();
+
+		//
+		// // get the sections
+		// for (Section section : pp.getSections()) {
+		// System.out.println("section : " + section.getTitle());
+		// System.out.println(" nr of paragraphs : " +
+		// section.nrOfParagraphs());
+		// System.out.println(" nr of tables : " +
+		// section.nrOfTables());
+		// System.out.println(" nr of nested lists : " +
+		// section.nrOfNestedLists());
+		// System.out.println(" nr of definition lists: " +
+		// section.nrOfDefinitionLists());
+		// }
+	}
+
+	private void parseDisambiguation(MediaWikiParser parser, String title, String wikiText) {
+		ParsedPage pp = parser.parse(wikiText);
+
+		StringBuffer sb = new StringBuffer();
+		sb.append(title + "\n");
+
+		for (int i = 0; i < pp.getSections().size(); i++) {
+			Section section = pp.getSection(i);
+			String secTitle = section.getTitle();
+
+			List<String> sents = new ArrayList<String>();
+
+			for (int j = 0; j < section.getContentList().size(); j++) {
+				Content content = section.getContentList().get(j);
+
+				String[] ss = content.getText().split("[\\n]+");
+
+				for (String s : ss) {
+					s = s.trim();
+					if (s.length() > 0) {
+						sents.add(s);
+					}
+				}
+			}
+
+			String s = StrUtils.join("\n", sents);
+
+			if (s.length() > 0) {
+				sb.append(s + "\n\n");
+			}
+		}
 	}
 
 }

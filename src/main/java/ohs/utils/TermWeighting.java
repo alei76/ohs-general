@@ -55,20 +55,6 @@ public class TermWeighting {
 		return ret;
 	}
 
-	public static int maxTermIndex(List<SparseVector> docs) {
-		int ret = 0;
-		for (SparseVector x : docs) {
-			if (x.size() == 0) {
-				continue;
-			}
-			int indexAtLast = x.indexAtLoc(x.size() - 1);
-			if (indexAtLast > ret) {
-				ret = indexAtLast;
-			}
-		}
-		return ret;
-	}
-
 	public static ListMap<Integer, Integer> groupByLabel(List<SparseVector> docs) {
 		ListMap<Integer, Integer> ret = new ListMap<Integer, Integer>();
 		for (int i = 0; i < docs.size(); i++) {
@@ -147,6 +133,20 @@ public class TermWeighting {
 		}
 
 		System.out.printf("\r[%d/%d]\n", num_terms, num_terms);
+		return ret;
+	}
+
+	public static int maxTermIndex(List<SparseVector> docs) {
+		int ret = 0;
+		for (SparseVector x : docs) {
+			if (x.size() == 0) {
+				continue;
+			}
+			int indexAtLast = x.indexAtLoc(x.size() - 1);
+			if (indexAtLast > ret) {
+				ret = indexAtLast;
+			}
+		}
 		return ret;
 	}
 

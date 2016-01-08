@@ -66,6 +66,14 @@ public class CbeemDocumentSearcher {
 		num_colls = iss.length;
 	}
 
+	private double[] getCollWordCountSums() {
+		double[] ret = new double[num_colls];
+		for (int i = 0; i < num_colls; i++) {
+			ret[i] = collWordCountBoxes[i].getCollectionCountSum();
+		}
+		return ret;
+	}
+
 	private SparseVector[] getRelevanceModels() throws IOException {
 		double[] cnt_sum_in_each_coll = getCollWordCountSums();
 		double cnt_sum_in_all_colls = ArrayMath.sum(cnt_sum_in_each_coll);
@@ -131,14 +139,6 @@ public class CbeemDocumentSearcher {
 			rm.normalize();
 
 			ret[i] = rm;
-		}
-		return ret;
-	}
-
-	private double[] getCollWordCountSums() {
-		double[] ret = new double[num_colls];
-		for (int i = 0; i < num_colls; i++) {
-			ret[i] = collWordCountBoxes[i].getCollectionCountSum();
 		}
 		return ret;
 	}

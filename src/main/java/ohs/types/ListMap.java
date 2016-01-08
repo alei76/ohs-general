@@ -30,6 +30,15 @@ public class ListMap<K, V> implements Serializable {
 		this.lt = lt;
 	}
 
+	public void clear() {
+		Iterator<K> iter = entries.keySet().iterator();
+		while (iter.hasNext()) {
+			K key = iter.next();
+			entries.get(key).clear();
+		}
+		entries.clear();
+	}
+
 	public boolean containsKey(K key) {
 		return entries.containsKey(key);
 	}
@@ -86,15 +95,6 @@ public class ListMap<K, V> implements Serializable {
 
 	public List<V> remove(K key) {
 		return entries.remove(key);
-	}
-
-	public void clear() {
-		Iterator<K> iter = entries.keySet().iterator();
-		while (iter.hasNext()) {
-			K key = iter.next();
-			entries.get(key).clear();
-		}
-		entries.clear();
 	}
 
 	public void set(K key, List<V> values) {

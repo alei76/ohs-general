@@ -12,6 +12,14 @@ import java.util.Set;
 
 public class ArrayUtils {
 
+	public static double[] array(int size, double init) {
+		double[] ret = new double[size];
+		if (init != 0) {
+			setAll(ret, init);
+		}
+		return ret;
+	}
+
 	public static double copy(Collection<Double> a, double[] b) {
 		int loc = 0;
 		Iterator<Double> iter = a.iterator();
@@ -251,45 +259,27 @@ public class ArrayUtils {
 		return sum;
 	}
 
+	public static double[][] diagonal(double[] a) {
+		double[][] ret = matrix(a.length, 0);
+		for (int i = 0; i < a.length; i++) {
+			ret[i][i] = a[i];
+		}
+		return ret;
+	}
+
+	public static double[][] diagonal(int size, double init) {
+		double[][] ret = matrix(size, 0);
+		for (int i = 0; i < ret.length; i++) {
+			ret[i][i] = init;
+		}
+		return ret;
+	}
+
 	public static int[] dimensions(double[][] a) {
 		int[] ret = new int[2];
 		ret[0] = a.length;
 		ret[1] = a[0].length;
 		return ret;
-	}
-
-	public static double range(double[] a, double start, double increment) {
-		double sum = 0;
-		for (int i = 0; i < a.length; i++) {
-			a[i] = start + i * increment;
-			sum += a[i];
-		}
-		return sum;
-	}
-
-	public static int[] range(int size) {
-		return range(size, 0, 1);
-	}
-
-	public static double[] range(int size, double start, double increment) {
-		double[] a = new double[size];
-		range(a, start, increment);
-		return a;
-	}
-
-	public static int[] range(int size, int start, int increment) {
-		int[] a = new int[size];
-		range(a, 0, 1);
-		return a;
-	}
-
-	public static int range(int[] a, int start, int increment) {
-		int sum = 0;
-		for (int i = 0; i < a.length; i++) {
-			a[i] = start + i * increment;
-			sum += a[i];
-		}
-		return sum;
 	}
 
 	public static NumberFormat getDoubleNumberFormat(int num_fractions) {
@@ -303,6 +293,14 @@ public class ArrayUtils {
 		NumberFormat ret = NumberFormat.getInstance();
 		ret.setMinimumFractionDigits(0);
 		ret.setGroupingUsed(false);
+		return ret;
+	}
+
+	public static double[][] identity(int size, double init) {
+		double[][] ret = new double[size][size];
+		for (int i = 0; i < size; i++) {
+			ret[i][i] = init;
+		}
 		return ret;
 	}
 
@@ -375,6 +373,22 @@ public class ArrayUtils {
 
 	}
 
+	public static double[][] matrix(int size) {
+		return matrix(size, 0);
+	}
+
+	public static double[][] matrix(int size, double init) {
+		return matrix(size, size, init);
+	}
+
+	public static double[][] matrix(int rowSize, int colSize, double init) {
+		double[][] ret = new double[rowSize][colSize];
+		for (int i = 0; i < ret.length; i++) {
+			ret[i] = array(colSize, init);
+		}
+		return ret;
+	}
+
 	public static int maxColumnSize(int[][] a) {
 		int ret = 0;
 		for (int i = 0; i < a.length; i++) {
@@ -424,54 +438,6 @@ public class ArrayUtils {
 			base /= dims[i + 1];
 		}
 
-	}
-
-	public static double[] array(int size, double init) {
-		double[] ret = new double[size];
-		if (init != 0) {
-			setAll(ret, init);
-		}
-		return ret;
-	}
-
-	public static double[][] diagonal(double[] a) {
-		double[][] ret = matrix(a.length, 0);
-		for (int i = 0; i < a.length; i++) {
-			ret[i][i] = a[i];
-		}
-		return ret;
-	}
-
-	public static double[][] diagonal(int size, double init) {
-		double[][] ret = matrix(size, 0);
-		for (int i = 0; i < ret.length; i++) {
-			ret[i][i] = init;
-		}
-		return ret;
-	}
-
-	public static double[][] identity(int size, double init) {
-		double[][] ret = new double[size][size];
-		for (int i = 0; i < size; i++) {
-			ret[i][i] = init;
-		}
-		return ret;
-	}
-
-	public static double[][] matrix(int size, double init) {
-		return matrix(size, size, init);
-	}
-
-	public static double[][] matrix(int size) {
-		return matrix(size, 0);
-	}
-
-	public static double[][] matrix(int rowSize, int colSize, double init) {
-		double[][] ret = new double[rowSize][colSize];
-		for (int i = 0; i < ret.length; i++) {
-			ret[i] = array(colSize, init);
-		}
-		return ret;
 	}
 
 	public static int[] nonzeroIndexes(double[] x) {
@@ -571,6 +537,40 @@ public class ArrayUtils {
 		return j;
 	}
 
+	public static double range(double[] a, double start, double increment) {
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			a[i] = start + i * increment;
+			sum += a[i];
+		}
+		return sum;
+	}
+
+	public static int[] range(int size) {
+		return range(size, 0, 1);
+	}
+
+	public static double[] range(int size, double start, double increment) {
+		double[] a = new double[size];
+		range(a, start, increment);
+		return a;
+	}
+
+	public static int[] range(int size, int start, int increment) {
+		int[] a = new int[size];
+		range(a, 0, 1);
+		return a;
+	}
+
+	public static int range(int[] a, int start, int increment) {
+		int sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			a[i] = start + i * increment;
+			sum += a[i];
+		}
+		return sum;
+	}
+
 	// public static double random(double min, double max, double[] x) {
 	// Random random = new Random();
 	// double range = max - min;
@@ -618,6 +618,12 @@ public class ArrayUtils {
 	// }
 	// return sum;
 	// }
+
+	public static int[] rankedIndexes(double[] a) {
+		int[] b = range(a.length);
+		quickSort(b, copy(a), false);
+		return b;
+	}
 
 	public static double reshape(double[] a, double[][] b) {
 		if (sizeOfEntries(b) != a.length) {
@@ -676,6 +682,18 @@ public class ArrayUtils {
 		return value * a.length;
 	}
 
+	/**
+	 * Code from method java.util.Collections.shuffle();
+	 */
+	public static void shuffle(int[] a) {
+		Random random = new Random();
+
+		int count = a.length;
+		for (int i = count; i > 1; i--) {
+			swap(a, i - 1, random.nextInt(i));
+		}
+	}
+
 	public static int singleIndex(int[] dims, int[] indexes) {
 		if (!ArrayChecker.isSameDim(dims, indexes)) {
 			throw new IllegalArgumentException();
@@ -724,12 +742,6 @@ public class ArrayUtils {
 		return ret;
 	}
 
-	public static int[] rankedIndexes(double[] a) {
-		int[] b = range(a.length);
-		quickSort(b, copy(a), false);
-		return b;
-	}
-
 	public static void sort(double[] a) {
 		int[] b = range(a.length);
 		quickSort(b, a, false);
@@ -741,18 +753,6 @@ public class ArrayUtils {
 			proportions[i] = 1f / proportions.length;
 		}
 		return splitInOrder(indexList, proportions);
-	}
-
-	/**
-	 * Code from method java.util.Collections.shuffle();
-	 */
-	public static void shuffle(int[] a) {
-		Random random = new Random();
-
-		int count = a.length;
-		for (int i = count; i > 1; i--) {
-			swap(a, i - 1, random.nextInt(i));
-		}
 	}
 
 	public static List<Integer>[] splitInOrder(int[] indexes, double[] proportions) {

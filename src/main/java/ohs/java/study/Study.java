@@ -6,6 +6,10 @@ import java.util.function.Consumer;
 
 public class Study {
 
+	interface TestFunctionalInterface<T> {
+		public T doSomething(T t1, T t2);
+	}
+
 	public static void main(String[] args) {
 		System.out.println("process begins.");
 
@@ -35,9 +39,5 @@ public class Study {
 
 		TestFunctionalInterface<String> stringAdder = (String s1, String s2) -> s1 + s2;
 
-	}
-
-	interface TestFunctionalInterface<T> {
-		public T doSomething(T t1, T t2);
 	}
 }

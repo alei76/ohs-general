@@ -162,7 +162,7 @@ public class CommonFuncs {
 		if ((x <= 0.5) || ((x > a) && (x <= 1.5))) {
 			if (x <= 0.5) {
 				result = -Math.log(x);
-				/* Test whether X < machine epsilon. */
+				/* IntListMap whether X < machine epsilon. */
 				if (x + 1 == 1) {
 					return result;
 				}

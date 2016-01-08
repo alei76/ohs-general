@@ -194,6 +194,12 @@ public class DenseVector implements Vector {
 		return null;
 	}
 
+	@Override
+	public String info() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	public void keepAbove(double cutoff) {
 		for (int i = 0; i < values.length; i++) {
 			double value = values[i];
@@ -484,11 +490,5 @@ public class DenseVector implements Vector {
 		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
 		write(oos);
 		oos.close();
-	}
-
-	@Override
-	public String info() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

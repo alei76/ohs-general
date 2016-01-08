@@ -12,6 +12,23 @@ import ohs.types.CounterMap;
 
 public class DocumentIdMapper {
 
+	public static CounterMap<String, String> mapDocIdsToIndexIds(CounterMap<String, String> resultData, BidMap<String, String> docIdMap) {
+		CounterMap<String, String> ret = new CounterMap<String, String>();
+		for (String queryId : resultData.keySet()) {
+			Counter<String> indexScores = resultData.getCounter(queryId);
+			for (String docId : indexScores.keySet()) {
+				double score = indexScores.getCount(docId);
+				String indexId = docIdMap.getKey(docId);
+				if (indexId != null) {
+					ret.setCount(queryId, indexId, score);
+				} else {
+					System.out.printf("index id for doc id [%s] is not found.\n", docId);
+				}
+			}
+		}
+		return ret;
+	}
+
 	public static List<SparseVector> mapDocIdsToIndexIds(List<BaseQuery> baseQueries, CounterMap<String, String> relevanceData,
 			BidMap<String, String> docIdMap) {
 		List<SparseVector> ret = new ArrayList<SparseVector>();
@@ -48,23 +65,6 @@ public class DocumentIdMapper {
 					ret.setCount(queryId, docId, score);
 				} else {
 					System.out.printf("doc id for index id [%s] is not found.\n", indexId);
-				}
-			}
-		}
-		return ret;
-	}
-
-	public static CounterMap<String, String> mapDocIdsToIndexIds(CounterMap<String, String> resultData, BidMap<String, String> docIdMap) {
-		CounterMap<String, String> ret = new CounterMap<String, String>();
-		for (String queryId : resultData.keySet()) {
-			Counter<String> indexScores = resultData.getCounter(queryId);
-			for (String docId : indexScores.keySet()) {
-				double score = indexScores.getCount(docId);
-				String indexId = docIdMap.getKey(docId);
-				if (indexId != null) {
-					ret.setCount(queryId, indexId, score);
-				} else {
-					System.out.printf("index id for doc id [%s] is not found.\n", docId);
 				}
 			}
 		}

@@ -4,16 +4,6 @@ import ohs.math.ArrayMath;
 
 public class NeuralNet {
 
-	private double[][] W1;
-
-	private double[][] W2;
-
-	private double[] b1;
-
-	private double[] b2;
-
-	private NeuralNetParams param = new NeuralNetParams();
-
 	public static void main(String[] args) {
 		NeuralNet nn = new NeuralNet();
 
@@ -33,6 +23,16 @@ public class NeuralNet {
 		nn.train(xs, ys);
 
 	}
+
+	private double[][] W1;
+
+	private double[][] W2;
+
+	private double[] b1;
+
+	private double[] b2;
+
+	private NeuralNetParams param = new NeuralNetParams();
 
 	public NeuralNet() {
 		W1 = new double[param.getNumHiddenNeurons()][param.getNumInputNeurons()];

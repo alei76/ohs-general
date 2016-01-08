@@ -49,42 +49,6 @@ public class WordCountBox {
 		return ret;
 	}
 
-	public static Counter<String> getWordCounts(IndexReader ir, int docid, String field) throws Exception {
-		Terms termVector = ir.getTermVector(docid, field);
-
-		if (termVector == null) {
-			return new Counter<String>();
-		}
-
-		TermsEnum termsEnum = null;
-		termsEnum = termVector.iterator();
-
-		BytesRef bytesRef = null;
-		PostingsEnum postingsEnum = null;
-		Counter<String> ret = new Counter<String>();
-
-		while ((bytesRef = termsEnum.next()) != null) {
-			postingsEnum = termsEnum.postings(postingsEnum, PostingsEnum.ALL);
-
-			if (postingsEnum.nextDoc() != 0) {
-				throw new AssertionError();
-			}
-
-			String word = bytesRef.utf8ToString();
-			if (word.contains("<N")) {
-				continue;
-			}
-
-			int freq = postingsEnum.freq();
-			ret.incrementCount(word, freq);
-			// for (int k = 0; k < freq; k++) {
-			// final int position = postingsEnum.nextPosition();
-			// locWords.put(position, w);
-			// }
-		}
-		return ret;
-	}
-
 	public static WordCountBox getWordCountBox(IndexReader ir, SparseVector docScores, Indexer<String> wordIndexer) throws Exception {
 		return getWordCountBox(ir, docScores, wordIndexer, IndexFieldName.CONTENT);
 	}
@@ -178,6 +142,42 @@ public class WordCountBox {
 
 		WordCountBox ret = new WordCountBox(dwcs, collWordCounts, cnt_sum_in_coll, docFreqs, ir.maxDoc(), docWords);
 		ret.setWordIndexer(wordIndexer);
+		return ret;
+	}
+
+	public static Counter<String> getWordCounts(IndexReader ir, int docid, String field) throws Exception {
+		Terms termVector = ir.getTermVector(docid, field);
+
+		if (termVector == null) {
+			return new Counter<String>();
+		}
+
+		TermsEnum termsEnum = null;
+		termsEnum = termVector.iterator();
+
+		BytesRef bytesRef = null;
+		PostingsEnum postingsEnum = null;
+		Counter<String> ret = new Counter<String>();
+
+		while ((bytesRef = termsEnum.next()) != null) {
+			postingsEnum = termsEnum.postings(postingsEnum, PostingsEnum.ALL);
+
+			if (postingsEnum.nextDoc() != 0) {
+				throw new AssertionError();
+			}
+
+			String word = bytesRef.utf8ToString();
+			if (word.contains("<N")) {
+				continue;
+			}
+
+			int freq = postingsEnum.freq();
+			ret.incrementCount(word, freq);
+			// for (int k = 0; k < freq; k++) {
+			// final int position = postingsEnum.nextPosition();
+			// locWords.put(position, w);
+			// }
+		}
 		return ret;
 	}
 

@@ -14,12 +14,12 @@ public class StringSequence implements Sequence {
 
 	private List<String> s;
 
-	public StringSequence(String s) {
-		this(StrUtils.split(s));
-	}
-
 	public StringSequence(List<String> s) {
 		this.s = s;
+	}
+
+	public StringSequence(String s) {
+		this(StrUtils.split(s));
 	}
 
 	@Override

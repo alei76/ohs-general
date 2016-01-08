@@ -628,6 +628,10 @@ public class ArrayChecker {
 		return true;
 	}
 
+	public static boolean isSame(int a, int b) {
+		return a == b ? true : false;
+	}
+
 	public static boolean isSameColumnDim(double[][] a, double[] b) {
 		int aRowDim = a.length;
 		int aColDim = a[0].length;
@@ -648,14 +652,6 @@ public class ArrayChecker {
 		return isSameDim(a, b) && isSameDim(b, c) ? true : false;
 	}
 
-	public static boolean isSameDim(int[] a, double[] b) {
-		return a.length == b.length ? true : false;
-	}
-
-	public static boolean isSameDim(int[] a, int[] b) {
-		return a.length == b.length ? true : false;
-	}
-
 	public static boolean isSameDim(double[][] a, double[][] b) {
 		int aRowDim = a.length;
 		int aColDim = a[0].length;
@@ -671,6 +667,14 @@ public class ArrayChecker {
 
 	public static boolean isSameDim(double[][] a, double[][] b, double[][] c) {
 		return isSameDim(a, b) && isSameDim(b, c) ? true : false;
+	}
+
+	public static boolean isSameDim(int[] a, double[] b) {
+		return a.length == b.length ? true : false;
+	}
+
+	public static boolean isSameDim(int[] a, int[] b) {
+		return a.length == b.length ? true : false;
 	}
 
 	public static boolean isSameRowDim(double[][] a, double[] b) {
@@ -694,10 +698,6 @@ public class ArrayChecker {
 		} else {
 			return false;
 		}
-	}
-
-	public static boolean isSame(int a, int b) {
-		return a == b ? true : false;
 	}
 
 	/**

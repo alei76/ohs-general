@@ -234,42 +234,6 @@ public class StringIndexer extends AbstractList<String> implements Serializable 
 		return index;
 	}
 
-	/**
-	 * Returns the number of objects indexed.
-	 */
-	@Override
-	public int size() {
-		return indexes.size();
-	}
-
-	public void write(ObjectOutputStream oos) throws Exception {
-		oos.writeInt(indexes.size());
-		writeTrie(oos, indexes.getRoot());
-		oos.flush();
-	}
-
-	private Node<Integer> readTrie(ObjectInputStream ois, Node<Integer> parent, Node<Integer> node) throws Exception {
-		if (ois.readBoolean()) {
-			node = new Node<Integer>();
-			node.setCharacter(ois.readChar());
-			node.setLevel(ois.readInt());
-			int value = ois.readInt();
-			node.setValue(value == -1 ? null : value);
-			node.setParent(parent);
-			node.setLeft(readTrie(ois, node, node.getLeft()));
-			node.setMiddle(readTrie(ois, node, node.getMiddle()));
-			node.setRight(readTrie(ois, node, node.getRight()));
-		}
-
-		return node;
-	}
-
-	private Node<Integer> readTrie(ObjectInputStream ois) throws Exception {
-		Node<Integer> root = new Node<Integer>();
-		root = readTrie(ois, null, root);
-		return root;
-	}
-
 	public void read(ObjectInputStream ois) throws Exception {
 		indexes = new TST<Integer>();
 		indexes.setSize(ois.readInt());
@@ -288,6 +252,12 @@ public class StringIndexer extends AbstractList<String> implements Serializable 
 
 	}
 
+	public void read(String fileName) throws Exception {
+		ObjectInputStream ois = IOUtils.openObjectInputStream(fileName);
+		read(ois);
+		ois.close();
+	}
+
 	private void readObjects(Node<Integer> node) {
 		if (node != null) {
 			if (node.getValue() != null) {
@@ -300,10 +270,40 @@ public class StringIndexer extends AbstractList<String> implements Serializable 
 		}
 	}
 
-	public void read(String fileName) throws Exception {
-		ObjectInputStream ois = IOUtils.openObjectInputStream(fileName);
-		read(ois);
-		ois.close();
+	private Node<Integer> readTrie(ObjectInputStream ois) throws Exception {
+		Node<Integer> root = new Node<Integer>();
+		root = readTrie(ois, null, root);
+		return root;
+	}
+
+	private Node<Integer> readTrie(ObjectInputStream ois, Node<Integer> parent, Node<Integer> node) throws Exception {
+		if (ois.readBoolean()) {
+			node = new Node<Integer>();
+			node.setCharacter(ois.readChar());
+			node.setLevel(ois.readInt());
+			int value = ois.readInt();
+			node.setValue(value == -1 ? null : value);
+			node.setParent(parent);
+			node.setLeft(readTrie(ois, node, node.getLeft()));
+			node.setMiddle(readTrie(ois, node, node.getMiddle()));
+			node.setRight(readTrie(ois, node, node.getRight()));
+		}
+
+		return node;
+	}
+
+	/**
+	 * Returns the number of objects indexed.
+	 */
+	@Override
+	public int size() {
+		return indexes.size();
+	}
+
+	public void write(ObjectOutputStream oos) throws Exception {
+		oos.writeInt(indexes.size());
+		writeTrie(oos, indexes.getRoot());
+		oos.flush();
 	}
 
 	public void write(String fileName) throws Exception {

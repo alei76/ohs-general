@@ -7,12 +7,14 @@ import java.text.NumberFormat;
 import java.util.HashSet;
 import java.util.Set;
 
+import ohs.utils.ByteSize.Type;
+
 public class MemoryChecker {
 
 	public static void main(String[] args) {
 		System.out.println("process begins.");
 		MemoryChecker c = new MemoryChecker();
-		System.out.println(c.getUsedMemory().getBytes());
+		System.out.println(c.getUsedSize().size());
 
 		Set<Integer> set = new HashSet<Integer>();
 
@@ -21,7 +23,7 @@ public class MemoryChecker {
 		}
 
 		c.check();
-		System.out.println(c.getUsedMemory().getBytes());
+		System.out.println(c.getUsedSize().size());
 
 		System.out.println("process ends.");
 	}
@@ -45,30 +47,30 @@ public class MemoryChecker {
 		total = new ByteSize(rt.totalMemory());
 		free = new ByteSize(rt.freeMemory());
 		max = new ByteSize(rt.maxMemory());
-		used = new ByteSize(total.getBytes() - free.getBytes());
+		used = new ByteSize(total.size() - free.size());
 
 		MemoryMXBean bean = ManagementFactory.getMemoryMXBean();
 		MemoryUsage usage = bean.getHeapMemoryUsage();
 		used_heap = new ByteSize(usage.getUsed());
 	}
 
-	public ByteSize getFreeMemory() {
+	public ByteSize getFreeSize() {
 		return free;
 	}
 
-	public ByteSize getMaxMemory() {
+	public ByteSize getMaxSize() {
 		return max;
 	}
 
-	public ByteSize getTotalMemory() {
+	public ByteSize getTotalSize() {
 		return total;
 	}
 
-	public ByteSize getUsedHeapMemory() {
+	public ByteSize getUsedHeapSize() {
 		return used_heap;
 	}
 
-	public ByteSize getUsedMemory() {
+	public ByteSize getUsedSize() {
 		return used;
 	}
 
@@ -77,11 +79,11 @@ public class MemoryChecker {
 		nf.setMinimumFractionDigits(1);
 
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("Max:\t%s MB", nf.format(max.getMegaBytes())));
-		sb.append(String.format("\nTotal:\t%s MB", nf.format(total.getMegaBytes())));
-		sb.append(String.format("\nFree:\t%s MB", nf.format(free.getMegaBytes())));
-		sb.append(String.format("\nUsed:\t%s MB", nf.format(used.getMegaBytes())));
-		sb.append(String.format("\nUsed Heap:\t%s MB", nf.format(used_heap.getMegaBytes())));
+		sb.append(String.format("Max:\t%s MB", nf.format(max.size(Type.MEGA))));
+		sb.append(String.format("\nTotal:\t%s MB", nf.format(total.size(Type.MEGA))));
+		sb.append(String.format("\nFree:\t%s MB", nf.format(free.size(Type.MEGA))));
+		sb.append(String.format("\nUsed:\t%s MB", nf.format(used.size(Type.MEGA))));
+		sb.append(String.format("\nUsed Heap:\t%s MB", nf.format(used_heap.size(Type.MEGA))));
 		return sb.toString();
 	}
 }

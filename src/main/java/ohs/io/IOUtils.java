@@ -43,6 +43,7 @@ import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.utils.ByteSize;
+import ohs.utils.ByteSize.Type;
 
 /**
  * @author Heung-Seon Oh
@@ -296,7 +297,7 @@ public class IOUtils {
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMinimumFractionDigits(2);
 
-		System.out.println(String.format("read [%d, %s MBs] files from [%s]", files.size(), nf.format(fs.getMegaBytes()), dir.getName()));
+		System.out.println(String.format("read [%d, %s MBs] files from [%s]", files.size(), nf.format(fs.size(Type.MEGA)), dir.getName()));
 		return files;
 	}
 
@@ -496,6 +497,15 @@ public class IOUtils {
 		}
 	}
 
+	public static Counter<String> readCounter(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+		Counter<String> ret = new Counter<String>(size);
+		for (int i = 0; i < size; i++) {
+			ret.setCount(ois.readUTF(), ois.readDouble());
+		}
+		return ret;
+	}
+
 	public static Counter<String> readCounter(String fileName) throws Exception {
 		Counter<String> ret = new Counter<String>();
 		String line = null;
@@ -506,6 +516,15 @@ public class IOUtils {
 		}
 		br.close();
 		System.out.printf("read a counter with [%d] entries from [%s]\n", ret.size(), fileName);
+		return ret;
+	}
+
+	public static CounterMap<String, String> readCounterMap(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+		CounterMap<String, String> ret = new CounterMap<String, String>(size);
+		for (int i = 0; i < size; i++) {
+			ret.setCounter(ois.readUTF(), readCounter(ois));
+		}
 		return ret;
 	}
 
@@ -550,24 +569,6 @@ public class IOUtils {
 		Indexer<String> ret = new Indexer<String>(size);
 		for (int i = 0; i < size; i++) {
 			ret.add(ois.readUTF());
-		}
-		return ret;
-	}
-
-	public static Counter<String> readCounter(ObjectInputStream ois) throws Exception {
-		int size = ois.readInt();
-		Counter<String> ret = new Counter<String>(size);
-		for (int i = 0; i < size; i++) {
-			ret.setCount(ois.readUTF(), ois.readDouble());
-		}
-		return ret;
-	}
-
-	public static CounterMap<String, String> readCounterMap(ObjectInputStream ois) throws Exception {
-		int size = ois.readInt();
-		CounterMap<String, String> ret = new CounterMap<String, String>(size);
-		for (int i = 0; i < size; i++) {
-			ret.setCounter(ois.readUTF(), readCounter(ois));
 		}
 		return ret;
 	}

@@ -32,8 +32,8 @@ public class Word2VecSearcher {
 		}
 	}
 
-	public double[][] getVectors() {
-		return vectors;
+	public int getLayerSize() {
+		return layerSize;
 	}
 
 	public double[] getVector(String word) {
@@ -45,12 +45,12 @@ public class Word2VecSearcher {
 		return ret;
 	}
 
-	public Indexer<String> getWordIndexer() {
-		return wordIndexer;
+	public double[][] getVectors() {
+		return vectors;
 	}
 
-	public int getLayerSize() {
-		return layerSize;
+	public Indexer<String> getWordIndexer() {
+		return wordIndexer;
 	}
 
 	public Counter<String> search(String word) {

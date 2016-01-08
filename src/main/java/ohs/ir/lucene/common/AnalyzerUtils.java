@@ -16,21 +16,6 @@ import ohs.types.Indexer;
 
 public class AnalyzerUtils {
 
-	public static BooleanQuery getQuery(List<String> words) throws Exception {
-		return getQuery(words, IndexFieldName.CONTENT);
-	}
-
-	public static BooleanQuery getQuery(List<String> words, String field) throws Exception {
-		BooleanQuery.Builder builder = new BooleanQuery.Builder();
-
-		for (int i = 0; i < words.size(); i++) {
-			String word = words.get(i);
-			TermQuery tq = new TermQuery(new Term(field, word));
-			builder.add(tq, Occur.SHOULD);
-		}
-		return builder.build();
-	}
-
 	public static BooleanQuery getQuery(Counter<String> wordCounts) throws Exception {
 		return getQuery(wordCounts, IndexFieldName.CONTENT);
 	}
@@ -43,6 +28,21 @@ public class AnalyzerUtils {
 			double cnt = wordCounts.getCount(word);
 			TermQuery tq = new TermQuery(new Term(field, word));
 			tq.setBoost((float) cnt);
+			builder.add(tq, Occur.SHOULD);
+		}
+		return builder.build();
+	}
+
+	public static BooleanQuery getQuery(List<String> words) throws Exception {
+		return getQuery(words, IndexFieldName.CONTENT);
+	}
+
+	public static BooleanQuery getQuery(List<String> words, String field) throws Exception {
+		BooleanQuery.Builder builder = new BooleanQuery.Builder();
+
+		for (int i = 0; i < words.size(); i++) {
+			String word = words.get(i);
+			TermQuery tq = new TermQuery(new Term(field, word));
 			builder.add(tq, Occur.SHOULD);
 		}
 		return builder.build();

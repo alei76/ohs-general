@@ -72,15 +72,11 @@ public class TST<V> {
 
 		private V value; // value associated with string
 
+		private int level = 0;
+
 		public Node() {
 
 		}
-
-		public int getLevel() {
-			return level;
-		}
-
-		private int level = 0;
 
 		public Node(char c, Node<V> parent, Node<V> left, Node<V> middle, Node<V> right, V value) {
 			super();
@@ -90,15 +86,6 @@ public class TST<V> {
 			this.middle = middle;
 			this.right = right;
 			this.value = value;
-		}
-
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + c;
-			result = prime * result + ((parent == null) ? 0 : parent.hashCode());
-			return result;
 		}
 
 		@Override
@@ -128,6 +115,10 @@ public class TST<V> {
 			return left;
 		}
 
+		public int getLevel() {
+			return level;
+		}
+
 		public Node<V> getMiddle() {
 			return middle;
 		}
@@ -144,12 +135,25 @@ public class TST<V> {
 			return value;
 		}
 
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + c;
+			result = prime * result + ((parent == null) ? 0 : parent.hashCode());
+			return result;
+		}
+
 		public void setCharacter(char c) {
 			this.c = c;
 		}
 
 		public void setLeft(Node<V> left) {
 			this.left = left;
+		}
+
+		public void setLevel(int level) {
+			this.level = level;
 		}
 
 		public void setMiddle(Node<V> middle) {
@@ -166,10 +170,6 @@ public class TST<V> {
 
 		public void setValue(V v) {
 			this.value = v;
-		}
-
-		public void setLevel(int level) {
-			this.level = level;
 		}
 
 		public String toString() {
@@ -216,36 +216,6 @@ public class TST<V> {
 
 	public void clear() {
 
-	}
-
-	public List<Node<V>> getLeaves() {
-		List<Node<V>> ret = new ArrayList<Node<V>>();
-		getLeaves(root, ret);
-		return ret;
-	}
-
-	private void getLeaves(Node<V> node, List<Node<V>> leaves) {
-		if (node != null) {
-			if (node.getLeft() == null && node.getMiddle() == null && node.getRight() == null) {
-				leaves.add(node);
-			} else {
-				getLeaves(node.getLeft(), leaves);
-				getLeaves(node.getMiddle(), leaves);
-				getLeaves(node.getRight(), leaves);
-			}
-		}
-	}
-
-	public void setRoot(Node<V> root) {
-		this.root = root;
-	}
-
-	public void setSize(int size) {
-		this.N = size;
-	}
-
-	public Node<V> getRoot() {
-		return root;
 	}
 
 	private void collect(Node<V> x, StringBuilder prefix, int i, String pattern, Queue<String> queue) {
@@ -331,6 +301,24 @@ public class TST<V> {
 		return x.getValue();
 	}
 
+	public List<Node<V>> getLeaves() {
+		List<Node<V>> ret = new ArrayList<Node<V>>();
+		getLeaves(root, ret);
+		return ret;
+	}
+
+	private void getLeaves(Node<V> node, List<Node<V>> leaves) {
+		if (node != null) {
+			if (node.getLeft() == null && node.getMiddle() == null && node.getRight() == null) {
+				leaves.add(node);
+			} else {
+				getLeaves(node.getLeft(), leaves);
+				getLeaves(node.getMiddle(), leaves);
+				getLeaves(node.getRight(), leaves);
+			}
+		}
+	}
+
 	public Node<V> getNode(String key) {
 		if (key == null)
 			throw new NullPointerException();
@@ -338,6 +326,10 @@ public class TST<V> {
 			throw new IllegalArgumentException("key must have length >= 1");
 		Node<V> x = get(root, key, 0);
 		return x;
+	}
+
+	public Node<V> getRoot() {
+		return root;
 	}
 
 	/**
@@ -456,6 +448,14 @@ public class TST<V> {
 		// System.out.println("#############");
 		root = put(root, root, key, val, 0);
 		root.setParent(null);
+	}
+
+	public void setRoot(Node<V> root) {
+		this.root = root;
+	}
+
+	public void setSize(int size) {
+		this.N = size;
 	}
 
 	/**

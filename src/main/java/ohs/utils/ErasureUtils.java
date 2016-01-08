@@ -15,23 +15,11 @@ import java.util.List;
  *
  */
 public class ErasureUtils {
-	private ErasureUtils() {
-	}
-
-	/**
-	 * Casts an Object to a T
-	 * 
-	 * @param <T>
-	 */
 	@SuppressWarnings("unchecked")
-	public static <T> T uncheckedCast(Object o) {
-		return (T) o;
-	}
-
-	/**
-	 * Does nothing, occasionally used to make Java happy that a value is used
-	 */
-	public static void noop(Object o) {
+	public static <T> T[][] mkT2DArray(Class<?> klass, int[] dim) {
+		if (dim.length != 2)
+			throw new RuntimeException("dim should be an array of size 2.");
+		return (T[][]) (Array.newInstance(klass, dim));
 	}
 
 	/**
@@ -49,11 +37,10 @@ public class ErasureUtils {
 
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <T> T[][] mkT2DArray(Class<?> klass, int[] dim) {
-		if (dim.length != 2)
-			throw new RuntimeException("dim should be an array of size 2.");
-		return (T[][]) (Array.newInstance(klass, dim));
+	/**
+	 * Does nothing, occasionally used to make Java happy that a value is used
+	 */
+	public static void noop(Object o) {
 	}
 
 	@SuppressWarnings("unchecked")
@@ -68,5 +55,18 @@ public class ErasureUtils {
 			// return the copy
 		}
 		return result;
+	}
+
+	/**
+	 * Casts an Object to a T
+	 * 
+	 * @param <T>
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> T uncheckedCast(Object o) {
+		return (T) o;
+	}
+
+	private ErasureUtils() {
 	}
 }

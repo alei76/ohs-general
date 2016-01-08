@@ -19,8 +19,6 @@ public interface Vector extends Serializable {
 
 	public int dim();
 
-	public String info();
-
 	public void increment(int i, double v);
 
 	public void incrementAll(double v);
@@ -32,6 +30,8 @@ public interface Vector extends Serializable {
 	public int indexAtLoc(int loc);
 
 	public int[] indexes();
+
+	public String info();
 
 	public void keepAbove(double cutoff);
 
