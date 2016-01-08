@@ -3,6 +3,8 @@ package ohs.ir.medical.general;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
@@ -14,6 +16,7 @@ import com.medallia.word2vec.Word2VecModel;
 
 import ohs.entity.Entity;
 import ohs.entity.EntityLinker;
+import ohs.entity.WikiDataHandler;
 import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.AnalyzerUtils;
@@ -32,6 +35,7 @@ import ohs.types.BidMap;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
+import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 
 /**
@@ -56,10 +60,9 @@ public class Experiments {
 		// e.searchByKldFbWordVectorExp2();
 		// e.searchByKldFbWordVectorExp();
 		// e.searchByKldFbWordVectorPrior();
-
-		// SearchResultEvaluator.main(args);
-
-		e.searchByEntityLinking();
+		// e.searchByEntityLinking();
+		e.searchByKLDFBWiki();
+		SearchResultEvaluator.main(args);
 
 		System.out.println("process ends.");
 	}
@@ -247,6 +250,93 @@ public class Experiments {
 			String outputFileName = resDirNames[i] + "cbeem.txt";
 			CbeemDocumentSearcher cbeemSearcher = new CbeemDocumentSearcher(iss, docPriorData, hp, analyzer, false);
 			cbeemSearcher.search(i, bqs, null, outputFileName, null);
+		}
+
+	}
+
+	public void searchByKLDFBWiki() throws Exception {
+		System.out.println("search by KLD FB.");
+		IndexSearcher wis = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
+
+		Set<String> stopPrefixes = WikiDataHandler.getStopPrefixes();
+
+		for (int i = 0; i < queryFileNames.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
+			IndexSearcher is = iss[i];
+			IndexReader ir = is.getIndexReader();
+
+			String outputFileName = resDirNames[i] + "kld-fb-wiki.txt";
+
+			TextFileWriter writer = new TextFileWriter(outputFileName);
+
+			for (int j = 0; j < bqs.size(); j++) {
+				BaseQuery bq = bqs.get(j);
+
+				Indexer<String> wordIndexer = new Indexer<String>();
+				Counter<String> qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+
+				SparseVector qlm = VectorUtils.toSparseVector(qwcs, wordIndexer, true);
+				qlm.normalize();
+
+				SparseVector eqlm = qlm.copy();
+				SparseVector docScores = null;
+
+				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(eqlm, wordIndexer));
+				docScores = SearcherUtils.search(lbq, wis, 100);
+
+				Counter<String> titleScores = Generics.newCounter();
+
+				for (int k = 0; k < docScores.size(); k++) {
+					int docid = docScores.indexAtLoc(k);
+					double score = docScores.valueAtLoc(k);
+					String title = wis.getIndexReader().document(docid).get(IndexFieldName.TITLE);
+					if (WikiDataHandler.accept(stopPrefixes, title)) {
+						titleScores.setCount(title, score);
+					}
+				}
+
+				List<String> titles = titleScores.getSortedKeys();
+				Counter<String> wwcs = Generics.newCounter();
+				for (int k = 0; k < titles.size() && k < 5; k++) {
+					String title = titles.get(k);
+					double score = titleScores.getCount(title);
+					Counter<String> c = AnalyzerUtils.getWordCounts(title, analyzer);
+
+					for (Entry<String, Double> e : c.entrySet()) {
+						wwcs.incrementCount(e.getKey(), e.getValue() * score);
+					}
+				}
+
+				SparseVector wlm = VectorUtils.toSparseVector(wwcs, wordIndexer, true);
+				wlm.keepTopN(20);
+				wlm.normalize();
+
+				docScores = SearcherUtils.search(lbq, is, 500);
+
+				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, IndexFieldName.CONTENT);
+
+				RelevanceModelBuilder rmb = new RelevanceModelBuilder();
+				SparseVector rm = rmb.getRelevanceModel(wcb, docScores);
+				// SparseVector prm = rmb.getPositionalRelevanceModel(qLM, wcb3,
+				// docScores);
+
+				double[] mixtures = { 1, 1, 1 };
+				ArrayMath.normalize(mixtures);
+
+				eqlm = VectorMath.addAfterScale(new SparseVector[] { qlm, wlm, rm }, mixtures);
+
+				KLDivergenceScorer scorer = new KLDivergenceScorer();
+				docScores = scorer.score(wcb, eqlm);
+
+				System.out.println(bq);
+				System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(qlm, wordIndexer));
+				System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(eqlm, wordIndexer));
+
+				SearcherUtils.write(writer, bq.getId(), docScores);
+
+			}
+
+			writer.close();
 		}
 
 	}

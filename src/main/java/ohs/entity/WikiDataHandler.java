@@ -36,7 +36,7 @@ import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 
 public class WikiDataHandler {
-	private static Set<String> getStopPrefixes() {
+	public static Set<String> getStopPrefixes() {
 		Set<String> ret = new HashSet<String>();
 		ret.add("File");
 		ret.add("Wikipedia");
@@ -108,7 +108,7 @@ public class WikiDataHandler {
 	private Pattern op1 = Pattern.compile(
 			"(organizations|organisations|companies|agencies|institutions|institutes|clubs|universities|schools|colleges) (established|establishments|based) in");
 
-	private boolean accept(Set<String> stopPrefixes, String title) {
+	public static boolean accept(Set<String> stopPrefixes, String title) {
 		int idx = title.indexOf(":");
 		if (idx > 0) {
 			String prefix = title.substring(0, idx);

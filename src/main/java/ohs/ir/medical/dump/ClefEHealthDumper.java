@@ -127,7 +127,7 @@ public class ClefEHealthDumper extends TextDumper {
 
 						Document doc = Jsoup.parse(html);
 						String content = doc.text();
-						String output = String.format("%s\t%s\t%s\t%s", uid, date, url, content.replaceAll("\n", "<NL>"));
+						String output = String.format("%s\t%s\t%s\t%s", uid, date, url, content.replaceAll("\n", "\\n"));
 
 						writer.write(output + "\n");
 

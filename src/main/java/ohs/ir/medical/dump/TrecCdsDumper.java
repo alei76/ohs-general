@@ -161,7 +161,7 @@ public class TrecCdsDumper extends TextDumper {
 					text = text.replaceAll("[\\s]+", " ").trim();
 					sb.append(text + "\n");
 				}
-				body = sb.toString().trim().replace("\n", "<NL>");
+				body = sb.toString().trim().replace("\n", "\\n");
 			}
 
 			boolean missPmcId = false;

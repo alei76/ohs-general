@@ -105,7 +105,7 @@ public class DocumentIndexer {
 
 	public void indexClefEHealth() throws Exception {
 		System.out.println("index CLEF eHealth.");
-		IndexWriter indexWriter = getIndexWriter(MIRPath.CLEF_EHEALTH_INDEX_DIR);
+		IndexWriter iw = getIndexWriter(MIRPath.CLEF_EHEALTH_INDEX_DIR);
 
 		TextFileReader reader = new TextFileReader(MIRPath.CLEF_EHEALTH_COL_FILE);
 		reader.setPrintNexts(false);
@@ -119,7 +119,7 @@ public class DocumentIndexer {
 			String uid = parts[0];
 			String date = parts[1];
 			String url = parts[2];
-			String content = parts[3].replaceAll("<NL>", "\n");
+			String content = parts[3].replaceAll("\\n", "\n");
 
 			Document doc = new Document();
 			doc.add(new StringField(IndexFieldName.DOCUMENT_ID, uid, Field.Store.YES));
@@ -127,18 +127,18 @@ public class DocumentIndexer {
 			doc.add(new StringField(IndexFieldName.DATE, date, Field.Store.YES));
 			doc.add(new MyTextField(IndexFieldName.CONTENT, content, Store.YES));
 
-			indexWriter.addDocument(doc);
+			iw.addDocument(doc);
 		}
 		reader.printLast();
 		reader.close();
 
-		indexWriter.close();
+		iw.close();
 	}
 
 	public void indexOhsumed() throws Exception {
 		System.out.println("index OHSUMED.");
 
-		IndexWriter writer = getIndexWriter(MIRPath.OHSUMED_INDEX_DIR);
+		IndexWriter iw = getIndexWriter(MIRPath.OHSUMED_INDEX_DIR);
 		TextFileReader reader = new TextFileReader(MIRPath.OHSUMED_COL_FILE);
 		reader.setPrintNexts(false);
 
@@ -161,23 +161,23 @@ public class DocumentIndexer {
 			String meshTerms = parts[2];
 			String title = parts[3];
 			String publicationType = parts[4];
-			String abs = parts[5].replace("<NL>", "\n");
+			String abs = parts[5].replace("\\n", "\n");
 			String authors = parts[6];
 			String source = parts[7];
 
 			Document doc = new Document();
 			doc.add(new StringField(IndexFieldName.DOCUMENT_ID, medlineId, Field.Store.YES));
 			doc.add(new MyTextField(IndexFieldName.CONTENT, title + "\n" + abs, Field.Store.YES));
-			writer.addDocument(doc);
+			iw.addDocument(doc);
 		}
 		reader.printLast();
-		writer.close();
+		iw.close();
 	}
 
 	public void indexTrecCds() throws Exception {
 		System.out.println("index TREC CDS.");
 
-		IndexWriter writer = getIndexWriter(MIRPath.TREC_CDS_INDEX_DIR);
+		IndexWriter iw = getIndexWriter(MIRPath.TREC_CDS_INDEX_DIR);
 		TextFileReader reader = new TextFileReader(MIRPath.TREC_CDS_COL_FILE);
 		reader.setPrintNexts(false);
 
@@ -202,7 +202,7 @@ public class DocumentIndexer {
 			String abs = parts[2];
 			String content = parts[3];
 			content = title + "\n" + abs + "\n" + content;
-			content = content.replace("<NL>", "\n");
+			content = content.replace("\\n", "\n");
 
 			// System.out.println(text);
 			// System.out.println();
@@ -212,14 +212,14 @@ public class DocumentIndexer {
 			doc.add(new TextField(IndexFieldName.TITLE, title, Store.YES));
 			doc.add(new MyTextField(IndexFieldName.ABSTRACT, abs, Store.YES));
 			doc.add(new MyTextField(IndexFieldName.CONTENT, content, Store.YES));
-			writer.addDocument(doc);
+			iw.addDocument(doc);
 		}
 		reader.printLast();
-		writer.close();
+		iw.close();
 	}
 
 	public void indexTrecGenomics() throws Exception {
-		IndexWriter indexWriter = getIndexWriter(MIRPath.TREC_GENOMICS_INDEX_DIR);
+		IndexWriter iw = getIndexWriter(MIRPath.TREC_GENOMICS_INDEX_DIR);
 		TextFileReader reader = new TextFileReader(MIRPath.TREC_GENOMICS_COL_FILE);
 		reader.setPrintNexts(false);
 
@@ -243,16 +243,16 @@ public class DocumentIndexer {
 			doc.add(new StringField(IndexFieldName.DOCUMENT_ID, id, Field.Store.YES));
 			doc.add(new MyTextField(IndexFieldName.CONTENT, content, Store.YES));
 
-			indexWriter.addDocument(doc);
+			iw.addDocument(doc);
 		}
 		reader.close();
-		indexWriter.close();
+		iw.close();
 	}
 
 	public void indexWiki() throws Exception {
 		Set<String> stopSectionNames = getStopSectionNames();
 
-		IndexWriter writer = getIndexWriter(MIRPath.WIKI_INDEX_DIR);
+		IndexWriter iw = getIndexWriter(MIRPath.WIKI_INDEX_DIR);
 		TextFileReader reader = new TextFileReader(MIRPath.WIKI_COL_FILE);
 		reader.setPrintNexts(false);
 
@@ -271,7 +271,7 @@ public class DocumentIndexer {
 			}
 
 			String title = parts[0];
-			String wikiText = parts[1].replace("<NL>", "\n");
+			String wikiText = parts[1].replace("\\n", "\n");
 
 			ParsedPage pp = parser.parse(wikiText);
 
@@ -340,12 +340,12 @@ public class DocumentIndexer {
 			doc.add(new StringField(IndexFieldName.REDIRECT_TITLE, redicrect.toLowerCase(), Store.YES));
 			doc.add(new MyTextField(IndexFieldName.CONTENT, content, Store.YES));
 			doc.add(new MyTextField(IndexFieldName.CATEGORY, sb2.toString(), Store.YES));
-			writer.addDocument(doc);
+			iw.addDocument(doc);
 		}
 		reader.printLast();
 		reader.close();
 
-		writer.close();
+		iw.close();
 	}
 
 	public void makeDocumentIdMap() throws Exception {
@@ -364,20 +364,20 @@ public class DocumentIndexer {
 			// return;
 			// }
 
-			IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(indexDirName);
-			IndexReader indexReader = indexSearcher.getIndexReader();
+			IndexSearcher is = SearcherUtils.getIndexSearcher(indexDirName);
+			IndexReader ir = is.getIndexReader();
 
 			List<String> docIds = new ArrayList<String>();
 
-			for (int j = 0; j < indexReader.maxDoc(); j++) {
+			for (int j = 0; j < ir.maxDoc(); j++) {
 				if ((j + 1) % 100000 == 0) {
-					System.out.printf("\r[%d/%d]", j + 1, indexReader.maxDoc());
+					System.out.printf("\r[%d/%d]", j + 1, ir.maxDoc());
 				}
-				Document doc = indexReader.document(j);
+				Document doc = ir.document(j);
 				String docId = doc.getField(IndexFieldName.DOCUMENT_ID).stringValue();
 				docIds.add(docId);
 			}
-			System.out.printf("\r[%d/%d]\n", indexReader.maxDoc(), indexReader.maxDoc());
+			System.out.printf("\r[%d/%d]\n", ir.maxDoc(), ir.maxDoc());
 
 			TextFileWriter writer = new TextFileWriter(docMapFileName);
 			for (int j = 0; j < docIds.size(); j++) {

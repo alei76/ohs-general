@@ -69,7 +69,7 @@ public class TrecGenomicsDumper extends TextDumper {
 					// String content = sb.toString().trim();
 					// content = content.replace("\r\n", "<NL>");
 					Document doc = Jsoup.parse(sb.toString());
-					String content = doc.text().trim().replace("\r\n", "<NL>");
+					String content = doc.text().trim().replace("\r\n", "\\n");
 
 					String outoput = fileName + "\t" + content;
 					writer.write(outoput + "\n");
