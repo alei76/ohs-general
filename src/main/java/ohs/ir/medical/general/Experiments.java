@@ -356,16 +356,19 @@ public class Experiments {
 				// SparseVector eqlm = qlm.copy();
 
 				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(qlm, wordIndexer));
-				SparseVector docScores = SearcherUtils.search(lbq, wis, 100);
+				SparseVector docScores = SearcherUtils.search(lbq, wis, 50);
 
 				Counter<String> wwcs = Generics.newCounter();
 
-				for (int k = 0; k < docScores.size(); k++) {
+				docScores.sortByValue();
+
+				for (int k = 0, l = 0; k < docScores.size() && l < 10; k++) {
 					int docid = docScores.indexAtLoc(k);
 					double score = docScores.valueAtLoc(k);
 					String title = wis.getIndexReader().document(docid).get(IndexFieldName.TITLE);
 					if (WikiDataHandler.accept(stopPrefixes, title)) {
 						wwcs.incrementAll(AnalyzerUtils.getWordCounts(title, analyzer));
+						l++;
 					}
 				}
 

@@ -98,7 +98,7 @@ public class TrecCdsQuery implements BaseQuery {
 	}
 
 	public String getSearchText() {
-		String ret = description;
+		String ret = summary;
 		if (diagnosis != null) {
 			ret = ret + "\n" + diagnosis;
 		}

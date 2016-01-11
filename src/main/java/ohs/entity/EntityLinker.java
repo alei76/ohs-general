@@ -55,7 +55,7 @@ public class EntityLinker implements Serializable {
 		// if (FileUtils.exists(ENTPath.ENTITY_LINKER_FILE)) {
 		// el.read(ENTPath.ENTITY_LINKER_FILE);
 		// } else {
-		el.createSearcher(ENTPath.NAME_PERSON_FILE);
+		el.createSearcher(ENTPath.TITLE_FILE);
 		el.write(ENTPath.ENTITY_LINKER_FILE);
 		el.read(ENTPath.ENTITY_LINKER_FILE);
 		// el.setTopK(20);
