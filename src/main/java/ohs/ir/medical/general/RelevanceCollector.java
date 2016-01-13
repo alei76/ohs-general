@@ -1,12 +1,8 @@
 package ohs.ir.medical.general;
 
 import java.io.File;
-import java.sql.Struct;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;

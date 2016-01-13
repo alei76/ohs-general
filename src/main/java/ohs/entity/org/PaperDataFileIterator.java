@@ -43,6 +43,7 @@ public class PaperDataFileIterator implements Iterator<Map<PaperAttr, String>> {
 		return num_papers;
 	}
 
+	@Override
 	public boolean hasNext() {
 		List<String> lines = new ArrayList<String>();
 

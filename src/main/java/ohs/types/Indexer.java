@@ -51,6 +51,7 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 		return true;
 	}
 
+	@Override
 	public void clear() {
 		objects.clear();
 		indexes.clear();

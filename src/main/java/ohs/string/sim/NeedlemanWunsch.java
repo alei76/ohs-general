@@ -1,6 +1,5 @@
 package ohs.string.sim;
 
-import edu.stanford.nlp.semgraph.semgrex.Alignment;
 import ohs.math.ArrayMath;
 
 public class NeedlemanWunsch {
@@ -10,6 +9,7 @@ public class NeedlemanWunsch {
 			super(s, t);
 		}
 
+		@Override
 		public double compute(int i, int j) {
 			if (i == 0)
 				return j * gap_cost;

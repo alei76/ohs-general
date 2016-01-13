@@ -35,6 +35,7 @@ public class ByteSize {
 		return sizes[type.ordinal()];
 	}
 
+	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(String.format("[%d] BTs", bytes));

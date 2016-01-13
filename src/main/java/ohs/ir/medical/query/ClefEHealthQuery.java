@@ -75,6 +75,7 @@ public class ClefEHealthQuery implements BaseQuery {
 		return discharge;
 	}
 
+	@Override
 	public String getId() {
 		return id;
 	}

@@ -37,6 +37,7 @@ public class HuffmanCoding {
 			this.count = count;
 		}
 
+		@Override
 		public String toString() {
 			StringBuffer sb = new StringBuffer();
 			sb.append(String.format("idx:\t%d\n", idx));

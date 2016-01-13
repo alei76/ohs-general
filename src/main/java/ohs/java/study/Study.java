@@ -22,6 +22,7 @@ public class Study {
 		List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6);
 
 		numbers.forEach(new Consumer<Integer>() {
+			@Override
 			public void accept(Integer value) {
 				System.out.println(value);
 			}

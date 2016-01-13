@@ -18,6 +18,7 @@ public class RandomPivotSelector extends PivotSelector {
 		this.pivot_size = pivot_size;
 	}
 
+	@Override
 	public void select(Gram[] grams) {
 		this.grams = grams;
 

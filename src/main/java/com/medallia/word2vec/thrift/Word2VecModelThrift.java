@@ -79,18 +79,21 @@ public class Word2VecModelThrift implements org.apache.thrift.TBase<Word2VecMode
       _fieldName = fieldName;
     }
 
-    public String getFieldName() {
+    @Override
+	public String getFieldName() {
       return _fieldName;
     }
 
-    public short getThriftFieldId() {
+    @Override
+	public short getThriftFieldId() {
       return _thriftId;
     }
   }
 
   private static class Word2VecModelThriftStandardScheme extends StandardScheme<Word2VecModelThrift> {
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot, Word2VecModelThrift struct) throws org.apache.thrift.TException {
+    @Override
+	public void read(org.apache.thrift.protocol.TProtocol iprot, Word2VecModelThrift struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -155,7 +158,8 @@ public class Word2VecModelThrift implements org.apache.thrift.TBase<Word2VecMode
       struct.validate();
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot, Word2VecModelThrift struct) throws org.apache.thrift.TException {
+    @Override
+	public void write(org.apache.thrift.protocol.TProtocol oprot, Word2VecModelThrift struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -198,7 +202,8 @@ public class Word2VecModelThrift implements org.apache.thrift.TBase<Word2VecMode
 
   }
   private static class Word2VecModelThriftStandardSchemeFactory implements SchemeFactory {
-    public Word2VecModelThriftStandardScheme getScheme() {
+    @Override
+	public Word2VecModelThriftStandardScheme getScheme() {
       return new Word2VecModelThriftStandardScheme();
     }
   }
@@ -279,7 +284,8 @@ public class Word2VecModelThrift implements org.apache.thrift.TBase<Word2VecMode
   }
 
   private static class Word2VecModelThriftTupleSchemeFactory implements SchemeFactory {
-    public Word2VecModelThriftTupleScheme getScheme() {
+    @Override
+	public Word2VecModelThriftTupleScheme getScheme() {
       return new Word2VecModelThriftTupleScheme();
     }
   }
@@ -403,7 +409,8 @@ public class Word2VecModelThrift implements org.apache.thrift.TBase<Word2VecMode
     return 0;
   }
 
-  public Word2VecModelThrift deepCopy() {
+  @Override
+public Word2VecModelThrift deepCopy() {
     return new Word2VecModelThrift(this);
   }
 
@@ -450,11 +457,13 @@ public class Word2VecModelThrift implements org.apache.thrift.TBase<Word2VecMode
     return true;
   }
 
-  public _Fields fieldForId(int fieldId) {
+  @Override
+public _Fields fieldForId(int fieldId) {
     return _Fields.findByThriftId(fieldId);
   }
 
-  public Object getFieldValue(_Fields field) {
+  @Override
+public Object getFieldValue(_Fields field) {
     switch (field) {
     case VOCAB:
       return getVocab();
@@ -520,7 +529,8 @@ public class Word2VecModelThrift implements org.apache.thrift.TBase<Word2VecMode
   }
 
   /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
-  public boolean isSet(_Fields field) {
+  @Override
+public boolean isSet(_Fields field) {
     if (field == null) {
       throw new IllegalArgumentException();
     }
@@ -551,7 +561,8 @@ public class Word2VecModelThrift implements org.apache.thrift.TBase<Word2VecMode
     return this.vocab != null;
   }
 
-  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+  @Override
+public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
     schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
   }
 
@@ -565,7 +576,8 @@ public class Word2VecModelThrift implements org.apache.thrift.TBase<Word2VecMode
     }
   }
 
-  public void setFieldValue(_Fields field, Object value) {
+  @Override
+public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case VOCAB:
       if (value == null) {
@@ -677,7 +689,8 @@ public class Word2VecModelThrift implements org.apache.thrift.TBase<Word2VecMode
     // check for sub-struct validity
   }
 
-  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+  @Override
+public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
     schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
   }
 

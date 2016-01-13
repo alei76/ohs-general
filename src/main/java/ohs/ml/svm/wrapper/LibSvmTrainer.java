@@ -111,7 +111,7 @@ public class LibSvmTrainer {
 			svm_node input[] = new svm_node[data.size()];
 			int loc = 0;
 			for (Iterator<String> iterator = data.keySet().iterator(); iterator.hasNext();) {
-				String term = (String) iterator.next();
+				String term = iterator.next();
 				double count = data.getCount(term);
 				int termInd = featureIndexer.getIndex(term) + 1;
 				input[loc] = new svm_node();
@@ -121,7 +121,7 @@ public class LibSvmTrainer {
 			}
 
 			LibSvmWrapper.sort(input);
-			String topic = (String) topics.get(i);
+			String topic = topics.get(i);
 			int topicId = labelIndexer.getIndex(topic);
 			problem.x[i] = input;
 			problem.y[i] = topicId;
@@ -129,7 +129,7 @@ public class LibSvmTrainer {
 
 		int max_index = featureIndexer.size();
 		if (param.gamma == 0.0D && max_index > 0)
-			param.gamma = 1.0D / (double) max_index;
+			param.gamma = 1.0D / max_index;
 		String error_msg = svm.svm_check_parameter(problem, param);
 		if (error_msg != null) {
 			System.err.print((new StringBuilder("Error: ")).append(error_msg).append("\n").toString());

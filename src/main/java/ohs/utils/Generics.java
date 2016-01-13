@@ -144,6 +144,10 @@ public class Generics {
 		return Collections.newSetFromMap(Generics.<K, Boolean> newIdentityHashMap(size));
 	}
 
+	public static <T> Indexer<T> newIndexer() {
+		return new Indexer<T>();
+	}
+
 	public static <E> LinkedList<E> newLinkedList() {
 		return new LinkedList<E>();
 	}
@@ -225,13 +229,13 @@ public class Generics {
 		return new TreeSet<E>(s);
 	}
 
-	public static <T1, T2, T3> Triple<T1, T2, T3> newTriple(T1 first, T2 second, T3 third) {
-		return new Triple<T1, T2, T3>(first, second, third);
-	}
-
 	// public static <E> Index<E> newIndex() {
 	// return new HashIndex<E>();
 	// }
+
+	public static <T1, T2, T3> Triple<T1, T2, T3> newTriple(T1 first, T2 second, T3 third) {
+		return new Triple<T1, T2, T3>(first, second, third);
+	}
 
 	public static <K, V> WeakHashMap<K, V> newWeakHashMap() {
 		return new WeakHashMap<K, V>();
@@ -239,10 +243,6 @@ public class Generics {
 
 	public static <K, V> WeakHashMap<K, V> newWeakHashMap(int size) {
 		return new WeakHashMap<K, V>(size);
-	}
-
-	public static <T> Indexer<T> newIndexer() {
-		return new Indexer<T>();
 	}
 
 	public static <T> WeakReference<T> newWeakReference(T referent) {

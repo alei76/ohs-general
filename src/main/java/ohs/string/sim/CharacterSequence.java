@@ -13,6 +13,7 @@ public class CharacterSequence implements Sequence {
 		this.s = s;
 	}
 
+	@Override
 	public String get(int i) {
 		return s.charAt(i) + "";
 	}
@@ -22,6 +23,7 @@ public class CharacterSequence implements Sequence {
 		return s.length();
 	}
 
+	@Override
 	public String toString() {
 		return s;
 	}

@@ -148,7 +148,7 @@ public class KLDivergenceScorer {
 			// }
 
 			for (int j = 0; j < locWords.size(); j++) {
-				int center = (int) locWords.get(j).getFirst();
+				int center = locWords.get(j).getFirst();
 				double psg_len = PlmUtils.PropagationCountSum(center, doc_len, propFunction, sigma);
 
 				Counter<Integer> c = new Counter<Integer>();

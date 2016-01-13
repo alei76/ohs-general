@@ -9,6 +9,7 @@ public class SmithWaterman {
 			super(s, t);
 		}
 
+		@Override
 		public double compute(int i, int j) {
 			if (i == 0)
 				return 0;

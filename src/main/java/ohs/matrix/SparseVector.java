@@ -174,6 +174,7 @@ public class SparseVector implements Vector {
 		// sortByIndex();
 	}
 
+	@Override
 	public int argMax() {
 		return indexAtLoc(argMaxLoc());
 	}
@@ -182,6 +183,7 @@ public class SparseVector implements Vector {
 		return ArrayMath.argMax(values);
 	}
 
+	@Override
 	public int argMin() {
 		return indexAtLoc(argMinLoc());
 	}
@@ -190,6 +192,7 @@ public class SparseVector implements Vector {
 		return ArrayMath.argMin(values);
 	}
 
+	@Override
 	public SparseVector copy() {
 		SparseVector ret = new SparseVector(ArrayUtils.copy(indexes), ArrayUtils.copy(values), label, dim);
 		ret.setSum(sum);
@@ -204,10 +207,12 @@ public class SparseVector implements Vector {
 		return ArrayUtils.copy(values);
 	}
 
+	@Override
 	public int dim() {
 		return dim;
 	}
 
+	@Override
 	public void increment(int i, double value) {
 		int loc = location(i);
 		if (loc > -1) {
@@ -216,25 +221,30 @@ public class SparseVector implements Vector {
 		}
 	}
 
+	@Override
 	public void incrementAll(double value) {
 		sum = ArrayMath.add(values, value, values);
 	}
 
+	@Override
 	public void incrementAtLoc(int loc, double value) {
 		values[loc] += value;
 		sum += value;
 	}
 
+	@Override
 	public void incrementAtLoc(int loc, int i, double value) {
 		indexes[loc] = i;
 		values[loc] += value;
 		sum += value;
 	}
 
+	@Override
 	public int indexAtLoc(int loc) {
 		return indexes[loc];
 	}
 
+	@Override
 	public int[] indexes() {
 		return indexes;
 	}
@@ -244,6 +254,7 @@ public class SparseVector implements Vector {
 		return null;
 	}
 
+	@Override
 	public void keepAbove(double cutoff) {
 		List<Integer> is = new ArrayList<Integer>();
 		List<Double> vs = new ArrayList<Double>();
@@ -266,6 +277,7 @@ public class SparseVector implements Vector {
 		}
 	}
 
+	@Override
 	public void keepTopN(int topN) {
 		if (values.length > topN) {
 			sortByValue();
@@ -284,6 +296,7 @@ public class SparseVector implements Vector {
 		}
 	}
 
+	@Override
 	public int label() {
 		return label;
 	}
@@ -295,30 +308,37 @@ public class SparseVector implements Vector {
 	 * @param index
 	 * @return
 	 */
+	@Override
 	public int location(int index) {
 		return Arrays.binarySearch(indexes, index);
 	}
 
+	@Override
 	public double max() {
 		return valueAtLoc(argMaxLoc());
 	}
 
+	@Override
 	public double min() {
 		return valueAtLoc(argMinLoc());
 	}
 
+	@Override
 	public void normalize() {
 		sum = ArrayMath.normalize(values, values);
 	}
 
+	@Override
 	public void normalizeAfterSummation() {
 		sum = ArrayMath.scale(values, ArrayMath.sum(values), values);
 	}
 
+	@Override
 	public void normalizeByL2Norm() {
 		sum = ArrayMath.normalizeByL2Norm(values, values);
 	}
 
+	@Override
 	public double prob(int index) {
 		double ret = 0;
 		int loc = location(index);
@@ -328,6 +348,7 @@ public class SparseVector implements Vector {
 		return ret;
 	}
 
+	@Override
 	public double probAlways(int index) {
 		double ret = 0;
 		int loc = location(index);
@@ -337,10 +358,12 @@ public class SparseVector implements Vector {
 		return ret;
 	}
 
+	@Override
 	public double probAtLoc(int loc) {
 		return values[loc] / sum;
 	}
 
+	@Override
 	public void prune(final Set<Integer> toRemove) {
 		List<Integer> is = new ArrayList<Integer>();
 		List<Double> vs = new ArrayList<Double>();
@@ -362,6 +385,7 @@ public class SparseVector implements Vector {
 		ArrayUtils.copy(vs, values);
 	}
 
+	@Override
 	public void pruneExcept(final Set<Integer> toKeep) {
 		List<Integer> is = new ArrayList<Integer>();
 		List<Double> vs = new ArrayList<Double>();
@@ -395,6 +419,7 @@ public class SparseVector implements Vector {
 		return ret;
 	}
 
+	@Override
 	public SparseVector ranking() {
 		return ranking(false);
 	}
@@ -467,6 +492,7 @@ public class SparseVector implements Vector {
 		}
 	}
 
+	@Override
 	public void scale(double factor) {
 		sum = ArrayMath.scale(values, factor, values);
 	}
@@ -491,6 +517,7 @@ public class SparseVector implements Vector {
 		values[loc] *= factor;
 	}
 
+	@Override
 	public void set(int i, double value) {
 		int loc = location(i);
 		if (loc > -1) {
@@ -498,43 +525,53 @@ public class SparseVector implements Vector {
 		}
 	}
 
+	@Override
 	public void setAll(double value) {
 		sum = ArrayUtils.setAll(values, value);
 	}
 
+	@Override
 	public void setAtLoc(int loc, double value) {
 		values[loc] = value;
 	}
 
+	@Override
 	public void setAtLoc(int loc, int i, double value) {
 		indexes[loc] = i;
 		values[loc] = value;
 	}
 
+	@Override
 	public void setDim(int dim) {
 		this.dim = dim;
 	}
 
+	@Override
 	public void setIndexes(int[] indexes) {
 		this.indexes = indexes;
 	}
 
+	@Override
 	public void setLabel(int label) {
 		this.label = label;
 	}
 
+	@Override
 	public void setSum(double sum) {
 		this.sum = sum;
 	}
 
+	@Override
 	public void setValues(double[] values) {
 		this.values = values;
 	}
 
+	@Override
 	public int size() {
 		return indexes.length;
 	}
 
+	@Override
 	public int sizeOfNonzero() {
 		return ArrayUtils.sizeOfNonzeros(values);
 	}
@@ -555,10 +592,12 @@ public class SparseVector implements Vector {
 		}
 	}
 
+	@Override
 	public double sum() {
 		return sum;
 	}
 
+	@Override
 	public void summation() {
 		sum = ArrayMath.sum(values);
 	}
@@ -578,6 +617,7 @@ public class SparseVector implements Vector {
 		return ret;
 	}
 
+	@Override
 	public String toString() {
 		return toString(false, 20, null, null);
 	}
@@ -632,6 +672,7 @@ public class SparseVector implements Vector {
 		return sb.toString();
 	}
 
+	@Override
 	public double value(int index) {
 		int loc = location(index);
 		if (loc < 0) {
@@ -641,6 +682,7 @@ public class SparseVector implements Vector {
 		return valueAtLoc(loc);
 	}
 
+	@Override
 	public double valueAlways(int index) {
 		double ret = 0;
 		int loc = location(index);
@@ -650,14 +692,17 @@ public class SparseVector implements Vector {
 		return ret;
 	}
 
+	@Override
 	public double valueAtLoc(int loc) {
 		return values[loc];
 	}
 
+	@Override
 	public double[] values() {
 		return values;
 	}
 
+	@Override
 	public void write(ObjectOutputStream oos) throws Exception {
 		oos.writeInt(size());
 		oos.writeInt(label());
@@ -668,6 +713,7 @@ public class SparseVector implements Vector {
 		}
 	}
 
+	@Override
 	public void write(String fileName) throws Exception {
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 		write(oos);

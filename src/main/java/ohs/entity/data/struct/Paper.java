@@ -125,6 +125,7 @@ public class Paper implements Serializable {
 		this.title = title;
 	}
 
+	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(String.format("SID = %s\n", sid));

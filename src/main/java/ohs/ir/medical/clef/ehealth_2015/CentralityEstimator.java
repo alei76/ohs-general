@@ -3,7 +3,6 @@ package ohs.ir.medical.clef.ehealth_2015;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.stanford.nlp.stats.IntCounter;
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 import ohs.math.VectorMath;

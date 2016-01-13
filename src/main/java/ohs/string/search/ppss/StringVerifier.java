@@ -104,7 +104,7 @@ public class StringVerifier implements Serializable {
 			}
 
 			for (int j = 0; j < d[i].length; j++) {
-				sb.append(" " + (int) d[i][j]);
+				sb.append(" " + d[i][j]);
 			}
 		}
 

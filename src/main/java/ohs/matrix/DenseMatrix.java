@@ -78,10 +78,12 @@ public class DenseMatrix implements Matrix {
 		this(label, new double[rowDim][colDim]);
 	}
 
+	@Override
 	public int colDim() {
 		return rows[0].dim();
 	}
 
+	@Override
 	public DenseVector column(int colId) {
 		DenseVector ret = new DenseVector(rowDim(), label());
 		for (int i = 0; i < rowDim(); i++) {
@@ -90,6 +92,7 @@ public class DenseMatrix implements Matrix {
 		return ret;
 	}
 
+	@Override
 	public DenseVector columnSums() {
 		DenseVector ret = new DenseVector(rowDim(), label());
 		for (int i = 0; i < rowDim(); i++) {
@@ -113,6 +116,7 @@ public class DenseMatrix implements Matrix {
 		rows[row].increment(col, value);
 	}
 
+	@Override
 	public int indexAtRowLoc(int rowLoc) {
 		new UnsupportedOperationException("unsupported");
 		return 0;
@@ -124,10 +128,12 @@ public class DenseMatrix implements Matrix {
 		return null;
 	}
 
+	@Override
 	public int label() {
 		return label;
 	}
 
+	@Override
 	public void normalizeColumns() {
 		DenseVector col_sum = columnSums();
 		for (int i = 0; i < rowDim(); i++) {
@@ -138,20 +144,24 @@ public class DenseMatrix implements Matrix {
 		}
 	}
 
+	@Override
 	public void normalizeRows() {
 		for (int i = 0; i < rowDim(); i++) {
 			row(i).normalizeAfterSummation();
 		}
 	}
 
+	@Override
 	public DenseVector row(int row) {
 		return rows[row];
 	}
 
+	@Override
 	public int rowDim() {
 		return rows.length;
 	}
 
+	@Override
 	public int[] rowIndexes() {
 		new UnsupportedOperationException("unsupported");
 		return null;
@@ -162,16 +172,19 @@ public class DenseMatrix implements Matrix {
 		return rows;
 	}
 
+	@Override
 	public int rowSize() {
 		return rowDim();
 	}
 
+	@Override
 	public void rowSummation() {
 		for (int i = 0; i < rowDim(); i++) {
 			row(i).summation();
 		}
 	}
 
+	@Override
 	public DenseVector rowSums() {
 		DenseVector ret = new DenseVector(rowDim(), label());
 		for (int i = 0; i < rowDim(); i++) {
@@ -188,15 +201,18 @@ public class DenseMatrix implements Matrix {
 		}
 	}
 
+	@Override
 	public void set(int row, int col, double value) {
 		row(row).set(col, value);
 	}
 
+	@Override
 	public void setColDim(int colDim) {
 		new UnsupportedOperationException("unsupported");
 
 	}
 
+	@Override
 	public void setLabel(int label) {
 		this.label = label;
 	}
@@ -205,20 +221,24 @@ public class DenseMatrix implements Matrix {
 		rows[row] = vector;
 	}
 
+	@Override
 	public void setRow(int rowId, Vector x) {
 		rows[rowId] = (DenseVector) x;
 
 	}
 
+	@Override
 	public void setRowDim(int rowDim) {
 		new UnsupportedOperationException("unsupported");
 
 	}
 
+	@Override
 	public void setVectorAtRowLoc(int loc, Vector x) {
 		setRow(loc, x);
 	}
 
+	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(String.format("[label:\t%d]\n", label));
@@ -258,10 +278,12 @@ public class DenseMatrix implements Matrix {
 		return row(row).value(col);
 	}
 
+	@Override
 	public Vector vectorAtRowLoc(int rowLoc) {
 		return row(rowLoc);
 	}
 
+	@Override
 	public void write(ObjectOutputStream oos) throws Exception {
 		oos.writeInt(rowDim());
 		oos.writeInt(colDim());
@@ -271,6 +293,7 @@ public class DenseMatrix implements Matrix {
 		}
 	}
 
+	@Override
 	public void write(String fileName) throws Exception {
 		System.out.printf("write to [%s].\n", fileName);
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);

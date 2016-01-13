@@ -52,6 +52,7 @@ public class SmithWatermanScorer {
 			values[i][j] = value;
 		}
 
+		@Override
 		public String toString() {
 			return toString(null);
 		}
@@ -64,7 +65,7 @@ public class SmithWatermanScorer {
 				if (wordIndexer == null) {
 					sb.append("\t" + t.get(i));
 				} else {
-					int w1 = (int) t.get(i);
+					int w1 = t.get(i);
 					String word = wordIndexer.getObject(w1);
 					sb.append("\t" + word);
 				}
@@ -88,7 +89,7 @@ public class SmithWatermanScorer {
 					}
 					sb.append("\n");
 				} else {
-					int index = (int) s.get(i - 1);
+					int index = s.get(i - 1);
 					String word = wordIndexer.getObject(index);
 					sb.append(word);
 					for (int j = 1; j <= t.size(); j++) {

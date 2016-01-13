@@ -255,10 +255,10 @@ public class SearchResultEvaluator {
 						StringBuffer sb2 = new StringBuffer();
 						sb2.append(String.format("%s\t%d\t%s\t%d", collName, resData.keySet().size(), modelName, target.getTopN()));
 
-						sb2.append(String.format("\t%d", (int) target.getTotalRelevant()));
-						sb2.append(String.format("\t%d", (int) target.getTotalRetrieved()));
-						sb2.append(String.format("\t%d", (int) target.getTotalCorrect()));
-						sb2.append(String.format("\t%d", (int) target.getTotalCorrectAtN()));
+						sb2.append(String.format("\t%d", target.getTotalRelevant()));
+						sb2.append(String.format("\t%d", target.getTotalRetrieved()));
+						sb2.append(String.format("\t%d", target.getTotalCorrect()));
+						sb2.append(String.format("\t%d", target.getTotalCorrectAtN()));
 						sb2.append(String.format("\t%s", nf.format(target.getPrecisionAtN())));
 						sb2.append(String.format("\t%s", nf.format(target.getMAP())));
 						sb2.append(String.format("\t%s", nf.format((target.getNDCG()))));
@@ -543,10 +543,10 @@ public class SearchResultEvaluator {
 						sb2.append(String.format("\t%s", hp.isSmoothCollectionMixtures()));
 						sb2.append(String.format("\t%s", hp.isAdjustNumbers()));
 
-						sb2.append(String.format("\t%d", (int) target.getTotalRelevant()));
-						sb2.append(String.format("\t%d", (int) target.getTotalRetrieved()));
-						sb2.append(String.format("\t%d", (int) target.getTotalCorrect()));
-						sb2.append(String.format("\t%d", (int) target.getTotalCorrectAtN()));
+						sb2.append(String.format("\t%d", target.getTotalRelevant()));
+						sb2.append(String.format("\t%d", target.getTotalRetrieved()));
+						sb2.append(String.format("\t%d", target.getTotalCorrect()));
+						sb2.append(String.format("\t%d", target.getTotalCorrectAtN()));
 						sb2.append(String.format("\t%s", nf.format(target.getPrecisionAtN())));
 						sb2.append(String.format("\t%s", nf.format(target.getMAP())));
 						sb2.append(String.format("\t%s", nf.format((target.getNDCG()))));

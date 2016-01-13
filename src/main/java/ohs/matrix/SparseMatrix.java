@@ -118,10 +118,12 @@ public class SparseMatrix implements Matrix {
 		this(-1, -1, -1, entries);
 	}
 
+	@Override
 	public int colDim() {
 		return colDim;
 	}
 
+	@Override
 	public SparseVector column(int colId) {
 		List<Integer> indexList = new ArrayList<Integer>();
 		List<Double> valueList = new ArrayList<Double>();
@@ -151,6 +153,7 @@ public class SparseMatrix implements Matrix {
 		return ret;
 	}
 
+	@Override
 	public SparseVector columnSums() {
 		Counter<Integer> counter = new Counter<Integer>();
 
@@ -183,6 +186,7 @@ public class SparseMatrix implements Matrix {
 		return ret;
 	}
 
+	@Override
 	public int indexAtRowLoc(int loc) {
 		return rowIndexes[loc];
 	}
@@ -192,6 +196,7 @@ public class SparseMatrix implements Matrix {
 		return null;
 	}
 
+	@Override
 	public int label() {
 		return label;
 	}
@@ -200,6 +205,7 @@ public class SparseMatrix implements Matrix {
 		return Arrays.binarySearch(rowIndexes, rowId);
 	}
 
+	@Override
 	public void normalizeColumns() {
 		int maxColIndex = 0;
 
@@ -237,6 +243,7 @@ public class SparseMatrix implements Matrix {
 		}
 	}
 
+	@Override
 	public void normalizeRows() {
 		for (Vector row : rows) {
 			row.normalizeAfterSummation();
@@ -287,6 +294,7 @@ public class SparseMatrix implements Matrix {
 		qSort(0, rowIndexes.length - 1);
 	}
 
+	@Override
 	public Vector row(int rowId) {
 		int loc = locationAtRow(rowId);
 		if (loc < 0) {
@@ -308,10 +316,12 @@ public class SparseMatrix implements Matrix {
 		return rows[loc];
 	}
 
+	@Override
 	public int rowDim() {
 		return rowDim;
 	}
 
+	@Override
 	public int[] rowIndexes() {
 		return rowIndexes;
 	}
@@ -321,16 +331,19 @@ public class SparseMatrix implements Matrix {
 		return rows;
 	}
 
+	@Override
 	public int rowSize() {
 		return rowIndexes.length;
 	}
 
+	@Override
 	public void rowSummation() {
 		for (Vector row : rows) {
 			row.summation();
 		}
 	}
 
+	@Override
 	public SparseVector rowSums() {
 		SparseVector ret = new SparseVector(rowSize());
 		ret.setDim(rowDim());
@@ -347,10 +360,11 @@ public class SparseMatrix implements Matrix {
 		return ret;
 	}
 
+	@Override
 	public void set(int rowId, int colId, double value) {
 		int rowLoc = locationAtRow(rowId);
 		if (rowLoc > -1) {
-			SparseVector row = (SparseVector) vectorAtRowLoc(rowLoc);
+			SparseVector row = vectorAtRowLoc(rowLoc);
 			int colLoc = row.location(colId);
 			if (colLoc > -1) {
 				row.setAtLoc(colLoc, value);
@@ -364,6 +378,7 @@ public class SparseMatrix implements Matrix {
 		}
 	}
 
+	@Override
 	public void setColDim(int colDim) {
 		this.colDim = colDim;
 		for (int i = 0; i < rows.length; i++) {
@@ -385,6 +400,7 @@ public class SparseMatrix implements Matrix {
 		sortByRowIndex();
 	}
 
+	@Override
 	public void setLabel(int label) {
 		this.label = label;
 	}
@@ -401,6 +417,7 @@ public class SparseMatrix implements Matrix {
 		}
 	}
 
+	@Override
 	public void setRow(int rowId, Vector x) {
 		int rowLoc = locationAtRow(rowId);
 		if (rowLoc > -1) {
@@ -409,10 +426,12 @@ public class SparseMatrix implements Matrix {
 
 	}
 
+	@Override
 	public void setRowDim(int rowDim) {
 		this.rowDim = rowDim;
 	}
 
+	@Override
 	public void setVectorAtRowLoc(int loc, Vector x) {
 		rows[loc] = (SparseVector) x;
 	}
@@ -434,6 +453,7 @@ public class SparseMatrix implements Matrix {
 		rows[j] = temp3;
 	}
 
+	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(String.format("[label:\t%d]\n", label()));
@@ -500,10 +520,12 @@ public class SparseMatrix implements Matrix {
 		return ret;
 	}
 
+	@Override
 	public SparseVector vectorAtRowLoc(int loc) {
 		return rows[loc];
 	}
 
+	@Override
 	public void write(ObjectOutputStream oos) throws Exception {
 		oos.writeInt(rowDim());
 		oos.writeInt(colDim());
@@ -516,6 +538,7 @@ public class SparseMatrix implements Matrix {
 		}
 	}
 
+	@Override
 	public void write(String fileName) throws Exception {
 		System.out.printf("write to [%s].\n", fileName);
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);

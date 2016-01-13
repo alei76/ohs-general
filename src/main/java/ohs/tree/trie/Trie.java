@@ -190,6 +190,7 @@ public class Trie<K> {
 		return size;
 	}
 
+	@Override
 	public String toString() {
 		return toString(2);
 	}

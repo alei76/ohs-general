@@ -1,6 +1,5 @@
 package ohs.string.sim;
 
-import java.sql.Struct;
 import java.util.List;
 
 import ohs.utils.StrUtils;
@@ -32,6 +31,7 @@ public class StringSequence implements Sequence {
 		return s.size();
 	}
 
+	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < s.size(); i++) {

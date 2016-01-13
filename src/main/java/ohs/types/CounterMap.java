@@ -158,16 +158,19 @@ public class CounterMap<K, V> implements java.io.Serializable {
 				return true;
 			}
 
+			@Override
 			public boolean hasNext() {
 				return advance();
 			}
 
+			@Override
 			public Pair<K, V> next() {
 				advance();
 				assert curKey != null;
 				return Pair.newPair(curKey, innerIt.next());
 			}
 
+			@Override
 			public void remove() {
 				// TODO Auto-generated method stub
 

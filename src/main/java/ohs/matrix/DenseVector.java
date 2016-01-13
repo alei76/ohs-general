@@ -145,10 +145,12 @@ public class DenseVector implements Vector {
 		this(new double[size], label);
 	}
 
+	@Override
 	public int argMax() {
 		return ArrayMath.argMax(values);
 	}
 
+	@Override
 	public int argMin() {
 		return ArrayMath.argMin(values);
 	}
@@ -158,37 +160,45 @@ public class DenseVector implements Vector {
 		sum = 0;
 	}
 
+	@Override
 	public DenseVector copy() {
 		DenseVector ret = new DenseVector(ArrayUtils.copy(values), label);
 		ret.setSum(sum);
 		return ret;
 	}
 
+	@Override
 	public int dim() {
 		return size();
 	}
 
+	@Override
 	public void increment(int i, double value) {
 		values[i] += value;
 		sum += value;
 	}
 
+	@Override
 	public void incrementAll(double increment) {
 		sum = ArrayMath.add(values, increment, values);
 	}
 
+	@Override
 	public void incrementAtLoc(int loc, double value) {
 		increment(loc, value);
 	}
 
+	@Override
 	public void incrementAtLoc(int loc, int i, double value) {
 		new UnsupportedOperationException("unsupported");
 	}
 
+	@Override
 	public int indexAtLoc(int loc) {
 		return loc;
 	}
 
+	@Override
 	public int[] indexes() {
 		new UnsupportedOperationException("unsupported");
 		return null;
@@ -200,6 +210,7 @@ public class DenseVector implements Vector {
 		return null;
 	}
 
+	@Override
 	public void keepAbove(double cutoff) {
 		for (int i = 0; i < values.length; i++) {
 			double value = values[i];
@@ -210,6 +221,7 @@ public class DenseVector implements Vector {
 		}
 	}
 
+	@Override
 	public void keepTopN(int topN) {
 		SparseVector x1 = toSparseVector();
 		x1.keepTopN(topN);
@@ -218,14 +230,17 @@ public class DenseVector implements Vector {
 		this.sum = x2.sum();
 	}
 
+	@Override
 	public int label() {
 		return label;
 	}
 
+	@Override
 	public int location(int index) {
 		return index;
 	}
 
+	@Override
 	public double max() {
 		int index = argMax();
 		double max = Double.NEGATIVE_INFINITY;
@@ -235,6 +250,7 @@ public class DenseVector implements Vector {
 		return max;
 	}
 
+	@Override
 	public double min() {
 		int index = argMin();
 		double max = Double.POSITIVE_INFINITY;
@@ -244,10 +260,12 @@ public class DenseVector implements Vector {
 		return max;
 	}
 
+	@Override
 	public void normalize() {
 		sum = ArrayMath.scale(values, 1f / sum, values);
 	}
 
+	@Override
 	public void normalizeAfterSummation() {
 		sum = ArrayMath.sum(values);
 		sum = ArrayMath.scale(values, 1f / sum, values);
@@ -258,18 +276,22 @@ public class DenseVector implements Vector {
 		sum = ArrayMath.normalizeByL2Norm(values, values);
 	}
 
+	@Override
 	public double prob(int index) {
 		return values[index] / sum;
 	}
 
+	@Override
 	public double probAlways(int index) {
 		return prob(index);
 	}
 
+	@Override
 	public double probAtLoc(int loc) {
 		return prob(loc);
 	}
 
+	@Override
 	public void prune(Set<Integer> toRemove) {
 		for (int i : toRemove) {
 			double value = values[i];
@@ -278,6 +300,7 @@ public class DenseVector implements Vector {
 		}
 	}
 
+	@Override
 	public void pruneExcept(Set<Integer> toKeep) {
 		for (int i = 0; i < values.length; i++) {
 			double value = values[i];
@@ -288,6 +311,7 @@ public class DenseVector implements Vector {
 		}
 	}
 
+	@Override
 	public SparseVector ranking() {
 		return ranking(false);
 	}
@@ -307,6 +331,7 @@ public class DenseVector implements Vector {
 		return ret;
 	}
 
+	@Override
 	public void scale(double factor) {
 		ArrayMath.scale(values, factor, values);
 	}
@@ -321,22 +346,27 @@ public class DenseVector implements Vector {
 		scale(loc, factor);
 	}
 
+	@Override
 	public void scaleAtLoc(int loc, int i, double factor) {
 		new UnsupportedOperationException("unsupported");
 	}
 
+	@Override
 	public void set(int i, double value) {
 		values[i] = value;
 	}
 
+	@Override
 	public void setAll(double value) {
 		sum = ArrayUtils.setAll(values, value);
 	}
 
+	@Override
 	public void setAtLoc(int loc, double value) {
 		set(loc, value);
 	}
 
+	@Override
 	public void setAtLoc(int loc, int i, double value) {
 		if (loc != i) {
 			new IllegalArgumentException("different index");
@@ -344,31 +374,38 @@ public class DenseVector implements Vector {
 		setAtLoc(loc, value);
 	}
 
+	@Override
 	public void setDim(int dim) {
 		new UnsupportedOperationException("unsupported");
 
 	}
 
+	@Override
 	public void setIndexes(int[] indexes) {
 		new UnsupportedOperationException("unsupported");
 	}
 
+	@Override
 	public void setLabel(int label) {
 		this.label = label;
 	}
 
+	@Override
 	public void setSum(double sum) {
 		this.sum = sum;
 	}
 
+	@Override
 	public void setValues(double[] values) {
 		this.values = values;
 	}
 
+	@Override
 	public int size() {
 		return values.length;
 	}
 
+	@Override
 	public int sizeOfNonzero() {
 		int ret = 0;
 		for (int i = 0; i < values.length; i++) {
@@ -381,10 +418,12 @@ public class DenseVector implements Vector {
 		return ret;
 	}
 
+	@Override
 	public double sum() {
 		return sum;
 	}
 
+	@Override
 	public void summation() {
 		sum = ArrayMath.sum(values);
 	}
@@ -407,6 +446,7 @@ public class DenseVector implements Vector {
 		return ret;
 	}
 
+	@Override
 	public String toString() {
 		return toString(20, true, true, null);
 	}
@@ -450,22 +490,27 @@ public class DenseVector implements Vector {
 		return sb.toString();
 	}
 
+	@Override
 	public double value(int index) {
 		return values[index];
 	}
 
+	@Override
 	public double valueAlways(int index) {
 		return value(index);
 	}
 
+	@Override
 	public double valueAtLoc(int loc) {
 		return value(loc);
 	}
 
+	@Override
 	public double[] values() {
 		return values;
 	}
 
+	@Override
 	public void write(ObjectOutputStream oos) throws IOException {
 		int size = size();
 		int label = label();
@@ -485,6 +530,7 @@ public class DenseVector implements Vector {
 		}
 	}
 
+	@Override
 	public void write(String fileName) throws Exception {
 		System.out.printf("write to [%s].\n", fileName);
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);

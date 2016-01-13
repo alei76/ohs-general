@@ -8,8 +8,6 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-
 import ohs.io.FileUtils;
 import ohs.math.ArrayMath;
 import ohs.tree.trie.TST;
@@ -110,6 +108,7 @@ public class StringIndexer extends AbstractList<String> implements Serializable 
 	/**
 	 * @author aria42
 	 */
+	@Override
 	public boolean add(String s) {
 		if (contains(s)) {
 			return false;
@@ -119,6 +118,7 @@ public class StringIndexer extends AbstractList<String> implements Serializable 
 		return true;
 	}
 
+	@Override
 	public void clear() {
 		objects.clear();
 		indexes.clear();

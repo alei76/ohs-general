@@ -6,8 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import ohs.io.TextFileReader;
-
 public class Organization implements Serializable {
 
 	private String sid;

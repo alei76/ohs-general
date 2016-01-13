@@ -4,17 +4,9 @@ import java.io.BufferedWriter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -29,8 +21,6 @@ import ohs.string.sim.SmithWaterman;
 import ohs.types.Counter;
 import ohs.types.DeepMap;
 import ohs.types.Indexer;
-import ohs.types.ListMap;
-import ohs.utils.Generics;
 import ohs.utils.Generics.MapType;
 import ohs.utils.StopWatch;
 

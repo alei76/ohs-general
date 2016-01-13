@@ -140,7 +140,7 @@ public class ESABuilder {
 		double num_words = counter.totalCount();
 		double avg_words_in_concept = num_words / num_concepts;
 
-		System.out.printf("Concepts:\t%d\n", (int) leafNodes.size());
+		System.out.printf("Concepts:\t%d\n", leafNodes.size());
 		System.out.printf("Unique words:\t%d\n", (int) num_unique_words);
 		System.out.printf("Words:\t%d\n", (int) num_words);
 		System.out.printf("Avg. words per concept:\t%f\n", avg_words_in_concept);

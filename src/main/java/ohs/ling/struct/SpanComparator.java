@@ -9,6 +9,7 @@ public class SpanComparator implements Comparator<Span> {
 		Collections.sort(spans, new SpanComparator());
 	}
 
+	@Override
 	public int compare(Span o1, Span o2) {
 		return o1.getStart() > o2.getStart() ? 1 : -1;
 	}

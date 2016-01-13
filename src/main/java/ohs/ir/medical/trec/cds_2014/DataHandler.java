@@ -121,6 +121,7 @@ public class DataHandler {
 
 		parser.setEntityResolver(new EntityResolver() {
 
+			@Override
 			public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
 				if (systemId.contains("")) {
 					return new InputSource(new StringReader(""));

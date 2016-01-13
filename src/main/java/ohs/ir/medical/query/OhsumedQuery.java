@@ -40,6 +40,7 @@ public class OhsumedQuery implements BaseQuery {
 		this.infoRequest = infoRequest;
 	}
 
+	@Override
 	public String getId() {
 		return id;
 	}
@@ -62,6 +63,7 @@ public class OhsumedQuery implements BaseQuery {
 		return words;
 	}
 
+	@Override
 	public String getSearchText() {
 		String ret = patientInfo + "\n" + infoRequest;
 		ret = ret.replaceAll("[\\p{Punct}]+", " ");
@@ -101,6 +103,7 @@ public class OhsumedQuery implements BaseQuery {
 		this.patientInfo = patientInfo;
 	}
 
+	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(String.format("qid:\t%s\n", id));

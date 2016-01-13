@@ -35,6 +35,7 @@ public class Counter<E> implements Serializable {
 			this.descending = descending;
 		}
 
+		@Override
 		public int compare(final Entry<E, Double> e1, final Entry<E, Double> e2) {
 			return descending ? Double.compare(e2.getValue(), e1.getValue()) : Double.compare(e1.getValue(), e2.getValue());
 		}
@@ -605,6 +606,7 @@ public class Counter<E> implements Serializable {
 	 * @return string representation
 	 */
 
+	@Override
 	public String toString() {
 		return toStringSortedByValues(true, false, 50, " ");
 	}
@@ -691,19 +693,23 @@ public class Counter<E> implements Serializable {
 	public Iterable<Double> values() {
 		return new Iterable<Double>() {
 
+			@Override
 			public Iterator<Double> iterator() {
 
 				return new Iterator<Double>() {
 					Iterator<Entry<E, Double>> entryIterator = entrySet().iterator();
 
+					@Override
 					public boolean hasNext() {
 						return entryIterator.hasNext();
 					}
 
+					@Override
 					public Double next() {
 						return entryIterator.next().getValue();
 					}
 
+					@Override
 					public void remove() {
 						entryIterator.remove();
 					}

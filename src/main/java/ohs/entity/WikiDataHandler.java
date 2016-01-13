@@ -36,6 +36,22 @@ import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 
 public class WikiDataHandler {
+	public static boolean accept(Set<String> stopPrefixes, String title) {
+		int idx = title.indexOf(":");
+		if (idx > 0) {
+			String prefix = title.substring(0, idx);
+			if (stopPrefixes.contains(prefix)) {
+				return false;
+			}
+		}
+
+		if (title.startsWith("List of")) {
+			return false;
+		}
+
+		return true;
+	}
+
 	public static Set<String> getStopPrefixes() {
 		Set<String> ret = new HashSet<String>();
 		ret.add("File");
@@ -71,6 +87,11 @@ public class WikiDataHandler {
 		// dh.extractCategories();
 		// dh.test();
 		// dh.extractTitles();
+
+		String s = "Educational institutions established in 1861";
+
+		System.out.println(dh.isOrganizationName(s));
+
 		System.out.println("process ends.");
 	}
 
@@ -107,22 +128,6 @@ public class WikiDataHandler {
 
 	private Pattern op1 = Pattern.compile(
 			"(organizations|organisations|companies|agencies|institutions|institutes|clubs|universities|schools|colleges) (established|establishments|based) in");
-
-	public static boolean accept(Set<String> stopPrefixes, String title) {
-		int idx = title.indexOf(":");
-		if (idx > 0) {
-			String prefix = title.substring(0, idx);
-			if (stopPrefixes.contains(prefix)) {
-				return false;
-			}
-		}
-
-		if (title.startsWith("List of")) {
-			return false;
-		}
-
-		return true;
-	}
 
 	public void extractCategories() throws Exception {
 		IndexSearcher is = SearcherUtils.getIndexSearcher("../../data/medical_ir/wiki/index");
@@ -177,7 +182,7 @@ public class WikiDataHandler {
 
 		ListMap<String, String> titleVariantMap = new ListMap<String, String>();
 
-		int type = 3;
+		int type = 2;
 		String outputFileName = ENTPath.NAME_PERSON_FILE;
 
 		if (type == 2) {
@@ -391,7 +396,7 @@ public class WikiDataHandler {
 	private boolean isOrganizationName(String catStr) {
 		boolean ret = false;
 		Matcher m = op1.matcher(catStr);
-		if (m.find()) {
+		if (m.find() || catStr.contains("universities and colleges in") || catStr.contains("research institutes in")) {
 			ret = true;
 		}
 		return ret;

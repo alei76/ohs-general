@@ -1,7 +1,6 @@
 package ohs.ir.wiki;
 
 import java.io.StringReader;
-import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -17,11 +16,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import de.tudarmstadt.ukp.wikipedia.api.WikiConstants.Language;
 import de.tudarmstadt.ukp.wikipedia.parser.Content;
 import de.tudarmstadt.ukp.wikipedia.parser.ParsedPage;
 import de.tudarmstadt.ukp.wikipedia.parser.Section;
-import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.FlushTemplates;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
 import ohs.io.TextFileReader;
@@ -29,7 +26,6 @@ import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.IndexFieldName;
 import ohs.ir.medical.general.MIRPath;
 import ohs.ir.medical.general.SearcherUtils;
-import ohs.types.ListMap;
 import ohs.utils.StrUtils;
 
 /**

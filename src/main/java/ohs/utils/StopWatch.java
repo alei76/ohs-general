@@ -39,6 +39,7 @@ public class StopWatch {
 		n = 1;
 		return this;
 	}
+	@Override
 	public String toString() {
 		long msCopy = ms;
 		long m = msCopy / 60000;

@@ -41,6 +41,7 @@ public class GramPostings implements Serializable {
 		return entries.size();
 	}
 
+	@Override
 	public String toString() {
 		return toString(false);
 	}

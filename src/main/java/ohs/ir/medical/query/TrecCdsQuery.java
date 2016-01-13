@@ -83,6 +83,7 @@ public class TrecCdsQuery implements BaseQuery {
 		return description;
 	}
 
+	@Override
 	public String getId() {
 		return id;
 	}
@@ -97,6 +98,7 @@ public class TrecCdsQuery implements BaseQuery {
 		return words;
 	}
 
+	@Override
 	public String getSearchText() {
 		String ret = summary;
 		if (diagnosis != null) {

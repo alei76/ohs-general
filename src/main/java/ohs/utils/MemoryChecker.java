@@ -74,6 +74,7 @@ public class MemoryChecker {
 		return used;
 	}
 
+	@Override
 	public String toString() {
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMinimumFractionDigits(1);

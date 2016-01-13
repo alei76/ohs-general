@@ -17,6 +17,7 @@ public class AffineGap {
 				super(s, t);
 			}
 
+			@Override
 			public double compute(int i, int j) {
 				if (i == 0 || j == 0)
 					return 0;
@@ -31,6 +32,7 @@ public class AffineGap {
 				super(s, t);
 			}
 
+			@Override
 			public double compute(int i, int j) {
 				if (i == 0 || j == 0)
 					return 0;
@@ -53,6 +55,7 @@ public class AffineGap {
 			m = this;
 		}
 
+		@Override
 		public double compute(int i, int j) {
 			if (i == 0 || j == 0)
 				return 0;

@@ -17,6 +17,8 @@ import ohs.string.search.ppss.GramGenerator;
 import ohs.string.search.ppss.StringRecord;
 import ohs.string.sim.CharacterSequence;
 import ohs.string.sim.EditDistance;
+import ohs.string.sim.Jaro;
+import ohs.string.sim.JaroWinkler;
 import ohs.string.sim.Sequence;
 import ohs.string.sim.SmithWaterman;
 import ohs.types.Counter;
@@ -295,6 +297,9 @@ public class StringSearcher implements Serializable {
 
 		SmithWaterman sw = new SmithWaterman();
 		EditDistance ed = new EditDistance();
+		Jaro jr = new Jaro();
+		JaroWinkler jw = new JaroWinkler();
+
 		Counter<StringRecord> ret = new Counter<StringRecord>();
 		List<Integer> rids = candis.getSortedKeys();
 
@@ -309,6 +314,8 @@ public class StringSearcher implements Serializable {
 				Sequence tt = new CharacterSequence(sr.getString());
 				double score1 = sw.getSimilarity(ss, tt);
 				double score2 = ed.getSimilarity(ss, tt);
+				double score3 = jr.getSimilarity(ss, tt);
+				double score4 = jw.getSimilarity(ss, tt);
 				score = score1 * score2;
 				cache.put(s, sr.getId(), score);
 			}

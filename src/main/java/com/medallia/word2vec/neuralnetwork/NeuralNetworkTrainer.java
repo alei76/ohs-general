@@ -17,7 +17,6 @@ import com.medallia.word2vec.Word2VecTrainerBuilder.TrainingProgressListener.Sta
 import com.medallia.word2vec.huffman.HuffmanCoding.HuffmanNode;
 import com.medallia.word2vec.util.CallableVoid;
 
-import edu.stanford.nlp.international.arabic.Buckwalter;
 import ohs.math.ArrayUtils;
 import ohs.types.Vocab;
 

@@ -3,10 +3,13 @@ package ohs.entity;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.sql.Struct;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -30,6 +33,7 @@ import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.utils.Generics;
 import ohs.utils.StopWatch;
+import ohs.utils.StrUtils;
 
 /**
  * @author Heung-Seon Oh
@@ -55,7 +59,7 @@ public class EntityLinker implements Serializable {
 		// if (FileUtils.exists(ENTPath.ENTITY_LINKER_FILE)) {
 		// el.read(ENTPath.ENTITY_LINKER_FILE);
 		// } else {
-		el.createSearcher(ENTPath.TITLE_FILE);
+		el.train(ENTPath.NAME_ORGANIZATION_FILE);
 		el.write(ENTPath.ENTITY_LINKER_FILE);
 		el.read(ENTPath.ENTITY_LINKER_FILE);
 		// el.setTopK(20);
@@ -68,56 +72,41 @@ public class EntityLinker implements Serializable {
 
 		TextFileWriter writer = new TextFileWriter(ENTPath.EX_FILE);
 
-		for (int i = 0; i < ents.size() && i < 20; i++) {
-			Entity ent = ents.get(i);
-			// Counter<Entity> scores = el.link(ent.getText(), AnalyzerUtils.getWordCounts(ent.getText(), analyzer), is);
-			Counter<Entity> scores = el.link(ent.getText());
-			scores.keepTopNKeys(10);
+		{
+			String[] orgs = { "IBM", "kisti", "kaist", "seoul national", "samsung", "lg", "apple", "hyundai" };
 
-			writer.write("====== input ======" + "\n");
-			writer.write(ent.toString() + "\n");
-			writer.write("====== candidates ======" + "\n");
-			for (Entity e : scores.getSortedKeys()) {
-				writer.write(e.toString() + "\t" + scores.getCount(e) + "\n");
+			for (int i = 0; i < orgs.length; i++) {
+				Counter<Entity> scores = el.link(orgs[i]);
+				scores.keepTopNKeys(10);
+
+				writer.write("====== input ======" + "\n");
+				writer.write(orgs[i] + "\n");
+				writer.write("====== candidates ======" + "\n");
+				for (Entity e : scores.getSortedKeys()) {
+					writer.write(e.toString() + "\t" + scores.getCount(e) + "\n");
+				}
+				writer.write("\n\n");
 			}
-			writer.write("\n\n");
 		}
 
-		for (int i = 0; i < ents.size() && i < 20; i++) {
-			Entity ent = ents.get(i);
-			// Counter<Entity> scores = el.link(ent.getText(), AnalyzerUtils.getWordCounts(ent.getText(), analyzer), is);
-			Counter<Entity> scores = el.link(ent.getText());
-			scores.keepTopNKeys(10);
+		{
+			for (int i = 0; i < ents.size() && i < 50; i++) {
+				Entity ent = ents.get(i);
+				// Counter<Entity> scores = el.link(ent.getText(), AnalyzerUtils.getWordCounts(ent.getText(), analyzer), is);
+				Counter<Entity> scores = el.link(ent.getText());
+				scores.keepTopNKeys(10);
 
-			writer.write("====== input ======" + "\n");
-			writer.write(ent.toString() + "\n");
-			writer.write("====== candidates ======" + "\n");
-			for (Entity e : scores.getSortedKeys()) {
-				writer.write(e.toString() + "\t" + scores.getCount(e) + "\n");
+				writer.write("====== input ======" + "\n");
+				writer.write(ent.toString() + "\n");
+				writer.write("====== candidates ======" + "\n");
+				for (Entity e : scores.getSortedKeys()) {
+					writer.write(e.toString() + "\t" + scores.getCount(e) + "\n");
+				}
+				writer.write("\n\n");
 			}
-			writer.write("\n\n");
 		}
 
 		writer.close();
-
-		// Counter<String> features = new Counter<String>();
-		// features.setCount("baseball", 1);
-		// features.setCount("dodgers", 1);
-
-		// Counter<Entity> scores1 = el.link("cancer");
-		// Counter<Entity> scores1 = el.link("Mattingly", features);
-		// Counter<Entity> scores2 = el.link("Mattingly",
-		// SearcherUtils.getIndexSearcher("../../data/medical_ir/wiki/index"));
-
-		// System.out.println(scores.toStringSortedByValues(true, true,
-		// scores.size()));
-
-		// TextFileReader reader = new
-		// TextFileReader("../../data/news_ir/ners.txt");
-		// while (reader.hasNext()) {
-		// String line = reader.next();
-		//
-		// }
 
 		System.out.println("process ends.");
 	}
@@ -126,7 +115,7 @@ public class EntityLinker implements Serializable {
 
 	private Map<Integer, Entity> ents;
 
-	private Map<Integer, Integer> recToEntIdMap;
+	private List<Integer> recToEntIdMap;
 
 	private Indexer<String> featInexer;
 
@@ -134,76 +123,29 @@ public class EntityLinker implements Serializable {
 
 	private WeakHashMap<Integer, SparseVector> cache;
 
+	private Set<Integer> abbrRecIds;
+
 	public EntityLinker() {
 		cache = Generics.newWeakHashMap(10000);
 	}
 
-	public void createSearcher(String dataFileName) throws Exception {
-		List<StringRecord> srs = Generics.newArrayList();
-		recToEntIdMap = Generics.newHashMap();
-		ents = Generics.newHashMap();
-
-		featInexer = Generics.newIndexer();
-		topicWordData = Generics.newHashMap();
-
-		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
-
-		TextFileReader reader = new TextFileReader(dataFileName);
-		while (reader.hasNext()) {
-			String line = reader.next();
-
-			if (reader.getNumLines() == 1) {
-				continue;
-			}
-
-			// if (reader.getNumLines() > 10000) {
-			// break;
-			// }
-
-			String[] parts = line.split("\t");
-			int id = Integer.parseInt(parts[0]);
-			String name = parts[1];
-			String topic = parts[2];
-			String catStr = parts[3];
-			String variantStr = parts[4];
-
-			Counter<String> c = AnalyzerUtils.getWordCounts(catStr, analyzer);
-
-			if (catStr.equals("none")) {
-				topicWordData.put(id, new SparseVector());
-			} else {
-				SparseVector sv = VectorUtils.toSparseVector(c, featInexer, true);
-				VectorMath.unitVector(sv);
-				topicWordData.put(id, sv);
-			}
-
-			Entity ent = new Entity(id, name, topic);
-			ents.put(ent.getId(), ent);
-
-			StringRecord sr = new StringRecord(srs.size(), name.toLowerCase());
-			srs.add(sr);
-
-			recToEntIdMap.put(sr.getId(), ent.getId());
-
-			if (!variantStr.equals("none")) {
-				String[] variants = variantStr.split("\\|");
-				for (int i = 0; i < variants.length; i++) {
-					sr = new StringRecord(srs.size(), variants[i].toLowerCase());
-					srs.add(sr);
-					recToEntIdMap.put(sr.getId(), ent.getId());
-				}
+	public String getAbbreviation(String name) {
+		String[] words = name.split(" ");
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < words.length; i++) {
+			String word = words[i];
+			if (Character.isUpperCase(word.charAt(0))) {
+				sb.append(word.charAt(0));
 			}
 		}
 
-		// TermWeighting.computeTFIDFs(topicWordData);
+		String ret = null;
 
-		System.out.printf("read [%d] records from [%d] entities at [%s].\n", srs.size(), ents.size(), dataFileName);
-		searcher = new StringSearcher(3);
-		searcher.index(srs, false);
-		System.out.println(searcher.info() + "\n");
+		if (words.length == sb.length() && sb.length() > 2) {
+			ret = sb.toString();
+		}
 
-		// searcher.filter();
-		// System.out.println(searcher.info() + "\n");
+		return ret;
 	}
 
 	public Map<Integer, Entity> getEntities() {
@@ -227,6 +169,19 @@ public class EntityLinker implements Serializable {
 			cm.incrementCount(recToEntIdMap.get(rid), rid, srs.getCount(sr));
 		}
 
+		// for (Entry<Integer, Counter<Integer>> e : cm.getEntrySet()) {
+		// int eid = e.getKey();
+		// List<Integer> rids = e.getValue().getSortedKeys();
+		//
+		// List<Integer> temp = Generics.newArrayList();
+		//
+		// for (int rid : rids) {
+		// if (abbrRecIds.contains(rid)) {
+		// temp.add(rid);
+		// }
+		// }
+		// }
+
 		SparseVector cv = null;
 
 		if (features != null && features.size() > 0) {
@@ -237,7 +192,7 @@ public class EntityLinker implements Serializable {
 		Counter<Integer> scores = Generics.newCounter();
 
 		for (int eid : cm.keySet()) {
-			double score = cm.getCounter(eid).max();
+			double score = cm.getCounter(eid).average();
 			SparseVector tv = topicWordData.get(eid);
 
 			if (cv != null) {
@@ -306,11 +261,7 @@ public class EntityLinker implements Serializable {
 
 		featInexer = FileUtils.readIndexer(ois);
 
-		int size2 = ois.readInt();
-		recToEntIdMap = Generics.newHashMap(size2);
-		for (int i = 0; i < size2; i++) {
-			recToEntIdMap.put(ois.readInt(), ois.readInt());
-		}
+		recToEntIdMap = FileUtils.readIntegers(ois);
 
 		int size3 = ois.readInt();
 		topicWordData = Generics.newHashMap(size3);
@@ -333,6 +284,105 @@ public class EntityLinker implements Serializable {
 		searcher.setTopK(top_k);
 	}
 
+	public void train(String dataFileName) throws Exception {
+		List<StringRecord> srs = Generics.newArrayList();
+		recToEntIdMap = Generics.newArrayList();
+		ents = Generics.newHashMap();
+
+		featInexer = Generics.newIndexer();
+		topicWordData = Generics.newHashMap();
+		abbrRecIds = Generics.newHashSet();
+
+		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+
+		TextFileReader reader = new TextFileReader(dataFileName);
+		while (reader.hasNext()) {
+			String line = reader.next();
+
+			if (reader.getNumLines() == 1) {
+				continue;
+			}
+
+			// if (reader.getNumLines() > 10000) {
+			// break;
+			// }
+
+			String[] parts = line.split("\t");
+			int id = Integer.parseInt(parts[0]);
+			String name = parts[1];
+			String topic = parts[2];
+			String catStr = parts[3];
+			String variantStr = parts[4];
+
+			name = StrUtils.normalizeSpaces(name);
+
+			Counter<String> c = AnalyzerUtils.getWordCounts(catStr, analyzer);
+
+			if (catStr.equals("none")) {
+				topicWordData.put(id, new SparseVector());
+			} else {
+				SparseVector sv = VectorUtils.toSparseVector(c, featInexer, true);
+				VectorMath.unitVector(sv);
+				topicWordData.put(id, sv);
+			}
+
+			Entity ent = new Entity(id, name, topic);
+			ents.put(ent.getId(), ent);
+
+			StringRecord sr = new StringRecord(srs.size(), name.toLowerCase());
+			srs.add(sr);
+
+			// recToEntIdMap.put(sr.getId(), ent.getId());
+
+			recToEntIdMap.add(ent.getId());
+
+			// String abbr = getAbbreviation(name);
+			//
+			// if (abbr != null) {
+			// sr = new StringRecord(srs.size(), abbr.toLowerCase());
+			// srs.add(sr);
+			//
+			// recToEntIdMap.add(ent.getId());
+			// abbrRecIds.add(sr.getId());
+			// }
+
+			if (!variantStr.equals("none")) {
+				for (String var : variantStr.split("\\|")) {
+					var = StrUtils.normalizeSpaces(var);
+					sr = new StringRecord(srs.size(), var.toLowerCase());
+					srs.add(sr);
+
+					recToEntIdMap.add(ent.getId());
+
+					// abbr = getAbbreviation(var);
+					//
+					// if (abbr != null) {
+					// sr = new StringRecord(srs.size(), abbr.toLowerCase());
+					// srs.add(sr);
+					//
+					// recToEntIdMap.add(ent.getId());
+					// abbrRecIds.add(sr.getId());
+					// }
+				}
+			}
+		}
+
+		if (recToEntIdMap.size() != srs.size()) {
+			System.out.println("wrong records!!");
+			System.exit(0);
+		}
+
+		// TermWeighting.computeTFIDFs(topicWordData);
+
+		System.out.printf("read [%d] records from [%d] entities at [%s].\n", srs.size(), ents.size(), dataFileName);
+		searcher = new StringSearcher(3);
+		searcher.index(srs, false);
+		System.out.println(searcher.info() + "\n");
+
+		// searcher.filter();
+		// System.out.println(searcher.info() + "\n");
+	}
+
 	public void write(String fileName) throws Exception {
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
@@ -344,12 +394,11 @@ public class EntityLinker implements Serializable {
 		}
 
 		FileUtils.write(oos, featInexer);
-
-		oos.writeInt(recToEntIdMap.size());
-		for (Entry<Integer, Integer> e : recToEntIdMap.entrySet()) {
-			oos.writeInt(e.getKey());
-			oos.writeInt(e.getValue());
-		}
+		FileUtils.writeIntegers(oos, recToEntIdMap);
+		// for (Entry<Integer, Integer> e : recToEntIdMap.entrySet()) {
+		// oos.writeInt(e.getKey());
+		// oos.writeInt(e.getValue());
+		// }
 
 		oos.writeInt(topicWordData.size());
 		for (int id : topicWordData.keySet()) {

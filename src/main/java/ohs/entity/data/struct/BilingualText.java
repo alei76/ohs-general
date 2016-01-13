@@ -61,6 +61,7 @@ public class BilingualText implements Serializable {
 		this.korean = korean;
 	}
 
+	@Override
 	public String toString() {
 		return toString(false);
 	}

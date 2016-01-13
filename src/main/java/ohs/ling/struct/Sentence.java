@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 public class Sentence extends ArrayList<Token> {
 
+	@Override
 	public String toString() {
 		return toString(true);
 	}

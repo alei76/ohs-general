@@ -163,6 +163,7 @@ public class HyperParameter {
 		this.useWiki = useWiki;
 	}
 
+	@Override
 	public String toString() {
 		return toString(false);
 	}

@@ -34,14 +34,6 @@ public class ArrayUtils {
 		return sum;
 	}
 
-	public ByteSize byteSize(double[] a) {
-		return new ByteSize(Double.BYTES * a.length);
-	}
-
-	public ByteSize byteSize(int[] a) {
-		return new ByteSize(Integer.BYTES * a.length);
-	}
-
 	public static double copy(Collection<Float> a, float[] b) {
 		int loc = 0;
 		Iterator<Float> iter = a.iterator();
@@ -581,6 +573,28 @@ public class ArrayUtils {
 		return sum;
 	}
 
+	public static int[] rankedIndexes(double[] a) {
+		int[] b = range(a.length);
+		quickSort(b, copy(a), false);
+		return b;
+	}
+
+	public static double reshape(double[] a, double[][] b) {
+		if (sizeOfEntries(b) != a.length) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		for (int i = 0, k = 0; i < a.length; i++) {
+			for (int j = 0; j < b[i].length; j++) {
+				b[i][j] = a[k];
+				sum += a[k];
+				k++;
+			}
+		}
+
+		return sum;
+	}
+
 	// public static double random(double min, double max, double[] x) {
 	// Random random = new Random();
 	// double range = max - min;
@@ -628,28 +642,6 @@ public class ArrayUtils {
 	// }
 	// return sum;
 	// }
-
-	public static int[] rankedIndexes(double[] a) {
-		int[] b = range(a.length);
-		quickSort(b, copy(a), false);
-		return b;
-	}
-
-	public static double reshape(double[] a, double[][] b) {
-		if (sizeOfEntries(b) != a.length) {
-			throw new IllegalArgumentException();
-		}
-		double sum = 0;
-		for (int i = 0, k = 0; i < a.length; i++) {
-			for (int j = 0; j < b[i].length; j++) {
-				b[i][j] = a[k];
-				sum += a[k];
-				k++;
-			}
-		}
-
-		return sum;
-	}
 
 	public static double reshape(double[][] a, double[] b) {
 		if (sizeOfEntries(a) != b.length) {
@@ -992,6 +984,14 @@ public class ArrayUtils {
 			}
 		}
 		return sb.toString();
+	}
+
+	public ByteSize byteSize(double[] a) {
+		return new ByteSize(Double.BYTES * a.length);
+	}
+
+	public ByteSize byteSize(int[] a) {
+		return new ByteSize(Integer.BYTES * a.length);
 	}
 
 	public List<Integer>[] splitInOrder(List<Integer> indexList, int[] counts) {

@@ -5,8 +5,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.math.stat.descriptive.SynchronizedMultivariateSummaryStatistics;
-
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 import ohs.math.VectorMath;

@@ -1,6 +1,5 @@
 package ohs.entity;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -32,43 +31,6 @@ public class IntListMap {
 		entries = new Int2ObjectArrayMap<IntList>();
 	}
 
-	public void read(ObjectInputStream ois) throws Exception {
-		int size1 = ois.readInt();
-		entries = new Int2ObjectArrayMap<IntList>(size1);
-
-		for (int i = 0; i < size1; i++) {
-			int key = ois.readInt();
-			int size2 = ois.readInt();
-			IntList values = new IntArrayList(size2);
-			for (int j = 0; j < size2; j++) {
-				values.add(ois.readInt());
-			}
-			entries.put(key, values);
-		}
-	}
-
-	public void write(ObjectOutputStream oos) throws Exception {
-		oos.writeInt(entries.size());
-
-		for (int key : entries.keySet()) {
-			IntList values = entries.get(key);
-			oos.writeInt(key);
-			oos.writeInt(values.size());
-			for (int value : values) {
-				oos.writeInt(value);
-			}
-		}
-		oos.flush();
-	}
-
-	public int size() {
-		return entries.size();
-	}
-
-	public IntList get(int key, boolean createIfAbsent) {
-		return createIfAbsent ? ensure(key) : entries.get(key);
-	}
-
 	public IntListMap(int size) {
 		entries = new Int2ObjectArrayMap<IntList>(size);
 	}
@@ -87,6 +49,10 @@ public class IntListMap {
 		return ret;
 	}
 
+	public IntList get(int key, boolean createIfAbsent) {
+		return createIfAbsent ? ensure(key) : entries.get(key);
+	}
+
 	public IntSet keySet() {
 		return entries.keySet();
 	}
@@ -95,10 +61,30 @@ public class IntListMap {
 		ensure(key).add(value);
 	}
 
+	public void read(ObjectInputStream ois) throws Exception {
+		int size1 = ois.readInt();
+		entries = new Int2ObjectArrayMap<IntList>(size1);
+
+		for (int i = 0; i < size1; i++) {
+			int key = ois.readInt();
+			int size2 = ois.readInt();
+			IntList values = new IntArrayList(size2);
+			for (int j = 0; j < size2; j++) {
+				values.add(ois.readInt());
+			}
+			entries.put(key, values);
+		}
+	}
+
 	public void set(int key, IntList set) {
 		entries.put(key, set);
 	}
 
+	public int size() {
+		return entries.size();
+	}
+
+	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		List<Integer> keys = new ArrayList<Integer>(entries.keySet());
@@ -112,6 +98,20 @@ public class IntListMap {
 			sb.append("\n");
 		}
 		return sb.toString();
+	}
+
+	public void write(ObjectOutputStream oos) throws Exception {
+		oos.writeInt(entries.size());
+
+		for (int key : entries.keySet()) {
+			IntList values = entries.get(key);
+			oos.writeInt(key);
+			oos.writeInt(values.size());
+			for (int value : values) {
+				oos.writeInt(value);
+			}
+		}
+		oos.flush();
 	}
 
 }

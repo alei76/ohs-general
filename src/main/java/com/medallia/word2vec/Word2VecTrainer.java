@@ -1,19 +1,12 @@
 package com.medallia.word2vec;
 
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultiset;
-import com.google.common.collect.ImmutableMultiset;
-import com.google.common.collect.ImmutableSortedMultiset;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.Multisets;
-import com.google.common.primitives.Doubles;
 import com.medallia.word2vec.Word2VecTrainerBuilder.TrainingProgressListener;
-import com.medallia.word2vec.Word2VecTrainerBuilder.TrainingProgressListener.Stage;
 import com.medallia.word2vec.huffman.HuffmanCoding;
 import com.medallia.word2vec.huffman.HuffmanCoding.HuffmanNode;
 import com.medallia.word2vec.neuralnetwork.NeuralNetworkConfig;

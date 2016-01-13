@@ -564,6 +564,15 @@ public class FileUtils {
 		return ret;
 	}
 
+	public static List<Double> readDoubles(ObjectInputStream ois) throws Exception {
+		List<Double> ret = new ArrayList<Double>();
+		int size = ois.readInt();
+		for (int i = 0; i < size; i++) {
+			ret.add(ois.readDouble());
+		}
+		return ret;
+	}
+
 	public static Indexer<String> readIndexer(ObjectInputStream ois) throws Exception {
 		int size = ois.readInt();
 		Indexer<String> ret = new Indexer<String>(size);
@@ -629,6 +638,15 @@ public class FileUtils {
 		return ret;
 	}
 
+	public static List<Integer> readIntegers(ObjectInputStream ois) throws Exception {
+		List<Integer> ret = new ArrayList<Integer>();
+		int size = ois.readInt();
+		for (int i = 0; i < size; i++) {
+			ret.add(ois.readInt());
+		}
+		return ret;
+	}
+
 	public static List<String> readLines(BufferedReader reader, int num_lines_to_read) throws Exception {
 		List<String> ret = new ArrayList<String>();
 		while (true) {
@@ -686,24 +704,6 @@ public class FileUtils {
 		return ret;
 	}
 
-	public static List<Integer> readIntegers(ObjectInputStream ois) throws Exception {
-		List<Integer> ret = new ArrayList<Integer>();
-		int size = ois.readInt();
-		for (int i = 0; i < size; i++) {
-			ret.add(ois.readInt());
-		}
-		return ret;
-	}
-
-	public static List<Double> readDoubles(ObjectInputStream ois) throws Exception {
-		List<Double> ret = new ArrayList<Double>();
-		int size = ois.readInt();
-		for (int i = 0; i < size; i++) {
-			ret.add(ois.readDouble());
-		}
-		return ret;
-	}
-
 	public static String readText(File file) throws Exception {
 		return readText(file.getCanonicalPath(), UTF_8);
 	}
@@ -745,35 +745,6 @@ public class FileUtils {
 		oos.writeInt(x.length);
 		for (int i = 0; i < x.length; i++) {
 			oos.writeBoolean(x[i]);
-		}
-		oos.flush();
-	}
-
-	public static void writeStrings(ObjectOutputStream oos, Collection<String> c) throws Exception {
-		oos.writeInt(c.size());
-
-		Iterator<String> iter = c.iterator();
-		while (iter.hasNext()) {
-			oos.writeUTF(iter.next());
-		}
-		oos.flush();
-	}
-
-	public static void writeIntegers(ObjectOutputStream oos, Collection<Integer> c) throws Exception {
-		oos.writeInt(c.size());
-
-		Iterator<Integer> iter = c.iterator();
-		while (iter.hasNext()) {
-			oos.writeInt(iter.next());
-		}
-		oos.flush();
-	}
-
-	public static void writeDoubles(ObjectOutputStream oos, Collection<Double> c) throws Exception {
-		oos.writeInt(c.size());
-		Iterator<Double> iter = c.iterator();
-		while (iter.hasNext()) {
-			oos.writeDouble(iter.next());
 		}
 		oos.flush();
 	}
@@ -967,6 +938,35 @@ public class FileUtils {
 		writer.write(text);
 		writer.flush();
 		writer.close();
+	}
+
+	public static void writeDoubles(ObjectOutputStream oos, Collection<Double> c) throws Exception {
+		oos.writeInt(c.size());
+		Iterator<Double> iter = c.iterator();
+		while (iter.hasNext()) {
+			oos.writeDouble(iter.next());
+		}
+		oos.flush();
+	}
+
+	public static void writeIntegers(ObjectOutputStream oos, Collection<Integer> c) throws Exception {
+		oos.writeInt(c.size());
+
+		Iterator<Integer> iter = c.iterator();
+		while (iter.hasNext()) {
+			oos.writeInt(iter.next());
+		}
+		oos.flush();
+	}
+
+	public static void writeStrings(ObjectOutputStream oos, Collection<String> c) throws Exception {
+		oos.writeInt(c.size());
+
+		Iterator<String> iter = c.iterator();
+		while (iter.hasNext()) {
+			oos.writeUTF(iter.next());
+		}
+		oos.flush();
 	}
 
 }

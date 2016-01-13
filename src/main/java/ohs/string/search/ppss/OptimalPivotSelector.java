@@ -117,6 +117,7 @@ public class OptimalPivotSelector extends PivotSelector {
 		return ret;
 	}
 
+	@Override
 	public void select(Gram[] grams) {
 		this.grams = grams;
 

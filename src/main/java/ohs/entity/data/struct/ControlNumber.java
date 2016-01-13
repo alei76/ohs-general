@@ -59,6 +59,7 @@ public class ControlNumber implements Serializable {
 		this.cn2 = cn2;
 	}
 
+	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(String.format("CN1 = %s\n", cn1));

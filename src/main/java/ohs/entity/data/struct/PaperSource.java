@@ -59,6 +59,7 @@ public class PaperSource {
 		this.year = year;
 	}
 
+	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(String.format("Korean Name= %s\n", name.getKorean()));

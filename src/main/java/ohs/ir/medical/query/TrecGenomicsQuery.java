@@ -64,6 +64,7 @@ public class TrecGenomicsQuery implements BaseQuery {
 		return description;
 	}
 
+	@Override
 	public String getId() {
 		return id;
 	}
@@ -78,6 +79,7 @@ public class TrecGenomicsQuery implements BaseQuery {
 		return words;
 	}
 
+	@Override
 	public String getSearchText() {
 		String ret = description;
 		ret = ret.replaceAll("[\\p{Punct}]+", " ");

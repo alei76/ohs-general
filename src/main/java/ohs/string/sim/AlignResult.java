@@ -33,6 +33,7 @@ public class AlignResult {
 		return t;
 	}
 
+	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < matches.size(); i++) {

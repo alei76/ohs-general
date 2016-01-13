@@ -63,6 +63,7 @@ public class Span implements Serializable {
 		this.s = s;
 	}
 
+	@Override
 	public String toString() {
 		return String.format("%d-%d\t%s", getStart(), getEnd(), s);
 	}

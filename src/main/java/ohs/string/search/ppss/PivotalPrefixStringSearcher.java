@@ -5,7 +5,6 @@ import java.io.BufferedWriter;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +23,6 @@ import ohs.types.Counter;
 import ohs.types.DeepMap;
 import ohs.types.ListMap;
 import ohs.types.Pair;
-import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 
 /**

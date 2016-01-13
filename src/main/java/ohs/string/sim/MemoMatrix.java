@@ -78,6 +78,7 @@ public abstract class MemoMatrix {
 		this.indexAtMax = indexAtMax;
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 

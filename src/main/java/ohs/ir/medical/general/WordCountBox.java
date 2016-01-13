@@ -280,6 +280,7 @@ public class WordCountBox {
 		this.wordIndexer = wordIndexer;
 	}
 
+	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 

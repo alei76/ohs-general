@@ -63,6 +63,7 @@ public class BidMap<K, V> implements Serializable {
 		return keyToValue.size();
 	}
 
+	@Override
 	public String toString() {
 		return toString(keyToValue.size());
 	}

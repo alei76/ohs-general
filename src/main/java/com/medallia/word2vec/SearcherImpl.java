@@ -111,6 +111,7 @@ class SearcherImpl implements Searcher {
 	 * @throws UnknownWordException
 	 *             If word is not in the model's vocabulary
 	 */
+	@Override
 	public double[] getVector(String word) {
 		double[] result = getVectorOrNull(word);
 		if (result == null) {
