@@ -5,6 +5,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.sql.Struct;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -54,28 +55,35 @@ public class EntityLinker implements Serializable {
 	 */
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
+
+		String inputFileName = ENTPath.NAME_PERSON_FILE;
+		String outputFileName = ENTPath.ENTITY_LINKER_FILE;
+
+		if (inputFileName.contains("_orgs")) {
+			outputFileName = outputFileName.replace(".ser", "_org.ser");
+		} else if (inputFileName.contains("_locs")) {
+			outputFileName = outputFileName.replace(".ser", "_loc.ser");
+		} else if (inputFileName.contains("_pers")) {
+			outputFileName = outputFileName.replace(".ser", "_per.ser");
+		}
+
 		EntityLinker el = new EntityLinker();
-
-		// if (FileUtils.exists(ENTPath.ENTITY_LINKER_FILE)) {
-		// el.read(ENTPath.ENTITY_LINKER_FILE);
-		// } else {
-		el.train(ENTPath.NAME_ORGANIZATION_FILE);
-		el.write(ENTPath.ENTITY_LINKER_FILE);
-		el.read(ENTPath.ENTITY_LINKER_FILE);
-		// el.setTopK(20);
-
+		el.train(inputFileName);
+		el.write(outputFileName);
+		el.read(outputFileName);
 		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
 		IndexSearcher is = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
 
-		List<Entity> ents = new ArrayList<Entity>(el.getEntities().values());
+		List<Entity> ents = new ArrayList<Entity>(el.getEntityMap().values());
 
 		TextFileWriter writer = new TextFileWriter(ENTPath.EX_FILE);
 
 		{
-			String[] orgs = { "IBM", "kisti", "kaist", "seoul national", "samsung", "lg", "apple", "hyundai" };
+			String[] orgs = { "IBM", "kisti", "kaist", "seoul national", "samsung", "lg", "apple", "hyundai", "kist", "sk" };
 
 			for (int i = 0; i < orgs.length; i++) {
+
 				Counter<Entity> scores = el.link(orgs[i]);
 				scores.keepTopNKeys(10);
 
@@ -90,14 +98,22 @@ public class EntityLinker implements Serializable {
 		}
 
 		{
-			for (int i = 0; i < ents.size() && i < 50; i++) {
+			for (int i = 0; i < ents.size() && i < 100; i++) {
 				Entity ent = ents.get(i);
+
+				List<String> words = StrUtils.split(ent.getText());
+
+				Collections.shuffle(words);
+
+				String s = StrUtils.join(" ", words);
+
 				// Counter<Entity> scores = el.link(ent.getText(), AnalyzerUtils.getWordCounts(ent.getText(), analyzer), is);
-				Counter<Entity> scores = el.link(ent.getText());
+				Counter<Entity> scores = el.link(s);
 				scores.keepTopNKeys(10);
 
 				writer.write("====== input ======" + "\n");
 				writer.write(ent.toString() + "\n");
+				writer.write(s + "\n");
 				writer.write("====== candidates ======" + "\n");
 				for (Entity e : scores.getSortedKeys()) {
 					writer.write(e.toString() + "\t" + scores.getCount(e) + "\n");
@@ -111,11 +127,11 @@ public class EntityLinker implements Serializable {
 		System.out.println("process ends.");
 	}
 
-	private StringSearcher searcher;
+	private StringSearcher strSearcher;
 
 	private Map<Integer, Entity> ents;
 
-	private List<Integer> recToEntIdMap;
+	private List<Integer> recToEnt;
 
 	private Indexer<String> featInexer;
 
@@ -123,7 +139,13 @@ public class EntityLinker implements Serializable {
 
 	private WeakHashMap<Integer, SparseVector> cache;
 
-	private Set<Integer> abbrRecIds;
+	private CounterMap<Integer, Integer> candidates;
+
+	private boolean makeLog = false;
+
+	private Indexer<String> wordIndexer;
+
+	private Map<Integer, SparseVector> contexts;
 
 	public EntityLinker() {
 		cache = Generics.newWeakHashMap(10000);
@@ -148,8 +170,16 @@ public class EntityLinker implements Serializable {
 		return ret;
 	}
 
-	public Map<Integer, Entity> getEntities() {
+	public CounterMap<Integer, Integer> getCandidates() {
+		return candidates;
+	}
+
+	public Map<Integer, Entity> getEntityMap() {
 		return ents;
+	}
+
+	public StringSearcher getStringSearcher() {
+		return strSearcher;
 	}
 
 	public Counter<Entity> link(String mention) throws Exception {
@@ -161,15 +191,17 @@ public class EntityLinker implements Serializable {
 	}
 
 	public Counter<Entity> link(String mention, Counter<String> features, IndexSearcher is) throws Exception {
-		Counter<StringRecord> srs = searcher.search(mention.toLowerCase());
+		strSearcher.setMakeLog(makeLog);
 
-		CounterMap<Integer, Integer> cm = Generics.newCounterMap();
+		Counter<StringRecord> srs = strSearcher.search(mention.toLowerCase());
+
+		candidates = Generics.newCounterMap();
 		for (StringRecord sr : srs.keySet()) {
 			int rid = sr.getId();
-			cm.incrementCount(recToEntIdMap.get(rid), rid, srs.getCount(sr));
+			candidates.incrementCount(recToEnt.get(rid), rid, srs.getCount(sr));
 		}
 
-		// for (Entry<Integer, Counter<Integer>> e : cm.getEntrySet()) {
+		// for (Entry<Integer, Counter<Integer>> e : candidates.getEntrySet()) {
 		// int eid = e.getKey();
 		// List<Integer> rids = e.getValue().getSortedKeys();
 		//
@@ -191,8 +223,8 @@ public class EntityLinker implements Serializable {
 
 		Counter<Integer> scores = Generics.newCounter();
 
-		for (int eid : cm.keySet()) {
-			double score = cm.getCounter(eid).average();
+		for (int eid : candidates.keySet()) {
+			double score = candidates.getCounter(eid).average();
 			SparseVector tv = topicWordData.get(eid);
 
 			if (cv != null) {
@@ -261,7 +293,7 @@ public class EntityLinker implements Serializable {
 
 		featInexer = FileUtils.readIndexer(ois);
 
-		recToEntIdMap = FileUtils.readIntegers(ois);
+		recToEnt = FileUtils.readIntegers(ois);
 
 		int size3 = ois.readInt();
 		topicWordData = Generics.newHashMap(size3);
@@ -273,25 +305,39 @@ public class EntityLinker implements Serializable {
 			topicWordData.put(id, sv);
 		}
 
-		searcher = new StringSearcher();
-		searcher.read(ois);
+		strSearcher = new StringSearcher();
+		strSearcher.read(ois);
 		ois.close();
 
 		System.out.printf("read [%s] - [%s]\n", getClass().getName(), stopWatch.stop());
 	}
 
+	public void readContexts(String contextFileName) throws Exception {
+		ObjectInputStream ois = FileUtils.openObjectInputStream(contextFileName);
+		wordIndexer = FileUtils.readIndexer(ois);
+		contexts = Generics.newHashMap();
+		for (SparseVector sv : SparseVector.readList(ois)) {
+			contexts.put((int) sv.label(), sv);
+		}
+
+		ois.close();
+	}
+
+	public void setMakeLog(boolean makeLog) {
+		this.makeLog = makeLog;
+	}
+
 	public void setTopK(int top_k) {
-		searcher.setTopK(top_k);
+		strSearcher.setTopK(top_k);
 	}
 
 	public void train(String dataFileName) throws Exception {
 		List<StringRecord> srs = Generics.newArrayList();
-		recToEntIdMap = Generics.newArrayList();
+		recToEnt = Generics.newArrayList();
 		ents = Generics.newHashMap();
 
 		featInexer = Generics.newIndexer();
 		topicWordData = Generics.newHashMap();
-		abbrRecIds = Generics.newHashSet();
 
 		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
@@ -312,7 +358,7 @@ public class EntityLinker implements Serializable {
 			String name = parts[1];
 			String topic = parts[2];
 			String catStr = parts[3];
-			String variantStr = parts[4];
+			String variants = parts[4];
 
 			name = StrUtils.normalizeSpaces(name);
 
@@ -332,9 +378,9 @@ public class EntityLinker implements Serializable {
 			StringRecord sr = new StringRecord(srs.size(), name.toLowerCase());
 			srs.add(sr);
 
-			// recToEntIdMap.put(sr.getId(), ent.getId());
+			// recToEnt.put(sr.getId(), ent.getId());
 
-			recToEntIdMap.add(ent.getId());
+			recToEnt.add(ent.getId());
 
 			// String abbr = getAbbreviation(name);
 			//
@@ -342,17 +388,17 @@ public class EntityLinker implements Serializable {
 			// sr = new StringRecord(srs.size(), abbr.toLowerCase());
 			// srs.add(sr);
 			//
-			// recToEntIdMap.add(ent.getId());
+			// recToEnt.add(ent.getId());
 			// abbrRecIds.add(sr.getId());
 			// }
 
-			if (!variantStr.equals("none")) {
-				for (String var : variantStr.split("\\|")) {
+			if (!variants.equals("none")) {
+				for (String var : variants.split("\\|")) {
 					var = StrUtils.normalizeSpaces(var);
 					sr = new StringRecord(srs.size(), var.toLowerCase());
 					srs.add(sr);
 
-					recToEntIdMap.add(ent.getId());
+					recToEnt.add(ent.getId());
 
 					// abbr = getAbbreviation(var);
 					//
@@ -360,14 +406,14 @@ public class EntityLinker implements Serializable {
 					// sr = new StringRecord(srs.size(), abbr.toLowerCase());
 					// srs.add(sr);
 					//
-					// recToEntIdMap.add(ent.getId());
+					// recToEnt.add(ent.getId());
 					// abbrRecIds.add(sr.getId());
 					// }
 				}
 			}
 		}
 
-		if (recToEntIdMap.size() != srs.size()) {
+		if (recToEnt.size() != srs.size()) {
 			System.out.println("wrong records!!");
 			System.exit(0);
 		}
@@ -375,12 +421,12 @@ public class EntityLinker implements Serializable {
 		// TermWeighting.computeTFIDFs(topicWordData);
 
 		System.out.printf("read [%d] records from [%d] entities at [%s].\n", srs.size(), ents.size(), dataFileName);
-		searcher = new StringSearcher(3);
-		searcher.index(srs, false);
-		System.out.println(searcher.info() + "\n");
+		strSearcher = new StringSearcher(3);
+		strSearcher.index(srs, false);
+		System.out.println(strSearcher.info() + "\n");
 
-		// searcher.filter();
-		// System.out.println(searcher.info() + "\n");
+		// strSearcher.filter();
+		// System.out.println(strSearcher.info() + "\n");
 	}
 
 	public void write(String fileName) throws Exception {
@@ -394,8 +440,8 @@ public class EntityLinker implements Serializable {
 		}
 
 		FileUtils.write(oos, featInexer);
-		FileUtils.writeIntegers(oos, recToEntIdMap);
-		// for (Entry<Integer, Integer> e : recToEntIdMap.entrySet()) {
+		FileUtils.writeIntegers(oos, recToEnt);
+		// for (Entry<Integer, Integer> e : recToEnt.entrySet()) {
 		// oos.writeInt(e.getKey());
 		// oos.writeInt(e.getValue());
 		// }
@@ -407,7 +453,7 @@ public class EntityLinker implements Serializable {
 			sv.write(oos);
 		}
 
-		searcher.write(oos);
+		strSearcher.write(oos);
 		oos.close();
 
 		System.out.printf("write [%s] - [%s]\n", getClass().getName(), stopWatch.stop());

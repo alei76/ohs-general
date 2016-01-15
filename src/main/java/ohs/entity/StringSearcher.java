@@ -12,14 +12,17 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import ohs.io.FileUtils;
+import ohs.math.ArrayMath;
+import ohs.math.ArrayUtils;
 import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.GramGenerator;
 import ohs.string.search.ppss.StringRecord;
 import ohs.string.sim.CharacterSequence;
 import ohs.string.sim.EditDistance;
+import ohs.string.sim.Jaccard;
 import ohs.string.sim.Jaro;
-import ohs.string.sim.JaroWinkler;
 import ohs.string.sim.Sequence;
+import ohs.string.sim.SimScorer;
 import ohs.string.sim.SmithWaterman;
 import ohs.types.Counter;
 import ohs.types.DeepMap;
@@ -49,7 +52,7 @@ public class StringSearcher implements Serializable {
 
 	private GramGenerator gg;
 
-	private DeepMap<String, Integer, Double> cache;
+	private DeepMap<String, Integer, Double[]> cache;
 
 	private int top_k = 100;
 
@@ -61,6 +64,16 @@ public class StringSearcher implements Serializable {
 
 	private int[] gramDFs;
 
+	private List<SimScorer> simScorers;
+
+	private Map<Integer, Double[]> simScores;
+
+	private Counter<Integer> candidates;
+
+	private boolean makeLog = false;
+
+	private StringBuffer log;
+
 	public StringSearcher() {
 		this(3);
 	}
@@ -69,7 +82,16 @@ public class StringSearcher implements Serializable {
 		this.q = q;
 
 		gg = new GramGenerator(q);
-		cache = new DeepMap<String, Integer, Double>(1000, MapType.WEAK_HASH_MAP, MapType.WEAK_HASH_MAP);
+		cache = new DeepMap<String, Integer, Double[]>(1000, MapType.WEAK_HASH_MAP, MapType.WEAK_HASH_MAP);
+
+		simScorers = Generics.newArrayList();
+
+		simScorers.add(new EditDistance());
+		simScorers.add(new SmithWaterman());
+		simScorers.add(new Jaro());
+		simScorers.add(new Jaccard());
+		simScores = Generics.newHashMap();
+
 	}
 
 	private void buildGramIndexer(List<StringRecord> input) {
@@ -118,6 +140,18 @@ public class StringSearcher implements Serializable {
 
 	public GramGenerator getGramGenerator() {
 		return gg;
+	}
+
+	public StringBuffer getLog() {
+		return log;
+	}
+
+	public List<SimScorer> getSimScorers() {
+		return simScorers;
+	}
+
+	public Map<Integer, Double[]> getSimScores() {
+		return simScores;
 	}
 
 	public Map<Integer, StringRecord> getStringRecords() {
@@ -269,7 +303,7 @@ public class StringSearcher implements Serializable {
 			return new Counter<StringRecord>();
 		}
 
-		Counter<Integer> temp = Generics.newCounter();
+		Counter<Integer> inputWeights = Generics.newCounter();
 
 		for (int i = 0; i < grams.length; i++) {
 			int gid = gramIndexer.indexOf(grams[i].getString());
@@ -278,50 +312,78 @@ public class StringSearcher implements Serializable {
 			}
 			int df = gramDFs[gid];
 			double idf = Math.log((srs.size() + 1.0) / df);
-			temp.setCount(gid, idf);
+			inputWeights.setCount(gid, idf);
 		}
 
-		Counter<Integer> candis = new Counter<Integer>();
+		candidates = Generics.newCounter();
 
-		List<Integer> gids = temp.getSortedKeys();
+		List<Integer> gids = inputWeights.getSortedKeys();
+
 		for (int i = 0; i < gids.size() && i < prefix_size; i++) {
 			int gid = gids.get(i);
 			List<Integer> rids = index.get(gid, false);
 			if (rids != null) {
-				double idf = temp.getCount(gid);
+				double idf = inputWeights.getCount(gid);
 				for (int rid : rids) {
-					candis.incrementCount(rid, idf);
+					candidates.incrementCount(rid, idf);
 				}
 			}
 		}
 
-		SmithWaterman sw = new SmithWaterman();
-		EditDistance ed = new EditDistance();
-		Jaro jr = new Jaro();
-		JaroWinkler jw = new JaroWinkler();
-
 		Counter<StringRecord> ret = new Counter<StringRecord>();
-		List<Integer> rids = candis.getSortedKeys();
+		List<Integer> rids = candidates.getSortedKeys();
+
+		simScores = Generics.newHashMap(top_k);
+
+		log = new StringBuffer();
+
+		if (makeLog) {
+			log.append(String.format("Input:\t%s", s));
+		}
 
 		for (int i = 0; i < rids.size() && i < top_k; i++) {
 			StringRecord sr = srs.get(rids.get(i));
-			double score = 0;
 
-			if (cache.containsKeys(s, sr.getId())) {
-				score = cache.get(s, sr.getId(), false);
-			} else {
-				Sequence ss = new CharacterSequence(s);
-				Sequence tt = new CharacterSequence(sr.getString());
-				double score1 = sw.getSimilarity(ss, tt);
-				double score2 = ed.getSimilarity(ss, tt);
-				double score3 = jr.getSimilarity(ss, tt);
-				double score4 = jw.getSimilarity(ss, tt);
-				score = score1 * score2;
-				cache.put(s, sr.getId(), score);
+			// if (cache.containsKeys(s, sr.getId())) {
+			// score = cache.get(s, sr.getId(), false);
+			// } else {
+			Sequence ss = new CharacterSequence(s);
+			Sequence tt = new CharacterSequence(sr.getString());
+
+			Double[] scores = cache.get(s, sr.getId(), false);
+
+			if (scores == null) {
+				scores = new Double[simScorers.size()];
+				for (int j = 0; j < simScorers.size(); j++) {
+					scores[j] = simScorers.get(j).getSimilarity(ss, tt);
+				}
+				cache.put(s, sr.getId(), scores);
 			}
-			ret.setCount(sr, score);
+
+			simScores.put(sr.getId(), scores);
+
+			double sum = 0;
+			for (int j = 0; j < scores.length; j++) {
+				sum += scores[j].doubleValue();
+			}
+			double avg_score = sum / scores.length;
+
+			if (makeLog) {
+				log.append("\n" + sr.getId() + "\t" + sr.getString());
+				for (int j = 0; j < scores.length; j++) {
+					log.append(String.format("\t%f", scores[j]));
+				}
+				log.append(String.format("\t%f", avg_score));
+			}
+
+			// }
+			ret.setCount(sr, avg_score);
 		}
 		return ret;
+	}
+
+	public void setMakeLog(boolean makeLog) {
+		this.makeLog = makeLog;
 	}
 
 	public void setTopK(int top_k) {

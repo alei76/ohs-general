@@ -2,7 +2,7 @@ package ohs.string.sim;
 
 import ohs.types.Counter;
 
-public class Jaccard {
+public class Jaccard implements SimScorer {
 	static public void main(String[] argv) {
 		// doMain(new SmithWatermanAligner(), argv);
 

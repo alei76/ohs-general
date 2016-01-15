@@ -67,7 +67,8 @@ public class DeepMap<K, E, V> implements Serializable {
 	}
 
 	public V get(K key, E elem, boolean createIfAbsent) {
-		return get(key, createIfAbsent).get(elem);
+		Map<E, V> map = get(key, createIfAbsent);
+		return map == null ? null : map.get(elem);
 	}
 
 	public Set<K> keySet() {

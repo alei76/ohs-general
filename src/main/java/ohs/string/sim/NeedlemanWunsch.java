@@ -2,7 +2,7 @@ package ohs.string.sim;
 
 import ohs.math.ArrayMath;
 
-public class NeedlemanWunsch {
+public class NeedlemanWunsch implements SimScorer {
 
 	private class ScoreMatrix extends MemoMatrix {
 		public ScoreMatrix(Sequence s, Sequence t) {
@@ -39,9 +39,9 @@ public class NeedlemanWunsch {
 		//
 		NeedlemanWunsch nw = new NeedlemanWunsch();
 
-//		System.out.println(nw.compute(new CharacterSequence(strs[0]), new CharacterSequence(strs[1])));
-//		System.out.println(nw.getSimilarity(new CharacterSequence(strs[0]), new CharacterSequence(strs[1])));
-		
+		// System.out.println(nw.compute(new CharacterSequence(strs[0]), new CharacterSequence(strs[1])));
+		// System.out.println(nw.getSimilarity(new CharacterSequence(strs[0]), new CharacterSequence(strs[1])));
+
 		Aligner aligner = new Aligner();
 		AlignResult ar = aligner.align(nw.compute(new CharacterSequence(strs[0]), new CharacterSequence(strs[1])));
 		System.out.println(ar);

@@ -679,6 +679,14 @@ public class ArrayUtils {
 		}
 	}
 
+	public static double setAll(double[][] a, double value) {
+		double ret = 0;
+		for (int i = 0; i < a.length; i++) {
+			ret += setAll(a[i], value);
+		}
+		return ret;
+	}
+
 	public static double setAll(double[] a, double value) {
 		Arrays.fill(a, value);
 		return value * a.length;

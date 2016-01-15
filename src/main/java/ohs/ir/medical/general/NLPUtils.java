@@ -23,11 +23,11 @@ public class NLPUtils {
 
 		List<String> ret = new ArrayList<String>();
 
-		for (List<HasWord> item : documentPreprocessor) {
+		for (List<HasWord> items : documentPreprocessor) {
 			StringBuffer sb = new StringBuffer();
-			for (int i = 0; i < item.size(); i++) {
-				sb.append(item.get(i).word());
-				if (i != item.size() - 1) {
+			for (int i = 0; i < items.size(); i++) {
+				sb.append(items.get(i).word());
+				if (i != items.size() - 1) {
 					sb.append(" ");
 				}
 			}

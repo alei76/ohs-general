@@ -2,7 +2,7 @@ package ohs.string.sim;
 
 import ohs.math.ArrayMath;
 
-public class EditDistance {
+public class EditDistance implements SimScorer {
 	private class ScoreMatrix extends MemoMatrix {
 
 		public ScoreMatrix(Sequence s, Sequence t) {

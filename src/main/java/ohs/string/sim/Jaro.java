@@ -9,7 +9,7 @@ import ohs.utils.Generics;
  * Winkler and Yves Thibaudeau.
  */
 
-public class Jaro {
+public class Jaro implements SimScorer {
 	static public void main(String[] argv) {
 		// doMain(new SmithWatermanAligner(), argv);
 
@@ -17,7 +17,7 @@ public class Jaro {
 		// String[] strs = { "COHEN", "MCCOHN" };
 
 		// String[] strs = { "MARTHA", "MARHTA" };
-//		String[] strs = { "DIXON", "DICKSONX" };
+		// String[] strs = { "DIXON", "DICKSONX" };
 		String[] strs = { "ABC", "ABC" };
 
 		// String[] strs = { "I love New York !!!", "I hate New Mexico !!!" };

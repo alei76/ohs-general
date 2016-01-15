@@ -74,6 +74,10 @@ public class FileUtils {
 		}
 	}
 
+	public static String getFileName(File file) {
+		return removeExtension(file.getName());
+	}
+
 	public static File appendFileNameSuffix(File file, String suffix) {
 		String filePath = getCanonicalPath(file);
 		if (!filePath.endsWith(suffix)) {

@@ -2,7 +2,7 @@ package ohs.string.sim;
 
 import ohs.math.ArrayMath;
 
-public class SmithWaterman {
+public class SmithWaterman implements SimScorer {
 
 	private class ScoreMatrix extends MemoMatrix {
 		public ScoreMatrix(Sequence s, Sequence t) {

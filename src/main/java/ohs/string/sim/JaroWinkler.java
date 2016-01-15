@@ -5,7 +5,7 @@ package ohs.string.sim;
  * Fellegi-Sunter Model of Record Linkage to the 1990 U.S. Decennial Census' by William E. Winkler and Yves Thibaudeau.)
  */
 
-public class JaroWinkler {
+public class JaroWinkler implements SimScorer {
 	private static int commonPrefixLength(int maxLength, Sequence common1, Sequence common2) {
 		int n = Math.min(maxLength, Math.min(common1.length(), common2.length()));
 		for (int i = 0; i < n; i++) {

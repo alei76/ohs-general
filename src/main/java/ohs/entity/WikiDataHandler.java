@@ -83,10 +83,10 @@ public class WikiDataHandler {
 
 		WikiDataHandler dh = new WikiDataHandler();
 		// dh.makeTextDump();
-		dh.extractEntityNames();
+		// dh.extractEntityNames();
 		// dh.extractCategories();
 		// dh.test();
-		// dh.extractTitles();
+		dh.extractTitles();
 
 		String s = "Educational institutions established in 1861";
 
@@ -113,6 +113,7 @@ public class WikiDataHandler {
 				values[j] = nodes.item(0).getTextContent().trim();
 			}
 		}
+
 		return values;
 	}
 
@@ -182,7 +183,7 @@ public class WikiDataHandler {
 
 		ListMap<String, String> titleVariantMap = new ListMap<String, String>();
 
-		int type = 1;
+		int type = 3;
 		String outputFileName = ENTPath.NAME_PERSON_FILE;
 
 		if (type == 2) {

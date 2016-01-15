@@ -8,7 +8,7 @@ import ohs.math.ArrayMath;
  *         Adaptation of AffineGap in SecondString
  * 
  */
-public class AffineGap {
+public class AffineGap implements SimScorer {
 
 	// a set of three linked distance matrices
 	protected class MatrixTrio extends MemoMatrix {

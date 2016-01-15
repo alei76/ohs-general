@@ -40,7 +40,6 @@ public final class MedicalEnglishAnalyzer extends StopwordAnalyzerBase {
 	public static MedicalEnglishAnalyzer getAnalyzer(String stopwordFileName) throws Exception {
 		Set<String> stopwords = FileUtils.readSet(stopwordFileName);
 
-
 		System.out.printf("read [%d] stopwords from [%s].\n", stopwords.size(), stopwordFileName);
 		return new MedicalEnglishAnalyzer(new CharArraySet(stopwords, true));
 	}
@@ -109,11 +108,12 @@ public final class MedicalEnglishAnalyzer extends StopwordAnalyzerBase {
 		result = new LengthFilter(result);
 		result = new PunctuationFilter(result);
 		result = new LowerCaseFilter(result);
-		result = new StopFilter(result, stopwords);
+		// result = new StopFilter(result, stopwords);
+		result = new NumberStopFilter(result, stopwords);
 		if (!stemExclusionSet.isEmpty())
 			result = new SetKeywordMarkerFilter(result, stemExclusionSet);
 		result = new PorterStemFilter(result);
-		result = new NumberFilter(result);
+		// result = new NumberFilter(result);
 		return new TokenStreamComponents(source, result);
 	}
 
