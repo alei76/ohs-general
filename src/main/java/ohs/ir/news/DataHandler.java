@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -22,6 +21,7 @@ import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
+import ohs.types.Counter;
 import ohs.types.ListMap;
 import ohs.types.Pair;
 import ohs.utils.Generics;
@@ -34,7 +34,7 @@ public class DataHandler {
 		DataHandler dh = new DataHandler();
 		// dh.makeTextDump();
 		// dh.doBinning();
-		// dh.doNLP();
+		dh.doNLP();
 		// dh.changeFormat();
 		// dh.collect();
 		System.out.println("process ends.");
@@ -61,8 +61,7 @@ public class DataHandler {
 
 			for (int j = 0; j < files.size(); j++) {
 				File file = files.get(j);
-				String outputFileName = file.getCanonicalPath().replace("content_nlp", "content_nlp_conll")
-						.replace(".xml", ".conll");
+				String outputFileName = file.getCanonicalPath().replace("content_nlp", "content_nlp_conll").replace(".xml", ".conll");
 
 				try {
 					FileUtils.write(outputFileName, getTextInConllFormat(file));
@@ -141,8 +140,7 @@ public class DataHandler {
 
 							k = end;
 
-							if (!(startTag.equals("PERSON") || startTag.equals("LOCATION")
-									|| startTag.equals("ORGANIZATION"))) {
+							if (!(startTag.equals("PERSON") || startTag.equals("LOCATION") || startTag.equals("ORGANIZATION"))) {
 								continue;
 							}
 							nerOffets.add(new Pair<Integer, Integer>(start, end));
@@ -191,8 +189,8 @@ public class DataHandler {
 		Map<String, String> newsTitleData = Generics.newHashMap();
 		Map<String, String> blogTitleData = Generics.newHashMap();
 
-		int num_news_dirs = 0;
-		int num_blog_dirs = 0;
+		// int num_news_dirs = 0;
+		// int num_blog_dirs = 0;
 		int num_files_in_dir = 100;
 
 		while (reader.hasNext()) {
@@ -211,85 +209,119 @@ public class DataHandler {
 				String mediaType = parts[4];
 				String content = parts[parts.length - 1].replace("\\n", "\n").replace("\\t", "\t");
 
-				if (mediaType.equals("News")) {
-					newsData.put(id, content);
-					newsTitleData.put(id, title);
-				} else {
-					blogData.put(id, content);
-					blogTitleData.put(id, title);
-				}
+				String prefix1 = "news";
+				String prefix2 = "blog";
 
-				if (newsData.size() == num_files_in_dir) {
-					num_news_dirs++;
-					write("news", newsData, num_news_dirs);
-					write("news_title", newsTitleData, num_news_dirs);
-				}
+				// if (mediaType.equals("News")) {
+				//
+				// } else {
+				//
+				// }
 
-				if (blogData.size() == num_files_in_dir) {
-					num_blog_dirs++;
-					write("blog", blogData, num_blog_dirs);
-					write("blog_title", blogTitleData, num_blog_dirs);
-				}
+				String outputFileName1 = NSPath.DATA_DIR + String.format("content/%s/%s/%s.txt", mediaType, date, id);
+				String outputFileName2 = NSPath.DATA_DIR + String.format("content/%s-title/%s/%s.txt", mediaType, date, id);
+
+				FileUtils.write(outputFileName1.toLowerCase(), content);
+				FileUtils.write(outputFileName2.toLowerCase(), title);
+
+				// if (mediaType.equals("News")) {
+				// newsData.put(id, content);
+				// newsTitleData.put(id, title);
+				// } else {
+				// blogData.put(id, content);
+				// blogTitleData.put(id, title);
+				// }
+
+				// if (newsData.size() == num_files_in_dir) {
+				// num_news_dirs++;
+				// write("news", newsData, num_news_dirs);
+				// write("news_title", newsTitleData, num_news_dirs);
+				// }
+
+				// if (blogData.size() == num_files_in_dir) {
+				// num_blog_dirs++;
+				// write("blog", blogData, num_blog_dirs);
+				// write("blog_title", blogTitleData, num_blog_dirs);
+				// }
 			}
 		}
 
-		num_news_dirs++;
-		num_blog_dirs++;
-
-		write("news", newsData, num_news_dirs);
-		write("blog", blogData, num_blog_dirs);
-		write("news_title", newsTitleData, num_news_dirs);
-		write("blog_title", blogTitleData, num_blog_dirs);
+		// num_news_dirs++;
+		// num_blog_dirs++;
+		//
+		// write("news", newsData, num_news_dirs);
+		// write("blog", blogData, num_blog_dirs);
+		// write("news_title", newsTitleData, num_news_dirs);
+		// write("blog_title", blogTitleData, num_blog_dirs);
 
 		reader.printLast();
 		reader.close();
 	}
 
-	public void doNLP() throws Exception {
+	public static StanfordCoreNLP getCoreNLP() {
+		Properties prop = new Properties();
+		prop.setProperty("annotators", "tokenize, quote, ssplit, pos, lemma, ner,parse, sentiment");
+		prop.setProperty("parse.maxlen", "100");
+		prop.setProperty("pos.maxlen", "100");
+		prop.setProperty("replaceExtension", "true");
+		prop.setProperty("outputFormat", "XML");
 
-		// FileUtils.deleteFilesUnder(NSPath.TEMP_NLP_DIR);
+		StanfordCoreNLP nlp = new StanfordCoreNLP(prop);
+		return nlp;
+	}
+
+	public void doNLP() throws Exception {
+		// FileUtils.deleteFilesUnder(NSPath.CONTENT_NLP_DIR);
+
+		StanfordCoreNLP nlp = getCoreNLP();
 
 		String[] types = { "news" };
 
 		for (int u = 0; u < types.length; u++) {
 			String type = types[u];
 
-			Set<String> visited = Generics.newHashSet();
+			Counter<String> c = Generics.newCounter();
 
-			String visitFileName = NSPath.DATA_DIR + String.format("content_visit_%s.txt", type);
+			String visitFileName = NSPath.DATA_DIR + String.format("visit_%s.txt", type);
 
 			if (FileUtils.exists(visitFileName)) {
-				visited = FileUtils.readSet(visitFileName);
+				c = FileUtils.readCounter(visitFileName);
 			}
 
-			TextFileWriter writer = new TextFileWriter(NSPath.CONTENT_VISIT_FILE, FileUtils.UTF_8, true);
-
-			Properties prop = new Properties();
-			prop.setProperty("annotators", "tokenize, quote, ssplit, pos, lemma, ner,parse, sentiment");
-			prop.setProperty("parse.maxlen", "100");
-			prop.setProperty("pos.maxlen", "100");
-			prop.setProperty("replaceExtension", "true");
-			prop.setProperty("outputFormat", "XML");
-
-			StanfordCoreNLP nlp = new StanfordCoreNLP(prop);
 			File[] dirFiles = new File(NSPath.CONTENT_DIR, type).listFiles();
 
 			Arrays.sort(dirFiles);
 
 			for (int i = 0; i < dirFiles.length; i++) {
-				File dir = dirFiles[i];
-				if (dir.isFile() || visited.contains(dir.getPath())) {
+				File srcDir = dirFiles[i];
+
+				List<File> files = Generics.newArrayList();
+
+				for (File srcFile : FileUtils.getFilesUnder(srcDir)) {
+					String fileName = FileUtils.getFileName(srcFile);
+
+					File desFile = new File(srcFile.getPath().replace("content", "content_nlp"));
+
+					if (desFile.exists() || c.getCount(fileName) > 3) {
+						continue;
+					}
+
+					c.incrementCount(fileName, 1);
+					files.add(srcFile);
+				}
+
+				if (files.size() == 0) {
 					continue;
 				}
 
-				writer.write(dir.getPath() + "\n");
-
-				String outputDir = dirFiles[i].getPath().replace("content", "content_nlp");
+				String outputDir = srcDir.getPath().replace("content", "content_nlp");
 				nlp.getProperties().setProperty("outputDirectory", outputDir);
-				try {
-					nlp.processFiles(FileUtils.getFilesUnder(dir), 100);
-				} catch (Exception e) {
 
+				try {
+					nlp.processFiles(FileUtils.getFilesUnder(srcDir), 100);
+				} catch (Exception e) {
+					e.printStackTrace();
+					FileUtils.write(visitFileName, c);
 				}
 			}
 		}
@@ -393,8 +425,7 @@ public class DataHandler {
 	private void write(String mediaType, Map<String, String> map, int num_dirs) throws Exception {
 		for (String fileName : map.keySet()) {
 			String content = map.get(fileName);
-			String outputFileName = NSPath.DATA_DIR
-					+ String.format("content/%s/%05d/%s.txt", mediaType, num_dirs, fileName);
+			String outputFileName = NSPath.DATA_DIR + String.format("content/%s/%05d/%s.txt", mediaType, num_dirs, fileName);
 			FileUtils.write(outputFileName, content);
 		}
 		map.clear();
