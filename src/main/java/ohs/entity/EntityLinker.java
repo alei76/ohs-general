@@ -16,6 +16,7 @@ import java.util.WeakHashMap;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.IndexSearcher;
 
+import ohs.entity.EntityContextGenerator.EntityContexts;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
@@ -56,15 +57,17 @@ public class EntityLinker implements Serializable {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		String inputFileName = ENTPath.NAME_PERSON_FILE;
+		String inputFileName = ENTPath.TITLE_FILE;
 		String outputFileName = ENTPath.ENTITY_LINKER_FILE;
 
-		if (inputFileName.contains("_orgs")) {
+		if (inputFileName.contains("_org")) {
 			outputFileName = outputFileName.replace(".ser", "_org.ser");
-		} else if (inputFileName.contains("_locs")) {
+		} else if (inputFileName.contains("_loc")) {
 			outputFileName = outputFileName.replace(".ser", "_loc.ser");
-		} else if (inputFileName.contains("_pers")) {
+		} else if (inputFileName.contains("_per")) {
 			outputFileName = outputFileName.replace(".ser", "_per.ser");
+		} else if (inputFileName.contains("titles.txt.gz")) {
+			outputFileName = outputFileName.replace(".ser", "_title.ser");
 		}
 
 		EntityLinker el = new EntityLinker();
@@ -133,19 +136,13 @@ public class EntityLinker implements Serializable {
 
 	private List<Integer> recToEnt;
 
-	private Indexer<String> featInexer;
-
-	private Map<Integer, SparseVector> topicWordData;
-
 	private WeakHashMap<Integer, SparseVector> cache;
 
 	private CounterMap<Integer, Integer> candidates;
 
 	private boolean makeLog = false;
 
-	private Indexer<String> wordIndexer;
-
-	private Map<Integer, SparseVector> contexts;
+	private EntityContexts entContexts;
 
 	public EntityLinker() {
 		cache = Generics.newWeakHashMap(10000);
@@ -166,7 +163,6 @@ public class EntityLinker implements Serializable {
 		if (words.length == sb.length() && sb.length() > 2) {
 			ret = sb.toString();
 		}
-
 		return ret;
 	}
 
@@ -183,14 +179,10 @@ public class EntityLinker implements Serializable {
 	}
 
 	public Counter<Entity> link(String mention) throws Exception {
-		return link(mention, null, null);
+		return link(mention, null);
 	}
 
 	public Counter<Entity> link(String mention, Counter<String> features) throws Exception {
-		return link(mention, features, null);
-	}
-
-	public Counter<Entity> link(String mention, Counter<String> features, IndexSearcher is) throws Exception {
 		strSearcher.setMakeLog(makeLog);
 
 		Counter<StringRecord> srs = strSearcher.search(mention.toLowerCase());
@@ -214,58 +206,24 @@ public class EntityLinker implements Serializable {
 		// }
 		// }
 
-		SparseVector cv = null;
-
-		if (features != null && features.size() > 0) {
-			cv = VectorUtils.toSparseVector(features, featInexer);
-			VectorMath.unitVector(cv);
-		}
-
 		Counter<Integer> scores = Generics.newCounter();
 
 		for (int eid : candidates.keySet()) {
 			double score = candidates.getCounter(eid).average();
-			SparseVector tv = topicWordData.get(eid);
-
-			if (cv != null) {
-				double cosine = VectorMath.dotProduct(cv, tv, false);
-				score *= Math.exp(cosine);
-			}
 			scores.setCount(eid, score);
 		}
 
-		if (is != null) {
-			Indexer<String> wordIndexer = new Indexer<String>();
+		if (entContexts != null && features != null) {
 
-			cv = VectorUtils.toSparseVector(features, wordIndexer, true);
-			VectorMath.unitVector(cv);
+			Indexer<String> wordIndexer = entContexts.getWordIndexer();
+			SparseVector isv = VectorUtils.toSparseVector(features, wordIndexer);
+			VectorMath.unitVector(isv);
 
-			Map<Integer, SparseVector> docWordWeights = Generics.newHashMap();
-
-			for (int eid : scores.keySet()) {
-				Counter<String> c = WordCountBox.getWordCounts(is.getIndexReader(), eid, IndexFieldName.CONTENT);
-				docWordWeights.put(eid, VectorUtils.toSparseVector(c, wordIndexer, true));
-			}
-			SparseVector docFreqs = WordCountBox.getDocFreqs(is.getIndexReader(), IndexFieldName.CONTENT, wordIndexer);
-
-			for (int eid : docWordWeights.keySet()) {
-				SparseVector wcs = docWordWeights.get(eid);
-				for (int j = 0; j < wcs.size(); j++) {
-					int w = wcs.indexAtLoc(j);
-					double cnt = wcs.valueAtLoc(j);
-					double tf = Math.log(cnt) + 1;
-					double doc_freq = docFreqs.value(w);
-					double num_docs = is.getIndexReader().maxDoc();
-					double idf = doc_freq == 0 ? 0 : Math.log((num_docs + 1) / doc_freq);
-					double tfidf = tf * idf;
-					wcs.setAtLoc(j, tfidf);
-				}
-				VectorMath.unitVector(wcs);
-			}
-
-			for (int eid : docWordWeights.keySet()) {
-				double score = scores.getCount(eid);
-				double cosine = VectorMath.dotProduct(cv, docWordWeights.get(eid));
+			for (Entry<Integer, Double> e : scores.entrySet()) {
+				int eid = e.getKey();
+				double score = e.getValue();
+				SparseVector esv = entContexts.getContextVectors().get(eid);
+				double cosine = VectorMath.cosine(isv, esv, false);
 				scores.setCount(eid, score * Math.exp(cosine));
 			}
 		}
@@ -291,36 +249,13 @@ public class EntityLinker implements Serializable {
 			ents.put(ent.getId(), ent);
 		}
 
-		featInexer = FileUtils.readIndexer(ois);
-
 		recToEnt = FileUtils.readIntegers(ois);
-
-		int size3 = ois.readInt();
-		topicWordData = Generics.newHashMap(size3);
-
-		for (int i = 0; i < size3; i++) {
-			int id = ois.readInt();
-			SparseVector sv = new SparseVector();
-			sv.read(ois);
-			topicWordData.put(id, sv);
-		}
 
 		strSearcher = new StringSearcher();
 		strSearcher.read(ois);
 		ois.close();
 
 		System.out.printf("read [%s] - [%s]\n", getClass().getName(), stopWatch.stop());
-	}
-
-	public void readContexts(String contextFileName) throws Exception {
-		ObjectInputStream ois = FileUtils.openObjectInputStream(contextFileName);
-		wordIndexer = FileUtils.readIndexer(ois);
-		contexts = Generics.newHashMap();
-		for (SparseVector sv : SparseVector.readList(ois)) {
-			contexts.put((int) sv.label(), sv);
-		}
-
-		ois.close();
 	}
 
 	public void setMakeLog(boolean makeLog) {
@@ -335,9 +270,6 @@ public class EntityLinker implements Serializable {
 		List<StringRecord> srs = Generics.newArrayList();
 		recToEnt = Generics.newArrayList();
 		ents = Generics.newHashMap();
-
-		featInexer = Generics.newIndexer();
-		topicWordData = Generics.newHashMap();
 
 		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
@@ -364,13 +296,13 @@ public class EntityLinker implements Serializable {
 
 			Counter<String> c = AnalyzerUtils.getWordCounts(catStr, analyzer);
 
-			if (catStr.equals("none")) {
-				topicWordData.put(id, new SparseVector());
-			} else {
-				SparseVector sv = VectorUtils.toSparseVector(c, featInexer, true);
-				VectorMath.unitVector(sv);
-				topicWordData.put(id, sv);
-			}
+			// if (catStr.equals("none")) {
+			// topicWordData.put(id, new SparseVector());
+			// } else {
+			// SparseVector sv = VectorUtils.toSparseVector(c, featInexer, true);
+			// VectorMath.unitVector(sv);
+			// topicWordData.put(id, sv);
+			// }
 
 			Entity ent = new Entity(id, name, topic);
 			ents.put(ent.getId(), ent);
@@ -439,19 +371,7 @@ public class EntityLinker implements Serializable {
 			ent.write(oos);
 		}
 
-		FileUtils.write(oos, featInexer);
 		FileUtils.writeIntegers(oos, recToEnt);
-		// for (Entry<Integer, Integer> e : recToEnt.entrySet()) {
-		// oos.writeInt(e.getKey());
-		// oos.writeInt(e.getValue());
-		// }
-
-		oos.writeInt(topicWordData.size());
-		for (int id : topicWordData.keySet()) {
-			SparseVector sv = topicWordData.get(id);
-			oos.writeInt(id);
-			sv.write(oos);
-		}
 
 		strSearcher.write(oos);
 		oos.close();

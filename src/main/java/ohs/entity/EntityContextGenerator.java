@@ -1,10 +1,10 @@
 package ohs.entity;
 
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
@@ -25,6 +25,56 @@ import ohs.types.Indexer;
 import ohs.utils.Generics;
 
 public class EntityContextGenerator {
+
+	public class EntityContexts {
+		private Indexer<String> wordIndexer;
+
+		private Map<Integer, SparseVector> contVecs;
+
+		public EntityContexts() {
+			wordIndexer = new Indexer<String>();
+			contVecs = Generics.newHashMap();
+		}
+
+		public EntityContexts(Indexer<String> wordIndexer, Map<Integer, SparseVector> contVecs) {
+			this.wordIndexer = wordIndexer;
+			this.contVecs = contVecs;
+		}
+
+		public Map<Integer, SparseVector> getContextVectors() {
+			return contVecs;
+		}
+
+		public Indexer<String> getWordIndexer() {
+			return wordIndexer;
+		}
+
+		public void read(ObjectInputStream ois) throws Exception {
+			wordIndexer = FileUtils.readIndexer(ois);
+			int size = ois.readInt();
+			for (int i = 0; i < size; i++) {
+				SparseVector sv = new SparseVector();
+				sv.read(ois);
+				contVecs.put(sv.label(), sv);
+			}
+		}
+
+		public void setContextVectors(Map<Integer, SparseVector> conVecs) {
+			this.contVecs = conVecs;
+		}
+
+		public void setWordIndexer(Indexer<String> wordIndexer) {
+			this.wordIndexer = wordIndexer;
+		}
+
+		public void write(ObjectOutputStream oos) throws Exception {
+			FileUtils.write(oos, wordIndexer);
+			oos.writeInt(contVecs.size());
+			for (SparseVector sv : contVecs.values()) {
+				sv.write(oos);
+			}
+		}
+	}
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
@@ -61,10 +111,6 @@ public class EntityContextGenerator {
 
 	private String outputFileName;
 
-	public class EntityContext {
-
-	}
-
 	public EntityContextGenerator(EntityLinker el, Analyzer analyzer, IndexSearcher is, String outputFileName) {
 		this.el = el;
 		this.analyzer = analyzer;
@@ -77,7 +123,7 @@ public class EntityContextGenerator {
 		List<Entity> ents = new ArrayList<Entity>(el.getEntityMap().values());
 
 		Indexer<String> wordIndexer = Generics.newIndexer();
-		List<SparseVector> svs = Generics.newArrayList();
+		Map<Integer, SparseVector> contVecs = Generics.newHashMap();
 
 		for (int i = 0; i < ents.size(); i++) {
 			if ((i + 1) % 100 == 0) {
@@ -116,13 +162,14 @@ public class EntityContextGenerator {
 			SparseVector sv = VectorUtils.toSparseVector(wcs, wordIndexer, true);
 			sv.setLabel(ent.getId());
 
-			svs.add(sv);
+			contVecs.put(ent.getId(), sv);
 		}
 		System.out.printf("\r[%d/%d]\n", ents.size(), ents.size());
 
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(outputFileName);
-		FileUtils.write(oos, wordIndexer);
-		SparseVector.write(oos, svs);
+
+		EntityContexts entContexts = new EntityContexts(wordIndexer, contVecs);
+		entContexts.write(oos);
 		oos.close();
 	}
 

@@ -69,13 +69,13 @@ public class ENTPath {
 
 	public static final String ORG_HISTORY_SUBSET_FILE_1 = ORG_HISTORY_DIR + "base_orgs_subset_1.txt";
 
-	public static final String NAME_PERSON_FILE = DATA_DIR + "wiki/name_pers.txt.gz";
+	public static final String NAME_PERSON_FILE = DATA_DIR + "wiki/name_per.txt.gz";
 
 	public static final String TITLE_FILE = DATA_DIR + "wiki/titles.txt.gz";
 
-	public static final String NAME_ORGANIZATION_FILE = DATA_DIR + "wiki/name_orgs.txt.gz";
+	public static final String NAME_ORGANIZATION_FILE = DATA_DIR + "wiki/name_org.txt.gz";
 
-	public static final String NAME_LOCATION_FILE = DATA_DIR + "wiki/name_locs.txt.gz";
+	public static final String NAME_LOCATION_FILE = DATA_DIR + "wiki/name_loc.txt.gz";
 
 	public static final String EX_FILE = DATA_DIR + "wiki/ex_output.txt";
 
