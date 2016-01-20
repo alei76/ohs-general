@@ -20,7 +20,7 @@ import ohs.entity.WikiDataHandler;
 import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.AnalyzerUtils;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.ir.medical.query.BaseQuery;
 import ohs.ir.medical.query.QueryReader;
@@ -98,7 +98,7 @@ public class Experiments {
 		for (String word : wcs.keySet()) {
 			double cnt = wcs.getCount(word);
 			double tf = Math.log(cnt) + 1;
-			double doc_freq = ir.docFreq(new Term(IndexFieldName.CONTENT, word));
+			double doc_freq = ir.docFreq(new Term(CommonFieldNames.CONTENT, word));
 			double num_docs = ir.maxDoc() + 1;
 			double idf = Math.log((num_docs + 1) / doc_freq);
 			double tfidf = tf * idf;
@@ -189,7 +189,7 @@ public class Experiments {
 		for (String word : wcs.keySet()) {
 			double cnt = wcs.getCount(word);
 			double tf = Math.log(cnt) + 1;
-			double doc_freq = ir.docFreq(new Term(IndexFieldName.CONTENT, word));
+			double doc_freq = ir.docFreq(new Term(CommonFieldNames.CONTENT, word));
 			double num_docs = ir.maxDoc() + 1;
 			double idf = Math.log((num_docs + 1) / doc_freq);
 			double tfidf = tf * idf;
@@ -352,7 +352,7 @@ public class Experiments {
 				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(eqlm, wordIndexer));
 				docScores = SearcherUtils.search(lbq, is, 1000);
 
-				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, IndexFieldName.CONTENT);
+				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 				RelevanceModelBuilder rmb = new RelevanceModelBuilder();
 				SparseVector rm = rmb.getRelevanceModel(wcb, docScores);
@@ -404,7 +404,7 @@ public class Experiments {
 				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(eqlm, wordIndexer));
 				docScores = SearcherUtils.search(lbq, is, 1000);
 
-				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, IndexFieldName.CONTENT);
+				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 				DocumentCentralityEstimator dce = new DocumentCentralityEstimator(wcb);
 				SparseVector docPriors = dce.estimate();
@@ -468,7 +468,7 @@ public class Experiments {
 				for (int k = 0, l = 0; k < docScores.size() && l < 10; k++) {
 					int docid = docScores.indexAtLoc(k);
 					double score = docScores.valueAtLoc(k);
-					String title = wis.getIndexReader().document(docid).get(IndexFieldName.TITLE);
+					String title = wis.getIndexReader().document(docid).get(CommonFieldNames.TITLE);
 					if (WikiDataHandler.accept(stopPrefixes, title)) {
 						wwcs.incrementAll(AnalyzerUtils.getWordCounts(title, analyzer));
 						l++;
@@ -489,7 +489,7 @@ public class Experiments {
 				lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(qlm, wordIndexer));
 				docScores = SearcherUtils.search(lbq, is, 500);
 
-				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, IndexFieldName.CONTENT);
+				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 				RelevanceModelBuilder rmb = new RelevanceModelBuilder();
 				SparseVector rm = rmb.getRelevanceModel(wcb, docScores);
@@ -550,7 +550,7 @@ public class Experiments {
 				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(qlm1, wordIndexer));
 				SparseVector docScores = SearcherUtils.search(lbq, is, num_ret_docs);
 
-				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, IndexFieldName.CONTENT);
+				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 				KLDivergenceScorer scorer = new KLDivergenceScorer();
 				// scorer.score(wcb, qlm1);
@@ -609,7 +609,7 @@ public class Experiments {
 				for (int k = 0; k < tfidfs.size(); k++) {
 					int w = tfidfs.indexAtLoc(k);
 					String word = wordIndexer.getObject(w);
-					double doc_freq = ir.docFreq(new Term(IndexFieldName.CONTENT, word));
+					double doc_freq = ir.docFreq(new Term(CommonFieldNames.CONTENT, word));
 					double tf = Math.log(tfidfs.valueAtLoc(k)) + 1;
 					double num_docs = ir.maxDoc();
 					double idf = Math.log((num_docs + 1) / doc_freq);
@@ -673,7 +673,7 @@ public class Experiments {
 				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(qlm1, wordIndexer));
 				SparseVector docScores = SearcherUtils.search(lbq, is, num_ret_docs);
 
-				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, IndexFieldName.CONTENT);
+				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 				KLDivergenceScorer scorer = new KLDivergenceScorer();
 				// scorer.score(wcb, qlm1);
@@ -737,7 +737,7 @@ public class Experiments {
 				SparseVector docScores = SearcherUtils.search(lbq, is, num_ret_docs);
 				SparseVector docPriors = docScores.copy();
 
-				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, IndexFieldName.CONTENT);
+				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 				double[] qwv = getVectorSum(ir, vSearcher, qwcs);
 				double[][] dwvs = new double[num_ret_docs][];
@@ -833,7 +833,7 @@ public class Experiments {
 				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(eqlm, wordIndexer));
 				SparseVector docScores = SearcherUtils.search(lbq, is, 1000);
 
-				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, IndexFieldName.CONTENT);
+				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 				ParsimoniousLanguageModelEstimator e = new ParsimoniousLanguageModelEstimator(wcb);
 				e.estimate();
@@ -930,8 +930,8 @@ public class Experiments {
 					int sentId = sentScores.indexAtLoc(k);
 					double score = sentScores.valueAtLoc(k);
 					Document doc = sis.doc(sentId);
-					String sent = doc.get(IndexFieldName.CONTENT);
-					String docId = doc.get(IndexFieldName.DOCUMENT_ID);
+					String sent = doc.get(CommonFieldNames.CONTENT);
+					String docId = doc.get(CommonFieldNames.DOCUMENT_ID);
 					// logWriter.write(String.format("\n%d\t%s\t%s\t%s", k + 1,
 					// did, score, sent));
 					cm.incrementCount(docId, sentId, score);
@@ -959,7 +959,7 @@ public class Experiments {
 
 				SparseVector expQLM = qlm.copy();
 
-				WordCountBox wcb1 = WordCountBox.getWordCountBox(siss[i].getIndexReader(), sentScores, wordIndexer, IndexFieldName.CONTENT);
+				WordCountBox wcb1 = WordCountBox.getWordCountBox(siss[i].getIndexReader(), sentScores, wordIndexer, CommonFieldNames.CONTENT);
 
 				RelevanceModelBuilder rmb = new RelevanceModelBuilder(10, 15, 20);
 				SparseVector rm = rmb.getRelevanceModel(wcb1, sentScores);
@@ -970,7 +970,7 @@ public class Experiments {
 
 				expQLM = VectorMath.addAfterScale(qlm, rm, 1 - mixture, mixture);
 
-				WordCountBox wcb2 = WordCountBox.getWordCountBox(iss[i].getIndexReader(), docScores, wordIndexer, IndexFieldName.CONTENT);
+				WordCountBox wcb2 = WordCountBox.getWordCountBox(iss[i].getIndexReader(), docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 				KLDivergenceScorer scorer = new KLDivergenceScorer();
 				docScores = scorer.score(wcb2, expQLM);
@@ -1014,8 +1014,8 @@ public class Experiments {
 					int sentId = sentScores.indexAtLoc(k);
 					double score = sentScores.valueAtLoc(k);
 					Document doc = sis.doc(sentId);
-					String sent = doc.get(IndexFieldName.CONTENT);
-					String docId = doc.get(IndexFieldName.DOCUMENT_ID);
+					String sent = doc.get(CommonFieldNames.CONTENT);
+					String docId = doc.get(CommonFieldNames.DOCUMENT_ID);
 					logWriter.write(String.format("\n%d\t%s\t%s\t%s", k + 1, docId, score, sent));
 					cm.incrementCount(docId, sentId, score);
 				}
@@ -1078,7 +1078,7 @@ public class Experiments {
 				for (int k = 0; k < docScores.size(); k++) {
 					int docid = docScores.indexAtLoc(k);
 					double score = docScores.valueAtLoc(k);
-					String title = wis.getIndexReader().document(docid).get(IndexFieldName.TITLE);
+					String title = wis.getIndexReader().document(docid).get(CommonFieldNames.TITLE);
 					if (WikiDataHandler.accept(stopPrefixes, title)) {
 						titleScores.setCount(title, score);
 					}

@@ -15,7 +15,7 @@ import org.apache.lucene.search.IndexSearcher;
 
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.medical.clef.ehealth_2014.AbbreviationExtractor;
 import ohs.ir.medical.general.SearcherUtils;
 import ohs.ling.struct.Span;
@@ -45,8 +45,8 @@ public class ExtractAbbreviations {
 				System.out.printf("\r[%d / %d, %s]", i + 1, maxDoc, stopWatch.stop());
 			}
 			Document doc = indexReader.document(i);
-			String docId = doc.getField(IndexFieldName.DOCUMENT_ID).stringValue();
-			String content = doc.getField(IndexFieldName.CONTENT).stringValue();
+			String docId = doc.getField(CommonFieldNames.DOCUMENT_ID).stringValue();
+			String content = doc.getField(CommonFieldNames.CONTENT).stringValue();
 			content = content.replaceAll("<NL>", "\n");
 
 			String[] sents = content.split("\n");

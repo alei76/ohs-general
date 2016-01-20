@@ -15,7 +15,7 @@ import org.apache.lucene.search.IndexSearcher;
 
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.medical.general.SearcherUtils;
 import ohs.ling.struct.Span;
 import ohs.types.Counter;
@@ -47,10 +47,10 @@ public class AbbreviationExtracting {
 				System.out.printf("\r[%d / %d, %s]", i + 1, maxDoc, stopWatch.stop());
 			}
 			Document doc = indexReader.document(i);
-			String docId = doc.getField(IndexFieldName.DOCUMENT_ID).stringValue();
-			String date = doc.getField(IndexFieldName.DATE).stringValue();
-			String url = doc.getField(IndexFieldName.URL).stringValue();
-			String content = doc.getField(IndexFieldName.CONTENT).stringValue();
+			String docId = doc.getField(CommonFieldNames.DOCUMENT_ID).stringValue();
+			String date = doc.getField(CommonFieldNames.DATE).stringValue();
+			String url = doc.getField(CommonFieldNames.URL).stringValue();
+			String content = doc.getField(CommonFieldNames.CONTENT).stringValue();
 			content = content.replaceAll("<NL>", "\n");
 
 			String[] sents = content.split("\n");

@@ -28,10 +28,11 @@ import de.tudarmstadt.ukp.wikipedia.parser.ParsedPage;
 import de.tudarmstadt.ukp.wikipedia.parser.Section;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.ir.medical.general.MIRPath;
 import ohs.ir.medical.general.SearcherUtils;
@@ -181,8 +182,8 @@ public class ICDHandler {
 						break;
 					}
 
-					String title = doc.getField(IndexFieldName.TITLE).stringValue();
-					String wikiText = doc.getField(IndexFieldName.CONTENT).stringValue();
+					String title = doc.getField(CommonFieldNames.TITLE).stringValue();
+					String wikiText = doc.getField(CommonFieldNames.CONTENT).stringValue();
 
 					page = parser.parse(wikiText);
 
@@ -211,8 +212,8 @@ public class ICDHandler {
 					continue;
 				}
 
-				String title = doc.getField(IndexFieldName.TITLE).stringValue();
-				String wikiText = doc.getField(IndexFieldName.CONTENT).stringValue();
+				String title = doc.getField(CommonFieldNames.TITLE).stringValue();
+				String wikiText = doc.getField(CommonFieldNames.CONTENT).stringValue();
 				String newLine = StrUtils.join("\t", new String[] { chapter, section, subSection, title, wikiText.replace("\n", "<NL>") });
 
 				writer.write(newLine + "\n");
@@ -248,8 +249,8 @@ public class ICDHandler {
 				continue;
 			}
 
-			String title = doc.getField(IndexFieldName.TITLE).stringValue();
-			String wikiText = doc.getField(IndexFieldName.CONTENT).stringValue();
+			String title = doc.getField(CommonFieldNames.TITLE).stringValue();
+			String wikiText = doc.getField(CommonFieldNames.CONTENT).stringValue();
 
 			ParsedPage page = parser.parse(wikiText);
 
@@ -452,7 +453,7 @@ public class ICDHandler {
 		if (docId == null) {
 			BooleanQuery searchQuery = new BooleanQuery();
 			searchQuery
-					.add(new BooleanClause(new TermQuery(new Term(IndexFieldName.REDIRECT_TITLE, wikiTitle.toLowerCase())), Occur.SHOULD));
+					.add(new BooleanClause(new TermQuery(new Term(CommonFieldNames.REDIRECT_TITLE, wikiTitle.toLowerCase())), Occur.SHOULD));
 			TopDocs topDocs = indexSearcher.search(searchQuery, 1);
 			if (topDocs.scoreDocs.length > 0) {
 				ret = indexSearcher.getIndexReader().document(topDocs.scoreDocs[0].doc);

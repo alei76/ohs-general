@@ -10,7 +10,7 @@ import org.apache.lucene.search.IndexSearcher;
 
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.medical.general.DocumentIdMapper;
 import ohs.ir.medical.general.MIRPath;
 import ohs.ir.medical.general.NLPUtils;
@@ -78,8 +78,8 @@ public class DataHandler {
 				for (int k = 0; k < docIds.size() && k < 20; k++) {
 					String docId = docIds.get(k);
 					Document doc = indexSearcher.doc(Integer.parseInt(docId));
-					String title = doc.get(IndexFieldName.TITLE);
-					String content = doc.get(IndexFieldName.CONTENT);
+					String title = doc.get(CommonFieldNames.TITLE);
+					String content = doc.get(CommonFieldNames.CONTENT);
 					content = StrUtils.join("\n", NLPUtils.tokenize(content));
 
 					if (dataFileName.contains("WIKI")) {
@@ -123,8 +123,8 @@ public class DataHandler {
 				String docId = docIds.get(k);
 				String newDocId = docIdMap.getKey(docId);
 				Document doc = indexSearcher.doc(Integer.parseInt(newDocId));
-				String title = doc.get(IndexFieldName.TITLE);
-				String content = doc.get(IndexFieldName.CONTENT);
+				String title = doc.get(CommonFieldNames.TITLE);
+				String content = doc.get(CommonFieldNames.CONTENT);
 				content = StrUtils.join("\n", NLPUtils.tokenize(content));
 				sb.append(String.format("Document-%d: %f\n%s\n%s\n", k + 1, docRelevances.getCount(docId), title, content));
 			}

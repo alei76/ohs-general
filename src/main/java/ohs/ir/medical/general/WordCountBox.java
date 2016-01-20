@@ -17,7 +17,7 @@ import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.util.BytesRef;
 
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
@@ -50,7 +50,7 @@ public class WordCountBox {
 	}
 
 	public static WordCountBox getWordCountBox(IndexReader ir, SparseVector docScores, Indexer<String> wordIndexer) throws Exception {
-		return getWordCountBox(ir, docScores, wordIndexer, IndexFieldName.CONTENT);
+		return getWordCountBox(ir, docScores, wordIndexer, CommonFieldNames.CONTENT);
 	}
 
 	public static WordCountBox getWordCountBox(IndexReader ir, SparseVector docScores, Indexer<String> wordIndexer, String field)
@@ -138,7 +138,7 @@ public class WordCountBox {
 		SparseVector collWordCounts = VectorUtils.toSparseVector(c1);
 		SparseVector docFreqs = VectorUtils.toSparseVector(c2);
 
-		double cnt_sum_in_coll = ir.getSumTotalTermFreq(IndexFieldName.CONTENT);
+		double cnt_sum_in_coll = ir.getSumTotalTermFreq(CommonFieldNames.CONTENT);
 
 		WordCountBox ret = new WordCountBox(dwcs, collWordCounts, cnt_sum_in_coll, docFreqs, ir.maxDoc(), docWords);
 		ret.setWordIndexer(wordIndexer);

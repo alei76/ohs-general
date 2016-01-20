@@ -16,7 +16,7 @@ import ohs.io.TextFileWriter;
 import ohs.ir.eval.Performance;
 import ohs.ir.eval.PerformanceEvaluator;
 import ohs.ir.lucene.common.AnalyzerUtils;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.ir.medical.general.DocumentIdMapper;
 import ohs.ir.medical.general.HyperParameter;
@@ -285,11 +285,11 @@ public class TrecSearcher {
 
 				// SparseVector wikiScores = SearcherUtils.search(lbq, wikiIndexSearcher, 50);
 
-				WordCountBox wcb1 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.TITLE);
-				WordCountBox wcb2 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.ABSTRACT);
-				WordCountBox wcb3 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.CONTENT);
+				WordCountBox wcb1 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, CommonFieldNames.TITLE);
+				WordCountBox wcb2 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, CommonFieldNames.ABSTRACT);
+				WordCountBox wcb3 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, CommonFieldNames.CONTENT);
 				// WordCountBox wcb4 = WordCountBox.getWordCountBox(wikiIndexSearcher.getIndexReader(), wikiScores, wordIndexer,
-				// IndexFieldName.CONTENT);
+				// CommonFieldNames.CONTENT);
 
 				// KLDivergenceScorer kldScorer = new KLDivergenceScorer();
 				// docScores = kldScorer.scoreDocuments(wcb3, expQueryModel);
@@ -310,7 +310,7 @@ public class TrecSearcher {
 			BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQueryModel, wordIndexer));
 			docScores = SearcherUtils.search(lbq, indexSearcher, 1000);
 
-			WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.CONTENT);
+			WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 			KLDivergenceScorer kldScorer = new KLDivergenceScorer();
 			docScores = kldScorer.score(wcb, expQueryModel);
@@ -439,7 +439,7 @@ public class TrecSearcher {
 			BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQLM, wordIndexer));
 			docScores = SearcherUtils.search(lbq, indexSearcher, 1000);
 
-			WordCountBox wcb3 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.CONTENT);
+			WordCountBox wcb3 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 			RelevanceModelBuilder rmb = new RelevanceModelBuilder(10, 15, 20);
 			SparseVector rm = rmb.getRelevanceModel(wcb3, docScores);
@@ -452,7 +452,7 @@ public class TrecSearcher {
 			lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQLM, wordIndexer));
 			docScores = SearcherUtils.search(lbq, indexSearcher, 1000);
 
-			WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.CONTENT);
+			WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 			KLDivergenceScorer kldScorer = new KLDivergenceScorer();
 			docScores = kldScorer.score(wcb, expQLM);
@@ -523,12 +523,12 @@ public class TrecSearcher {
 
 				// SparseVector wikiScores = SearcherUtils.search(lbq, wikiIndexSearcher, 50);
 
-				WordCountBox wcb1 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.TITLE);
-				WordCountBox wcb2 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.ABSTRACT);
-				WordCountBox wcb3 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.CONTENT);
+				WordCountBox wcb1 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, CommonFieldNames.TITLE);
+				WordCountBox wcb2 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, CommonFieldNames.ABSTRACT);
+				WordCountBox wcb3 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 				// WordCountBox wcb4 = WordCountBox.getWordCountBox(wikiIndexSearcher.getIndexReader(), wikiScores, wordIndexer,
-				// IndexFieldName.CONTENT);
+				// CommonFieldNames.CONTENT);
 
 				// KLDivergenceScorer kldScorer = new KLDivergenceScorer();
 				// docScores = kldScorer.scoreDocuments(wcb3, expQueryModel);
@@ -561,7 +561,7 @@ public class TrecSearcher {
 			BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQueryModel, wordIndexer));
 			docScores = SearcherUtils.search(lbq, indexSearcher, 1000);
 
-			WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.CONTENT);
+			WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 			KLDivergenceScorer kldScorer = new KLDivergenceScorer();
 			docScores = kldScorer.score(wcb, expQueryModel);
@@ -670,9 +670,9 @@ public class TrecSearcher {
 
 			// SparseVector wikiScores = SearcherUtils.search(lbq, wikiIndexSearcher, 50);
 
-			// WordCountBox wcb1 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.TITLE);
-			// WordCountBox wcb2 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.ABSTRACT);
-			WordCountBox wcb3 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.CONTENT);
+			// WordCountBox wcb1 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, CommonFieldNames.TITLE);
+			// WordCountBox wcb2 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, CommonFieldNames.ABSTRACT);
+			WordCountBox wcb3 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 			ProximityRelevanceModelBuilder rmb = new ProximityRelevanceModelBuilder(wordIndexer, 10, 15, 2000, 1, false);
 			rmb.computeWordProximities(expQueryModel, docScores, wcb3);
@@ -686,7 +686,7 @@ public class TrecSearcher {
 			lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQueryModel, wordIndexer));
 			docScores = SearcherUtils.search(lbq, indexSearcher, 1000);
 
-			WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.CONTENT);
+			WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 			KLDivergenceScorer kldScorer = new KLDivergenceScorer();
 			docScores = kldScorer.score(wcb, expQueryModel);

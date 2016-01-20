@@ -14,7 +14,7 @@ import org.apache.lucene.search.IndexSearcher;
 
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.medical.clef.ehealth_2014.AbbreviationExtractor;
 import ohs.ling.struct.Span;
 import ohs.types.Counter;
@@ -76,8 +76,8 @@ public class AbbreviationCollector {
 				}
 
 				Document doc = ir.document(j);
-				String docId = doc.getField(IndexFieldName.DOCUMENT_ID).stringValue();
-				String content = doc.getField(IndexFieldName.CONTENT).stringValue();
+				String docId = doc.getField(CommonFieldNames.DOCUMENT_ID).stringValue();
+				String content = doc.getField(CommonFieldNames.CONTENT).stringValue();
 				// content = content.replaceAll("<NL>", "\n");
 
 				content = StrUtils.join("\n", NLPUtils.tokenize(content));

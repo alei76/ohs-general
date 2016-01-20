@@ -61,6 +61,7 @@ public class JaroWinkler implements SimScorer {
 		this.jaro = innerDistance;
 	}
 
+	@Override
 	public double getSimilarity(Sequence s, Sequence t) {
 		double dist = jaro.getSimilarity(s, t);
 		if (dist < 0 || dist > 1)

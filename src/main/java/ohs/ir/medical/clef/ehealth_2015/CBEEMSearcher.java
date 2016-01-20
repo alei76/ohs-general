@@ -26,7 +26,7 @@ import org.apache.lucene.util.BytesRef;
 import edu.stanford.nlp.stats.IntCounter;
 import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.medical.general.HyperParameter;
 import ohs.ir.medical.general.MIRPath;
 import ohs.ir.medical.general.SearcherUtils;
@@ -787,7 +787,7 @@ public class CBEEMSearcher {
 				double score = docScores.valueAtLoc(j);
 				Document doc = indexReader.document(docId);
 
-				Terms termVector = indexReader.getTermVector(docId, IndexFieldName.CONTENT);
+				Terms termVector = indexReader.getTermVector(docId, CommonFieldNames.CONTENT);
 
 				if (termVector == null) {
 					continue;
@@ -838,13 +838,13 @@ public class CBEEMSearcher {
 			IntCounter counter = new IntCounter();
 			for (int w : wordsInFB) {
 				String word = wordIndexer.getObject(w);
-				Term termInstance = new Term(IndexFieldName.CONTENT, word);
+				Term termInstance = new Term(CommonFieldNames.CONTENT, word);
 				double count = indexReader.totalTermFreq(termInstance);
 				counter.setCount(w, count);
 			}
 			collWordCountData.add(counter);
 
-			cnt_sum_in_each_coll[i] = indexReader.getSumTotalTermFreq(IndexFieldName.CONTENT);
+			cnt_sum_in_each_coll[i] = indexReader.getSumTotalTermFreq(CommonFieldNames.CONTENT);
 			num_docs_in_each_coll[i] = indexReader.maxDoc();
 		}
 

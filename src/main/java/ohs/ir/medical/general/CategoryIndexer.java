@@ -15,7 +15,7 @@ import org.apache.lucene.index.IndexWriter;
 
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.types.Counter;
 import ohs.types.ListMap;
 import ohs.utils.StopWatch;
@@ -86,17 +86,17 @@ public class CategoryIndexer {
 
 			for (int indexId : ids) {
 				Document doc = indexReader.document(indexId);
-				String title = doc.getField(IndexFieldName.TITLE).stringValue();
-				String text = doc.getField(IndexFieldName.CONTENT).stringValue();
+				String title = doc.getField(CommonFieldNames.TITLE).stringValue();
+				String text = doc.getField(CommonFieldNames.CONTENT).stringValue();
 
 				sb1.append(String.format("%s\n%s\n\n", title, text));
 				sb2.append(indexId + " ");
 			}
 
 			Document doc = new Document();
-			doc.add(new TextField(IndexFieldName.DOCUMENT_ID, sb2.toString().trim(), Field.Store.YES));
-			doc.add(new TextField(IndexFieldName.TITLE, cat, Store.YES));
-			doc.add(new TextField(IndexFieldName.CONTENT, sb1.toString().trim(), Store.NO));
+			doc.add(new TextField(CommonFieldNames.DOCUMENT_ID, sb2.toString().trim(), Field.Store.YES));
+			doc.add(new TextField(CommonFieldNames.TITLE, cat, Store.YES));
+			doc.add(new TextField(CommonFieldNames.CONTENT, sb1.toString().trim(), Store.NO));
 
 			indexWriter.addDocument(doc);
 		}
@@ -118,10 +118,10 @@ public class CategoryIndexer {
 				System.out.printf("\r[%d/%d, %s]", i, indexReader.maxDoc(), stopWatch.stop());
 			}
 			Document doc = indexReader.document(i);
-			String docId = doc.getField(IndexFieldName.DOCUMENT_ID).stringValue();
-			String title = doc.getField(IndexFieldName.TITLE).stringValue();
-			String text = doc.getField(IndexFieldName.CONTENT).stringValue();
-			String catText = doc.getField(IndexFieldName.CATEGORY).stringValue().trim();
+			String docId = doc.getField(CommonFieldNames.DOCUMENT_ID).stringValue();
+			String title = doc.getField(CommonFieldNames.TITLE).stringValue();
+			String text = doc.getField(CommonFieldNames.CONTENT).stringValue();
+			String catText = doc.getField(CommonFieldNames.CATEGORY).stringValue().trim();
 
 			for (String cat : catText.split("\n")) {
 				cat = cat.trim();

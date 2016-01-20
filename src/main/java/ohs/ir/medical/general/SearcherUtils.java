@@ -13,7 +13,7 @@ import org.apache.lucene.store.FSDirectory;
 
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.AnalyzerUtils;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
@@ -45,7 +45,7 @@ public class SearcherUtils {
 	}
 
 	public static QueryParser getQueryParser() throws Exception {
-		QueryParser ret = new QueryParser(IndexFieldName.CONTENT, MedicalEnglishAnalyzer.newAnalyzer());
+		QueryParser ret = new QueryParser(CommonFieldNames.CONTENT, MedicalEnglishAnalyzer.newAnalyzer());
 		return ret;
 	}
 

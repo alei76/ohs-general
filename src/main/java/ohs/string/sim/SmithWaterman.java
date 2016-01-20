@@ -73,6 +73,7 @@ public class SmithWaterman implements SimScorer {
 		return ret;
 	}
 
+	@Override
 	public double getSimilarity(Sequence s, Sequence t) {
 		MemoMatrix m = compute(s, t);
 		double score = m.getMaxScore();

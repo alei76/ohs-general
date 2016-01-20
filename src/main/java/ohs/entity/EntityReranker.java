@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.stanford.nlp.io.EncodingPrintWriter.out;
 import ohs.io.TextFileWriter;
 import ohs.string.search.ppss.StringRecord;
 import ohs.types.Counter;

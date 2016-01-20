@@ -11,7 +11,7 @@ import org.apache.lucene.search.IndexSearcher;
 
 import ohs.io.FileUtils;
 import ohs.ir.lucene.common.AnalyzerUtils;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.ir.medical.general.MIRPath;
 import ohs.ir.medical.general.NLPUtils;
@@ -91,8 +91,8 @@ public class EntityContextGenerator {
 
 			Entity ent = ents.get(i);
 			Document doc = is.doc(ent.getId());
-			String content = doc.get(IndexFieldName.CONTENT);
-			String catStr = doc.get(IndexFieldName.CATEGORY);
+			String content = doc.get(CommonFieldNames.CONTENT);
+			String catStr = doc.get(CommonFieldNames.CATEGORY);
 
 			String[] lines = content.split("\n\n");
 
@@ -108,13 +108,13 @@ public class EntityContextGenerator {
 
 			// Counter<String> wcs =
 			// WordCountBox.getWordCounts(is.getIndexReader(), ent.getId(),
-			// IndexFieldName.CONTENT);
+			// CommonFieldNames.CONTENT);
 			Counter<String> wcs1 = AnalyzerUtils.getWordCounts(sents.get(0), analyzer);
 			Counter<String> wcs2 = AnalyzerUtils.getWordCounts(catStr, analyzer);
 
 			wcs1.incrementAll(wcs2);
 
-			Counter<String> dfs = WordCountBox.getDocFreqs(is.getIndexReader(), IndexFieldName.CONTENT, wcs1.keySet());
+			Counter<String> dfs = WordCountBox.getDocFreqs(is.getIndexReader(), CommonFieldNames.CONTENT, wcs1.keySet());
 
 			for (String word : wcs1.keySet()) {
 				double cnt = wcs1.getCount(word);

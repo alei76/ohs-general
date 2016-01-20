@@ -68,6 +68,7 @@ public class Jaro implements SimScorer {
 		return new StringSequence(common);
 	}
 
+	@Override
 	public double getSimilarity(Sequence s, Sequence t) {
 		int halflen = halfLengthOfShorter(s, t);
 		Sequence common1 = common(s, t, halflen);

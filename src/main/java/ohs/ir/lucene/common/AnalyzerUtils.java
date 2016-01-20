@@ -17,7 +17,7 @@ import ohs.types.Indexer;
 public class AnalyzerUtils {
 
 	public static BooleanQuery getQuery(Counter<String> wordCounts) throws Exception {
-		return getQuery(wordCounts, IndexFieldName.CONTENT);
+		return getQuery(wordCounts, CommonFieldNames.CONTENT);
 	}
 
 	public static BooleanQuery getQuery(Counter<String> wordCounts, String field) throws Exception {
@@ -34,7 +34,7 @@ public class AnalyzerUtils {
 	}
 
 	public static BooleanQuery getQuery(List<String> words) throws Exception {
-		return getQuery(words, IndexFieldName.CONTENT);
+		return getQuery(words, CommonFieldNames.CONTENT);
 	}
 
 	public static BooleanQuery getQuery(List<String> words, String field) throws Exception {
@@ -49,7 +49,7 @@ public class AnalyzerUtils {
 	}
 
 	public static BooleanQuery getQuery(String text, Analyzer analyzer) throws Exception {
-		return getQuery(text, analyzer, IndexFieldName.CONTENT);
+		return getQuery(text, analyzer, CommonFieldNames.CONTENT);
 	}
 
 	public static BooleanQuery getQuery(String text, Analyzer analyzer, String field) throws Exception {
@@ -71,7 +71,7 @@ public class AnalyzerUtils {
 	public static Counter<String> getWordCounts(String text, Analyzer analyzer) throws Exception {
 		Counter<String> ret = new Counter<String>();
 
-		TokenStream ts = analyzer.tokenStream(IndexFieldName.CONTENT, text);
+		TokenStream ts = analyzer.tokenStream(CommonFieldNames.CONTENT, text);
 		CharTermAttribute attr = ts.addAttribute(CharTermAttribute.class);
 		ts.reset();
 
@@ -96,7 +96,7 @@ public class AnalyzerUtils {
 	}
 
 	public static List<String> getWords(String text, Analyzer analyzer) throws Exception {
-		TokenStream ts = analyzer.tokenStream(IndexFieldName.CONTENT, text);
+		TokenStream ts = analyzer.tokenStream(CommonFieldNames.CONTENT, text);
 		CharTermAttribute attr = ts.addAttribute(CharTermAttribute.class);
 		ts.reset();
 

@@ -26,7 +26,7 @@ import org.apache.lucene.search.similarities.LMDirichletSimilarity;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.ir.medical.general.SearcherUtils;
 import ohs.math.VectorUtils;
@@ -49,7 +49,7 @@ public class SearchDocuments {
 
 		for (int i = 0; i < lines.length; i++) {
 			String line = lines[i];
-			TokenStream ts = analyzer.tokenStream(IndexFieldName.CONTENT, line);
+			TokenStream ts = analyzer.tokenStream(CommonFieldNames.CONTENT, line);
 			CharTermAttribute attr = ts.addAttribute(CharTermAttribute.class);
 			ts.reset();
 
@@ -69,7 +69,7 @@ public class SearchDocuments {
 		List<TermQuery> ret = new ArrayList<TermQuery>();
 		for (int i = 0; i < words.size(); i++) {
 			String word = words.get(i);
-			TermQuery tq = new TermQuery(new Term(IndexFieldName.CONTENT, word));
+			TermQuery tq = new TermQuery(new Term(CommonFieldNames.CONTENT, word));
 			ret.add(tq);
 		}
 		return ret;
@@ -239,8 +239,8 @@ public class SearchDocuments {
 				double score = scoreDoc.score;
 				Document doc = indexSearcher.getIndexReader().document(indexId);
 
-				String docId = doc.getField(IndexFieldName.DOCUMENT_ID).stringValue();
-				String content = doc.getField(IndexFieldName.CONTENT).stringValue();
+				String docId = doc.getField(CommonFieldNames.DOCUMENT_ID).stringValue();
+				String content = doc.getField(CommonFieldNames.CONTENT).stringValue();
 
 				sb.append(String.format("%s\t%d\t%s\n",
 

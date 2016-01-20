@@ -18,7 +18,7 @@ import org.apache.lucene.util.BytesRef;
 
 import edu.stanford.nlp.stats.IntCounter;
 import ohs.io.TextFileWriter;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.medical.clef.ehealth_2015.CentralityEstimator;
 import ohs.ir.medical.general.SearcherUtils;
 import ohs.math.ArrayMath;
@@ -97,7 +97,7 @@ public class ESASearcher {
 		this.esa = esa;
 
 		indexSearcher = SearcherUtils.getIndexSearcher(indexDir.getPath());
-		cnt_sum_in_coll = indexSearcher.getIndexReader().getSumTotalTermFreq(IndexFieldName.CONTENT);
+		cnt_sum_in_coll = indexSearcher.getIndexReader().getSumTotalTermFreq(CommonFieldNames.CONTENT);
 		num_docs_in_coll = indexSearcher.getIndexReader().maxDoc();
 	}
 
@@ -112,7 +112,7 @@ public class ESASearcher {
 			double score = docScores.valueAtLoc(j);
 			Document doc = indexReader.document(docId);
 
-			Terms termVector = indexReader.getTermVector(docId, IndexFieldName.CONTENT);
+			Terms termVector = indexReader.getTermVector(docId, CommonFieldNames.CONTENT);
 
 			if (termVector == null) {
 				continue;
@@ -146,7 +146,7 @@ public class ESASearcher {
 
 		for (int w = 0; w < wordIndexer.size(); w++) {
 			String word = wordIndexer.getObject(w);
-			Term termInstance = new Term(IndexFieldName.CONTENT, word);
+			Term termInstance = new Term(CommonFieldNames.CONTENT, word);
 			double cnt = indexReader.totalTermFreq(termInstance);
 			double df = indexReader.docFreq(termInstance);
 			c2.setCount(w, cnt);

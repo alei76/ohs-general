@@ -69,6 +69,7 @@ public class EditDistance implements SimScorer {
 		return sm.get(s.length(), t.length());
 	}
 
+	@Override
 	public double getSimilarity(Sequence s, Sequence t) {
 		ScoreMatrix sm = compute(s, t);
 		double edit_dist = sm.get(s.length(), t.length());

@@ -16,7 +16,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.util.BytesRef;
 
 import ohs.io.FileUtils;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 
@@ -127,7 +127,7 @@ public class NumericalWordStats {
 			for (int j = 0; j < indexReader.maxDoc(); j++) {
 				Document doc = indexReader.document(j);
 
-				Terms termVector = indexReader.getTermVector(j, IndexFieldName.CONTENT);
+				Terms termVector = indexReader.getTermVector(j, CommonFieldNames.CONTENT);
 
 				if (termVector == null) {
 					continue;

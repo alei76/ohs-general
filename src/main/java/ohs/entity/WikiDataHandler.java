@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,7 +13,6 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.lucene.index.IndexFileNames;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
@@ -28,11 +26,10 @@ import org.xml.sax.InputSource;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.medical.general.SearcherUtils;
 import ohs.types.Counter;
-import ohs.types.CounterMap;
-import ohs.types.ListMap;
+import ohs.types.SetMap;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 
@@ -90,10 +87,9 @@ public class WikiDataHandler {
 
 		WikiDataHandler dh = new WikiDataHandler();
 		// dh.makeTextDump();
-		// dh.extractEntityNames();
+		dh.extractEntityNames();
 		// dh.extractCategories();
 		// dh.test();
-		dh.extractTitles();
 
 		String s = "Educational institutions established in 1861";
 
@@ -132,8 +128,7 @@ public class WikiDataHandler {
 
 	private Pattern rp2 = Pattern.compile("\\([^\\(\\)]+\\)");
 
-	private Pattern lp1 = Pattern
-			.compile("(rivers|cities|towns|mountains|seas|bridges|airports|buildings|places) (established )?(of|in)");
+	private Pattern lp1 = Pattern.compile("(rivers|cities|towns|mountains|seas|bridges|airports|buildings|places) (established )?(of|in)");
 
 	private Pattern op1 = Pattern.compile(
 			"(organizations|organisations|companies|agencies|institutions|institutes|clubs|universities|schools|colleges) (established|establishments|based) in");
@@ -159,14 +154,14 @@ public class WikiDataHandler {
 			// break;
 			// }
 
-			String title = ir.document(i).get(IndexFieldName.TITLE);
+			String title = ir.document(i).get(CommonFieldNames.TITLE);
 
 			if (!accept(stopPrefixes, title)) {
 				continue;
 			}
 
-			String catStr = ir.document(i).get(IndexFieldName.CATEGORY).toLowerCase();
-			String redirect = ir.document(i).get(IndexFieldName.REDIRECT_TITLE);
+			String catStr = ir.document(i).get(CommonFieldNames.CATEGORY).toLowerCase();
+			String redirect = ir.document(i).get(CommonFieldNames.REDIRECT_TITLE);
 
 			if (redirect.length() > 0) {
 				continue;
@@ -189,223 +184,114 @@ public class WikiDataHandler {
 
 		Set<String> stopPrefixes = getStopPrefixes();
 
-		ListMap<String, String> titleVariantMap = new ListMap<String, String>();
+		SetMap<String, String> titleVariantMap = new SetMap<String, String>();
 
-		int type = 3;
-		String outputFileName = ENTPath.NAME_PERSON_FILE;
-
-		if (type == 2) {
-			outputFileName = ENTPath.NAME_ORGANIZATION_FILE;
-		} else if (type == 3) {
-			outputFileName = ENTPath.NAME_LOCATION_FILE;
-		}
-
-		CounterMap<String, String> cm = Generics.newCounterMap();
-		Map<String, Integer> titleIdMap = Generics.newHashMap();
+		int chunk_size = ir.maxDoc() / 100;
 
 		for (int i = 0; i < ir.maxDoc(); i++) {
-			if ((i + 1) % 100000 == 0) {
-				System.out.printf("\r[%d/%d]", i + 1, ir.maxDoc());
+			if ((i + 1) % chunk_size == 0) {
+				int progess = (int) ((i + 1f) / ir.maxDoc() * 100);
+				System.out.printf("\r[%d percent]", progess);
 			}
 
-			// if (i == 1000) {
-			// break;
-			// }
+			String titleFrom = ir.document(i).get(CommonFieldNames.LOWER_TITLE);
 
-			String title = ir.document(i).get(IndexFieldName.TITLE);
-
-			if (!accept(stopPrefixes, title)) {
+			if (!accept(stopPrefixes, titleFrom)) {
 				continue;
 			}
 
-			String catStr = ir.document(i).get(IndexFieldName.CATEGORY).toLowerCase();
-			String redirect = ir.document(i).get(IndexFieldName.REDIRECT_TITLE);
+			// String catStr = ir.document(i).get(CommonFieldNames.CATEGORY).toLowerCase();
+			String titleTo = ir.document(i).get(CommonFieldNames.REDIRECT_TITLE);
+			// String content = ir.document(i).get(CommonFieldNames.CONTENT);
 
-			if (isValidTitle(type, catStr)) {
-				boolean isAdded = false;
-				if (redirect.length() > 0 && accept(stopPrefixes, redirect)) {
-					ScoreDoc[] hits = is.search(new TermQuery(new Term(IndexFieldName.TITLE, redirect)), 1).scoreDocs;
-					if (hits.length == 1) {
-						String catStr2 = is.doc(hits[0].doc).get(IndexFieldName.CATEGORY).toLowerCase();
-						if (isValidTitle(type, catStr2)) {
-							titleVariantMap.put(redirect, title);
-							titleIdMap.put(redirect, hits[0].doc);
-
-							isAdded = true;
-							Counter<String> c = Generics.newCounter();
-							for (String word : StrUtils.split("\\W+", catStr2)) {
-								c.incrementCount(word, 1);
-							}
-							cm.setCounter(redirect, c);
-						}
-					}
-				}
-				if (!isAdded) {
-					titleVariantMap.put(title, "");
-					titleIdMap.put(title, i);
-
-					Counter<String> c = Generics.newCounter();
-					for (String word : StrUtils.split("\\W+", catStr)) {
-						c.incrementCount(word, 1);
-					}
-					cm.setCounter(title, c);
-				}
+			if (titleTo.length() > 0 && accept(stopPrefixes, titleTo)) {
+				titleVariantMap.put(titleTo, titleFrom);
+			} else {
+				titleVariantMap.get(titleFrom, true);
 			}
 		}
 
-		List<String> keys = new ArrayList<String>(titleVariantMap.keySet());
-		Collections.sort(keys);
+		System.out.printf("\r[%d percent]\n", 100);
 
-		TextFileWriter writer = new TextFileWriter(outputFileName);
-		for (int i = 0; i < keys.size(); i++) {
-			String title = keys.get(i);
-			int id = titleIdMap.get(title);
-			String catStr = "none";
+		{
+			Set<String> titles = Generics.newHashSet(titleVariantMap.keySet());
+			Iterator<String> iter1 = titleVariantMap.keySet().iterator();
 
-			if (cm.getCounter(title).size() > 0) {
-				Counter<String> c = cm.getCounter(title);
-				catStr = c.toStringSortedByValues(true, false, c.size(), " ");
-			}
+			while (iter1.hasNext()) {
+				String title = iter1.next();
+				Set<String> variants = titleVariantMap.get(title);
 
-			List<String> variants = titleVariantMap.get(title);
-			Iterator<String> iter = variants.iterator();
-			while (iter.hasNext()) {
-				String variant = iter.next();
-				if (variant.length() == 0) {
-					iter.remove();
+				if (variants.size() == 1) {
+					continue;
 				}
+
+				Iterator<String> iter2 = variants.iterator();
+				while (iter2.hasNext()) {
+					String variant = iter2.next();
+					if (titles.contains(variant)) {
+						iter2.remove();
+					}
+				}
+
+				// if (variants.size() == 0) {
+				// iter1.remove();
+				// }
 			}
+		}
+
+		List<String> titles = new ArrayList<String>(titleVariantMap.keySet());
+		Collections.sort(titles);
+
+		String[] outputFileNames = { ENTPath.TITLE_FILE, ENTPath.NAME_PERSON_FILE, ENTPath.NAME_ORGANIZATION_FILE,
+				ENTPath.NAME_LOCATION_FILE };
+
+		TextFileWriter[] writers = new TextFileWriter[outputFileNames.length];
+
+		for (int i = 0; i < outputFileNames.length; i++) {
+			writers[i] = new TextFileWriter(outputFileNames[i]);
+		}
+
+		for (int i = 0; i < titles.size(); i++) {
+			String title = titles.get(i);
+			Set<String> variants = titleVariantMap.get(title);
+
+			ScoreDoc[] hits = is.search(new TermQuery(new Term(CommonFieldNames.LOWER_TITLE, title)), 1).scoreDocs;
+
+			if (hits.length == 0) {
+				continue;
+			}
+
+			int eid = hits[0].doc;
+			org.apache.lucene.document.Document doc = ir.document(eid);
+			String catStr = doc.get(CommonFieldNames.CONTENT);
+
 			String[] two = splitDisambiguationType(title);
-			writer.write(String.format("%d\t%s\t%s\t%s\t%s\n", id, two[0], two[1] == null ? "none" : two[1], catStr,
-					variants.size() == 0 ? "none" : StrUtils.join("|", variants)));
+			String output = String.format("%d\t%s\t%s\t%s\n", eid, two[0], two[1] == null ? "none" : two[1],
+					variants.size() == 0 ? "none" : StrUtils.join("|", new ArrayList<>(variants)));
+
+			writers[0].write(output);
+
+			if (isPersonName(catStr)) {
+				writers[1].write(output);
+			} else if (isOrganizationName(catStr)) {
+				writers[2].write(output);
+			} else if (isLocationName(catStr)) {
+				writers[3].write(output);
+			}
 		}
-		writer.close();
+
+		for (int i = 0; i < writers.length; i++) {
+			writers[i].close();
+		}
 
 		System.out.printf("\r[%d/%d]\n", ir.maxDoc(), ir.maxDoc());
-	}
 
-	public void extractTitles() throws Exception {
-		IndexSearcher is = SearcherUtils.getIndexSearcher("../../data/medical_ir/wiki/index");
-		IndexReader ir = is.getIndexReader();
-
-		Set<String> stopPrefixes = getStopPrefixes();
-
-		ListMap<String, String> titleVariantMap = new ListMap<String, String>();
-
-		String outputFileName = ENTPath.TITLE_FILE;
-
-		CounterMap<String, String> cm = Generics.newCounterMap();
-		Map<String, Integer> titleIdMap = Generics.newHashMap();
-
-		for (int i = 0; i < ir.maxDoc(); i++) {
-			if ((i + 1) % 100000 == 0) {
-				System.out.printf("\r[%d/%d]", i + 1, ir.maxDoc());
-			}
-
-			// if (i == 1000) {
-			// break;
-			// }
-
-			String title = ir.document(i).get(IndexFieldName.TITLE);
-
-			if (!accept(stopPrefixes, title)) {
-				continue;
-			}
-
-			String catStr = ir.document(i).get(IndexFieldName.CATEGORY).toLowerCase();
-			String redirect = ir.document(i).get(IndexFieldName.REDIRECT_TITLE);
-			String content = ir.document(i).get(IndexFieldName.CONTENT);
-
-			if (!title.contains("Samsung")) {
-				continue;
-			}
-
-			// if (!content.contains("does not have an article with this")) {
-			// continue;
-			// }
-
-			boolean isAdded = false;
-			if (redirect.length() > 0 && accept(stopPrefixes, redirect)) {
-				ScoreDoc[] hits = is.search(new TermQuery(new Term(IndexFieldName.TITLE, redirect)), 1).scoreDocs;
-				if (hits.length == 1) {
-					String catStr2 = is.doc(hits[0].doc).get(IndexFieldName.CATEGORY).toLowerCase();
-					titleVariantMap.put(redirect, title);
-					titleIdMap.put(redirect, hits[0].doc);
-
-					isAdded = true;
-					Counter<String> c = Generics.newCounter();
-					for (String word : StrUtils.split("\\W+", catStr2)) {
-						c.incrementCount(word, 1);
-					}
-					cm.setCounter(redirect, c);
-				}
-			}
-			if (!isAdded) {
-				titleVariantMap.put(title, "");
-				titleIdMap.put(title, i);
-
-				Counter<String> c = Generics.newCounter();
-				for (String word : StrUtils.split("\\W+", catStr)) {
-					c.incrementCount(word, 1);
-				}
-				cm.setCounter(title, c);
-			}
-		}
-
-		List<String> keys = new ArrayList<String>(titleVariantMap.keySet());
-		Collections.sort(keys);
-
-		TextFileWriter writer = new TextFileWriter(outputFileName);
-		for (int i = 0; i < keys.size(); i++) {
-			String title = keys.get(i);
-			int id = titleIdMap.get(title);
-			String catStr = "none";
-
-			if (cm.getCounter(title).size() > 0) {
-				Counter<String> c = cm.getCounter(title);
-				catStr = c.toStringSortedByValues(true, false, c.size(), " ");
-			}
-
-			List<String> variants = titleVariantMap.get(title);
-			Iterator<String> iter = variants.iterator();
-			while (iter.hasNext()) {
-				String variant = iter.next();
-				if (variant.length() == 0) {
-					iter.remove();
-				}
-			}
-			String[] two = splitDisambiguationType(title);
-			writer.write(String.format("%d\t%s\t%s\t%s\t%s\n", id, two[0], two[1] == null ? "none" : two[1], catStr,
-					variants.size() == 0 ? "none" : StrUtils.join("|", variants)));
-		}
-		writer.close();
-
-		System.out.printf("\r[%d/%d]\n", ir.maxDoc(), ir.maxDoc());
-	}
-
-	private String getDisambiguationType(String title) {
-		String ret = null;
-		Matcher m = rp2.matcher(title);
-		if (m.find()) {
-			ret = m.group();
-			ret = ret.substring(1, ret.length() - 1);
-		}
-		return ret;
-	}
-
-	private String getRedirect(String content) {
-		Matcher m = rp1.matcher(content);
-		String ret = null;
-		if (m.find()) {
-			ret = StrUtils.normalizeSpaces(m.group(1));
-		}
-		return ret;
 	}
 
 	private boolean isLocationName(String catStr) {
 		boolean ret = false;
-		if (catStr.contains("places") || catStr.contains("cities") || catStr.contains("countries")
-				|| catStr.contains("provinces") || catStr.contains("states") || catStr.contains("territories")) {
+		if (catStr.contains("places") || catStr.contains("cities") || catStr.contains("countries") || catStr.contains("provinces")
+				|| catStr.contains("states") || catStr.contains("territories")) {
 			ret = true;
 		}
 		return ret;
@@ -450,7 +336,10 @@ public class WikiDataHandler {
 
 	private boolean isValidTitle(int type, String catStr) {
 		boolean ret = false;
-		if (type == 1) {
+
+		if (type == 0) {
+			ret = true;
+		} else if (type == 1) {
 			ret = isPersonName(catStr);
 		} else if (type == 2) {
 			ret = isOrganizationName(catStr);

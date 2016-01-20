@@ -28,10 +28,11 @@ import de.tudarmstadt.ukp.wikipedia.parser.ParsedPage;
 import de.tudarmstadt.ukp.wikipedia.parser.Section;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.medical.general.MIRPath;
 import ohs.ir.medical.general.SearcherUtils;
 import ohs.types.Counter;
@@ -163,8 +164,8 @@ public class ICDHandler {
 				continue;
 			}
 
-			String title = doc.getField(IndexFieldName.TITLE).stringValue();
-			String wikiText = doc.getField(IndexFieldName.CONTENT).stringValue();
+			String title = doc.getField(CommonFieldNames.TITLE).stringValue();
+			String wikiText = doc.getField(CommonFieldNames.CONTENT).stringValue();
 
 			ParsedPage page = parser.parse(wikiText);
 
@@ -366,7 +367,7 @@ public class ICDHandler {
 
 		if (docId == null) {
 			BooleanQuery searchQuery = new BooleanQuery();
-			searchQuery.add(new BooleanClause(new TermQuery(new Term(IndexFieldName.LOWER_TITLE, wikiTitle)), Occur.SHOULD));
+			searchQuery.add(new BooleanClause(new TermQuery(new Term(CommonFieldNames.LOWER_TITLE, wikiTitle)), Occur.SHOULD));
 			TopDocs topDocs = indexSearcher.search(searchQuery, 1);
 			if (topDocs.scoreDocs.length > 0) {
 				ret = indexSearcher.getIndexReader().document(topDocs.scoreDocs[0].doc);
@@ -443,9 +444,9 @@ public class ICDHandler {
 					if (doc == null) {
 						continue;
 					} else {
-						String title = doc.getField(IndexFieldName.TITLE).stringValue();
-						String wikiText = doc.getField(IndexFieldName.CONTENT).stringValue();
-						String redirect = doc.getField(IndexFieldName.REDIRECT_TITLE).stringValue();
+						String title = doc.getField(CommonFieldNames.TITLE).stringValue();
+						String wikiText = doc.getField(CommonFieldNames.CONTENT).stringValue();
+						String redirect = doc.getField(CommonFieldNames.REDIRECT_TITLE).stringValue();
 
 						// page = parser.parse(wikiText);
 
@@ -464,8 +465,8 @@ public class ICDHandler {
 					continue;
 				}
 
-				String title = doc.getField(IndexFieldName.TITLE).stringValue();
-				String wikiText = doc.getField(IndexFieldName.CONTENT).stringValue();
+				String title = doc.getField(CommonFieldNames.TITLE).stringValue();
+				String wikiText = doc.getField(CommonFieldNames.CONTENT).stringValue();
 
 				if (wikiText.length() > 0) {
 					c.incrementCount("Page", 1);

@@ -11,7 +11,7 @@ import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.util.BytesRef;
 
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseMatrix;
@@ -184,7 +184,7 @@ public class PRFDocumentScorer {
 
 		for (int j = 0; j < indexScores.size(); j++) {
 			int indexId = indexScores.indexAtLoc(j);
-			Terms termVector = indexReader.getTermVector(indexId, IndexFieldName.CONTENT);
+			Terms termVector = indexReader.getTermVector(indexId, CommonFieldNames.CONTENT);
 
 			if (termVector == null) {
 				toRemove.add(indexId);

@@ -32,7 +32,7 @@ import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.ir.medical.general.MIRPath;
 import ohs.ir.medical.general.SearcherUtils;
@@ -176,9 +176,9 @@ public class ExtractICD10 {
 						break;
 					}
 
-					String docId = doc.getField(IndexFieldName.DOCUMENT_ID).stringValue();
-					String title = doc.getField(IndexFieldName.TITLE).stringValue();
-					String wikiText = doc.getField(IndexFieldName.CONTENT).stringValue();
+					String docId = doc.getField(CommonFieldNames.DOCUMENT_ID).stringValue();
+					String title = doc.getField(CommonFieldNames.TITLE).stringValue();
+					String wikiText = doc.getField(CommonFieldNames.CONTENT).stringValue();
 
 					page = parser.parse(wikiText);
 
@@ -205,9 +205,9 @@ public class ExtractICD10 {
 					continue;
 				}
 
-				String docId = doc.getField(IndexFieldName.DOCUMENT_ID).stringValue();
-				String title = doc.getField(IndexFieldName.TITLE).stringValue();
-				String wikiText = doc.getField(IndexFieldName.CONTENT).stringValue();
+				String docId = doc.getField(CommonFieldNames.DOCUMENT_ID).stringValue();
+				String title = doc.getField(CommonFieldNames.TITLE).stringValue();
+				String wikiText = doc.getField(CommonFieldNames.CONTENT).stringValue();
 
 				boolean isRelatedToDisease = false;
 
@@ -275,9 +275,9 @@ public class ExtractICD10 {
 				continue;
 			}
 
-			String docId = doc.getField(IndexFieldName.DOCUMENT_ID).stringValue();
-			String title = doc.getField(IndexFieldName.TITLE).stringValue();
-			String wikiText = doc.getField(IndexFieldName.CONTENT).stringValue();
+			String docId = doc.getField(CommonFieldNames.DOCUMENT_ID).stringValue();
+			String title = doc.getField(CommonFieldNames.TITLE).stringValue();
+			String wikiText = doc.getField(CommonFieldNames.CONTENT).stringValue();
 
 			ParsedPage page = parser.parse(wikiText);
 
@@ -528,7 +528,7 @@ public class ExtractICD10 {
 
 		if (docId == null) {
 			BooleanQuery searchQuery = new BooleanQuery();
-			searchQuery.add(new BooleanClause(new TermQuery(new Term(IndexFieldName.TITLE, wikiTitle.toLowerCase())), Occur.SHOULD));
+			searchQuery.add(new BooleanClause(new TermQuery(new Term(CommonFieldNames.TITLE, wikiTitle.toLowerCase())), Occur.SHOULD));
 			TopDocs topDocs = indexSearcher.search(searchQuery, 1);
 			if (topDocs.scoreDocs.length > 0) {
 				ret = indexSearcher.getIndexReader().document(topDocs.scoreDocs[0].doc);

@@ -20,7 +20,7 @@ import org.springframework.ui.Model;
 
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.medical.general.SearcherUtils;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
@@ -42,7 +42,7 @@ public class QueryClassifierTrainer {
 			int indexId = indexIds.get(j);
 			int typeId = typeIds.get(j);
 
-			Terms termVector = indexReader.getTermVector(indexId, IndexFieldName.CONTENT);
+			Terms termVector = indexReader.getTermVector(indexId, CommonFieldNames.CONTENT);
 
 			if (termVector == null) {
 				continue;

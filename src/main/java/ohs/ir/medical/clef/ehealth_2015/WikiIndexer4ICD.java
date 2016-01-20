@@ -16,7 +16,7 @@ import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.FlushTemplates;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
 import ohs.io.TextFileReader;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.medical.general.DocumentIndexer;
 import ohs.ir.medical.general.MIRPath;
 
@@ -104,11 +104,11 @@ public class WikiIndexer4ICD {
 			}
 
 			Document doc = new Document();
-			doc.add(new StringField(IndexFieldName.TITLE, title, Store.YES));
-			doc.add(new StringField(IndexFieldName.REDIRECT_TITLE, title.toLowerCase(), Store.YES));
-			// doc.add(new MyTextField(IndexFieldName.CONTENT, sb.toString(), Store.YES));
-			doc.add(new TextField(IndexFieldName.CONTENT, wikiText, Store.YES));
-			doc.add(new TextField(IndexFieldName.CATEGORY, sb2.toString(), Store.YES));
+			doc.add(new StringField(CommonFieldNames.TITLE, title, Store.YES));
+			doc.add(new StringField(CommonFieldNames.REDIRECT_TITLE, title.toLowerCase(), Store.YES));
+			// doc.add(new MyTextField(CommonFieldNames.CONTENT, sb.toString(), Store.YES));
+			doc.add(new TextField(CommonFieldNames.CONTENT, wikiText, Store.YES));
+			doc.add(new TextField(CommonFieldNames.CATEGORY, sb2.toString(), Store.YES));
 			indexWriter.addDocument(doc);
 		}
 		reader.printLast();

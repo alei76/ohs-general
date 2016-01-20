@@ -30,6 +30,7 @@ public class Jaccard implements SimScorer {
 
 	}
 
+	@Override
 	public double getSimilarity(Sequence s, Sequence t) {
 		Sequence ss = s;
 		Sequence ll = t;

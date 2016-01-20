@@ -13,7 +13,7 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 
 import ohs.ir.lucene.common.AnalyzerUtils;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.ir.medical.query.BaseQuery;
 import ohs.ir.medical.query.QueryReader;
@@ -73,11 +73,11 @@ public class DataStats {
 			}
 
 			num_docs = indexReader.maxDoc();
-			word_cnt_sum = indexReader.getSumTotalTermFreq(IndexFieldName.CONTENT);
+			word_cnt_sum = indexReader.getSumTotalTermFreq(CommonFieldNames.CONTENT);
 			avg_doc_len = word_cnt_sum / num_docs;
 
 			Fields fields = MultiFields.getFields(indexReader);
-			Terms terms = fields.terms(IndexFieldName.CONTENT);
+			Terms terms = fields.terms(CommonFieldNames.CONTENT);
 			num_words = terms.size();
 
 			values[0][i] = num_docs;
@@ -178,11 +178,11 @@ public class DataStats {
 			}
 
 			num_docs = indexReader.maxDoc();
-			word_cnt_sum = indexReader.getSumTotalTermFreq(IndexFieldName.CONTENT);
+			word_cnt_sum = indexReader.getSumTotalTermFreq(CommonFieldNames.CONTENT);
 			avg_doc_len = word_cnt_sum / num_docs;
 
 			Fields fields = MultiFields.getFields(indexReader);
-			Terms terms = fields.terms(IndexFieldName.CONTENT);
+			Terms terms = fields.terms(CommonFieldNames.CONTENT);
 			num_words = terms.size();
 
 			values[0][i] = num_docs;

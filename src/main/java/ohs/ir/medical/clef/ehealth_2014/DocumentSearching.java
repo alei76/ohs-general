@@ -34,7 +34,7 @@ import org.apache.lucene.search.similarities.Similarity;
 import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
 import ohs.ir.eval.PerformanceEvaluator;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.ir.medical.general.SearcherUtils;
 import ohs.math.VectorUtils;
@@ -57,7 +57,7 @@ public class DocumentSearching {
 
 		for (int i = 0; i < lines.length; i++) {
 			String line = lines[i];
-			TokenStream ts = analyzer.tokenStream(IndexFieldName.CONTENT, line);
+			TokenStream ts = analyzer.tokenStream(CommonFieldNames.CONTENT, line);
 			CharTermAttribute attr = ts.addAttribute(CharTermAttribute.class);
 			ts.reset();
 
@@ -77,7 +77,7 @@ public class DocumentSearching {
 		List<TermQuery> ret = new ArrayList<TermQuery>();
 		for (int i = 0; i < words.size(); i++) {
 			String word = words.get(i);
-			TermQuery tq = new TermQuery(new Term(IndexFieldName.CONTENT, word));
+			TermQuery tq = new TermQuery(new Term(CommonFieldNames.CONTENT, word));
 			ret.add(tq);
 		}
 		return ret;
@@ -229,10 +229,10 @@ public class DocumentSearching {
 						Document doc = indexSearcher.getIndexReader().document(indexId);
 
 						if (j == 0) {
-							String docId = doc.getField(IndexFieldName.DOCUMENT_ID).stringValue();
-							String date = doc.getField(IndexFieldName.DATE).stringValue();
-							String url = doc.getField(IndexFieldName.URL).stringValue();
-							String content = doc.getField(IndexFieldName.CONTENT).stringValue();
+							String docId = doc.getField(CommonFieldNames.DOCUMENT_ID).stringValue();
+							String date = doc.getField(CommonFieldNames.DATE).stringValue();
+							String url = doc.getField(CommonFieldNames.URL).stringValue();
+							String content = doc.getField(CommonFieldNames.CONTENT).stringValue();
 
 							StringBuffer sb = new StringBuffer();
 							sb.append(String.format("docId:\t%s\n", docId));
@@ -247,9 +247,9 @@ public class DocumentSearching {
 							indexScores.setCount(indexId, score);
 							docIndexMap.put(indexId, docId);
 						} else {
-							String docId = doc.getField(IndexFieldName.DOCUMENT_ID).stringValue();
-							String title = doc.getField(IndexFieldName.TITLE).stringValue();
-							String content = doc.getField(IndexFieldName.CONTENT).stringValue();
+							String docId = doc.getField(CommonFieldNames.DOCUMENT_ID).stringValue();
+							String title = doc.getField(CommonFieldNames.TITLE).stringValue();
+							String content = doc.getField(CommonFieldNames.CONTENT).stringValue();
 
 							if (content.contains("may refer to")) {
 								continue;
@@ -399,10 +399,10 @@ public class DocumentSearching {
 						double score = scoreDoc.score;
 						Document doc = indexSearcher.getIndexReader().document(indexId);
 
-						String docId = doc.getField(IndexFieldName.DOCUMENT_ID).stringValue();
-						String date = doc.getField(IndexFieldName.DATE).stringValue();
-						String url = doc.getField(IndexFieldName.URL).stringValue();
-						String content = doc.getField(IndexFieldName.CONTENT).stringValue();
+						String docId = doc.getField(CommonFieldNames.DOCUMENT_ID).stringValue();
+						String date = doc.getField(CommonFieldNames.DATE).stringValue();
+						String url = doc.getField(CommonFieldNames.URL).stringValue();
+						String content = doc.getField(CommonFieldNames.CONTENT).stringValue();
 
 						StringBuffer sb = new StringBuffer();
 						sb.append(String.format("docId:\t%s\n", docId));

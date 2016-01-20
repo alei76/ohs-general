@@ -21,7 +21,7 @@ import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.util.BytesRef;
 
 import ohs.io.TextFileReader;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
@@ -99,7 +99,7 @@ public class DocumentScorer {
 
 				double count = Double.parseDouble(parts[1]);
 
-				TokenStream ts = analyzer.tokenStream(IndexFieldName.CONTENT, longForm);
+				TokenStream ts = analyzer.tokenStream(CommonFieldNames.CONTENT, longForm);
 				CharTermAttribute attr = ts.addAttribute(CharTermAttribute.class);
 				ts.reset();
 
@@ -494,7 +494,7 @@ public class DocumentScorer {
 			int indexId = indexScores.indexAtLoc(i);
 			double score = indexScores.valueAtLoc(i);
 
-			Terms termVector = indexReaders.get(0).getTermVector(indexId, IndexFieldName.CONTENT);
+			Terms termVector = indexReaders.get(0).getTermVector(indexId, CommonFieldNames.CONTENT);
 
 			TermsEnum reuse = null;
 			TermsEnum iterator = termVector.iterator();
@@ -688,7 +688,7 @@ public class DocumentScorer {
 
 			for (int j = 0; j < indexScores.size(); j++) {
 				int indexId = indexScores.indexAtLoc(j);
-				Terms termVector = indexReaders.get(i).getTermVector(indexId, IndexFieldName.CONTENT);
+				Terms termVector = indexReaders.get(i).getTermVector(indexId, CommonFieldNames.CONTENT);
 
 				if (termVector == null) {
 					toRemove.add(indexId);
@@ -758,7 +758,7 @@ public class DocumentScorer {
 			Counter<Integer> docFreqs = new Counter<Integer>();
 
 			Fields fields = MultiFields.getFields(indexReader);
-			Terms terms = fields.terms(IndexFieldName.CONTENT);
+			Terms terms = fields.terms(CommonFieldNames.CONTENT);
 
 			TermsEnum iterator = terms.iterator();
 			BytesRef byteRef = null;

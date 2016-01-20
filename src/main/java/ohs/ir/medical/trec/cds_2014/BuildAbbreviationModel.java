@@ -8,7 +8,7 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.search.IndexSearcher;
 
 import ohs.io.TextFileReader;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.ir.medical.general.SearcherUtils;
 import ohs.math.VectorUtils;
@@ -63,7 +63,7 @@ public class BuildAbbreviationModel {
 
 				double count = Double.parseDouble(parts[1]);
 
-				TokenStream ts = analyzer.tokenStream(IndexFieldName.CONTENT, longForm);
+				TokenStream ts = analyzer.tokenStream(CommonFieldNames.CONTENT, longForm);
 				CharTermAttribute attr = ts.addAttribute(CharTermAttribute.class);
 				ts.reset();
 

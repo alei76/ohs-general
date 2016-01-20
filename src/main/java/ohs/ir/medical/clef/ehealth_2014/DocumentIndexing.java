@@ -10,7 +10,7 @@ import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 
 import ohs.io.TextFileReader;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.medical.general.DocumentIndexer;
 import ohs.utils.StopWatch;
 
@@ -55,10 +55,10 @@ public class DocumentIndexing {
 			String content = lines.get(3).replaceAll("<NL>", "\n");
 
 			Document doc = new Document();
-			doc.add(new StringField(IndexFieldName.DOCUMENT_ID, uid, Field.Store.YES));
-			doc.add(new StringField(IndexFieldName.URL, url, Field.Store.YES));
-			doc.add(new StringField(IndexFieldName.DATE, date, Field.Store.YES));
-			doc.add(new TextField(IndexFieldName.CONTENT, content, Store.YES));
+			doc.add(new StringField(CommonFieldNames.DOCUMENT_ID, uid, Field.Store.YES));
+			doc.add(new StringField(CommonFieldNames.URL, url, Field.Store.YES));
+			doc.add(new StringField(CommonFieldNames.DATE, date, Field.Store.YES));
+			doc.add(new TextField(CommonFieldNames.CONTENT, content, Store.YES));
 
 			indexWriter.addDocument(doc);
 		}

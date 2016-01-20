@@ -31,7 +31,7 @@ import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.ir.lucene.common.MyTextField;
 import ohs.utils.StrUtils;
@@ -122,10 +122,10 @@ public class DocumentIndexer {
 			String content = parts[3].replaceAll("\\n", "\n");
 
 			Document doc = new Document();
-			doc.add(new StringField(IndexFieldName.DOCUMENT_ID, uid, Field.Store.YES));
-			doc.add(new StringField(IndexFieldName.URL, url, Field.Store.YES));
-			doc.add(new StringField(IndexFieldName.DATE, date, Field.Store.YES));
-			doc.add(new MyTextField(IndexFieldName.CONTENT, content, Store.YES));
+			doc.add(new StringField(CommonFieldNames.DOCUMENT_ID, uid, Field.Store.YES));
+			doc.add(new StringField(CommonFieldNames.URL, url, Field.Store.YES));
+			doc.add(new StringField(CommonFieldNames.DATE, date, Field.Store.YES));
+			doc.add(new MyTextField(CommonFieldNames.CONTENT, content, Store.YES));
 
 			iw.addDocument(doc);
 		}
@@ -166,8 +166,8 @@ public class DocumentIndexer {
 			String source = parts[7];
 
 			Document doc = new Document();
-			doc.add(new StringField(IndexFieldName.DOCUMENT_ID, medlineId, Field.Store.YES));
-			doc.add(new MyTextField(IndexFieldName.CONTENT, title + "\n" + abs, Field.Store.YES));
+			doc.add(new StringField(CommonFieldNames.DOCUMENT_ID, medlineId, Field.Store.YES));
+			doc.add(new MyTextField(CommonFieldNames.CONTENT, title + "\n" + abs, Field.Store.YES));
 			iw.addDocument(doc);
 		}
 		reader.printLast();
@@ -208,10 +208,10 @@ public class DocumentIndexer {
 			// System.out.println();
 
 			Document doc = new Document();
-			doc.add(new StringField(IndexFieldName.DOCUMENT_ID, pmcId, Field.Store.YES));
-			doc.add(new TextField(IndexFieldName.TITLE, title, Store.YES));
-			doc.add(new MyTextField(IndexFieldName.ABSTRACT, abs, Store.YES));
-			doc.add(new MyTextField(IndexFieldName.CONTENT, content, Store.YES));
+			doc.add(new StringField(CommonFieldNames.DOCUMENT_ID, pmcId, Field.Store.YES));
+			doc.add(new TextField(CommonFieldNames.TITLE, title, Store.YES));
+			doc.add(new MyTextField(CommonFieldNames.ABSTRACT, abs, Store.YES));
+			doc.add(new MyTextField(CommonFieldNames.CONTENT, content, Store.YES));
 			iw.addDocument(doc);
 		}
 		reader.printLast();
@@ -240,8 +240,8 @@ public class DocumentIndexer {
 			id = id.substring(start + 1, end);
 
 			Document doc = new Document();
-			doc.add(new StringField(IndexFieldName.DOCUMENT_ID, id, Field.Store.YES));
-			doc.add(new MyTextField(IndexFieldName.CONTENT, content, Store.YES));
+			doc.add(new StringField(CommonFieldNames.DOCUMENT_ID, id, Field.Store.YES));
+			doc.add(new MyTextField(CommonFieldNames.CONTENT, content, Store.YES));
 
 			iw.addDocument(doc);
 		}
@@ -335,11 +335,12 @@ public class DocumentIndexer {
 			}
 
 			Document doc = new Document();
-			doc.add(new StringField(IndexFieldName.TITLE, title, Store.YES));
-			doc.add(new StringField(IndexFieldName.LOWER_TITLE, title.toLowerCase(), Store.YES));
-			doc.add(new StringField(IndexFieldName.REDIRECT_TITLE, redicrect.toLowerCase(), Store.YES));
-			doc.add(new MyTextField(IndexFieldName.CONTENT, content, Store.YES));
-			doc.add(new MyTextField(IndexFieldName.CATEGORY, sb2.toString(), Store.YES));
+			doc.add(new StringField(CommonFieldNames.TITLE, title, Store.YES));
+			doc.add(new StringField(CommonFieldNames.LOWER_TITLE, title.toLowerCase(), Store.YES));
+			doc.add(new StringField(CommonFieldNames.REDIRECT_TITLE, redicrect, Store.YES));
+			doc.add(new StringField(CommonFieldNames.LOWER_REDIRECT_TITLE, redicrect.toLowerCase(), Store.YES));
+			doc.add(new MyTextField(CommonFieldNames.CONTENT, content, Store.YES));
+			doc.add(new MyTextField(CommonFieldNames.CATEGORY, sb2.toString(), Store.YES));
 			iw.addDocument(doc);
 		}
 		reader.printLast();
@@ -374,7 +375,7 @@ public class DocumentIndexer {
 					System.out.printf("\r[%d/%d]", j + 1, ir.maxDoc());
 				}
 				Document doc = ir.document(j);
-				String docId = doc.getField(IndexFieldName.DOCUMENT_ID).stringValue();
+				String docId = doc.getField(CommonFieldNames.DOCUMENT_ID).stringValue();
 				docIds.add(docId);
 			}
 			System.out.printf("\r[%d/%d]\n", ir.maxDoc(), ir.maxDoc());

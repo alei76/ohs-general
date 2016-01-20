@@ -14,7 +14,7 @@ import org.apache.lucene.search.Query;
 
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.medical.query.BaseQuery;
 import ohs.ir.medical.query.QueryReader;
 import ohs.ir.medical.query.RelevanceReader;
@@ -358,7 +358,7 @@ public class SearchLogAnalyzer {
 					int docId = docRelevances.indexAtLoc(k);
 					double relevance = docRelevances.valueAtLoc(k);
 					Document doc = indexSearcher.doc(docId);
-					String content = doc.get(IndexFieldName.CONTENT);
+					String content = doc.get(CommonFieldNames.CONTENT);
 
 					StringBuffer sb = new StringBuffer();
 

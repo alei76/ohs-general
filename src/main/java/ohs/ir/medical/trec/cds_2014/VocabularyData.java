@@ -10,7 +10,7 @@ import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.util.BytesRef;
 
 import ohs.io.FileUtils;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
 import ohs.types.Counter;
@@ -26,7 +26,7 @@ public class VocabularyData {
 		Counter<Integer> docFreqs = new Counter<Integer>();
 
 		Fields fields = MultiFields.getFields(indexReader);
-		Terms terms = fields.terms(IndexFieldName.CONTENT);
+		Terms terms = fields.terms(CommonFieldNames.CONTENT);
 
 		TermsEnum iterator = terms.iterator();
 		BytesRef byteRef = null;

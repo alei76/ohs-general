@@ -11,7 +11,7 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.springframework.ui.Model;
 
 import ohs.io.FileUtils;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
@@ -30,7 +30,7 @@ public class QueryClassifier implements Serializable {
 
 		for (int i = 0; i < lines.length; i++) {
 			String line = lines[i];
-			TokenStream ts = analyzer.tokenStream(IndexFieldName.CONTENT, line);
+			TokenStream ts = analyzer.tokenStream(CommonFieldNames.CONTENT, line);
 			CharTermAttribute attr = ts.addAttribute(CharTermAttribute.class);
 			ts.reset();
 

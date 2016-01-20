@@ -3,6 +3,7 @@ package ohs.ir.medical.general;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
@@ -11,7 +12,7 @@ import org.apache.lucene.search.IndexSearcher;
 import ohs.io.TextFileWriter;
 import ohs.ir.eval.PerformanceEvaluator;
 import ohs.ir.lucene.common.AnalyzerUtils;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.ir.medical.query.BaseQuery;
 import ohs.ir.medical.query.QueryReader;
@@ -124,7 +125,7 @@ public class RelevanceCollector {
 					String content = "null";
 
 					if (doc != null) {
-						content = doc.get(IndexFieldName.CONTENT);
+						content = doc.get(CommonFieldNames.CONTENT);
 					}
 
 					sb.append(String.format("\t%s", content.replace("\n", "\\n")));
@@ -210,7 +211,7 @@ public class RelevanceCollector {
 
 				{
 					SparseVector docFreqs = VectorUtils.toSparseVector(
-							WordCountBox.getDocFreqs(indexReader, IndexFieldName.CONTENT, qs.get(j).keySet()), wordIndexer, true);
+							WordCountBox.getDocFreqs(indexReader, CommonFieldNames.CONTENT, qs.get(j).keySet()), wordIndexer, true);
 					computeTFIDFs(q, docFreqs, indexReader.maxDoc());
 
 				}
@@ -256,7 +257,7 @@ public class RelevanceCollector {
 						}
 					}
 
-					String content = doc.get(IndexFieldName.CONTENT);
+					String content = doc.get(CommonFieldNames.CONTENT);
 
 					SparseVector sv = sm.rowAlways(docId);
 

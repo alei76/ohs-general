@@ -12,8 +12,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import ohs.io.FileUtils;
-import ohs.math.ArrayMath;
-import ohs.math.ArrayUtils;
 import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.GramGenerator;
 import ohs.string.search.ppss.StringRecord;

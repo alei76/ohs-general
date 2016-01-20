@@ -14,7 +14,7 @@ import org.apache.lucene.util.BytesRef;
 
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.AnalyzerUtils;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.ir.medical.general.DocumentIdMapper;
 import ohs.ir.medical.general.MIRPath;
@@ -99,7 +99,7 @@ public class ConceptRelevanceCollector {
 
 					Document doc = indexSearcher.getIndexReader().document(docId);
 
-					Terms terms = indexSearcher.getIndexReader().getTermVector(docId, IndexFieldName.CONTENT);
+					Terms terms = indexSearcher.getIndexReader().getTermVector(docId, CommonFieldNames.CONTENT);
 
 					if (terms == null) {
 						continue;

@@ -7,7 +7,7 @@ import org.apache.lucene.search.IndexSearcher;
 
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.AnalyzerUtils;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.medical.general.RelevanceModelBuilder;
 import ohs.ir.medical.general.SearcherUtils;
 import ohs.ir.medical.general.WordCountBox;
@@ -121,8 +121,8 @@ public class WikiQueryExpander {
 			int cid = conceptScores1.indexAtLoc(i);
 			double score = conceptScores1.valueAtLoc(i);
 			Document article = wikiIndexSearcher.doc(cid);
-			String concept = article.get(IndexFieldName.TITLE);
-			String categories = article.get(IndexFieldName.CATEGORY);
+			String concept = article.get(CommonFieldNames.TITLE);
+			String categories = article.get(CommonFieldNames.CATEGORY);
 
 			if (concept.startsWith("List of") || concept.startsWith("Wikipedia:")) {
 				continue;
@@ -154,8 +154,8 @@ public class WikiQueryExpander {
 		// double score1 = conceptScores1.valueAlways(cid);
 		//
 		// Document article = wikiIndexSearcher.doc(cid);
-		// String concept = article.get(IndexFieldName.TITLE);
-		// String categories = article.get(IndexFieldName.CATEGORY);
+		// String concept = article.get(CommonFieldNames.TITLE);
+		// String categories = article.get(CommonFieldNames.CATEGORY);
 		// conceptMap.put(cid, concept);
 		//
 		// for (String cat : categories.split("\n")) {

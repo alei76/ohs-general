@@ -10,7 +10,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.util.BytesRef;
 
 import ohs.io.TextFileWriter;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.math.ArrayMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.DenseVector;
@@ -70,7 +70,7 @@ public class DocumentPriorEstimator {
 		for (int i = 0; i < num_colls; i++) {
 			Counter<Integer> counter = new Counter<Integer>();
 			IndexReader ir = iss[i].getIndexReader();
-			cnt_sum_in_each_coll[i] = ir.getSumTotalTermFreq(IndexFieldName.CONTENT);
+			cnt_sum_in_each_coll[i] = ir.getSumTotalTermFreq(CommonFieldNames.CONTENT);
 			num_docs_in_each_coll[i] = ir.maxDoc();
 			cnt_sum_in_all_colls += cnt_sum_in_each_coll[i];
 		}
@@ -90,7 +90,7 @@ public class DocumentPriorEstimator {
 				}
 				Document doc = ir.document(j);
 
-				Terms termVector = ir.getTermVector(j, IndexFieldName.CONTENT);
+				Terms termVector = ir.getTermVector(j, CommonFieldNames.CONTENT);
 
 				if (termVector == null) {
 					continue;
@@ -127,7 +127,7 @@ public class DocumentPriorEstimator {
 
 					for (int w = 0; w < wordIndexer.size(); w++) {
 						String word = wordIndexer.getObject(w);
-						Term termInstance = new Term(IndexFieldName.CONTENT, word);
+						Term termInstance = new Term(CommonFieldNames.CONTENT, word);
 						double count = iss[k].getIndexReader().totalTermFreq(termInstance);
 						counter.setCount(w, count);
 					}

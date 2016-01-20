@@ -19,7 +19,7 @@ import org.apache.lucene.util.BytesRef;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
@@ -69,9 +69,9 @@ public class WordDataHandler {
 			}
 
 			Document doc = indexReader.document(i);
-			String title = doc.get(IndexFieldName.TITLE);
+			String title = doc.get(CommonFieldNames.TITLE);
 
-			Terms termVector = indexReader.getTermVector(i, IndexFieldName.CONTENT);
+			Terms termVector = indexReader.getTermVector(i, CommonFieldNames.CONTENT);
 
 			if (termVector == null) {
 				continue;
@@ -162,7 +162,7 @@ public class WordDataHandler {
 		IndexReader indexReader = indexSearcher.getIndexReader();
 
 		Fields fields = MultiFields.getFields(indexReader);
-		Terms terms = fields.terms(IndexFieldName.CONTENT);
+		Terms terms = fields.terms(CommonFieldNames.CONTENT);
 
 		Counter<String> c = new Counter<String>();
 

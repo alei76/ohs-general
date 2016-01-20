@@ -1,6 +1,5 @@
 package ohs.string.search.ppss;
 
-import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.Gram.Type;
 
 /**

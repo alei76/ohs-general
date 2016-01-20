@@ -9,7 +9,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.util.BytesRef;
 
 import ohs.io.FileUtils;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.types.Counter;
 
 public class VocabBuilder {
@@ -19,7 +19,7 @@ public class VocabBuilder {
 
 		Fields fields = MultiFields.getFields(is.getIndexReader());
 
-		Terms t = fields.terms(IndexFieldName.CONTENT);
+		Terms t = fields.terms(CommonFieldNames.CONTENT);
 
 		System.out.println(t.getSumTotalTermFreq());
 

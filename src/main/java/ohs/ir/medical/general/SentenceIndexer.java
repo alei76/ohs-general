@@ -7,7 +7,7 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexWriter;
 
 import ohs.io.TextFileReader;
-import ohs.ir.lucene.common.IndexFieldName;
+import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MyTextField;
 
 /**
@@ -65,9 +65,9 @@ public class SentenceIndexer {
 			String sent = parts[2];
 
 			Document doc = new Document();
-			doc.add(new StringField(IndexFieldName.DOCUMENT_ID, docId, Field.Store.YES));
-			doc.add(new StringField(IndexFieldName.SENTENCE_ID, no, Field.Store.YES));
-			doc.add(new MyTextField(IndexFieldName.CONTENT, sent, Store.YES));
+			doc.add(new StringField(CommonFieldNames.DOCUMENT_ID, docId, Field.Store.YES));
+			doc.add(new StringField(CommonFieldNames.SENTENCE_ID, no, Field.Store.YES));
+			doc.add(new MyTextField(CommonFieldNames.CONTENT, sent, Store.YES));
 
 			iw.addDocument(doc);
 		}

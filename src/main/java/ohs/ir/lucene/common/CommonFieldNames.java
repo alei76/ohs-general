@@ -1,6 +1,6 @@
 package ohs.ir.lucene.common;
 
-public class IndexFieldName {
+public class CommonFieldNames {
 
 	public static final String DOCUMENT_ID = "id";
 
@@ -19,10 +19,10 @@ public class IndexFieldName {
 	public static final String WIKI_TEXT = "wiki_text";
 
 	public static final String TITLE = "title";
-
 	public static final String LOWER_TITLE = "l_title";
 
 	public static final String REDIRECT_TITLE = "r_title";
+	public static final String LOWER_REDIRECT_TITLE = "lr_title";
 
 	public static final String CATEGORY = "category";
 
