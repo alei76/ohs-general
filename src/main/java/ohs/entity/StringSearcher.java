@@ -72,7 +72,7 @@ public class StringSearcher implements Serializable {
 
 	private boolean makeLog = false;
 
-	private StringBuffer log;
+	private StringBuffer logBuff;
 
 	public StringSearcher() {
 		this(3);
@@ -142,8 +142,8 @@ public class StringSearcher implements Serializable {
 		return gg;
 	}
 
-	public StringBuffer getLog() {
-		return log;
+	public StringBuffer getLogBuffer() {
+		return logBuff;
 	}
 
 	public List<SimScorer> getSimScorers() {
@@ -303,7 +303,7 @@ public class StringSearcher implements Serializable {
 			return new Counter<StringRecord>();
 		}
 
-		Counter<Integer> inputWeights = Generics.newCounter();
+		Counter<Integer> gidfs = Generics.newCounter();
 
 		for (int i = 0; i < grams.length; i++) {
 			int gid = gramIndexer.indexOf(grams[i].getString());
@@ -312,41 +312,40 @@ public class StringSearcher implements Serializable {
 			}
 			int df = gramDFs[gid];
 			double idf = Math.log((srs.size() + 1.0) / df);
-			inputWeights.setCount(gid, idf);
+			gidfs.setCount(gid, idf);
 		}
 
 		candidates = Generics.newCounter();
 
-		List<Integer> gids = inputWeights.getSortedKeys();
+		List<Integer> gids = gidfs.getSortedKeys();
 
 		for (int i = 0; i < gids.size() && i < prefix_size; i++) {
 			int gid = gids.get(i);
 			List<Integer> rids = index.get(gid, false);
 			if (rids != null) {
-				double idf = inputWeights.getCount(gid);
+				double idf = gidfs.getCount(gid);
 				for (int rid : rids) {
 					candidates.incrementCount(rid, idf);
 				}
 			}
 		}
 
-		Counter<StringRecord> ret = new Counter<StringRecord>();
-		List<Integer> rids = candidates.getSortedKeys();
-
-		simScores = Generics.newHashMap(top_k);
-
-		log = new StringBuffer();
+		logBuff = new StringBuffer();
 
 		if (makeLog) {
-			log.append(String.format("Input:\t%s", s));
+			logBuff.append(String.format("Input:\t%s", s));
 		}
 
-		for (int i = 0; i < rids.size() && i < top_k; i++) {
-			StringRecord sr = srs.get(rids.get(i));
+		Counter<StringRecord> ret = new Counter<StringRecord>();
+		simScores = Generics.newHashMap(top_k);
 
-			// if (cache.containsKeys(s, sr.getId())) {
-			// score = cache.get(s, sr.getId(), false);
-			// } else {
+		List<Integer> rids = candidates.getSortedKeys();
+
+		for (int i = 0; i < rids.size() && i < top_k; i++) {
+			int rid = rids.get(i);
+			StringRecord sr = srs.get(rid);
+			double idf_sum = candidates.getCount(rid);
+
 			Sequence ss = new CharacterSequence(s);
 			Sequence tt = new CharacterSequence(sr.getString());
 
@@ -362,22 +361,24 @@ public class StringSearcher implements Serializable {
 
 			simScores.put(sr.getId(), scores);
 
-			double sum = 0;
+			double sim_score_sum = 0;
 			for (int j = 0; j < scores.length; j++) {
-				sum += scores[j].doubleValue();
+				sim_score_sum += scores[j].doubleValue();
 			}
-			double avg_score = sum / scores.length;
+			double avg_sim_score = sim_score_sum / scores.length;
+			double score = idf_sum * avg_sim_score;
 
 			if (makeLog) {
-				log.append("\n" + sr.getId() + "\t" + sr.getString());
+				logBuff.append("\n" + sr.getId() + "\t" + sr.getString());
 				for (int j = 0; j < scores.length; j++) {
-					log.append(String.format("\t%f", scores[j]));
+					logBuff.append(String.format("\t%f", scores[j]));
 				}
-				log.append(String.format("\t%f", avg_score));
+				logBuff.append(String.format("\t%f", avg_sim_score));
+				logBuff.append(String.format("\t%f", idf_sum));
+				logBuff.append(String.format("\t%f", score));
 			}
 
-			// }
-			ret.setCount(sr, avg_score);
+			ret.setCount(sr, score);
 		}
 		return ret;
 	}

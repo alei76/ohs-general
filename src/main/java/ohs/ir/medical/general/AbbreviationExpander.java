@@ -27,7 +27,7 @@ public class AbbreviationExpander {
 
 	public static CounterMap<String, String> readAbbreviationData(String fileName) throws Exception {
 		CounterMap<String, String> ret = new CounterMap<String, String>();
-		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+		Analyzer analyzer = MedicalEnglishAnalyzer.newAnalyzer();
 
 		TextFileReader reader = new TextFileReader(fileName);
 		while (reader.hasNext()) {

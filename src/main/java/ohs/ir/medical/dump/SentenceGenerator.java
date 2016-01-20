@@ -75,7 +75,7 @@ public class SentenceGenerator {
 
 	public void doStemming() throws Exception {
 		String[] sentFileNames = MIRPath.SentFileNames;
-		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+		Analyzer analyzer = MedicalEnglishAnalyzer.newAnalyzer();
 
 		for (int i = 0; i < sentFileNames.length; i++) {
 			TextFileReader reader = new TextFileReader(sentFileNames[i]);

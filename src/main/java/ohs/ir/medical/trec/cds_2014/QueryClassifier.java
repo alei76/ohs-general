@@ -47,7 +47,7 @@ public class QueryClassifier implements Serializable {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		MedicalEnglishAnalyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+		MedicalEnglishAnalyzer analyzer = MedicalEnglishAnalyzer.newAnalyzer();
 
 		VocabularyData vocData = VocabularyData.read(new File(CDSPath.VOCABULARY_DIR));
 

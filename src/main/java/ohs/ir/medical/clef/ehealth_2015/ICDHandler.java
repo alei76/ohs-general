@@ -133,7 +133,7 @@ public class ICDHandler {
 	private MedicalEnglishAnalyzer analyzer;
 
 	public ICDHandler() throws Exception {
-		analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+		analyzer = MedicalEnglishAnalyzer.newAnalyzer();
 		indexSearcher = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
 		cacheMap = new HashMap<String, Integer>();
 	}

@@ -23,7 +23,7 @@ public class ESA {
 
 	public static void main(String[] args) throws Exception {
 
-		ESA esa = new ESA(MedicalEnglishAnalyzer.getAnalyzer());
+		ESA esa = new ESA(MedicalEnglishAnalyzer.newAnalyzer());
 		esa.read(MIRPath.ICD10_ESA_FILE);
 
 		List<BaseQuery> bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2015_A_FILE);

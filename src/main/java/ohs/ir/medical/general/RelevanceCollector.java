@@ -52,7 +52,7 @@ public class RelevanceCollector {
 
 		IndexSearcher[] iss = SearcherUtils.getIndexSearchers(indexDirNames);
 
-		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+		Analyzer analyzer = MedicalEnglishAnalyzer.newAnalyzer();
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
@@ -152,7 +152,7 @@ public class RelevanceCollector {
 
 		IndexSearcher[] indexSearchers = SearcherUtils.getIndexSearchers(indexDirNames);
 
-		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+		Analyzer analyzer = MedicalEnglishAnalyzer.newAnalyzer();
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = new ArrayList<BaseQuery>();
@@ -286,7 +286,7 @@ public class RelevanceCollector {
 
 		IndexSearcher[] indexSearchers = SearcherUtils.getIndexSearchers(indexDirNames);
 
-		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+		Analyzer analyzer = MedicalEnglishAnalyzer.newAnalyzer();
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = new ArrayList<BaseQuery>();

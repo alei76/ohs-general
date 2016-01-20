@@ -47,7 +47,7 @@ public class MakeSemanticVectors {
 	private IndexReader indexReader;
 
 	public MakeSemanticVectors() throws Exception {
-		analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+		analyzer = MedicalEnglishAnalyzer.newAnalyzer();
 
 		stopSectionTitleSet = ExtractICD10.getStopSectionTitleSet();
 

@@ -37,7 +37,7 @@ public class DataStats {
 
 		double[][] values = new double[labels.length][collNames.length];
 
-		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+		Analyzer analyzer = MedicalEnglishAnalyzer.newAnalyzer();
 
 		for (int i = 0; i < indexDirNames.length; i++) {
 			int num_queries = 0;
@@ -128,7 +128,7 @@ public class DataStats {
 
 		double[][] values = new double[labels.length][collNames.length];
 
-		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+		Analyzer analyzer = MedicalEnglishAnalyzer.newAnalyzer();
 
 		for (int i = 0; i < indexDirNames.length; i++) {
 			int num_queries = 0;

@@ -48,7 +48,7 @@ public class DocumentIndexer {
 
 	public static IndexWriter getIndexWriter(String outputDirName) throws Exception {
 
-		IndexWriterConfig iwc = new IndexWriterConfig(MedicalEnglishAnalyzer.getAnalyzer());
+		IndexWriterConfig iwc = new IndexWriterConfig(MedicalEnglishAnalyzer.newAnalyzer());
 		// IndexWriterConfig iwc = new IndexWriterConfig(new StandardAnalyzer());
 		iwc.setOpenMode(OpenMode.CREATE);
 		iwc.setRAMBufferSizeMB(ram_size);

@@ -229,7 +229,7 @@ public class TrecSearcher {
 
 	private IndexReader indexReader;
 
-	private Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+	private Analyzer analyzer = MedicalEnglishAnalyzer.newAnalyzer();
 
 	public TrecSearcher() throws Exception {
 		bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2014_FILE);

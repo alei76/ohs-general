@@ -11,6 +11,10 @@ public class StopWatch {
 	public StopWatch() {
 	}
 
+	public static StopWatch newStopWatch() {
+		return new StopWatch();
+	}
+
 	public StopWatch(long ms) {
 		startTime = 0;
 		endTime = ms;
@@ -39,6 +43,7 @@ public class StopWatch {
 		n = 1;
 		return this;
 	}
+
 	@Override
 	public String toString() {
 		long msCopy = ms;

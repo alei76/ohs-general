@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.lucene.index.IndexFileNames;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
@@ -45,7 +46,13 @@ public class WikiDataHandler {
 			}
 		}
 
-		if (title.startsWith("List of")) {
+		String lt = title.toLowerCase();
+
+		if (lt.contains("disambiguation")) {
+			return false;
+		}
+
+		if (lt.startsWith("list of")) {
 			return false;
 		}
 
@@ -125,7 +132,8 @@ public class WikiDataHandler {
 
 	private Pattern rp2 = Pattern.compile("\\([^\\(\\)]+\\)");
 
-	private Pattern lp1 = Pattern.compile("(rivers|cities|towns|mountains|seas|bridges|airports|buildings|places) (established )?(of|in)");
+	private Pattern lp1 = Pattern
+			.compile("(rivers|cities|towns|mountains|seas|bridges|airports|buildings|places) (established )?(of|in)");
 
 	private Pattern op1 = Pattern.compile(
 			"(organizations|organisations|companies|agencies|institutions|institutes|clubs|universities|schools|colleges) (established|establishments|based) in");
@@ -306,6 +314,15 @@ public class WikiDataHandler {
 
 			String catStr = ir.document(i).get(IndexFieldName.CATEGORY).toLowerCase();
 			String redirect = ir.document(i).get(IndexFieldName.REDIRECT_TITLE);
+			String content = ir.document(i).get(IndexFieldName.CONTENT);
+
+			if (!title.contains("Samsung")) {
+				continue;
+			}
+
+			// if (!content.contains("does not have an article with this")) {
+			// continue;
+			// }
 
 			boolean isAdded = false;
 			if (redirect.length() > 0 && accept(stopPrefixes, redirect)) {
@@ -387,8 +404,8 @@ public class WikiDataHandler {
 
 	private boolean isLocationName(String catStr) {
 		boolean ret = false;
-		if (catStr.contains("places") || catStr.contains("cities") || catStr.contains("countries") || catStr.contains("provinces")
-				|| catStr.contains("states") || catStr.contains("territories")) {
+		if (catStr.contains("places") || catStr.contains("cities") || catStr.contains("countries")
+				|| catStr.contains("provinces") || catStr.contains("states") || catStr.contains("territories")) {
 			ret = true;
 		}
 		return ret;

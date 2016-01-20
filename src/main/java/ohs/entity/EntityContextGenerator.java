@@ -1,6 +1,5 @@
 package ohs.entity;
 
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,64 +22,16 @@ import ohs.matrix.SparseVector;
 import ohs.types.Counter;
 import ohs.types.Indexer;
 import ohs.utils.Generics;
+import ohs.utils.StopWatch;
 
 public class EntityContextGenerator {
 
-	public class EntityContexts {
-		private Indexer<String> wordIndexer;
-
-		private Map<Integer, SparseVector> contVecs;
-
-		public EntityContexts() {
-			wordIndexer = new Indexer<String>();
-			contVecs = Generics.newHashMap();
-		}
-
-		public EntityContexts(Indexer<String> wordIndexer, Map<Integer, SparseVector> contVecs) {
-			this.wordIndexer = wordIndexer;
-			this.contVecs = contVecs;
-		}
-
-		public Map<Integer, SparseVector> getContextVectors() {
-			return contVecs;
-		}
-
-		public Indexer<String> getWordIndexer() {
-			return wordIndexer;
-		}
-
-		public void read(ObjectInputStream ois) throws Exception {
-			wordIndexer = FileUtils.readIndexer(ois);
-			int size = ois.readInt();
-			for (int i = 0; i < size; i++) {
-				SparseVector sv = new SparseVector();
-				sv.read(ois);
-				contVecs.put(sv.label(), sv);
-			}
-		}
-
-		public void setContextVectors(Map<Integer, SparseVector> conVecs) {
-			this.contVecs = conVecs;
-		}
-
-		public void setWordIndexer(Indexer<String> wordIndexer) {
-			this.wordIndexer = wordIndexer;
-		}
-
-		public void write(ObjectOutputStream oos) throws Exception {
-			FileUtils.write(oos, wordIndexer);
-			oos.writeInt(contVecs.size());
-			for (SparseVector sv : contVecs.values()) {
-				sv.write(oos);
-			}
-		}
-	}
-
+	
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		String inputFileName = ENTPath.ENTITY_LINKER_FILE.replace(".ser", "_org.ser");
-		String outputFileName = ENTPath.WIKI_DIR + "context.ser.gz";
+		String inputFileName = ENTPath.ENTITY_LINKER_FILE.replace(".ser", "_loc.ser");
+		String outputFileName = ENTPath.ENTITY_CONTEXT_FILE;
 
 		if (inputFileName.contains("_org")) {
 			outputFileName = outputFileName.replace(".ser", "_org.ser");
@@ -88,12 +39,14 @@ public class EntityContextGenerator {
 			outputFileName = outputFileName.replace(".ser", "_loc.ser");
 		} else if (inputFileName.contains("_per")) {
 			outputFileName = outputFileName.replace(".ser", "_per.ser");
+		} else if (inputFileName.contains("_title")) {
+			outputFileName = outputFileName.replace(".ser", "_title.ser");
 		}
 
 		EntityLinker el = new EntityLinker();
 		el.read(inputFileName);
 
-		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+		Analyzer analyzer = MedicalEnglishAnalyzer.newAnalyzer();
 
 		IndexSearcher is = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
 
@@ -125,11 +78,17 @@ public class EntityContextGenerator {
 		Indexer<String> wordIndexer = Generics.newIndexer();
 		Map<Integer, SparseVector> contVecs = Generics.newHashMap();
 
-		for (int i = 0; i < ents.size(); i++) {
-			if ((i + 1) % 100 == 0) {
-				System.out.printf("\r[%d/%d]", i + 1, ents.size());
+		int num_chunks = ents.size() / 100;
+		StopWatch stopWatch = StopWatch.newStopWatch();
+		stopWatch.start();
 
+		for (int i = 0; i < ents.size(); i++) {
+
+			if ((i + 1) % num_chunks == 0) {
+				int progess = (int) ((i + 1f) / ents.size() * 100);
+				System.out.printf("\r[%d percent, %s]", progess, stopWatch.stop());
 			}
+
 			Entity ent = ents.get(i);
 			Document doc = is.doc(ent.getId());
 			String content = doc.get(IndexFieldName.CONTENT);
@@ -147,24 +106,30 @@ public class EntityContextGenerator {
 				continue;
 			}
 
-			// Counter<String> wcs = WordCountBox.getWordCounts(is.getIndexReader(), ent.getId(), IndexFieldName.CONTENT);
-			Counter<String> wcs = AnalyzerUtils.getWordCounts(sents.get(0), analyzer);
-			Counter<String> dfs = WordCountBox.getDocFreqs(is.getIndexReader(), IndexFieldName.CONTENT, wcs.keySet());
+			// Counter<String> wcs =
+			// WordCountBox.getWordCounts(is.getIndexReader(), ent.getId(),
+			// IndexFieldName.CONTENT);
+			Counter<String> wcs1 = AnalyzerUtils.getWordCounts(sents.get(0), analyzer);
+			Counter<String> wcs2 = AnalyzerUtils.getWordCounts(catStr, analyzer);
 
-			for (String word : wcs.keySet()) {
-				double cnt = wcs.getCount(word);
+			wcs1.incrementAll(wcs2);
+
+			Counter<String> dfs = WordCountBox.getDocFreqs(is.getIndexReader(), IndexFieldName.CONTENT, wcs1.keySet());
+
+			for (String word : wcs1.keySet()) {
+				double cnt = wcs1.getCount(word);
 				double tf = Math.log(cnt) + 1;
 				double df = dfs.getCount(word);
 				double idf = Math.log((is.getIndexReader().maxDoc() + 1) / df);
 				double tfidf = tf * idf;
-				wcs.setCount(word, tfidf);
+				wcs1.setCount(word, tfidf);
 			}
-			SparseVector sv = VectorUtils.toSparseVector(wcs, wordIndexer, true);
+			SparseVector sv = VectorUtils.toSparseVector(wcs1, wordIndexer, true);
 			sv.setLabel(ent.getId());
 
 			contVecs.put(ent.getId(), sv);
 		}
-		System.out.printf("\r[%d/%d]\n", ents.size(), ents.size());
+		System.out.printf("\r[%d percent, %s]\n", 100, stopWatch.stop());
 
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(outputFileName);
 

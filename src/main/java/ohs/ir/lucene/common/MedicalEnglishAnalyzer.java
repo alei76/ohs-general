@@ -27,17 +27,18 @@ import ohs.ir.medical.general.MIRPath;
  */
 public final class MedicalEnglishAnalyzer extends StopwordAnalyzerBase {
 	/**
-	 * Atomically loads the DEFAULT_STOP_SET in a lazy fashion once the outer class accesses the static final set the first time.;
+	 * Atomically loads the DEFAULT_STOP_SET in a lazy fashion once the outer
+	 * class accesses the static final set the first time.;
 	 */
 	private static class DefaultSetHolder {
 		static final CharArraySet DEFAULT_STOP_SET = StandardAnalyzer.STOP_WORDS_SET;
 	}
 
-	public static MedicalEnglishAnalyzer getAnalyzer() throws Exception {
-		return getAnalyzer(MIRPath.STOPWORD_INQUERY_FILE);
+	public static MedicalEnglishAnalyzer newAnalyzer() throws Exception {
+		return newAnalyzer(MIRPath.STOPWORD_INQUERY_FILE);
 	}
 
-	public static MedicalEnglishAnalyzer getAnalyzer(String stopwordFileName) throws Exception {
+	public static MedicalEnglishAnalyzer newAnalyzer(String stopwordFileName) throws Exception {
 		Set<String> stopwords = FileUtils.readSet(stopwordFileName);
 
 		System.out.printf("read [%d] stopwords from [%s].\n", stopwords.size(), stopwordFileName);
@@ -72,7 +73,8 @@ public final class MedicalEnglishAnalyzer extends StopwordAnalyzerBase {
 	}
 
 	/**
-	 * Builds an analyzer with the given stop words. If a non-empty stem exclusion set is provided this analyzer will add a
+	 * Builds an analyzer with the given stop words. If a non-empty stem
+	 * exclusion set is provided this analyzer will add a
 	 * {@link SetKeywordMarkerFilter} before stemming.
 	 * 
 	 * @param matchVersion
@@ -88,12 +90,17 @@ public final class MedicalEnglishAnalyzer extends StopwordAnalyzerBase {
 	}
 
 	/**
-	 * Creates a {@link org.apache.lucene.analysis.Analyzer.TokenStreamComponents} which tokenizes all the text in the provided
-	 * {@link Reader}.
+	 * Creates a
+	 * {@link org.apache.lucene.analysis.Analyzer.TokenStreamComponents} which
+	 * tokenizes all the text in the provided {@link Reader}.
 	 * 
-	 * @return A {@link org.apache.lucene.analysis.Analyzer.TokenStreamComponents} built from an {@link StandardTokenizer} filtered with
-	 *         {@link StandardFilter}, {@link EnglishPossessiveFilter}, {@link NumberFilter}, {@link NoiseFilter} ,
-	 *         {@link SetKeywordMarkerFilter} if a stem exclusion set is provided and {@link PorterStemFilter}.
+	 * @return A
+	 *         {@link org.apache.lucene.analysis.Analyzer.TokenStreamComponents}
+	 *         built from an {@link StandardTokenizer} filtered with
+	 *         {@link StandardFilter}, {@link EnglishPossessiveFilter},
+	 *         {@link NumberFilter}, {@link NoiseFilter} ,
+	 *         {@link SetKeywordMarkerFilter} if a stem exclusion set is
+	 *         provided and {@link PorterStemFilter}.
 	 */
 	@Override
 	protected TokenStreamComponents createComponents(String fieldName) {

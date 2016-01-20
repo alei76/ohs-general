@@ -77,9 +77,9 @@ public class VectorMath {
 	}
 
 	public static double cosine(Vector a, Vector b, boolean normalizeBefore) {
-		if (a.dim() != b.dim()) {
-			new IllegalArgumentException("different dimension");
-		}
+		// if (a.dim() != b.dim()) {
+		// new IllegalArgumentException("different dimension");
+		// }
 		double norm1 = 0;
 		double norm2 = 0;
 		double dotProduct = 0;

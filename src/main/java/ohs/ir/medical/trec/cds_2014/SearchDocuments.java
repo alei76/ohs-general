@@ -153,7 +153,7 @@ public class SearchDocuments {
 	public SearchDocuments() throws Exception {
 		cdsQueries = CDSQuery.read(CDSPath.TEST_QUERY_FILE);
 
-		analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+		analyzer = MedicalEnglishAnalyzer.newAnalyzer();
 
 		indexSearcher = SearcherUtils.getIndexSearcher(CDSPath.INDEX_DIR);
 		indexSearcher.setSimilarity(new LMDirichletSimilarity());

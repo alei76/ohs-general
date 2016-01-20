@@ -45,7 +45,7 @@ public class SearcherUtils {
 	}
 
 	public static QueryParser getQueryParser() throws Exception {
-		QueryParser ret = new QueryParser(IndexFieldName.CONTENT, MedicalEnglishAnalyzer.getAnalyzer());
+		QueryParser ret = new QueryParser(IndexFieldName.CONTENT, MedicalEnglishAnalyzer.newAnalyzer());
 		return ret;
 	}
 

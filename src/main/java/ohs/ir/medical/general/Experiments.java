@@ -68,7 +68,7 @@ public class Experiments {
 		System.out.println("process ends.");
 	}
 
-	private MedicalEnglishAnalyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+	private MedicalEnglishAnalyzer analyzer = MedicalEnglishAnalyzer.newAnalyzer();
 
 	private String[] queryFileNames = MIRPath.QueryFileNames;
 

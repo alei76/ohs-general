@@ -49,7 +49,7 @@ public class ConceptRelevanceCollector {
 
 		IndexSearcher[] indexSearchers = SearcherUtils.getIndexSearchers(indexDirNames);
 
-		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+		Analyzer analyzer = MedicalEnglishAnalyzer.newAnalyzer();
 
 		IndexSearcher wikiSearcher = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
 

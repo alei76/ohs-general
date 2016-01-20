@@ -17,7 +17,7 @@ public class AbbrQueryExpander {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		AbbrQueryExpander expander = new AbbrQueryExpander(MedicalEnglishAnalyzer.getAnalyzer(), MIRPath.ABBREVIATION_FILTERED_FILE);
+		AbbrQueryExpander expander = new AbbrQueryExpander(MedicalEnglishAnalyzer.newAnalyzer(), MIRPath.ABBREVIATION_FILTERED_FILE);
 
 		List<BaseQuery> bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2015_A_FILE);
 

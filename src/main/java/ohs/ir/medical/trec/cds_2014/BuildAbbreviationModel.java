@@ -39,7 +39,7 @@ public class BuildAbbreviationModel {
 		VocabularyData vocData = VocabularyData.read(vocDir);
 		Indexer<String> wordIndexer = vocData.getWordIndexer();
 
-		MedicalEnglishAnalyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+		MedicalEnglishAnalyzer analyzer = MedicalEnglishAnalyzer.newAnalyzer();
 
 		CounterMap<Integer, Integer> counterMap = new CounterMap<Integer, Integer>();
 

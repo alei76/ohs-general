@@ -128,7 +128,7 @@ public class ExtractICD10 {
 	private MedicalEnglishAnalyzer analyzer;
 
 	public ExtractICD10() throws Exception {
-		analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+		analyzer = MedicalEnglishAnalyzer.newAnalyzer();
 
 		indexSearcher = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
 		indexSearcher.setSimilarity(new LMDirichletSimilarity());
