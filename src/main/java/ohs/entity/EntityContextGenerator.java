@@ -26,7 +26,6 @@ import ohs.utils.StopWatch;
 
 public class EntityContextGenerator {
 
-	
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
@@ -82,6 +81,8 @@ public class EntityContextGenerator {
 		StopWatch stopWatch = StopWatch.newStopWatch();
 		stopWatch.start();
 
+		Counter<String> docFreqs = WordCountBox.getDocFreqs(is.getIndexReader(), CommonFieldNames.CONTENT);
+
 		for (int i = 0; i < ents.size(); i++) {
 
 			if ((i + 1) % num_chunks == 0) {
@@ -106,24 +107,27 @@ public class EntityContextGenerator {
 				continue;
 			}
 
-			// Counter<String> wcs =
-			// WordCountBox.getWordCounts(is.getIndexReader(), ent.getId(),
-			// CommonFieldNames.CONTENT);
-			Counter<String> wcs1 = AnalyzerUtils.getWordCounts(sents.get(0), analyzer);
-			Counter<String> wcs2 = AnalyzerUtils.getWordCounts(catStr, analyzer);
+			Counter<String> wcs = WordCountBox.getWordCounts(is.getIndexReader(), ent.getId(), CommonFieldNames.CONTENT);
 
-			wcs1.incrementAll(wcs2);
+			Counter<String> wcs1 = Generics.newCounter();
+			wcs1.incrementAll(AnalyzerUtils.getWordCounts(sents.get(0), analyzer));
+			wcs1.incrementAll(AnalyzerUtils.getWordCounts(catStr, analyzer));
 
-			Counter<String> dfs = WordCountBox.getDocFreqs(is.getIndexReader(), CommonFieldNames.CONTENT, wcs1.keySet());
+			double doc_len = wcs.totalCount();
+			double idf_sum = 0;
 
 			for (String word : wcs1.keySet()) {
-				double cnt = wcs1.getCount(word);
+				double cnt = wcs.getCount(word);
 				double tf = Math.log(cnt) + 1;
-				double df = dfs.getCount(word);
+				double df = docFreqs.getCount(word);
 				double idf = Math.log((is.getIndexReader().maxDoc() + 1) / df);
 				double tfidf = tf * idf;
 				wcs1.setCount(word, tfidf);
+				idf_sum += idf;
 			}
+
+			double avg_idf = idf_sum / wcs.size();
+
 			SparseVector sv = VectorUtils.toSparseVector(wcs1, wordIndexer, true);
 			sv.setLabel(ent.getId());
 

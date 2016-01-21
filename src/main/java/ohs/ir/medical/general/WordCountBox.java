@@ -10,7 +10,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.index.PostingsEnum;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
@@ -35,6 +37,29 @@ public class WordCountBox {
 			double df = ir.docFreq(term);
 			ret.setCount(word, df);
 		}
+		return ret;
+	}
+
+	public static Counter<String> getDocFreqs(IndexReader ir, String field) throws Exception {
+		Counter<String> ret = new Counter<String>();
+
+		Fields fs = MultiFields.getFields(ir);
+		if (fs != null) {
+			Terms terms = fs.terms(field);
+			TermsEnum termsEnum = terms.iterator();
+			BytesRef text;
+			while ((text = termsEnum.next()) != null) {
+				Term term = new Term(field, text.utf8ToString());
+				double df = ir.docFreq(term);
+				ret.incrementCount(term.text(), df);
+			}
+		}
+
+		// for (String word : c) {
+		// Term term = new Term(field, word);
+		// double df = ir.docFreq(term);
+		// ret.setCount(word, df);
+		// }
 		return ret;
 	}
 
