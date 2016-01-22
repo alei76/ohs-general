@@ -74,12 +74,13 @@ public class WordCountBox {
 		return ret;
 	}
 
-	public static WordCountBox getWordCountBox(IndexReader ir, SparseVector docScores, Indexer<String> wordIndexer) throws Exception {
+	public static WordCountBox getWordCountBox(IndexReader ir, SparseVector docScores, Indexer<String> wordIndexer)
+			throws Exception {
 		return getWordCountBox(ir, docScores, wordIndexer, CommonFieldNames.CONTENT);
 	}
 
-	public static WordCountBox getWordCountBox(IndexReader ir, SparseVector docScores, Indexer<String> wordIndexer, String field)
-			throws Exception {
+	public static WordCountBox getWordCountBox(IndexReader ir, SparseVector docScores, Indexer<String> wordIndexer,
+			String field) throws Exception {
 		Set<Integer> fbWords = new HashSet<Integer>();
 
 		CounterMap<Integer, Integer> cm = new CounterMap<Integer, Integer>();
@@ -232,8 +233,8 @@ public class WordCountBox {
 
 	private Indexer<String> wordIndexer;
 
-	public WordCountBox(SparseMatrix docWordCounts, SparseVector collWordCounts, double cnt_sum_in_coll, SparseVector docFreqs,
-			double num_docs_in_coll, ListMap<Integer, Integer> docWords) {
+	public WordCountBox(SparseMatrix docWordCounts, SparseVector collWordCounts, double cnt_sum_in_coll,
+			SparseVector docFreqs, double num_docs_in_coll, ListMap<Integer, Integer> docWords) {
 		super();
 		this.docWordCounts = docWordCounts;
 		this.collWordCounts = collWordCounts;

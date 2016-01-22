@@ -29,28 +29,41 @@ public class EntityContextGenerator {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		String inputFileName = ENTPath.ENTITY_LINKER_FILE.replace(".ser", "_loc.ser");
-		String outputFileName = ENTPath.ENTITY_CONTEXT_FILE;
+		String[] inputFileNames = {
 
-		if (inputFileName.contains("_org")) {
-			outputFileName = outputFileName.replace(".ser", "_org.ser");
-		} else if (inputFileName.contains("_loc")) {
-			outputFileName = outputFileName.replace(".ser", "_loc.ser");
-		} else if (inputFileName.contains("_per")) {
-			outputFileName = outputFileName.replace(".ser", "_per.ser");
-		} else if (inputFileName.contains("_title")) {
-			outputFileName = outputFileName.replace(".ser", "_title.ser");
-		}
+				ENTPath.ENTITY_LINKER_FILE.replace(".ser", "_per.ser"),
 
-		EntityLinker el = new EntityLinker();
-		el.read(inputFileName);
+				ENTPath.ENTITY_LINKER_FILE.replace(".ser", "_org.ser"),
+
+				ENTPath.ENTITY_LINKER_FILE.replace(".ser", "_loc.ser"),
+
+				ENTPath.ENTITY_LINKER_FILE.replace(".ser", "_title.ser")
+
+		};
+
+		String[] outputFileNames = {
+
+				ENTPath.ENTITY_CONTEXT_FILE.replace(".ser", "_per.ser"),
+
+				ENTPath.ENTITY_CONTEXT_FILE.replace(".ser", "_org.ser"),
+
+				ENTPath.ENTITY_CONTEXT_FILE.replace(".ser", "_loc.ser"),
+
+				ENTPath.ENTITY_CONTEXT_FILE.replace(".ser", "_title.ser"),
+		};
 
 		Analyzer analyzer = MedicalEnglishAnalyzer.newAnalyzer();
 
 		IndexSearcher is = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
 
-		EntityContextGenerator ecg = new EntityContextGenerator(el, analyzer, is, outputFileName);
-		ecg.generate();
+		for (int i = 0; i < inputFileNames.length; i++) {
+
+			EntityLinker el = new EntityLinker();
+			el.read(inputFileNames[i]);
+
+			EntityContextGenerator ecg = new EntityContextGenerator(el, analyzer, is, outputFileNames[i]);
+			ecg.generate();
+		}
 
 		System.out.println("process ends.");
 	}
@@ -77,7 +90,7 @@ public class EntityContextGenerator {
 		Indexer<String> wordIndexer = Generics.newIndexer();
 		Map<Integer, SparseVector> contVecs = Generics.newHashMap();
 
-		int num_chunks = ents.size() / 100;
+		int chunk_size = ents.size() / 100;
 		StopWatch stopWatch = StopWatch.newStopWatch();
 		stopWatch.start();
 
@@ -85,7 +98,7 @@ public class EntityContextGenerator {
 
 		for (int i = 0; i < ents.size(); i++) {
 
-			if ((i + 1) % num_chunks == 0) {
+			if ((i + 1) % chunk_size == 0) {
 				int progess = (int) ((i + 1f) / ents.size() * 100);
 				System.out.printf("\r[%d percent, %s]", progess, stopWatch.stop());
 			}
@@ -107,7 +120,8 @@ public class EntityContextGenerator {
 				continue;
 			}
 
-			Counter<String> wcs = WordCountBox.getWordCounts(is.getIndexReader(), ent.getId(), CommonFieldNames.CONTENT);
+			Counter<String> wcs = WordCountBox.getWordCounts(is.getIndexReader(), ent.getId(),
+					CommonFieldNames.CONTENT);
 
 			Counter<String> wcs1 = Generics.newCounter();
 			wcs1.incrementAll(AnalyzerUtils.getWordCounts(sents.get(0), analyzer));

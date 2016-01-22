@@ -128,7 +128,8 @@ public class WikiDataHandler {
 
 	private Pattern rp2 = Pattern.compile("\\([^\\(\\)]+\\)");
 
-	private Pattern lp1 = Pattern.compile("(rivers|cities|towns|mountains|seas|bridges|airports|buildings|places) (established )?(of|in)");
+	private Pattern lp1 = Pattern
+			.compile("(rivers|cities|towns|mountains|seas|bridges|airports|buildings|places) (established )?(of|in)");
 
 	private Pattern op1 = Pattern.compile(
 			"(organizations|organisations|companies|agencies|institutions|institutes|clubs|universities|schools|colleges) (established|establishments|based) in");
@@ -200,7 +201,8 @@ public class WikiDataHandler {
 				continue;
 			}
 
-			// String catStr = ir.document(i).get(CommonFieldNames.CATEGORY).toLowerCase();
+			// String catStr =
+			// ir.document(i).get(CommonFieldNames.CATEGORY).toLowerCase();
 			String titleTo = ir.document(i).get(CommonFieldNames.REDIRECT_TITLE);
 			// String content = ir.document(i).get(CommonFieldNames.CONTENT);
 
@@ -253,7 +255,6 @@ public class WikiDataHandler {
 
 		for (int i = 0; i < titles.size(); i++) {
 			String title = titles.get(i);
-			Set<String> variants = titleVariantMap.get(title);
 
 			ScoreDoc[] hits = is.search(new TermQuery(new Term(CommonFieldNames.LOWER_TITLE, title)), 1).scoreDocs;
 
@@ -265,9 +266,13 @@ public class WikiDataHandler {
 			org.apache.lucene.document.Document doc = ir.document(eid);
 			String catStr = doc.get(CommonFieldNames.CONTENT);
 
+			List<String> variants = Generics.newArrayList(titleVariantMap.get(title));
+
+			Collections.sort(variants);
+
 			String[] two = splitDisambiguationType(title);
 			String output = String.format("%d\t%s\t%s\t%s\n", eid, two[0], two[1] == null ? "none" : two[1],
-					variants.size() == 0 ? "none" : StrUtils.join("|", new ArrayList<>(variants)));
+					variants.size() == 0 ? "none" : StrUtils.join("|", variants));
 
 			writers[0].write(output);
 
@@ -290,8 +295,8 @@ public class WikiDataHandler {
 
 	private boolean isLocationName(String catStr) {
 		boolean ret = false;
-		if (catStr.contains("places") || catStr.contains("cities") || catStr.contains("countries") || catStr.contains("provinces")
-				|| catStr.contains("states") || catStr.contains("territories")) {
+		if (catStr.contains("places") || catStr.contains("cities") || catStr.contains("countries")
+				|| catStr.contains("provinces") || catStr.contains("states") || catStr.contains("territories")) {
 			ret = true;
 		}
 		return ret;

@@ -1,5 +1,6 @@
 package ohs.entity;
 
+import java.awt.datatransfer.SystemFlavorMap;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -48,36 +49,59 @@ public class EntityLinker implements Serializable {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		String inputFileName = ENTPath.TITLE_FILE;
-		String entityLinkerFileName = ENTPath.ENTITY_LINKER_FILE;
-		String entityContextFileName = ENTPath.ENTITY_CONTEXT_FILE;
+		String[] inputFileNames = {
 
-		if (inputFileName.contains("_org")) {
-			entityLinkerFileName = entityLinkerFileName.replace(".ser", "_org.ser");
-			entityContextFileName = entityContextFileName.replace(".ser", "_org.ser");
-		} else if (inputFileName.contains("_loc")) {
-			entityLinkerFileName = entityLinkerFileName.replace(".ser", "_loc.ser");
-			entityContextFileName = entityContextFileName.replace(".ser", "_loc.ser");
-		} else if (inputFileName.contains("_per")) {
-			entityLinkerFileName = entityLinkerFileName.replace(".ser", "_per.ser");
-			entityContextFileName = entityContextFileName.replace(".ser", "_per.ser");
-		} else if (inputFileName.contains("titles")) {
-			entityLinkerFileName = entityLinkerFileName.replace(".ser", "_title.ser");
-			entityContextFileName = entityContextFileName.replace(".ser", "_title.ser");
-		}
+				ENTPath.NAME_PERSON_FILE,
+
+				ENTPath.NAME_ORGANIZATION_FILE,
+
+				ENTPath.NAME_LOCATION_FILE,
+
+				ENTPath.TITLE_FILE
+
+		};
+
+		String[] linkerFileNames = {
+
+				ENTPath.ENTITY_LINKER_FILE.replace(".ser", "_per.ser"),
+
+				ENTPath.ENTITY_LINKER_FILE.replace(".ser", "_org.ser"),
+
+				ENTPath.ENTITY_LINKER_FILE.replace(".ser", "_loc.ser"),
+
+				ENTPath.ENTITY_LINKER_FILE.replace(".ser", "_title.ser")
+
+		};
+
+		String[] contextFileNames = {
+
+				ENTPath.ENTITY_CONTEXT_FILE.replace(".ser", "_per.ser"),
+
+				ENTPath.ENTITY_CONTEXT_FILE.replace(".ser", "_org.ser"),
+
+				ENTPath.ENTITY_CONTEXT_FILE.replace(".ser", "_loc.ser"),
+
+				ENTPath.ENTITY_CONTEXT_FILE.replace(".ser", "_title.ser"),
+
+		};
+
+		// for (int i = 0; i < inputFileNames.length; i++) {
+		// EntityLinker el = new EntityLinker();
+		// el.train(inputFileNames[i]);
+		// el.write(linkerFileNames[i]);
+		// }
+
+		// if (FileUtils.exists(entityContextFileName)) {
+		// EntityContexts entContexts = new EntityContexts();
+		// entContexts.read(entityContextFileName);
+		// el.setEntityContexts(entContexts);
+		// }
+
+		// el.setAnalyzer(MedicalEnglishAnalyzer.newAnalyzer());
+		//
 
 		EntityLinker el = new EntityLinker();
-		// el.train(inputFileName);
-		// el.write(entityLinkerFileName);
-		el.read(entityLinkerFileName);
-
-		if (FileUtils.exists(entityContextFileName)) {
-			EntityContexts entContexts = new EntityContexts();
-			entContexts.read(entityContextFileName);
-			el.setEntityContexts(entContexts);
-		}
-
-		el.setAnalyzer(MedicalEnglishAnalyzer.newAnalyzer());
+		el.read(ENTPath.ENTITY_LINKER_FILE.replace(".ser", "_title.ser"));
 
 		List<Entity> ents = new ArrayList<Entity>(el.getEntityMap().values());
 
@@ -87,11 +111,11 @@ public class EntityLinker implements Serializable {
 			String[] orgs = { "IBM", "kisti", "kaist", "seoul national", "samsung", "lg", "apple", "hyundai", "kist",
 					"sk" };
 
-			String contextStr = "company organization";
+//			String contextStr = "company organization";
 
 			for (int i = 0; i < orgs.length; i++) {
 
-				Counter<Entity> scores = el.link(orgs[i], contextStr);
+				Counter<Entity> scores = el.link(orgs[i]);
 				scores.keepTopNKeys(10);
 
 				writer.write("====== input ======" + "\n");
@@ -246,6 +270,8 @@ public class EntityLinker implements Serializable {
 	}
 
 	public void read(String fileName) throws Exception {
+		System.out.printf("read at [%s]\n", fileName);
+
 		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
 
 		StopWatch stopWatch = new StopWatch();
@@ -310,12 +336,9 @@ public class EntityLinker implements Serializable {
 			int id = Integer.parseInt(parts[0]);
 			String name = parts[1];
 			String topic = parts[2];
-			String catStr = parts[3];
-			String variants = parts[4];
+			String variantStr = parts[3];
 
 			name = StrUtils.normalizeSpaces(name);
-
-			Counter<String> c = AnalyzerUtils.getWordCounts(catStr, analyzer);
 
 			// if (catStr.equals("none")) {
 			// topicWordData.put(id, new SparseVector());
@@ -329,7 +352,7 @@ public class EntityLinker implements Serializable {
 			Entity ent = new Entity(id, name, topic);
 			ents.put(ent.getId(), ent);
 
-			StringRecord sr = new StringRecord(srs.size(), name.toLowerCase());
+			StringRecord sr = new StringRecord(srs.size(), name);
 			srs.add(sr);
 
 			// recToEnt.put(sr.getId(), ent.getId());
@@ -346,10 +369,15 @@ public class EntityLinker implements Serializable {
 			// abbrRecIds.add(sr.getId());
 			// }
 
-			if (!variants.equals("none")) {
-				for (String var : variants.split("\\|")) {
+			if (!variantStr.equals("none")) {
+
+				List<String> variants = StrUtils.split("\\|");
+
+				Collections.sort(variants);
+
+				for (String var : variants) {
 					var = StrUtils.normalizeSpaces(var);
-					sr = new StringRecord(srs.size(), var.toLowerCase());
+					sr = new StringRecord(srs.size(), var);
 					srs.add(sr);
 
 					recToEnt.add(ent.getId());
@@ -384,6 +412,7 @@ public class EntityLinker implements Serializable {
 	}
 
 	public void write(String fileName) throws Exception {
+		System.out.printf("write at [%s]\n", fileName);
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
