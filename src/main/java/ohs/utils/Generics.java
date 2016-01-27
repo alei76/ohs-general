@@ -21,14 +21,18 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import ohs.types.Counter;
 import ohs.types.CounterMap;
+import ohs.types.DeepMap;
 import ohs.types.Indexer;
+import ohs.types.ListMap;
 import ohs.types.Pair;
+import ohs.types.SetMap;
 import ohs.types.Triple;
 
 /**
  * from Stanford Core NLP
  * 
- * A collection of utilities to make dealing with Java generics less painful and verbose. For example, rather than declaring
+ * A collection of utilities to make dealing with Java generics less painful and
+ * verbose. For example, rather than declaring
  *
  * <pre>
  * {@code  Map<String,ClassicCounter<List<String>>> = new HashMap<String,ClassicCounter<List<String>>>()}
@@ -40,10 +44,12 @@ import ohs.types.Triple;
  * {@code Map<String,ClassicCounter<List<String>>> = Generics.newHashMap()}
  * </pre>
  *
- * Java type-inference will almost always just <em>do the right thing</em> (every once in a while, the compiler will get confused before you
- * do, so you might still occasionally have to specify the appropriate types).
+ * Java type-inference will almost always just <em>do the right thing</em>
+ * (every once in a while, the compiler will get confused before you do, so you
+ * might still occasionally have to specify the appropriate types).
  *
- * This class is based on the examples in Brian Goetz's article <a href="http://www.ibm.com/developerworks/library/j-jtp02216.html">Java
+ * This class is based on the examples in Brian Goetz's article
+ * <a href="http://www.ibm.com/developerworks/library/j-jtp02216.html">Java
  * theory and practice: The pseudo-typedef antipattern</a>.
  *
  * @author Ilya Sherman
@@ -83,7 +89,8 @@ public class Generics {
 		return new ConcurrentHashMap<K, V>(initialCapacity);
 	}
 
-	public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap(int initialCapacity, float loadFactor, int concurrencyLevel) {
+	public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap(int initialCapacity, float loadFactor,
+			int concurrencyLevel) {
 		return new ConcurrentHashMap<K, V>(initialCapacity, loadFactor, concurrencyLevel);
 	}
 
@@ -95,12 +102,44 @@ public class Generics {
 		return new Counter<E>(c);
 	}
 
+	public static <E> Counter<E> newCounter(int size) {
+		return new Counter<E>(size);
+	}
+
 	public static <K, V> CounterMap<K, V> newCounterMap() {
 		return new CounterMap<K, V>();
 	}
 
 	public static <K, V> CounterMap<K, V> newCounterMap(CounterMap<K, V> cm) {
 		return new CounterMap<K, V>(cm);
+	}
+
+	public static <K, V> CounterMap<K, V> newCounterMap(int size) {
+		return new CounterMap<K, V>(size);
+	}
+
+	public static <K, V> ListMap<K, V> newListMap() {
+		return new ListMap<K, V>();
+	}
+
+	public static <K, V> ListMap<K, V> newListMap(int size) {
+		return new ListMap<K, V>(size, MapType.HASH_MAP, ListType.ARRAY_LIST);
+	}
+
+	public static <K, V> SetMap<K, V> newSetMap() {
+		return new SetMap<K, V>();
+	}
+
+	public static <K, V> SetMap<K, V> newSetMap(int size) {
+		return new SetMap<K, V>(size, MapType.HASH_MAP, SetType.HASH_SET);
+	}
+
+	public static <K, E, V> DeepMap<K, E, V> newDeepMap() {
+		return new DeepMap<K, E, V>();
+	}
+
+	public static <K, E, V> DeepMap<K, E, V> newDeepMap(int size) {
+		return new DeepMap<K, E, V>(size, MapType.HASH_MAP, MapType.HASH_MAP);
 	}
 
 	/* Maps */

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import ohs.entity.ENTPath;
+import ohs.eden.linker.ELPath;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.string.partition.StringPartitioner;
@@ -45,7 +45,7 @@ public class PrefixSpan {
 
 		StringPartitioner p = new StringPartitioner(3, false);
 
-		TextFileReader reader = new TextFileReader(ENTPath.DOMESTIC_PAPER_ORG_NAME_FILE);
+		TextFileReader reader = new TextFileReader(ELPath.DOMESTIC_PAPER_ORG_NAME_FILE);
 		while (reader.hasNext()) {
 			String line = reader.next();
 			String[] parts = line.split("\t");
@@ -69,7 +69,7 @@ public class PrefixSpan {
 		PrefixSpan s = new PrefixSpan();
 		s.setRecords(records);
 		s.mine();
-		s.write(ENTPath.DATA_DIR + "patterns.txt");
+		s.write(ELPath.DATA_DIR + "patterns.txt");
 		System.out.println("process ends.");
 	}
 

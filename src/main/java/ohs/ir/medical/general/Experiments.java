@@ -14,9 +14,9 @@ import org.apache.lucene.search.IndexSearcher;
 
 import com.medallia.word2vec.Word2VecModel;
 
-import ohs.entity.Entity;
-import ohs.entity.EntityLinker;
-import ohs.entity.WikiDataHandler;
+import ohs.eden.linker.Entity;
+import ohs.eden.linker.EntityLinker;
+import ohs.eden.linker.WikiDataHandler;
 import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.AnalyzerUtils;

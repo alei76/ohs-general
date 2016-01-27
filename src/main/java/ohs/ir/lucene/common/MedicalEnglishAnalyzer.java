@@ -1,6 +1,7 @@
 package ohs.ir.lucene.common;
 
 import java.io.Reader;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -39,8 +40,6 @@ public final class MedicalEnglishAnalyzer extends StopwordAnalyzerBase {
 
 	public static MedicalEnglishAnalyzer newAnalyzer(String stopwordFileName) throws Exception {
 		Set<String> stopwords = FileUtils.readSet(stopwordFileName);
-
-		System.out.printf("read [%d] stopwords from [%s].\n", stopwords.size(), stopwordFileName);
 		return new MedicalEnglishAnalyzer(new CharArraySet(stopwords, true));
 	}
 

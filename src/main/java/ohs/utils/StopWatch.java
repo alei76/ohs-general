@@ -12,7 +12,9 @@ public class StopWatch {
 	}
 
 	public static StopWatch newStopWatch() {
-		return new StopWatch();
+		StopWatch ret = new StopWatch();
+		ret.start();
+		return ret;
 	}
 
 	public StopWatch(long ms) {
