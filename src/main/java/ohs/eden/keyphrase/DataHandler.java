@@ -373,14 +373,16 @@ public class DataHandler {
 				// Counter<String> korAbsWordCounts = Generics.newCounter();
 				// Counter<String> engAbsWordCounts = Generics.newCounter();
 				//
-				// for (String word : StrUtils.split("[\\s\\p{Punct}]+", korAbs)) {
+				// for (String word : StrUtils.split("[\\s\\p{Punct}]+",
+				// korAbs)) {
 				// word = word.trim();
 				// if (word.length() > 0) {
 				// korAbsWordCounts.incrementCount(word, 1);
 				// }
 				// }
 				//
-				// for (String word : StrUtils.split("[\\s\\p{Punct}]+", engAbs)) {
+				// for (String word : StrUtils.split("[\\s\\p{Punct}]+",
+				// engAbs)) {
 				// word = word.trim();
 				// if (word.length() > 0) {
 				// engAbsWordCounts.incrementCount(word, 1);

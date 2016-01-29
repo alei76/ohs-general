@@ -1,17 +1,15 @@
 package ohs.eden.keyphrase;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.apache.commons.math.stat.descriptive.SynchronizedMultivariateSummaryStatistics;
-
 import java.util.Set;
 
 import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
+import ohs.string.search.ppss.Gram;
+import ohs.string.search.ppss.GramGenerator;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
@@ -39,7 +37,11 @@ public class KeywordClusterer {
 		System.out.println("process ends.");
 	}
 
-	private KeywordData rkd;
+	private static String normalize(String s) {
+		return s.replaceAll("[\\s\\p{Punct}&&[^<>]]+", "").toLowerCase();
+	}
+
+	private KeywordData kwData;
 
 	private Indexer<String> keywordIndexer;
 
@@ -47,10 +49,12 @@ public class KeywordClusterer {
 
 	private Map<Integer, Integer> keywordClusterMap;
 
-	public KeywordClusterer(KeywordData rkd) {
-		this.rkd = rkd;
+	private Map<Integer, String> clusterLabelMap;
 
-		keywordIndexer = rkd.getKeywordIndexer();
+	public KeywordClusterer(KeywordData kwData) {
+		this.kwData = kwData;
+
+		keywordIndexer = kwData.getKeywordIndexer();
 	}
 
 	public void cluster() {
@@ -63,15 +67,11 @@ public class KeywordClusterer {
 			keywordClusterMap.put(i, i);
 		}
 
-		// printClusters();
-
 		clusterUsingExactMatch();
-
-		// exactLanguageMatch(true);
 
 		clusterUsingExactLanguageMatch(false);
 
-		System.out.println();
+		selectClusterLabels();
 	}
 
 	private void clusterUsingExactLanguageMatch(boolean isEnglish) {
@@ -80,13 +80,13 @@ public class KeywordClusterer {
 		SetMap<String, Integer> keyKeywordMap = Generics.newSetMap();
 
 		for (Entry<Integer, Counter<Integer>> e : clusterKeywordMap.getEntrySet()) {
-			int cid = e.getKey();
+
 			Counter<Integer> kwids = e.getValue();
 
 			for (int kwid : kwids.keySet()) {
 				String keyword = keywordIndexer.getObject(kwid);
 				String key = isEnglish ? keyword.split("\t")[1] : keyword.split("\t")[0];
-				key = key.replaceAll("[\\s\\p{Punct}&&[^<>]]+", "").toLowerCase();
+				key = normalize(key);
 
 				if (key.equals("<none>") || key.length() < 4) {
 					continue;
@@ -124,7 +124,7 @@ public class KeywordClusterer {
 			}
 		}
 
-		System.out.println(keyClusterMap.invert());
+		// System.out.println(keyClusterMap.invert());
 		System.out.println();
 
 		for (String key : keyClusterMap.keySet()) {
@@ -147,8 +147,6 @@ public class KeywordClusterer {
 				}
 			}
 		}
-
-		// printClusters();
 	}
 
 	private void clusterUsingExactMatch() {
@@ -185,6 +183,84 @@ public class KeywordClusterer {
 		}
 
 		// printClusters();
+	}
+
+	private double computeLoglikelihood(Gram[] gs, CounterMap<Character, Character> bigramProbs) {
+		double ret = 0;
+		for (Gram g : gs) {
+			double prob = bigramProbs.getCount(g.getString().charAt(0), g.getString().charAt(1));
+			if (prob > 0) {
+				ret += Math.log(prob);
+			}
+		}
+		return ret;
+	}
+
+	private Counter<String> computeScores(Set<Integer> kwids) {
+		CounterMap<Character, Character>[] bigramProbData = new CounterMap[2];
+		Counter<String>[] kwFreqData = new Counter[2];
+		kwFreqData[0] = getKeywordFreqs(kwids, false);
+		kwFreqData[1] = getKeywordFreqs(kwids, true);
+
+		GramGenerator gg = new GramGenerator(2);
+
+		for (int i = 0; i < kwFreqData.length; i++) {
+			CounterMap<Character, Character> bigramProbs = Generics.newCounterMap();
+
+			for (Entry<String, Double> e : kwFreqData[i].entrySet()) {
+				for (Gram g : gg.generate(e.getKey().toLowerCase())) {
+					bigramProbs.incrementCount(g.getString().charAt(0), g.getString().charAt(1), e.getValue());
+				}
+			}
+			bigramProbs.normalize();
+			bigramProbData[i] = bigramProbs;
+		}
+
+		Counter<String> korScores = Generics.newCounter();
+		Counter<String> engScores = Generics.newCounter();
+
+		for (int kwid : kwids) {
+			String keyword = keywordIndexer.getObject(kwid);
+			String kor = keyword.split("\t")[0];
+			String eng = keyword.split("\t")[1];
+
+			if (!kor.equals("<none>")) {
+				double kor_log_likelihood = computeLoglikelihood(gg.generate(kor.toLowerCase()), bigramProbData[0]);
+				korScores.incrementCount(keyword, kor_log_likelihood);
+			}
+
+			if (!eng.equals("<none>")) {
+				double eng_log_likelihood = computeLoglikelihood(gg.generate(eng.toLowerCase()), bigramProbData[1]);
+				engScores.incrementCount(eng, eng_log_likelihood);
+			}
+
+		}
+
+		if (korScores.size() > 4) {
+			System.out.println(korScores.toStringSortedByValues(true, true, korScores.size(), " "));
+			System.out.println();
+		}
+
+		return korScores;
+	}
+
+	private void filter() {
+		for (int cid : clusterKeywordMap.keySet()) {
+			Counter<Integer> kwids = clusterKeywordMap.getCounter(cid);
+		}
+	}
+
+	private Counter<String> getKeywordFreqs(Set<Integer> kwids, boolean isEnglish) {
+		Counter<String> ret = Generics.newCounter();
+		for (int kwid : kwids) {
+			String keyword = keywordIndexer.getObject(kwid);
+			String key = isEnglish ? keyword.split("\t")[1] : keyword.split("\t")[0];
+			if (key.equals("<none>")) {
+				continue;
+			}
+			ret.incrementCount(key, kwData.getKeywordFreqs()[kwid]);
+		}
+		return ret;
 	}
 
 	private int min(Set<Integer> set) {
@@ -229,9 +305,11 @@ public class KeywordClusterer {
 		System.out.println();
 	}
 
-	private void filter() {
+	private void selectClusterLabels() {
+
 		for (int cid : clusterKeywordMap.keySet()) {
-			Counter<Integer> kwids = clusterKeywordMap.getCounter(cid);
+			Set<Integer> kwids = clusterKeywordMap.getCounter(cid).keySet();
+			Counter<String> scores = computeScores(kwids);
 		}
 	}
 
@@ -244,46 +322,52 @@ public class KeywordClusterer {
 		List<Integer> cids = clusterKeywordMap.getInnerCountSums().getSortedKeys();
 		// List<Integer> cids = Generics.newArrayList();
 
-//		{
-//			List<String> keys = Generics.newArrayList();
-//
-//			Map<Integer, Integer> map = Generics.newHashMap();
-//
-//			for (int cid : clusterKeywordMap.keySet()) {
-//				int kwid = clusterKeywordMap.getCounter(cid).argMax();
-//				map.put(kwid, cid);
-//				String keyword = keywordIndexer.getObject(kwid);
-//				keys.add(keyword);
-//			}
-//
-//			Collections.sort(keys);
-//
-//			cids = Generics.newArrayList();
-//			for (int i = 0; i < keys.size(); i++) {
-//				int kwid = keywordIndexer.indexOf(keys.get(i));
-//				int cid = map.get(kwid);
-//				cids.add(cid);
-//			}
-//		}
+		{
+			List<String> keys = Generics.newArrayList();
 
-		for (int i = 0; i < cids.size(); i++) {
+			Map<Integer, Integer> map = Generics.newHashMap();
+
+			for (int cid : clusterKeywordMap.keySet()) {
+				int kwid = clusterKeywordMap.getCounter(cid).argMax();
+				map.put(kwid, cid);
+				String keyword = keywordIndexer.getObject(kwid);
+				keys.add(keyword);
+			}
+
+			Collections.sort(keys);
+
+			cids = Generics.newArrayList();
+			for (int i = 0; i < keys.size(); i++) {
+				int kwid = keywordIndexer.indexOf(keys.get(i));
+				int cid = map.get(kwid);
+				cids.add(cid);
+			}
+		}
+
+		for (int i = 0, n = 1; i < cids.size(); i++) {
 			int cid = cids.get(i);
 
 			StringBuffer sb = new StringBuffer();
-			sb.append(String.format("Cluster Number:\t%d", i + 1));
+			sb.append(String.format("Cluster Number:\t%d", n));
 			sb.append(String.format("\nCluster ID:\t%d", cid));
 			sb.append(String.format("\nKeywords:\t%d", clusterKeywordMap.getCounter(cid).size()));
 
 			Counter<Integer> c = Generics.newCounter();
 
 			for (int kwid : clusterKeywordMap.getCounter(cid).keySet()) {
-				c.setCount(kwid, rkd.getKeywordFreqs()[kwid]);
+				c.setCount(kwid, kwData.getKeywordFreqs()[kwid]);
 			}
+
+			if (c.size() < 5) {
+				continue;
+			}
+
+			n++;
 
 			List<Integer> kwids = c.getSortedKeys();
 			for (int j = 0; j < kwids.size(); j++) {
 				int kwid = kwids.get(j);
-				int kw_freq = rkd.getKeywordFreqs()[kwid];
+				int kw_freq = kwData.getKeywordFreqs()[kwid];
 				sb.append(String.format("\n%d:\t%d\t%s\t%d", j + 1, kwid, keywordIndexer.getObject(kwid), kw_freq));
 			}
 			writer.write("\n\n" + sb.toString());
