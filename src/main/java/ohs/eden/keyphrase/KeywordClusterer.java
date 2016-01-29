@@ -15,8 +15,11 @@ import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
+import ohs.utils.KoreanUtils;
 
 public class KeywordClusterer {
+
+	public static final String NONE = "<none>";
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
@@ -88,7 +91,7 @@ public class KeywordClusterer {
 				String key = isEnglish ? keyword.split("\t")[1] : keyword.split("\t")[0];
 				key = normalize(key);
 
-				if (key.equals("<none>") || key.length() < 4) {
+				if (key.equals(NONE) || key.length() < 4) {
 					continue;
 				}
 				// key = key.replaceAll("[\\s\\p{Punct}]+", "").toLowerCase();
@@ -185,18 +188,7 @@ public class KeywordClusterer {
 		// printClusters();
 	}
 
-	private double computeLoglikelihood(Gram[] gs, CounterMap<Character, Character> bigramProbs) {
-		double ret = 0;
-		for (Gram g : gs) {
-			double prob = bigramProbs.getCount(g.getString().charAt(0), g.getString().charAt(1));
-			if (prob > 0) {
-				ret += Math.log(prob);
-			}
-		}
-		return ret;
-	}
-
-	private Counter<String> computeScores(Set<Integer> kwids) {
+	private Counter<String>[] computeLabelScores(Set<Integer> kwids) {
 		CounterMap<Character, Character>[] bigramProbData = new CounterMap[2];
 		Counter<String>[] kwFreqData = new Counter[2];
 		kwFreqData[0] = getKeywordFreqs(kwids, false);
@@ -216,32 +208,43 @@ public class KeywordClusterer {
 			bigramProbData[i] = bigramProbs;
 		}
 
-		Counter<String> korScores = Generics.newCounter();
-		Counter<String> engScores = Generics.newCounter();
+		Counter<String>[] scoreData = new Counter[2];
 
 		for (int kwid : kwids) {
 			String keyword = keywordIndexer.getObject(kwid);
-			String kor = keyword.split("\t")[0];
-			String eng = keyword.split("\t")[1];
+			String[] langs = keyword.split("\t");
 
-			if (!kor.equals("<none>")) {
-				double kor_log_likelihood = computeLoglikelihood(gg.generate(kor.toLowerCase()), bigramProbData[0]);
-				korScores.incrementCount(keyword, kor_log_likelihood);
-			}
+			Counter<String> scores = Generics.newCounter();
 
-			if (!eng.equals("<none>")) {
-				double eng_log_likelihood = computeLoglikelihood(gg.generate(eng.toLowerCase()), bigramProbData[1]);
-				engScores.incrementCount(eng, eng_log_likelihood);
+			for (int i = 0; i < langs.length; i++) {
+				String lang = langs[i];
+				if (!lang.equals(NONE)) {
+					double log_likelihood = computeLoglikelihood(gg.generate(lang.toLowerCase()), bigramProbData[i]);
+					scores.incrementCount(keyword, log_likelihood);
+				}
+
+				if (scores.size() == 0) {
+					scores.setCount(NONE, 0);
+				}
+
+				scoreData[i] = scores;
+
 			}
 
 		}
 
-		if (korScores.size() > 4) {
-			System.out.println(korScores.toStringSortedByValues(true, true, korScores.size(), " "));
-			System.out.println();
-		}
+		return scoreData;
+	}
 
-		return korScores;
+	private double computeLoglikelihood(Gram[] gs, CounterMap<Character, Character> bigramProbs) {
+		double ret = 0;
+		for (Gram g : gs) {
+			double prob = bigramProbs.getCount(g.getString().charAt(0), g.getString().charAt(1));
+			if (prob > 0) {
+				ret += Math.log(prob);
+			}
+		}
+		return ret;
 	}
 
 	private void filter() {
@@ -255,7 +258,7 @@ public class KeywordClusterer {
 		for (int kwid : kwids) {
 			String keyword = keywordIndexer.getObject(kwid);
 			String key = isEnglish ? keyword.split("\t")[1] : keyword.split("\t")[0];
-			if (key.equals("<none>")) {
+			if (key.equals(NONE)) {
 				continue;
 			}
 			ret.incrementCount(key, kwData.getKeywordFreqs()[kwid]);
@@ -307,9 +310,15 @@ public class KeywordClusterer {
 
 	private void selectClusterLabels() {
 
+		clusterLabelMap = Generics.newHashMap();
+
 		for (int cid : clusterKeywordMap.keySet()) {
 			Set<Integer> kwids = clusterKeywordMap.getCounter(cid).keySet();
-			Counter<String> scores = computeScores(kwids);
+			Counter<String>[] scoreData = computeLabelScores(kwids);
+			String korLabel = scoreData[0].argMax();
+			String engLabel = scoreData[1].argMax();
+
+			clusterLabelMap.put(cid, korLabel + "\t" + engLabel);
 		}
 	}
 
@@ -350,6 +359,7 @@ public class KeywordClusterer {
 			StringBuffer sb = new StringBuffer();
 			sb.append(String.format("Cluster Number:\t%d", n));
 			sb.append(String.format("\nCluster ID:\t%d", cid));
+			sb.append(String.format("\nCluater Label:\t%s", clusterLabelMap.get(cid)));
 			sb.append(String.format("\nKeywords:\t%d", clusterKeywordMap.getCounter(cid).size()));
 
 			Counter<Integer> c = Generics.newCounter();
