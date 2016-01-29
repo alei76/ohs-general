@@ -25,8 +25,8 @@ public class LibLinearWrapper implements Serializable {
 
 		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
 
-		Indexer<String> labelIndexer = FileUtils.readIndexer(ois);
-		Indexer<String> featIndexer = FileUtils.readIndexer(ois);
+		Indexer<String> labelIndexer = FileUtils.readStrIndexer(ois);
+		Indexer<String> featIndexer = FileUtils.readStrIndexer(ois);
 
 		SolverType solver = SolverType.getById(ois.readInt());
 		int nr_class = ois.readInt();
@@ -137,8 +137,8 @@ public class LibLinearWrapper implements Serializable {
 		System.out.printf("write to [%s].\n", fileName);
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 
-		FileUtils.write(oos, labelIndexer);
-		FileUtils.write(oos, featureIndexer);
+		FileUtils.writeStrIndexer(oos, labelIndexer);
+		FileUtils.writeStrIndexer(oos, featureIndexer);
 
 		oos.writeInt(model.solverType.getId());
 		oos.writeInt(model.getNrClass());
@@ -150,7 +150,7 @@ public class LibLinearWrapper implements Serializable {
 		oos.writeInt(model.getNrFeature());
 		oos.writeDouble(model.getBias());
 
-		FileUtils.writeStrings(oos, model.getFeatureWeights());
+		FileUtils.writeStrCollection(oos, model.getFeatureWeights());
 		oos.close();
 	}
 }

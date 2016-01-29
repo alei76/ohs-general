@@ -292,15 +292,15 @@ public class StringSearcher implements Serializable {
 		prefix_size = ois.readInt();
 
 		gg = new GramGenerator(q);
-		gramIndexer = FileUtils.readIndexer(ois);
-		gram_dfs = FileUtils.readIntegerArray(ois);
-		gram_cnts = FileUtils.readIntegerArray(ois);
+		gramIndexer = FileUtils.readStrIndexer(ois);
+		gram_dfs = FileUtils.readIntArray(ois);
+		gram_cnts = FileUtils.readIntArray(ois);
 
 		int size3 = ois.readInt();
 		index = new ListMap<Integer, Integer>(size3, MapType.HASH_MAP, ListType.ARRAY_LIST);
 
 		for (int i = 0; i < size3; i++) {
-			index.set(ois.readInt(), FileUtils.readIntegers(ois));
+			index.set(ois.readInt(), FileUtils.readIntList(ois));
 		}
 
 		System.out.printf("read [%s] - [%s]\n", this.getClass().getName(), stopWatch.stop());
@@ -416,9 +416,9 @@ public class StringSearcher implements Serializable {
 		oos.writeInt(tau);
 		oos.writeInt(prefix_size);
 
-		FileUtils.writeStrings(oos, gramIndexer.getObjects());
-		FileUtils.write(oos, gram_dfs);
-		FileUtils.write(oos, gram_cnts);
+		FileUtils.writeStrCollection(oos, gramIndexer.getObjects());
+		FileUtils.writeIntArray(oos, gram_dfs);
+		FileUtils.writeIntArray(oos, gram_cnts);
 
 		oos.writeInt(index.size());
 		Iterator<Integer> iter = index.keySet().iterator();
@@ -426,7 +426,7 @@ public class StringSearcher implements Serializable {
 		while (iter.hasNext()) {
 			int gid = iter.next();
 			oos.writeInt(gid);
-			FileUtils.writeIntegers(oos, index.get(gid));
+			FileUtils.writeIntCollection(oos, index.get(gid));
 		}
 		oos.flush();
 

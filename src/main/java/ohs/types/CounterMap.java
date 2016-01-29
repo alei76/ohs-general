@@ -326,8 +326,8 @@ public class CounterMap<K, V> implements java.io.Serializable {
 		}
 	}
 
-	public void removeKey(K oldIndex) {
-		counterMap.remove(oldIndex);
+	public Counter<V> removeKey(K oldIndex) {
+		return counterMap.remove(oldIndex);
 
 	}
 

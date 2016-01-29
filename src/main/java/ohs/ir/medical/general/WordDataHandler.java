@@ -187,10 +187,10 @@ public class WordDataHandler {
 	public void mergeVocabularies(String[] inputFileNames, String outputFileName) throws Exception {
 		Counter<String> counter = new Counter<String>();
 		for (int i = 0; i < inputFileNames.length; i++) {
-			Counter<String> c = FileUtils.readCounter(inputFileNames[i]);
+			Counter<String> c = FileUtils.readStrCounter(inputFileNames[i]);
 			counter.incrementAll(c);
 		}
-		FileUtils.write(outputFileName, counter);
+		FileUtils.writeStrCounter(outputFileName, counter);
 	}
 
 	public void process(String vocFileName, String cmFileName, String outputFileName) throws Exception {
@@ -198,7 +198,7 @@ public class WordDataHandler {
 		Counter<Integer> collWordCounts = new Counter<Integer>();
 
 		{
-			Counter<String> c = FileUtils.readCounter(vocFileName);
+			Counter<String> c = FileUtils.readStrCounter(vocFileName);
 
 			for (String word : c.getSortedKeys()) {
 				int w = wordIndexer.getIndex(word);

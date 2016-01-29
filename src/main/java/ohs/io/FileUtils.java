@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -101,20 +102,17 @@ public class FileUtils {
 			/** Step: 3 ---> Create a tar entry for each file that is read. **/
 
 			/**
-			 * relativize is used to to add a file to a tar, without including
-			 * the entire path from root.
+			 * relativize is used to to add a file to a tar, without including the entire path from root.
 			 **/
 
-			TarArchiveEntry tae = new TarArchiveEntry(input,
-					root.getParentFile().toURI().relativize(input.toURI()).getPath());
+			TarArchiveEntry tae = new TarArchiveEntry(input, root.getParentFile().toURI().relativize(input.toURI()).getPath());
 
 			/** Step: 4 ---> Put the tar entry using putArchiveEntry. **/
 
 			taos.putArchiveEntry(tae);
 
 			/**
-			 * Step: 5 ---> Write the data to the tar file and close the input
-			 * stream.
+			 * Step: 5 ---> Write the data to the tar file and close the input stream.
 			 **/
 
 			int count;
@@ -134,8 +132,7 @@ public class FileUtils {
 				if (input.listFiles().length == 0) {
 
 					System.out.println("Adding Empty Folder: " + root.toURI().relativize(input.toURI()).getPath());
-					TarArchiveEntry entry = new TarArchiveEntry(input,
-							root.getParentFile().toURI().relativize(input.toURI()).getPath());
+					TarArchiveEntry entry = new TarArchiveEntry(input, root.getParentFile().toURI().relativize(input.toURI()).getPath());
 					taos.putArchiveEntry(entry);
 					taos.closeArchiveEntry();
 				}
@@ -167,8 +164,7 @@ public class FileUtils {
 		taos.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
 
 		/**
-		 * Step: 2 --->Open the source data and get a list of files from given
-		 * directory recursively.
+		 * Step: 2 --->Open the source data and get a list of files from given directory recursively.
 		 **/
 
 		File input = new File(inputPath);
@@ -319,8 +315,7 @@ public class FileUtils {
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMinimumFractionDigits(2);
 
-		System.out.println(String.format("read [%d, %s MBs] files from [%s]", files.size(),
-				nf.format(fs.size(Type.MEGA)), dir.getName()));
+		System.out.println(String.format("read [%d, %s MBs] files from [%s]", files.size(), nf.format(fs.size(Type.MEGA)), dir.getName()));
 		return files;
 	}
 
@@ -372,7 +367,7 @@ public class FileUtils {
 			double[] ar = ArrayUtils.range(10000000, 0.0, 1);
 			ObjectOutputStream oos = openObjectOutputStream("../../data/entity_iden/wiki/test-a1.ser.gz");
 
-			FileUtils.write(oos, ar);
+			FileUtils.writeDoubleArray(oos, ar);
 			oos.close();
 
 		}
@@ -381,7 +376,7 @@ public class FileUtils {
 			int[] ar = ArrayUtils.range(10, 0, 1);
 			ObjectOutputStream oos = openObjectOutputStream("../../data/entity_iden/wiki/test-a2.ser.gz");
 
-			FileUtils.write(oos, ar);
+			FileUtils.writeIntArray(oos, ar);
 			oos.close();
 		}
 
@@ -416,16 +411,14 @@ public class FileUtils {
 		InputStreamReader isr = null;
 
 		if (file.getName().endsWith(".gz")) {
-			CompressorInputStream cis = new CompressorStreamFactory()
-					.createCompressorInputStream(CompressorStreamFactory.GZIP, fis);
+			CompressorInputStream cis = new CompressorStreamFactory().createCompressorInputStream(CompressorStreamFactory.GZIP, fis);
 			isr = new InputStreamReader(cis, encoding);
 		} else if (file.getName().endsWith(".bz2")) {
 			// byte[] ignoreBytes = new byte[2];
 			// fis.read(ignoreBytes); // "B", "Z" bytes from commandline tools
 			// ret = new BufferedReader(new InputStreamReader(new
 			// CBZip2InputStream(fis)));
-			CompressorInputStream cis = new CompressorStreamFactory()
-					.createCompressorInputStream(CompressorStreamFactory.BZIP2, fis);
+			CompressorInputStream cis = new CompressorStreamFactory().createCompressorInputStream(CompressorStreamFactory.BZIP2, fis);
 			isr = new InputStreamReader(cis, encoding);
 		} else {
 			isr = new InputStreamReader(fis, encoding);
@@ -463,14 +456,12 @@ public class FileUtils {
 		if (file.getName().endsWith(".gz")) {
 			// osw = new OutputStreamWriter(new GZIPOutputStream(new
 			// FileOutputStream(file, append)), encoding);
-			CompressorOutputStream cos = new CompressorStreamFactory()
-					.createCompressorOutputStream(CompressorStreamFactory.GZIP, fos);
+			CompressorOutputStream cos = new CompressorStreamFactory().createCompressorOutputStream(CompressorStreamFactory.GZIP, fos);
 			osw = new OutputStreamWriter(cos, encoding);
 		} else if (file.getName().endsWith(".bz2")) {
 			// osw = new OutputStreamWriter(new CBZip2OutputStream(new
 			// FileOutputStream(file, append)), encoding);
-			CompressorOutputStream cos = new CompressorStreamFactory()
-					.createCompressorOutputStream(CompressorStreamFactory.BZIP2, fos);
+			CompressorOutputStream cos = new CompressorStreamFactory().createCompressorOutputStream(CompressorStreamFactory.BZIP2, fos);
 			osw = new OutputStreamWriter(cos, encoding);
 		} else {
 			osw = new OutputStreamWriter(fos, encoding);
@@ -526,7 +517,133 @@ public class FileUtils {
 		}
 	}
 
-	public static Counter<String> readCounter(ObjectInputStream ois) throws Exception {
+	public static double[] readDoubleArray(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+		double[] ret = new double[size];
+		for (int i = 0; i < size; i++) {
+			ret[i] = ois.readDouble();
+		}
+		return ret;
+	}
+
+	public static List<Double> readDoubleList(ObjectInputStream ois) throws Exception {
+		List<Double> ret = new ArrayList<Double>();
+		int size = ois.readInt();
+		for (int i = 0; i < size; i++) {
+			ret.add(ois.readDouble());
+		}
+		return ret;
+	}
+
+	public static double[][] readDoubleMatrix(ObjectInputStream ois) throws Exception {
+		int rowSize = ois.readInt();
+		double[][] ret = new double[rowSize][];
+		for (int i = 0; i < rowSize; i++) {
+			ret[i] = readDoubleArray(ois);
+		}
+		return ret;
+	}
+
+	public static int[] readIntArray(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+		int[] ret = new int[size];
+		for (int i = 0; i < size; i++) {
+			ret[i] = ois.readInt();
+		}
+		return ret;
+	}
+
+	public static int[] readIntArray(String fileName) throws Exception {
+		ObjectInputStream ois = openObjectInputStream(fileName);
+		int[] ret = readIntArray(ois);
+		ois.close();
+		return ret;
+	}
+
+	public static List<Integer> readIntList(ObjectInputStream ois) throws Exception {
+		List<Integer> ret = new ArrayList<Integer>();
+		int size = ois.readInt();
+		for (int i = 0; i < size; i++) {
+			ret.add(ois.readInt());
+		}
+		return ret;
+	}
+
+	public static Map<Integer, Integer> readIntMap(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+		Map<Integer, Integer> ret = new HashMap<Integer, Integer>(size);
+		for (int i = 0; i < size; i++) {
+			int key = ois.readInt();
+			int value = ois.readInt();
+			ret.put(key, value);
+		}
+		return ret;
+	}
+
+	public static int[][] readIntMatrix(ObjectInputStream ois) throws Exception {
+		int rowSize = ois.readInt();
+		int[][] ret = new int[rowSize][];
+		for (int i = 0; i < rowSize; i++) {
+			ret[i] = readIntArray(ois);
+		}
+		return ret;
+	}
+
+	public static int[][] readIntMatrix(String fileName) throws Exception {
+		ObjectInputStream ois = openObjectInputStream(fileName);
+		int[][] ret = readIntMatrix(ois);
+		ois.close();
+		System.out.printf("read [%d, %d] matrix at [%s].\n", ret.length, ArrayUtils.maxColumnSize(ret), fileName);
+		return ret;
+	}
+
+	public static List<String> readLines(BufferedReader reader, int num_lines_to_read) throws Exception {
+		List<String> ret = Generics.newArrayList();
+		String line = reader.readLine();
+		if (line.startsWith(LINE_SIZE)) {
+			String[] parts = line.split("\t");
+			num_lines_to_read = Integer.parseInt(parts[1]);
+			ret = Generics.newArrayList(num_lines_to_read);
+		} else {
+			ret.add(line);
+		}
+
+		for (int i = 0; i < num_lines_to_read; i++) {
+			line = reader.readLine();
+			if (line == null) {
+				break;
+			}
+			ret.add(line);
+		}
+		return ret;
+	}
+
+	public static List<String> readLines(String fileName) throws Exception {
+		return readLines(fileName, UTF_8, Integer.MAX_VALUE);
+	}
+
+	public static List<String> readLines(String fileName, int num_read) throws Exception {
+		return readLines(fileName, UTF_8, num_read);
+	}
+
+	public static List<String> readLines(String fileName, String encoding) throws Exception {
+		return readLines(fileName, encoding, Integer.MAX_VALUE);
+	}
+
+	public static List<String> readLines(String fileName, String encoding, int num_read) throws Exception {
+		BufferedReader reader = openBufferedReader(fileName, encoding);
+		List<String> ret = readLines(reader, num_read);
+		reader.close();
+
+		System.out.printf("read [%d] lines at [%s]\n", ret.size(), fileName);
+		return ret;
+	}
+
+	public static HashSet<String> readSet(String fileName) throws Exception {
+		return new HashSet<String>(readLines(fileName));
+	}
+
+	public static Counter<String> readStrCounter(ObjectInputStream ois) throws Exception {
 		int size = ois.readInt();
 		Counter<String> ret = new Counter<String>(size);
 		for (int i = 0; i < size; i++) {
@@ -535,7 +652,7 @@ public class FileUtils {
 		return ret;
 	}
 
-	public static Counter<String> readCounter(String fileName) throws Exception {
+	public static Counter<String> readStrCounter(String fileName) throws Exception {
 
 		BufferedReader br = openBufferedReader(fileName);
 		String line = br.readLine();
@@ -557,16 +674,16 @@ public class FileUtils {
 		return ret;
 	}
 
-	public static CounterMap<String, String> readCounterMap(ObjectInputStream ois) throws Exception {
+	public static CounterMap<String, String> readStrCounterMap(ObjectInputStream ois) throws Exception {
 		int size = ois.readInt();
 		CounterMap<String, String> ret = new CounterMap<String, String>(size);
 		for (int i = 0; i < size; i++) {
-			ret.setCounter(ois.readUTF(), readCounter(ois));
+			ret.setCounter(ois.readUTF(), readStrCounter(ois));
 		}
 		return ret;
 	}
 
-	public static CounterMap<String, String> readCounterMap(String fileName) throws Exception {
+	public static CounterMap<String, String> readStrCounterMap(String fileName) throws Exception {
 		CounterMap<String, String> ret = new CounterMap<String, String>();
 
 		BufferedReader br = openBufferedReader(fileName);
@@ -597,34 +714,7 @@ public class FileUtils {
 		return ret;
 	}
 
-	public static double[] readDoubleArray(ObjectInputStream ois) throws Exception {
-		int size = ois.readInt();
-		double[] ret = new double[size];
-		for (int i = 0; i < size; i++) {
-			ret[i] = ois.readDouble();
-		}
-		return ret;
-	}
-
-	public static double[][] readDoubleMatrix(ObjectInputStream ois) throws Exception {
-		int rowSize = ois.readInt();
-		double[][] ret = new double[rowSize][];
-		for (int i = 0; i < rowSize; i++) {
-			ret[i] = readDoubleArray(ois);
-		}
-		return ret;
-	}
-
-	public static List<Double> readDoubles(ObjectInputStream ois) throws Exception {
-		List<Double> ret = new ArrayList<Double>();
-		int size = ois.readInt();
-		for (int i = 0; i < size; i++) {
-			ret.add(ois.readDouble());
-		}
-		return ret;
-	}
-
-	public static Indexer<String> readIndexer(ObjectInputStream ois) throws Exception {
+	public static Indexer<String> readStrIndexer(ObjectInputStream ois) throws Exception {
 		int size = ois.readInt();
 		Indexer<String> ret = new Indexer<String>(size);
 		for (int i = 0; i < size; i++) {
@@ -633,7 +723,7 @@ public class FileUtils {
 		return ret;
 	}
 
-	public static Indexer<String> readIndexer(String fileName) throws Exception {
+	public static Indexer<String> readStrIndexer(String fileName) throws Exception {
 		System.out.printf("read [%s].\n", fileName);
 		Indexer<String> ret = new Indexer<String>();
 		BufferedReader br = openBufferedReader(fileName);
@@ -645,100 +735,16 @@ public class FileUtils {
 		return ret;
 	}
 
-	public static int[] readIntegerArray(ObjectInputStream ois) throws Exception {
-		int size = ois.readInt();
-		int[] ret = new int[size];
-		for (int i = 0; i < size; i++) {
-			ret[i] = ois.readInt();
-		}
-		return ret;
-	}
-
-	public static int[] readIntegerArray(String fileName) throws Exception {
-		ObjectInputStream ois = openObjectInputStream(fileName);
-		int[] ret = readIntegerArray(ois);
-		ois.close();
-		return ret;
-	}
-
-	public static Map<Integer, Integer> readIntegerMap(ObjectInputStream ois) throws Exception {
-		int size = ois.readInt();
-		Map<Integer, Integer> ret = new HashMap<Integer, Integer>(size);
-		for (int i = 0; i < size; i++) {
-			int key = ois.readInt();
-			int value = ois.readInt();
-			ret.put(key, value);
-		}
-		return ret;
-	}
-
-	public static int[][] readIntegerMatrix(ObjectInputStream ois) throws Exception {
-		int rowSize = ois.readInt();
-		int[][] ret = new int[rowSize][];
-		for (int i = 0; i < rowSize; i++) {
-			ret[i] = readIntegerArray(ois);
-		}
-		return ret;
-	}
-
-	public static int[][] readIntegerMatrix(String fileName) throws Exception {
-		ObjectInputStream ois = openObjectInputStream(fileName);
-		int[][] ret = readIntegerMatrix(ois);
-		ois.close();
-		System.out.printf("read [%d, %d] matrix at [%s].\n", ret.length, ArrayUtils.maxColumnSize(ret), fileName);
-		return ret;
-	}
-
-	public static List<Integer> readIntegers(ObjectInputStream ois) throws Exception {
-		List<Integer> ret = new ArrayList<Integer>();
+	public static List<String> readStrList(ObjectInputStream ois) throws Exception {
+		List<String> ret = new ArrayList<String>();
 		int size = ois.readInt();
 		for (int i = 0; i < size; i++) {
-			ret.add(ois.readInt());
+			ret.add(ois.readUTF());
 		}
 		return ret;
 	}
 
-	public static List<String> readLines(BufferedReader reader, int num_lines_to_read) throws Exception {
-
-		List<String> ret = Generics.newArrayList();
-
-		String line = reader.readLine();
-		if (line.startsWith(LINE_SIZE)) {
-			String[] parts = line.split("\t");
-			num_lines_to_read = Integer.parseInt(parts[1]);
-			ret = Generics.newArrayList(num_lines_to_read);
-		} else {
-			ret.add(line);
-		}
-
-		for (int i = 0; i < num_lines_to_read; i++) {
-			ret.add(reader.readLine());
-		}
-		return ret;
-	}
-
-	public static List<String> readLines(String fileName) throws Exception {
-		return readLines(fileName, UTF_8, Integer.MAX_VALUE);
-	}
-
-	public static List<String> readLines(String fileName, int num_read) throws Exception {
-		return readLines(fileName, UTF_8, num_read);
-	}
-
-	public static List<String> readLines(String fileName, String encoding) throws Exception {
-		return readLines(fileName, encoding, Integer.MAX_VALUE);
-	}
-
-	public static List<String> readLines(String fileName, String encoding, int num_read) throws Exception {
-		BufferedReader reader = openBufferedReader(fileName, encoding);
-		List<String> ret = readLines(reader, num_read);
-		reader.close();
-
-		System.out.printf("read [%d] lines at [%s]\n", ret.size(), fileName);
-		return ret;
-	}
-
-	public static Map<String, String> readMap(String fileName) throws Exception {
+	public static Map<String, String> readStrMap(String fileName) throws Exception {
 		Map<String, String> ret = new HashMap<String, String>();
 		for (String line : readLines(fileName)) {
 			String[] parts = line.split("\t");
@@ -746,19 +752,6 @@ public class FileUtils {
 				throw new Exception("# parts is not 2.");
 			}
 			ret.put(parts[0], parts[1]);
-		}
-		return ret;
-	}
-
-	public static HashSet<String> readSet(String fileName) throws Exception {
-		return new HashSet<String>(readLines(fileName));
-	}
-
-	public static List<String> readStrings(ObjectInputStream ois) throws Exception {
-		List<String> ret = new ArrayList<String>();
-		int size = ois.readInt();
-		for (int i = 0; i < size; i++) {
-			ret.add(ois.readUTF());
 		}
 		return ret;
 	}
@@ -800,94 +793,6 @@ public class FileUtils {
 		return fileName;
 	}
 
-	public static void write(ObjectOutputStream oos, boolean[] x) throws IOException {
-		oos.writeInt(x.length);
-		for (int i = 0; i < x.length; i++) {
-			oos.writeBoolean(x[i]);
-		}
-		oos.flush();
-	}
-
-	public static void write(ObjectOutputStream oos, Counter<String> x) throws Exception {
-		oos.writeInt(x.size());
-		for (String key : x.keySet()) {
-			oos.writeUTF(key);
-			oos.writeDouble(x.getCount(key));
-		}
-		oos.flush();
-	}
-
-	public static void write(ObjectOutputStream oos, CounterMap<String, String> cm) throws Exception {
-		oos.writeInt(cm.keySet().size());
-		Iterator<String> iter = cm.keySet().iterator();
-		while (iter.hasNext()) {
-			oos.writeUTF(iter.next());
-			write(oos, cm.getCounter(iter.next()));
-		}
-		oos.flush();
-	}
-
-	public static void write(ObjectOutputStream oos, double[] x) throws Exception {
-		int size = x.length;
-		oos.writeInt(size);
-		for (int i = 0; i < x.length; i++) {
-			oos.writeDouble(x[i]);
-		}
-		oos.flush();
-	}
-
-	public static void write(ObjectOutputStream oos, double[][] x) throws Exception {
-		oos.writeInt(x.length);
-		for (int i = 0; i < x.length; i++) {
-			write(oos, x[i]);
-		}
-		oos.flush();
-	}
-
-	public static void write(ObjectOutputStream oos, Indexer<String> indexer) throws Exception {
-		oos.writeInt(indexer.size());
-		for (int i = 0; i < indexer.size(); i++) {
-			oos.writeUTF(indexer.getObject(i));
-		}
-		oos.flush();
-	}
-
-	public static void write(ObjectOutputStream oos, int[] x) throws Exception {
-		int size = x.length;
-		oos.writeInt(size);
-		for (int i = 0; i < x.length; i++) {
-			oos.writeInt(x[i]);
-		}
-		oos.flush();
-	}
-
-	public static void write(ObjectOutputStream oos, int[] indexes, double[] values) throws Exception {
-		int size = indexes.length;
-		oos.writeInt(size);
-		for (int i = 0; i < indexes.length; i++) {
-			oos.writeInt(indexes[i]);
-			oos.writeDouble(values[i]);
-		}
-		oos.flush();
-	}
-
-	public static void write(ObjectOutputStream oos, int[][] x) throws Exception {
-		oos.writeInt(x.length);
-		for (int i = 0; i < x.length; i++) {
-			write(oos, x[i]);
-		}
-		oos.flush();
-	}
-
-	public static void write(ObjectOutputStream oos, Map<Integer, Integer> m) throws Exception {
-		oos.writeInt(m.size());
-		for (Integer key : m.keySet()) {
-			oos.writeInt(key);
-			oos.writeInt(m.get(key));
-		}
-		oos.flush();
-	}
-
 	public static void write(ObjectOutputStream oos, String s) throws Exception {
 		oos.writeUTF(s);
 	}
@@ -898,23 +803,162 @@ public class FileUtils {
 
 	public static void write(String fileName, boolean[] x) throws Exception {
 		ObjectOutputStream oos = openObjectOutputStream(fileName);
-		write(oos, x);
+		writeBooleanArray(oos, x);
 		oos.close();
 	}
 
-	public static void write(String fileName, Counter<String> c) throws Exception {
-		write(fileName, c, false);
+	public static void write(String fileName, String text) throws Exception {
+		write(fileName, UTF_8, false, text);
 	}
 
-	public static void write(String fileName, Counter<String> c, boolean orderAlphabetically) throws Exception {
+	public static void write(String fileName, String encoding, boolean append, String text) throws Exception {
+		Writer writer = openBufferedWriter(fileName, encoding, append);
+		writer.write(text);
+		writer.flush();
+		writer.close();
+	}
+
+	public static void writeBooleanArray(ObjectOutputStream oos, boolean[] x) throws IOException {
+		oos.writeInt(x.length);
+		for (int i = 0; i < x.length; i++) {
+			oos.writeBoolean(x[i]);
+		}
+		oos.flush();
+	}
+
+	public static void writeDoubleArray(ObjectOutputStream oos, double[] x) throws Exception {
+		int size = x.length;
+		oos.writeInt(size);
+		for (int i = 0; i < x.length; i++) {
+			oos.writeDouble(x[i]);
+		}
+		oos.flush();
+	}
+
+	public static void writeDoubleCollection(ObjectOutputStream oos, Collection<Double> c) throws Exception {
+		oos.writeInt(c.size());
+		Iterator<Double> iter = c.iterator();
+		while (iter.hasNext()) {
+			oos.writeDouble(iter.next());
+		}
+		oos.flush();
+	}
+
+	public static void writeDoubleMatrix(ObjectOutputStream oos, double[][] x) throws Exception {
+		oos.writeInt(x.length);
+		for (int i = 0; i < x.length; i++) {
+			writeDoubleArray(oos, x[i]);
+		}
+		oos.flush();
+	}
+
+	public static void writeIntArray(ObjectOutputStream oos, int[] x) throws Exception {
+		int size = x.length;
+		oos.writeInt(size);
+		for (int i = 0; i < x.length; i++) {
+			oos.writeInt(x[i]);
+		}
+		oos.flush();
+	}
+
+	public static void writeIntArray(String fileName, int[] x) throws Exception {
+		ObjectOutputStream oos = openObjectOutputStream(fileName);
+		writeIntArray(oos, x);
+		oos.close();
+	}
+
+	public static void writeIntCollection(ObjectOutputStream oos, Collection<Integer> c) throws Exception {
+		oos.writeInt(c.size());
+
+		Iterator<Integer> iter = c.iterator();
+		while (iter.hasNext()) {
+			oos.writeInt(iter.next());
+		}
+		oos.flush();
+	}
+
+	public static void writeIntCounter(ObjectOutputStream oos, Counter<Integer> c) throws Exception {
+		oos.writeInt(c.size());
+		for (Entry<Integer, Double> e : c.entrySet()) {
+			oos.writeInt(e.getKey());
+			oos.writeDouble(e.getValue());
+		}
+		oos.flush();
+	}
+
+	public static Counter<Integer> readIntCounter(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+		Counter<Integer> ret = Generics.newCounter(size);
+		for (int i = 0; i < size; i++) {
+			ret.setCount(ois.readInt(), ois.readDouble());
+		}
+		return ret;
+	}
+
+	public static void writeIntDoublePairs(ObjectOutputStream oos, int[] indexes, double[] values) throws Exception {
+		int size = indexes.length;
+		oos.writeInt(size);
+		for (int i = 0; i < indexes.length; i++) {
+			oos.writeInt(indexes[i]);
+			oos.writeDouble(values[i]);
+		}
+		oos.flush();
+	}
+
+	public static void writeIntMap(ObjectOutputStream oos, Map<Integer, Integer> m) throws Exception {
+		oos.writeInt(m.size());
+		for (Integer key : m.keySet()) {
+			oos.writeInt(key);
+			oos.writeInt(m.get(key));
+		}
+		oos.flush();
+	}
+
+	public static void writeIntMatrix(ObjectOutputStream oos, int[][] x) throws Exception {
+		oos.writeInt(x.length);
+		for (int i = 0; i < x.length; i++) {
+			writeIntArray(oos, x[i]);
+		}
+		oos.flush();
+	}
+
+	public static void writeIntMatrix(String fileName, int[][] x) throws Exception {
+		ObjectOutputStream oos = openObjectOutputStream(fileName);
+		writeIntMatrix(oos, x);
+		oos.close();
+	}
+
+	public static void writeStrCollection(ObjectOutputStream oos, Collection<String> c) throws Exception {
+		oos.writeInt(c.size());
+
+		Iterator<String> iter = c.iterator();
+		while (iter.hasNext()) {
+			oos.writeUTF(iter.next());
+		}
+		oos.flush();
+	}
+
+	public static void writeStrCounter(ObjectOutputStream oos, Counter<String> x) throws Exception {
+		oos.writeInt(x.size());
+		for (String key : x.keySet()) {
+			oos.writeUTF(key);
+			oos.writeDouble(x.getCount(key));
+		}
+		oos.flush();
+	}
+
+	public static void writeStrCounter(String fileName, Counter<String> c) throws Exception {
+		writeStrCounter(fileName, c, false);
+	}
+
+	public static void writeStrCounter(String fileName, Counter<String> c, boolean orderAlphabetically) throws Exception {
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMinimumFractionDigits(0);
 		nf.setGroupingUsed(false);
-		write(fileName, c, nf, orderAlphabetically);
+		writeStrCounter(fileName, c, nf, orderAlphabetically);
 	}
 
-	public static void write(String fileName, Counter<String> c, NumberFormat nf, boolean orderAlphabetically)
-			throws Exception {
+	public static void writeStrCounter(String fileName, Counter<String> c, NumberFormat nf, boolean orderAlphabetically) throws Exception {
 		StopWatch stopWatch = StopWatch.newStopWatch();
 
 		BufferedWriter bw = openBufferedWriter(fileName, UTF_8, false);
@@ -937,15 +981,25 @@ public class FileUtils {
 		System.out.printf("write [%d] entries at [%s] - [%s]\n", c.size(), fileName, stopWatch.stop());
 	}
 
-	public static void write(String fileName, CounterMap<String, String> cm) throws Exception {
+	public static void writeStrCounterMap(ObjectOutputStream oos, CounterMap<String, String> cm) throws Exception {
+		oos.writeInt(cm.keySet().size());
+		Iterator<String> iter = cm.keySet().iterator();
+		while (iter.hasNext()) {
+			oos.writeUTF(iter.next());
+			writeStrCounter(oos, cm.getCounter(iter.next()));
+		}
+		oos.flush();
+	}
+
+	public static void writeStrCounterMap(String fileName, CounterMap<String, String> cm) throws Exception {
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMinimumFractionDigits(0);
 		nf.setGroupingUsed(false);
-		write(fileName, cm, nf, false);
+		writeStrCounterMap(fileName, cm, nf, false);
 	}
 
-	public static void write(String fileName, CounterMap<String, String> cm, NumberFormat nf,
-			boolean orderAlphabetically) throws Exception {
+	public static void writeStrCounterMap(String fileName, CounterMap<String, String> cm, NumberFormat nf, boolean orderAlphabetically)
+			throws Exception {
 		StopWatch stopWatch = StopWatch.newStopWatch();
 
 		BufferedWriter bw = openBufferedWriter(fileName, UTF_8, false);
@@ -978,7 +1032,24 @@ public class FileUtils {
 		System.out.printf("write [%d] entries at [%s] - [%s]\n", num_entries, fileName, stopWatch.stop());
 	}
 
-	public static void write(String fileName, SetMap<String, String> sm) throws Exception {
+	public static void writeStrIndexer(ObjectOutputStream oos, Indexer<String> indexer) throws Exception {
+		oos.writeInt(indexer.size());
+		for (int i = 0; i < indexer.size(); i++) {
+			oos.writeUTF(indexer.getObject(i));
+		}
+		oos.flush();
+	}
+
+	public static void writeStrIndexer(String fileName, Indexer<String> indexer) throws Exception {
+		TextFileWriter writer = new TextFileWriter(fileName);
+		for (int i = 0; i < indexer.getObjects().size(); i++) {
+			String label = indexer.getObject(i);
+			writer.write(label + "\n");
+		}
+		writer.close();
+	}
+
+	public static void writeStrSetMap(String fileName, SetMap<String, String> sm) throws Exception {
 		StopWatch stopWatch = StopWatch.newStopWatch();
 
 		BufferedWriter bw = openBufferedWriter(fileName, UTF_8, false);
@@ -1002,67 +1073,6 @@ public class FileUtils {
 		bw.close();
 
 		System.out.printf("write [%d] entries at [%s] - [%s]\n", num_entries, fileName, stopWatch.stop());
-	}
-
-	public static void write(String fileName, Indexer<String> indexer) throws Exception {
-		TextFileWriter writer = new TextFileWriter(fileName);
-		for (int i = 0; i < indexer.getObjects().size(); i++) {
-			String label = indexer.getObject(i);
-			writer.write(label + "\n");
-		}
-		writer.close();
-	}
-
-	public static void write(String fileName, int[] x) throws Exception {
-		ObjectOutputStream oos = openObjectOutputStream(fileName);
-		write(oos, x);
-		oos.close();
-	}
-
-	public static void write(String fileName, int[][] x) throws Exception {
-		ObjectOutputStream oos = openObjectOutputStream(fileName);
-		write(oos, x);
-		oos.close();
-	}
-
-	public static void write(String fileName, String text) throws Exception {
-		write(fileName, UTF_8, false, text);
-	}
-
-	public static void write(String fileName, String encoding, boolean append, String text) throws Exception {
-		Writer writer = openBufferedWriter(fileName, encoding, append);
-		writer.write(text);
-		writer.flush();
-		writer.close();
-	}
-
-	public static void writeDoubles(ObjectOutputStream oos, Collection<Double> c) throws Exception {
-		oos.writeInt(c.size());
-		Iterator<Double> iter = c.iterator();
-		while (iter.hasNext()) {
-			oos.writeDouble(iter.next());
-		}
-		oos.flush();
-	}
-
-	public static void writeIntegers(ObjectOutputStream oos, Collection<Integer> c) throws Exception {
-		oos.writeInt(c.size());
-
-		Iterator<Integer> iter = c.iterator();
-		while (iter.hasNext()) {
-			oos.writeInt(iter.next());
-		}
-		oos.flush();
-	}
-
-	public static void writeStrings(ObjectOutputStream oos, Collection<String> c) throws Exception {
-		oos.writeInt(c.size());
-
-		Iterator<String> iter = c.iterator();
-		while (iter.hasNext()) {
-			oos.writeUTF(iter.next());
-		}
-		oos.flush();
 	}
 
 }

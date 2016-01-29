@@ -163,7 +163,7 @@ public class PaperDataHandler {
 
 	public void process2() throws Exception {
 
-		Map<String, String> nameMap = FileUtils.readMap(ENTPath.AUTHOR_NAME_FILE);
+		Map<String, String> nameMap = FileUtils.readStrMap(ENTPath.AUTHOR_NAME_FILE);
 
 		TextFileReader reader = new TextFileReader(ENTPath.AUTHOR_FILE);
 		reader.setPrintNexts(false);
@@ -228,7 +228,7 @@ public class PaperDataHandler {
 		}
 		writer.close();
 
-		FileUtils.write(ENTPath.AUTHOR_SUBSET_FILE_2, cm2);
+		FileUtils.writeStrCounterMap(ENTPath.AUTHOR_SUBSET_FILE_2, cm2);
 	}
 
 	public void selectSubsetForOrgHistory() throws Exception {

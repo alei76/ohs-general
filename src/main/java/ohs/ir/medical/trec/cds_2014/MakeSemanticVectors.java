@@ -78,7 +78,7 @@ public class MakeSemanticVectors {
 	}
 
 	public void makeVectors() throws Exception {
-		Indexer<String> wordIndexer = FileUtils.readIndexer(CDSPath.WORD_INDEXER_FILE);
+		Indexer<String> wordIndexer = FileUtils.readStrIndexer(CDSPath.WORD_INDEXER_FILE);
 
 		Indexer<String> conceptIndexer = new Indexer<String>();
 		Indexer<String> categoryIndexer = new Indexer<String>();
@@ -200,8 +200,8 @@ public class MakeSemanticVectors {
 		wordConceptWeights.write(CDSPath.ICD10_WORD_CONCEPT_MAP_FILE);
 		conceptCategoryWeights.write(CDSPath.ICD10_CONCEPT_CATEGORY_MAP_FILE);
 
-		FileUtils.write(CDSPath.ICD10_CONCEPT_INDEXER_FILE, conceptIndexer);
-		FileUtils.write(CDSPath.ICD10_CATEGORY_INDEXER_FILE, categoryIndexer);
+		FileUtils.writeStrIndexer(CDSPath.ICD10_CONCEPT_INDEXER_FILE, conceptIndexer);
+		FileUtils.writeStrIndexer(CDSPath.ICD10_CATEGORY_INDEXER_FILE, categoryIndexer);
 
 		System.out.printf("concept size:\t%d\n", conceptIndexer.size());
 		System.out.printf("category size:\t%d\n", categoryIndexer.size());

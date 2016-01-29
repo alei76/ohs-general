@@ -104,7 +104,7 @@ public class WikiDataHandler {
 		reader.printLast();
 		reader.close();
 
-		FileUtils.write(ENTPath.KOREAN_WIKI_REDIRECT_FILE, cm1);
+		FileUtils.writeStrCounterMap(ENTPath.KOREAN_WIKI_REDIRECT_FILE, cm1);
 
 		List<String> titles = new ArrayList<String>(c2.keySet());
 		Collections.sort(titles);

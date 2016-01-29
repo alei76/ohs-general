@@ -16,9 +16,9 @@ public class DataHandler {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		DataHandler dh = new DataHandler();
-		dh.processPapers();
+		dh.extractKeywords();
 		// dh.processReports();
-		dh.check();
+		// dh.check();
 		System.out.println("process ends.");
 	}
 
@@ -111,7 +111,171 @@ public class DataHandler {
 		reader.close();
 		// writer.close();
 
-		FileUtils.write(KPPath.REPORT_KEYWORD_FILE, kwCounts, true);
+		FileUtils.writeStrCounter(KPPath.REPORT_KEYWORD_FILE, kwCounts, true);
+	}
+
+	CounterMap<String, String> getPaperKeywords(String[] parts) {
+		CounterMap<String, String> ret = Generics.newCounterMap();
+
+		String cn = parts[0];
+		String korKeywordStr = parts[8];
+		String engKeywordStr = parts[9];
+
+		List<String> kors = Generics.newArrayList();
+		List<String> engs = Generics.newArrayList();
+
+		for (String kw : korKeywordStr.split(";")) {
+			kw = kw.trim();
+			if (kw.length() > 0) {
+				kors.add(kw);
+			}
+		}
+
+		for (String kw : engKeywordStr.split(";")) {
+			kw = kw.trim();
+			if (kw.length() > 0) {
+				engs.add(kw);
+			}
+		}
+
+		if (kors.size() == 0 && engs.size() == 0) {
+			return ret;
+		}
+
+		if (kors.size() == engs.size()) {
+			if (kors.size() > 0) {
+				for (int i = 0; i < kors.size(); i++) {
+					String kor = kors.get(i);
+					String eng = engs.get(i);
+					ret.incrementCount(kor + "\t" + eng, cn, 1);
+				}
+			}
+		} else {
+			for (int i = 0; i < kors.size(); i++) {
+				String kor = kors.get(i);
+				ret.incrementCount(kor + "\t" + "<none>", cn, 1);
+			}
+
+			for (int i = 0; i < engs.size(); i++) {
+				String eng = engs.get(i);
+				ret.incrementCount("<none>" + "\t" + eng, cn, 1);
+			}
+		}
+		return ret;
+	}
+
+	CounterMap<String, String> getReportKeywords(String[] parts) {
+		CounterMap<String, String> ret = Generics.newCounterMap();
+		String cn = parts[0];
+		String korKeywordStr = parts[5];
+		String engKeywordStr = parts[6];
+
+		korKeywordStr = korKeywordStr.replace("\"", "");
+		engKeywordStr = engKeywordStr.replace("\"", "");
+
+		List<String> kors = Generics.newArrayList();
+		List<String> engs = Generics.newArrayList();
+
+		for (String kw : korKeywordStr.split(";")) {
+			kw = kw.trim();
+			if (kw.length() > 0) {
+				kors.add(kw);
+			}
+		}
+
+		for (String kw : engKeywordStr.split(";")) {
+			kw = kw.trim();
+			if (kw.length() > 0) {
+				engs.add(kw);
+			}
+		}
+
+		if (kors.size() == 0 && engs.size() == 0) {
+			return ret;
+		}
+
+		if (kors.size() == engs.size()) {
+			if (kors.size() > 0) {
+				for (int i = 0; i < kors.size(); i++) {
+					String kor = kors.get(i);
+					String eng = engs.get(i);
+					ret.incrementCount(kor + "\t" + eng, cn, 1);
+				}
+			}
+		} else {
+			for (int i = 0; i < kors.size(); i++) {
+				String kor = kors.get(i);
+				ret.incrementCount(kor + "\t" + "<none>", cn, 1);
+			}
+
+			for (int i = 0; i < engs.size(); i++) {
+				String eng = engs.get(i);
+				ret.incrementCount("<none>" + "\t" + eng, cn, 1);
+			}
+		}
+		return ret;
+	}
+
+	public void extractKeywords() throws Exception {
+
+		String[] inFileNames = { KPPath.PAPER_DUMP_FILE, KPPath.REPORT_DUMP_FILE };
+
+		CounterMap<String, String> allKeywords = Generics.newCounterMap();
+
+		for (int i = 0; i < inFileNames.length; i++) {
+			String inFileName = inFileNames[i];
+
+			TextFileReader reader = new TextFileReader(inFileName);
+			List<String> labels = Generics.newArrayList();
+
+			while (reader.hasNext()) {
+				// if (reader.getNumLines() > 100000) {
+				// break;
+				// }
+
+				String line = reader.next();
+				String[] parts = line.split("\t");
+
+				for (int j = 0; j < parts.length; j++) {
+					if (parts[j].length() > 1) {
+						parts[j] = parts[j].substring(1, parts[j].length() - 1);
+					}
+				}
+
+				if (reader.getNumLines() == 1) {
+					for (String p : parts) {
+						labels.add(p);
+					}
+				} else {
+					if (parts.length != labels.size()) {
+						continue;
+					}
+
+					if (i == 0) {
+						allKeywords.incrementAll(getPaperKeywords(parts));
+					} else if (i == 1) {
+						allKeywords.incrementAll(getReportKeywords(parts));
+					}
+				}
+			}
+			reader.close();
+			// writer.close();
+
+			// Iterator<String> iter = cm.keySet().iterator();
+			// while (iter.hasNext()) {
+			// String inKey = iter.next();
+			// Counter<String> c = cm.getCounter(inKey);
+			// if (c.totalCount() < 5) {
+			// iter.remove();
+			// }
+			// }
+		}
+
+		FileUtils.writeStrCounterMap(KPPath.KEYWORD_FILE, allKeywords, null, true);
+		// FileUtils.write(KPPath.PAPER_KOREAN_CONTEXT_FILE, cm2, null, true);
+		// FileUtils.write(KPPath.PAPER_ENGLISH_CONTEXT_FILE, cm3, null, true);
+
+		// FileUtils.write(KWPath.PAPER_KEYWORD_FILE, kwCounts, true);
 	}
 
 	public void processPapers() throws Exception {
@@ -119,7 +283,7 @@ public class DataHandler {
 		List<String> labels = Generics.newArrayList();
 
 		// TextFileWriter writer1 = new
-		// TextFileWriter(KPPath.PAPER_KEYWORD_FILE);
+		// TextFileWriter(KPPath.KEYWORD_FILE);
 		// TextFileWriter writer2 = new
 		// TextFileWriter(KPPath.PAPER_CONTEXT_FILE);
 
@@ -178,49 +342,58 @@ public class DataHandler {
 					}
 				}
 
-				if (kors.size() == 0 || kors.size() != engs.size()) {
+				// if (kors.size() == 0 || kors.size() != engs.size()) {
+				// continue;
+				// }
+
+				if (kors.size() == 0 && engs.size() == 0) {
 					continue;
 				}
 
-				for (int i = 0; i < kors.size(); i++) {
-					String kor = kors.get(i);
-					String eng = engs.get(i);
-					cm1.incrementCount(kor + "\t" + eng.toLowerCase(), cn, 1);
-				}
+				if (kors.size() == engs.size()) {
+					if (kors.size() > 0) {
+						for (int i = 0; i < kors.size(); i++) {
+							String kor = kors.get(i);
+							String eng = engs.get(i);
+							cm1.incrementCount(kor + "\t" + eng, cn, 1);
+						}
+					}
+				} else {
+					for (int i = 0; i < kors.size(); i++) {
+						String kor = kors.get(i);
+						cm1.incrementCount(kor + "\t" + "<none>", cn, 1);
+					}
 
-				// writer.write("KOR:\t" + StrUtils.join("\t", kors) +
-				// "\n");
-				// writer.write("ENG:\t" + StrUtils.join("\t", engs) +
-				// "\n\n");
-
-				// System.out.println(korKeywordStr);
-				// System.out.println(kors);
-				// System.out.println();
-
-				Counter<String> korAbsWordCounts = Generics.newCounter();
-				Counter<String> engAbsWordCounts = Generics.newCounter();
-
-				for (String word : StrUtils.split("[\\s\\p{Punct}]+", korAbs)) {
-					word = word.trim();
-					if (word.length() > 0) {
-						korAbsWordCounts.incrementCount(word, 1);
+					for (int i = 0; i < engs.size(); i++) {
+						String eng = engs.get(i);
+						cm1.incrementCount("<none>" + "\t" + eng, cn, 1);
 					}
 				}
 
-				for (String word : StrUtils.split("[\\s\\p{Punct}]+", engAbs)) {
-					word = word.trim();
-					if (word.length() > 0) {
-						engAbsWordCounts.incrementCount(word, 1);
-					}
-				}
-
-				if (korAbsWordCounts.size() > 0) {
-					cm2.setCounter(cn, korAbsWordCounts);
-				}
-
-				if (engAbsWordCounts.size() > 0) {
-					cm3.setCounter(cn, engAbsWordCounts);
-				}
+				// Counter<String> korAbsWordCounts = Generics.newCounter();
+				// Counter<String> engAbsWordCounts = Generics.newCounter();
+				//
+				// for (String word : StrUtils.split("[\\s\\p{Punct}]+", korAbs)) {
+				// word = word.trim();
+				// if (word.length() > 0) {
+				// korAbsWordCounts.incrementCount(word, 1);
+				// }
+				// }
+				//
+				// for (String word : StrUtils.split("[\\s\\p{Punct}]+", engAbs)) {
+				// word = word.trim();
+				// if (word.length() > 0) {
+				// engAbsWordCounts.incrementCount(word, 1);
+				// }
+				// }
+				//
+				// if (korAbsWordCounts.size() > 0) {
+				// cm2.setCounter(cn, korAbsWordCounts);
+				// }
+				//
+				// if (engAbsWordCounts.size() > 0) {
+				// cm3.setCounter(cn, engAbsWordCounts);
+				// }
 
 				// Counter<String> kwCounts = Generics.newCounter();
 				//
@@ -255,9 +428,9 @@ public class DataHandler {
 			}
 		}
 
-		FileUtils.write(KPPath.PAPER_KEYWORD_FILE, cm1, null, true);
-		FileUtils.write(KPPath.PAPER_KOREAN_CONTEXT_FILE, cm2, null, true);
-		FileUtils.write(KPPath.PAPER_ENGLISH_CONTEXT_FILE, cm3, null, true);
+		FileUtils.writeStrCounterMap(KPPath.KEYWORD_FILE, cm1, null, true);
+		// FileUtils.write(KPPath.PAPER_KOREAN_CONTEXT_FILE, cm2, null, true);
+		// FileUtils.write(KPPath.PAPER_ENGLISH_CONTEXT_FILE, cm3, null, true);
 
 		// FileUtils.write(KWPath.PAPER_KEYWORD_FILE, kwCounts, true);
 	}

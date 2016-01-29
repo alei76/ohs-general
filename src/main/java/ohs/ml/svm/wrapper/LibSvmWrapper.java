@@ -24,8 +24,8 @@ public class LibSvmWrapper implements Serializable {
 		System.out.printf("read [%s]\n", fileName);
 
 		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
-		Indexer<String> labelIndexer = FileUtils.readIndexer(ois);
-		Indexer<String> featIndexer = FileUtils.readIndexer(ois);
+		Indexer<String> labelIndexer = FileUtils.readStrIndexer(ois);
+		Indexer<String> featIndexer = FileUtils.readStrIndexer(ois);
 
 		svm_model model = new svm_model();
 		svm_parameter param = new svm_parameter();
@@ -243,8 +243,8 @@ public class LibSvmWrapper implements Serializable {
 		System.out.printf("write to [%s].\n", fileName);
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 
-		FileUtils.write(oos, labelIndexer);
-		FileUtils.write(oos, termIndexer);
+		FileUtils.writeStrIndexer(oos, labelIndexer);
+		FileUtils.writeStrIndexer(oos, termIndexer);
 
 		oos.writeInt(model.param.svm_type);
 		oos.writeInt(model.param.kernel_type);

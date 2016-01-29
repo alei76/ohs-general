@@ -21,7 +21,7 @@ public class AbbreviationExpander {
 			String inputFileName = collDirs[i] + "abbrs_filter.txt";
 			String outputFileName = collDirs[i] + "abbrs_cm.txt";
 			CounterMap<String, String> cm = readAbbreviationData(inputFileName);
-			FileUtils.write(outputFileName, cm);
+			FileUtils.writeStrCounterMap(outputFileName, cm);
 		}
 	}
 

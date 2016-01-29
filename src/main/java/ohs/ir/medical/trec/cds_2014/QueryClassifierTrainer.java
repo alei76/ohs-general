@@ -343,7 +343,7 @@ public class QueryClassifierTrainer {
 
 	private void write() throws Exception {
 		System.out.println("write model.");
-		FileUtils.write(CDSPath.QUERY_CLASSIFIER_TYPE_INDEXER_FILE, labelIndexer);
+		FileUtils.writeStrIndexer(CDSPath.QUERY_CLASSIFIER_TYPE_INDEXER_FILE, labelIndexer);
 		model.save(new File(CDSPath.QUERY_CLASSIFIER_MODEL_FILE));
 	}
 }

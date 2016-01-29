@@ -144,7 +144,7 @@ public class NGramGenerator {
 			int num_docs = ois.readInt();
 
 			for (int j = 0; j < num_docs; j++) {
-				int[][] doc = FileUtils.readIntegerMatrix(ois);
+				int[][] doc = FileUtils.readIntMatrix(ois);
 			}
 		}
 	}
@@ -305,12 +305,12 @@ public class NGramGenerator {
 				doc[i] = ws;
 			}
 
-			FileUtils.write(oos, doc);
+			FileUtils.writeIntMatrix(oos, doc);
 		}
 		reader.printLast();
 		oos.close();
 
-		FileUtils.write(NGPath.VOC_FILE, wordIndexer);
+		FileUtils.writeStrIndexer(NGPath.VOC_FILE, wordIndexer);
 	}
 
 	private void writeBlock(CounterMap<String, Integer> cm, TextFileWriter writer, int block_id, int block_size) {

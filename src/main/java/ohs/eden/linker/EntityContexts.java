@@ -38,7 +38,7 @@ public class EntityContexts {
 		StopWatch stopWatch = StopWatch.newStopWatch();
 		stopWatch.start();
 
-		wordIndexer = FileUtils.readIndexer(ois);
+		wordIndexer = FileUtils.readStrIndexer(ois);
 		int size = ois.readInt();
 		for (int i = 0; i < size; i++) {
 			SparseVector sv = new SparseVector();
@@ -68,7 +68,7 @@ public class EntityContexts {
 		StopWatch stopWatch = StopWatch.newStopWatch();
 		stopWatch.start();
 
-		FileUtils.write(oos, wordIndexer);
+		FileUtils.writeStrIndexer(oos, wordIndexer);
 		oos.writeInt(contVecs.size());
 		for (SparseVector sv : contVecs.values()) {
 			sv.write(oos);

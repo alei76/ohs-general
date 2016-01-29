@@ -58,7 +58,7 @@ public class PatentDataHandler {
 		}
 		reader.close();
 
-		FileUtils.write(ENTPath.PATENT_ORG_FILE_2, cm);
+		FileUtils.writeStrCounterMap(ENTPath.PATENT_ORG_FILE_2, cm);
 
 		// List<String> korNames = new ArrayList<String>(listMap.keySet());
 		// Collections.sort(korNames);

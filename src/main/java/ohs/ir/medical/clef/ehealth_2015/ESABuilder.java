@@ -233,6 +233,6 @@ public class ESABuilder {
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMinimumFractionDigits(8);
 
-		FileUtils.write(MIRPath.ICD10_ESA_FILE, conceptWordCounts.invert(), null);
+		FileUtils.writeStrCounter(MIRPath.ICD10_ESA_FILE, conceptWordCounts.invert(), null);
 	}
 }

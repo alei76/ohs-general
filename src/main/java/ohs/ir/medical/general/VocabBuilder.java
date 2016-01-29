@@ -43,7 +43,7 @@ public class VocabBuilder {
 			c.incrementCount(word, cnt);
 		}
 
-		FileUtils.write(outputFileName, c);
+		FileUtils.writeStrCounter(outputFileName, c);
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -67,10 +67,10 @@ public class VocabBuilder {
 		Counter<String> c = new Counter<String>();
 
 		for (String inputFileName : inputFileNames) {
-			c.incrementAll(FileUtils.readCounter(inputFileName));
+			c.incrementAll(FileUtils.readStrCounter(inputFileName));
 		}
 
-		FileUtils.write(outputFileName, c);
+		FileUtils.writeStrCounter(outputFileName, c);
 	}
 
 }

@@ -46,14 +46,14 @@ public class VocabularyData {
 		sv1.write(CDSPath.WORD_COUNT_FILE);
 		sv2.write(CDSPath.WORD_DOC_FREQ_FILE);
 
-		FileUtils.write(CDSPath.WORD_INDEXER_FILE, wordIndexer);
+		FileUtils.writeStrIndexer(CDSPath.WORD_INDEXER_FILE, wordIndexer);
 
 		System.out.printf("vocabulary size:\t%d\n", wordIndexer.size());
 	}
 
 	public static VocabularyData read(File vocabularyDir) throws Exception {
 		System.out.println("read vocabulary data.");
-		Indexer<String> wordIndexer = FileUtils.readIndexer(CDSPath.WORD_INDEXER_FILE);
+		Indexer<String> wordIndexer = FileUtils.readStrIndexer(CDSPath.WORD_INDEXER_FILE);
 		SparseVector wordCounts = SparseVector.read(CDSPath.WORD_COUNT_FILE);
 		SparseVector wordDocFreqs = SparseVector.read(CDSPath.WORD_DOC_FREQ_FILE);
 

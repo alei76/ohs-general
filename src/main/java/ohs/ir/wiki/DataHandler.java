@@ -286,7 +286,7 @@ public class DataHandler {
 			String visitFileName = NSPath.DATA_DIR + String.format("visit_%s.txt", type);
 
 			if (FileUtils.exists(visitFileName)) {
-				c = FileUtils.readCounter(visitFileName);
+				c = FileUtils.readStrCounter(visitFileName);
 			}
 
 			File[] dirFiles = new File(NSPath.CONTENT_DIR, type).listFiles();
@@ -322,7 +322,7 @@ public class DataHandler {
 					nlp.processFiles(FileUtils.getFilesUnder(srcDir), 100);
 				} catch (Exception e) {
 					e.printStackTrace();
-					FileUtils.write(visitFileName, c);
+					FileUtils.writeStrCounter(visitFileName, c);
 				}
 			}
 		}

@@ -296,9 +296,9 @@ public class EntityLinker implements Serializable {
 			ents.put(ent.getId(), ent);
 		}
 
-		List<String> stopwords = FileUtils.readStrings(ois);
+		List<String> stopwords = FileUtils.readStrList(ois);
 		analyzer = new MedicalEnglishAnalyzer(new CharArraySet(new HashSet<String>(stopwords), true));
-		recToEnt = FileUtils.readIntegers(ois);
+		recToEnt = FileUtils.readIntList(ois);
 
 		strSearcher = new StringSearcher();
 		strSearcher.read(ois);
@@ -436,8 +436,8 @@ public class EntityLinker implements Serializable {
 			char[] chs = (char[]) iter.next();
 			stopwords.add(new String(chs));
 		}
-		FileUtils.writeStrings(oos, stopwords);
-		FileUtils.writeIntegers(oos, recToEnt);
+		FileUtils.writeStrCollection(oos, stopwords);
+		FileUtils.writeIntCollection(oos, recToEnt);
 
 		strSearcher.write(oos);
 		oos.close();

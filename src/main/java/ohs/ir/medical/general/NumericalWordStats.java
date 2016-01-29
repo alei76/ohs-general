@@ -47,7 +47,7 @@ public class NumericalWordStats {
 			if (vocFileName.contains("wiki")) {
 				continue;
 			}
-			Counter<String> c = FileUtils.readCounter(vocFileName);
+			Counter<String> c = FileUtils.readStrCounter(vocFileName);
 
 			for (String word : c.keySet()) {
 				double cnt = c.getCount(word);

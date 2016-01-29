@@ -39,11 +39,11 @@ public class Word2VecModel {
 	public static Word2VecModel fromSerFile(String fileName) throws Exception {
 
 		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
-		int[] dims = FileUtils.readIntegerArray(ois);
+		int[] dims = FileUtils.readIntArray(ois);
 		int vocabSize = dims[0];
 		int layerSize = dims[1];
 
-		List<String> vocab = FileUtils.readStrings(ois);
+		List<String> vocab = FileUtils.readStrList(ois);
 		double[][] vectors = FileUtils.readDoubleMatrix(ois);
 		ois.close();
 
@@ -143,9 +143,9 @@ public class Word2VecModel {
 	public void toSerFile(String outputFileName) throws Exception {
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(outputFileName);
 		int[] dims = new int[] { vocab.size(), layerSize };
-		FileUtils.write(oos, dims);
-		FileUtils.writeStrings(oos, vocab);
-		FileUtils.write(oos, vectors);
+		FileUtils.writeIntArray(oos, dims);
+		FileUtils.writeStrCollection(oos, vocab);
+		FileUtils.writeDoubleMatrix(oos, vectors);
 		oos.close();
 
 	}

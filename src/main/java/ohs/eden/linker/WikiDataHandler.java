@@ -176,7 +176,7 @@ public class WikiDataHandler {
 			}
 		}
 
-		FileUtils.write(ELPath.WIKI_DIR + "cats.txt", c, false);
+		FileUtils.writeStrCounter(ELPath.WIKI_DIR + "cats.txt", c, false);
 
 		System.out.printf("\r[%d/%d]\n", ir.maxDoc(), ir.maxDoc());
 	}

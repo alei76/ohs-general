@@ -86,7 +86,7 @@ public class StringIndexer extends AbstractList<String> implements Serializable 
 				indexer.add(name);
 			}
 
-			FileUtils.write("./test.ser-2.gz", indexer);
+			FileUtils.writeStrIndexer("./test.ser-2.gz", indexer);
 		}
 
 		// System.out.println("-----------------------");
