@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.WeakHashMap;
 
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.util.CharArraySet;
 
 import ohs.io.FileUtils;
@@ -114,8 +113,8 @@ public class EntityLinker implements Serializable {
 		TextFileWriter writer = new TextFileWriter(ELPath.EX_FILE);
 
 		{
-			String[] orgs = { "IBM", "kisti", "kaist", "seoul national", "samsung", "lg", "apple", "hyundai", "kist",
-					"sk", "korea univ", "bmw", "mit", "postech", "yesei univ" };
+			String[] orgs = { "IBM", "kisti", "kaist", "seoul national", "samsung", "lg", "apple", "hyundai", "kist", "sk", "korea univ",
+					"bmw", "mit", "postech", "yesei univ" };
 
 			// String contextStr = "company organization";
 
