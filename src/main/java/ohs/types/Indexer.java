@@ -23,7 +23,7 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 	public Indexer() {
 		objects = new ArrayList<E>();
 		indexes = new HashMap<E, Integer>();
-		
+
 	}
 
 	public Indexer(Collection<? extends E> c) {
@@ -90,6 +90,14 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 		return index;
 	}
 
+	public Integer[] getIndexes(E[] objs) {
+		Integer[] ret = new Integer[objs.length];
+		for (int i = 0; i < objs.length; i++) {
+			ret[i] = getIndex(objs[i]);
+		}
+		return ret;
+	}
+
 	public List<Integer> getIndexes(List<E> objs) {
 		List<Integer> ret = new ArrayList<Integer>();
 		for (int i = 0; i < objs.size(); i++) {
@@ -107,14 +115,14 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 		return objects;
 	}
 
-	public E[] getObjects(int[] is) {
+	public E[] getObjects(int[] idx) {
 		if (size() == 0)
 			throw new IllegalArgumentException("bad");
-		int n = is.length;
+		int n = idx.length;
 		Class c = objects.get(0).getClass();
 		E[] os = (E[]) Array.newInstance(c, n);
 		for (int i = 0; i < n; i++)
-			os[i] = is[i] == -1 ? null : getObject(is[i]);
+			os[i] = idx[i] == -1 ? null : getObject(idx[i]);
 		return os;
 	}
 
@@ -126,7 +134,15 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 		return ret;
 	}
 
-	public List<Integer> indexOf(List<Object> objs) {
+	public Integer[] indexesOf(E[] objs) {
+		Integer[] ret = new Integer[objs.length];
+		for (int i = 0; i < objs.length; i++) {
+			ret[i] = indexOf(objs[i]);
+		}
+		return ret;
+	}
+
+	public List<Integer> indexesOf(List<Object> objs) {
 		List<Integer> ret = new ArrayList<>(objs.size());
 		for (int i = 0; i < objs.size(); i++) {
 			ret.add(indexOf(objs.get(i)));

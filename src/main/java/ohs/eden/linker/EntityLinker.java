@@ -182,10 +182,6 @@ public class EntityLinker implements Serializable {
 
 	private StringBuffer logBuff;
 
-	public MedicalEnglishAnalyzer getAnalyzer() {
-		return analyzer;
-	}
-
 	public EntityLinker() {
 		cache = Generics.newWeakHashMap(10000);
 
@@ -207,6 +203,10 @@ public class EntityLinker implements Serializable {
 			ret = sb.toString();
 		}
 		return ret;
+	}
+
+	public MedicalEnglishAnalyzer getAnalyzer() {
+		return analyzer;
 	}
 
 	public CounterMap<Integer, Integer> getCandidates() {
@@ -320,6 +320,48 @@ public class EntityLinker implements Serializable {
 
 	public void setTopK(int top_k) {
 		strSearcher.setTopK(top_k);
+	}
+
+	public void train(List<Entity> entities, List<String[]> entVariants) {
+		if (entities.size() != entVariants.size()) {
+			System.out.println("wrong variants!!");
+			System.exit(0);
+		}
+
+		List<StringRecord> srs = Generics.newArrayList();
+
+		int num_records = entities.size();
+		for (String[] vars : entVariants) {
+			num_records += vars.length;
+		}
+
+		recToEnt = Generics.newArrayList(num_records);
+		ents = Generics.newHashMap(entities.size());
+
+		for (int i = 0; i < entities.size(); i++) {
+			Entity ent = entities.get(i);
+			ents.put(ent.getId(), ent);
+
+			StringRecord sr = new StringRecord(srs.size(), ent.getText());
+			srs.add(sr);
+
+			String[] vars = entVariants.get(i);
+
+			for (int j = 0; j < vars.length; j++) {
+				srs.add(new StringRecord(srs.size(), vars[j]));
+				recToEnt.add(ent.getId());
+			}
+		}
+
+		if (recToEnt.size() != srs.size()) {
+			System.out.println("wrong records!!");
+			System.exit(0);
+		}
+
+		strSearcher = new StringSearcher(3);
+		strSearcher.index(srs, false);
+		System.out.println(strSearcher.info() + "\n");
+
 	}
 
 	public void train(String dataFileName) throws Exception {

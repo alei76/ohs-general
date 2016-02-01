@@ -62,6 +62,8 @@ public class StringSearcher implements Serializable {
 
 	private int[] gram_dfs;
 
+	private int[] gram_cnts;
+
 	private List<SimScorer> simScorers;
 
 	private Map<Integer, Double[]> simScores;
@@ -71,8 +73,6 @@ public class StringSearcher implements Serializable {
 	private boolean makeLog = false;
 
 	private StringBuffer logBuff;
-
-	private int[] gram_cnts;
 
 	public StringSearcher() {
 		this(3);
@@ -146,8 +146,20 @@ public class StringSearcher implements Serializable {
 		}
 	}
 
+	public int[] getGramCounts() {
+		return gram_cnts;
+	}
+
+	public int[] getGramDocumentFreqs() {
+		return gram_dfs;
+	}
+
 	public GramGenerator getGramGenerator() {
 		return gg;
+	}
+
+	public Indexer<String> getGramIndexer() {
+		return gramIndexer;
 	}
 
 	public StringBuffer getLogBuffer() {

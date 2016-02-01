@@ -679,6 +679,10 @@ public class ArrayUtils {
 		}
 	}
 
+	public static double get(double[][] a, int[] index) {
+		return a[index[0]][index[1]];
+	}
+
 	public static double setAll(double[][] a, double value) {
 		double ret = 0;
 		for (int i = 0; i < a.length; i++) {

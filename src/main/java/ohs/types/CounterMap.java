@@ -84,6 +84,14 @@ public class CounterMap<K, V> implements java.io.Serializable {
 		return counterMap.containsKey(key);
 	}
 
+	public boolean containKey(K key, V value) {
+		Counter<V> c = counterMap.get(key);
+		if (c == null) {
+			return false;
+		}
+		return c.containsKey(value);
+	}
+
 	protected Counter<V> ensureCounter(K key) {
 		Counter<V> valueCounter = counterMap.get(key);
 		if (valueCounter == null) {

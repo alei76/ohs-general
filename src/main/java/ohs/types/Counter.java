@@ -41,6 +41,13 @@ public class Counter<E> implements Serializable {
 		}
 	}
 
+	public void replace(E key1, E key2) {
+		Double value = entries.remove(key1);
+		if (value != null) {
+			incrementCount(key2, value);
+		}
+	}
+
 	private static final long serialVersionUID = 1L;
 
 	public static <L> Counter<L> absCounts(final Counter<L> counts) {
@@ -169,8 +176,17 @@ public class Counter<E> implements Serializable {
 
 	public double dotProduct(final Counter<E> other) {
 		double sum = 0.0;
-		for (final Map.Entry<E, Double> entry : getEntrySet()) {
-			final double otherCount = other.getCount(entry.getKey());
+
+		Counter<E> small = this;
+		Counter<E> large = other;
+
+		if (small.size() > large.size()) {
+			small = other;
+			large = this;
+		}
+
+		for (final Map.Entry<E, Double> entry : small.getEntrySet()) {
+			final double otherCount = large.getCount(entry.getKey());
 			if (otherCount == 0.0)
 				continue;
 			final double value = entry.getValue();

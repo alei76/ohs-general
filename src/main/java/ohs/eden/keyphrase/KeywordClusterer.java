@@ -6,7 +6,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import ohs.eden.linker.StringSearcher;
+import ohs.eden.linker.Entity;
+import ohs.eden.linker.EntityLinker;
 import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
 import ohs.string.search.ppss.Gram;
@@ -14,6 +15,7 @@ import ohs.string.search.ppss.GramGenerator;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
+import ohs.types.Pair;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
 
@@ -60,7 +62,7 @@ public class KeywordClusterer {
 		keywordIndexer = kwData.getKeywordIndexer();
 	}
 
-	public void cluster() {
+	public void cluster() throws Exception {
 		clusterKeywordMap = Generics.newCounterMap();
 
 		keywordClusterMap = Generics.newHashMap();
@@ -73,6 +75,10 @@ public class KeywordClusterer {
 		clusterUsingExactMatch();
 
 		clusterUsingExactLanguageMatch(false);
+
+		clusterUsingNGrams();
+
+		// clusterUsingStringSearcher();
 
 		selectClusterLabels();
 	}
@@ -189,7 +195,236 @@ public class KeywordClusterer {
 	}
 
 	private void clusterUsingNGrams() {
+		System.out.println("cluster using ngram");
+
 		Indexer<String> ngramIndexer = Generics.newIndexer();
+		GramGenerator gg = new GramGenerator(3);
+
+		for (int cid : clusterKeywordMap.keySet()) {
+			for (int kwid : clusterKeywordMap.getCounter(cid).keySet()) {
+				String keyword = keywordIndexer.getObject(kwid);
+				for (String lang : keyword.split("\t")) {
+					if (lang.equals(NONE)) {
+						continue;
+					}
+
+					for (Gram g : gg.generate(String.format("<%s>", lang.toLowerCase()))) {
+						ngramIndexer.getIndex(g.getString());
+					}
+				}
+			}
+		}
+
+		int[] gram_freqs = new int[ngramIndexer.size()];
+
+		CounterMap<Integer, Integer> clusterCents = Generics.newCounterMap(clusterKeywordMap.size());
+		SetMap<Integer, Integer> gramClusterMap = Generics.newSetMap();
+
+		for (int cid : clusterKeywordMap.keySet()) {
+			Counter<Integer> gramCnts = Generics.newCounter();
+
+			for (int kwid : clusterKeywordMap.getCounter(cid).keySet()) {
+				String keyword = keywordIndexer.getObject(kwid);
+				for (String lang : keyword.split("\t")) {
+					if (lang.equals(NONE)) {
+						continue;
+					}
+
+					for (Gram g : gg.generate(String.format("<%s>", lang.toLowerCase()))) {
+						int gid = ngramIndexer.indexOf(g.getString());
+						if (gid < 0) {
+							continue;
+						}
+						gramCnts.incrementCount(gid, 1);
+					}
+				}
+			}
+
+			if (gramCnts.size() == 0) {
+				continue;
+			}
+
+			clusterCents.setCounter(cid, gramCnts);
+
+			for (int gid : gramCnts.keySet()) {
+				gram_freqs[gid]++;
+				gramClusterMap.put(gid, cid);
+			}
+		}
+
+		double num_docs = clusterCents.size();
+
+		for (int cid : clusterCents.keySet()) {
+			Counter<Integer> cent = clusterCents.getCounter(cid);
+			double norm = 0;
+			for (Entry<Integer, Double> e : cent.entrySet()) {
+				int gid = e.getKey();
+				double cnt = e.getValue();
+				double tf = Math.log(cnt) + 1;
+				double gram_freq = gram_freqs[gid];
+				double idf = gram_freq == 0 ? 0 : Math.log((num_docs + 1) / gram_freq);
+				double tfidf = tf * idf;
+				cent.setCount(gid, tfidf);
+				norm += (tfidf * tfidf);
+			}
+			norm = Math.sqrt(norm);
+			cent.scale(1f / norm);
+		}
+
+		while (true) {
+
+			List<Integer> cids = Generics.newArrayList(clusterCents.keySet());
+
+			Counter<Pair<Integer, Integer>> cpScores = Generics.newCounter();
+
+			CounterMap<Integer, Integer> newClusterMap = Generics.newCounterMap();
+
+			int chunk_size = cids.size() / 100;
+
+			for (int i = 0; i < cids.size() && i < 1000; i++) {
+				if ((i + 1) % chunk_size == 0) {
+					int progess = (int) ((i + 1f) / cids.size() * 100);
+					System.out.printf("\r[%d percent]", progess);
+				}
+				int cid1 = cids.get(i);
+				Counter<Integer> inputCents = clusterCents.getCounter(cid1);
+
+				Counter<Integer> scores = Generics.newCounter();
+
+				int g_cnt = 0;
+				for (int gid : inputCents.getSortedKeys()) {
+					if (g_cnt++ == 10) {
+						break;
+					}
+					double idf = Math.log(num_docs / gram_freqs[gid]);
+					for (int cid2 : gramClusterMap.get(gid)) {
+						if (cid1 != cid2) {
+							scores.incrementCount(cid2, idf);
+						}
+					}
+				}
+
+				for (int cid2 : scores.getSortedKeys()) {
+					Counter<Integer> targetCents = clusterCents.getCounter(cid2);
+					double cosine = targetCents.dotProduct(inputCents);
+					if (cosine < 0.9) {
+						break;
+					}
+
+					int min = Integer.min(cid1, cid2);
+					int max = Integer.max(cid1, cid2);
+					newClusterMap.setCount(min, max, cosine);
+				}
+			}
+
+			if (newClusterMap.size() == 0) {
+				break;
+			}
+
+			for (int cid1 : newClusterMap.keySet()) {
+				Counter<Integer> newCent = Generics.newCounter();
+				Counter<Integer> kwids = Generics.newCounter();
+
+				newCent.incrementAll(clusterCents.removeKey(cid1));
+				kwids.incrementAll(clusterKeywordMap.removeKey(cid1));
+
+				for (int cid2 : newClusterMap.getCounter(cid1).keySet()) {
+					newCent.incrementAll(clusterCents.removeKey(cid2));
+					kwids.incrementAll(clusterKeywordMap.removeKey(cid2));
+				}
+
+				int num_merges = newClusterMap.getCounter(cid1).keySet().size() + 1;
+				newCent.scale(1f / num_merges);
+
+				clusterCents.setCounter(cid1, newCent);
+
+				clusterKeywordMap.setCounter(cid1, kwids);
+				for (int kwid : kwids.keySet()) {
+					keywordClusterMap.put(kwid, cid1);
+				}
+
+			}
+
+			System.out.println(cpScores);
+
+			List<Pair<Integer, Integer>> keys = cpScores.getSortedKeys();
+
+			for (int i = 0; i < keys.size() && i < 10; i++) {
+				Pair<Integer, Integer> pair = keys.get(i);
+
+				System.out.println("Cluster-1");
+				for (int kwid : clusterKeywordMap.getCounter(pair.getFirst()).keySet()) {
+					System.out.println(keywordIndexer.getObject(kwid));
+				}
+
+				System.out.println("Cluster-2");
+				for (int kwid : clusterKeywordMap.getCounter(pair.getSecond()).keySet()) {
+					System.out.println(keywordIndexer.getObject(kwid));
+				}
+				System.out.println();
+			}
+
+			System.out.println();
+		}
+
+	}
+
+	private void clusterUsingStringSearcher() throws Exception {
+
+		List<Entity> ents = Generics.newArrayList(clusterKeywordMap.size());
+		List<String[]> entVariants = Generics.newArrayList(clusterKeywordMap.size());
+
+		for (int cid : clusterKeywordMap.keySet()) {
+			// String label = clusterLabelMap.get(cid);
+			Set<Integer> kwids = clusterKeywordMap.getCounter(cid).keySet();
+			Set<String> vars = Generics.newHashSet();
+
+			for (int kwid : kwids) {
+				String keyword = keywordIndexer.getObject(kwid);
+				String[] langs = keyword.split("\t");
+				for (String lang : langs) {
+					if (lang.equals(NONE)) {
+						continue;
+					}
+					vars.add(lang);
+				}
+			}
+
+			ents.add(new Entity(cid, "", null));
+			entVariants.add(vars.toArray(new String[vars.size()]));
+		}
+
+		EntityLinker entLinker = new EntityLinker();
+		entLinker.train(ents, entVariants);
+
+		CounterMap<Integer, Integer> cm = Generics.newCounterMap();
+
+		for (int cid : clusterKeywordMap.keySet()) {
+			Set<Integer> kwids = clusterKeywordMap.getCounter(cid).keySet();
+			Set<String> input = Generics.newHashSet();
+
+			for (int kwid : kwids) {
+				String keyword = keywordIndexer.getObject(kwid);
+				String[] langs = keyword.split("\t");
+				for (String lang : langs) {
+					if (lang.equals(NONE)) {
+						continue;
+					}
+					input.add(lang.toLowerCase());
+				}
+			}
+
+			Counter<Entity> c = Generics.newCounter();
+
+			for (String s : input) {
+				c.incrementAll(entLinker.link(s));
+			}
+
+			for (Entry<Entity, Double> e : c.entrySet()) {
+				cm.incrementCount(cid, e.getKey().getId(), e.getValue());
+			}
+		}
+
 	}
 
 	private Counter<String>[] computeLabelScores(Set<Integer> kwids) {

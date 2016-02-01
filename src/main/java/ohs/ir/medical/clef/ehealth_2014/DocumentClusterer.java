@@ -253,8 +253,8 @@ public class DocumentClusterer {
 
 				tempClusterWordCountData.put(best_cId1, sv1);
 
-				Set<Integer> docsInCluster1 = tempClusterDocMap.remove(best_cId1);
-				Set<Integer> docsInCluster2 = tempClusterDocMap.remove(best_cId2);
+				Set<Integer> docsInCluster1 = tempClusterDocMap.removeKey(best_cId1);
+				Set<Integer> docsInCluster2 = tempClusterDocMap.removeKey(best_cId2);
 				docsInCluster1.addAll(docsInCluster2);
 				tempClusterDocMap.put(best_cId1, docsInCluster1);
 			} else {
