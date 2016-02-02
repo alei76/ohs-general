@@ -59,8 +59,17 @@ public class SetMap<K, V> implements Serializable {
 	public void replaceValue(K key, V value1, V value2) {
 		Set<V> set = entries.get(key);
 		if (set != null) {
-			set.remove(value1);
-			set.add(value2);
+			if (set.remove(value1)) {
+				set.add(value2);
+			}
+		}
+	}
+
+	public void replaceAll(V value1, V value2) {
+		for (Set<V> set : entries.values()) {
+			if (set.remove(value1)) {
+				set.add(value2);
+			}
 		}
 	}
 
