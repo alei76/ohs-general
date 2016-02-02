@@ -9,12 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Maintains a two-way map between a set of objects and contiguous integers from 0 to the number of objects. Use get(i) to look up object i,
- * and indexOf(object) to look up the index of an object.
- * 
- * @author Dan Klein
- */
 public class Indexer<E> extends AbstractList<E> implements Serializable {
 	private static final long serialVersionUID = -8769544079136550516L;
 	protected List<E> objects;
@@ -65,15 +59,8 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 		return indexes.keySet().contains(o);
 	}
 
-	/**
-	 * Return the object with the given index
-	 * 
-	 * @param index
-	 */
-	@Override
-	@Deprecated
 	public E get(int index) {
-		return objects.get(index);
+		return getObject(index);
 	}
 
 	// Return the index of the element
