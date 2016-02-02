@@ -1,9 +1,13 @@
 package ohs.eden.keyphrase;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import edu.stanford.nlp.io.EncodingPrintWriter.out;
+
 import java.util.Set;
 
 import ohs.eden.linker.Entity;
@@ -15,11 +19,9 @@ import ohs.string.search.ppss.GramGenerator;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
-import ohs.types.Pair;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
 import ohs.utils.StopWatch;
-import xtc.tree.GNode;
 
 public class KeywordClusterer {
 
@@ -202,6 +204,8 @@ public class KeywordClusterer {
 		Indexer<String> ngramIndexer = Generics.newIndexer();
 		GramGenerator gg = new GramGenerator(3);
 
+		filter();
+
 		for (int cid : clusterKeywordMap.keySet()) {
 			for (int kwid : clusterKeywordMap.getCounter(cid).keySet()) {
 				String keyword = keywordIndexer.getObject(kwid);
@@ -221,7 +225,6 @@ public class KeywordClusterer {
 
 		CounterMap<Integer, Integer> centroids = Generics.newCounterMap(clusterKeywordMap.size());
 		SetMap<Integer, Integer> gramClusterMap = Generics.newSetMap();
-		Map<Integer, Integer> clusterMap = Generics.newHashMap();
 
 		for (int cid : clusterKeywordMap.keySet()) {
 			Counter<Integer> gramCnts = Generics.newCounter();
@@ -247,7 +250,6 @@ public class KeywordClusterer {
 				continue;
 			}
 
-			clusterMap.put(cid, cid);
 			centroids.setCounter(cid, gramCnts);
 
 			for (int gid : gramCnts.keySet()) {
@@ -282,16 +284,15 @@ public class KeywordClusterer {
 
 			int chunk_size = cids.size() / 100;
 
-			CounterMap<Integer, Integer> tmpClusterMap = Generics.newCounterMap();
+			Counter<Integer[]> retrieved = Generics.newCounter();
 
-			for (int i = 0; i < cids.size() && i < 1000; i++) {
+			for (int i = 0; i < cids.size(); i++) {
 				if ((i + 1) % chunk_size == 0) {
 					int progess = (int) ((i + 1f) / cids.size() * 100);
 					System.out.printf("\r[%dth, %d percent - %d/%d, %s]", iter + 1, progess, i + 1, cids.size(), stopWatch.stop());
 				}
-				int cid1 = cids.get(i);
-
-				Counter<Integer> input = centroids.getCounter(cid1);
+				int in_id = cids.get(i);
+				Counter<Integer> input = centroids.getCounter(in_id);
 				Counter<Integer> candidates = Generics.newCounter();
 
 				int g_cnt = 0;
@@ -300,56 +301,76 @@ public class KeywordClusterer {
 						break;
 					}
 					double idf = Math.log(num_clusters / gram_freqs[gid]);
-					for (int cid2 : gramClusterMap.get(gid)) {
-						int cid3 = clusterMap.get(cid2);
-						if (cid1 != cid3) {
-							candidates.incrementCount(cid2, idf);
-						}
+					for (int out_id : gramClusterMap.get(gid)) {
+						candidates.incrementCount(out_id, idf);
 					}
 				}
 
-				for (int cid2 : candidates.getSortedKeys()) {
-					Counter<Integer> targetCents = centroids.getCounter(cid2);
+				candidates.removeKey(in_id);
+
+				for (int out_id : candidates.getSortedKeys()) {
+					Counter<Integer> targetCents = centroids.getCounter(out_id);
 					double cosine = targetCents.dotProduct(input);
 					if (cosine < 0.9) {
 						break;
 					}
-					tmpClusterMap.setCount(cid1, cid2, cosine);
+
+					Integer[] p1 = new Integer[] { in_id, out_id };
+					Integer[] p2 = new Integer[] { out_id, in_id };
+
+					if (retrieved.containsKey(p1) || retrieved.containsKey(p2)) {
+						continue;
+					}
+					retrieved.incrementCount(p1, cosine);
 				}
 			}
 
 			System.out.printf("\r[%dth, %d percent - %d/%d, %s]\n", iter + 1, 100, cids.size(), cids.size(), stopWatch.stop());
 
-			CounterMap<Integer, Integer> inverted = tmpClusterMap.invert();
-			tmpClusterMap.clear();
+			CounterMap<Integer, Integer> tmpClusterMap = Generics.newCounterMap();
 
-			for (int cid2 : inverted.keySet()) {
-				Counter<Integer> c = inverted.getCounter(cid2);
-				int cid1 = c.argMax();
-				double cosine = c.getCount(cid1);
-				tmpClusterMap.incrementCount(cid1, cid2, cosine);
+			for (Integer[] id : retrieved.getSortedKeys()) {
+				int in_id = id[0];
+				int out_id = id[1];
+				double cosine = retrieved.getCount(id);
+				tmpClusterMap.setCount(in_id, out_id, cosine);
 			}
+			
+			
+			List<Set<Integer>> list = Generics.newArrayList();
+			
+			for(int cid : tmpClusterMap.keySet()){
+				
+			}
+			
+			
 
 			if (tmpClusterMap.size() == 0) {
 				break;
 			}
 
-			for (int cid1 : tmpClusterMap.keySet()) {
+			List<Integer> keys = Generics.newArrayList(tmpClusterMap.keySet());
+
+			for (int j = 0; j < keys.size(); j++) {
+				int cid = keys.get(j);
+
 				Counter<Integer> newCent = Generics.newCounter();
 				Counter<Integer> kwids = Generics.newCounter();
 
-				newCent.incrementAll(centroids.removeKey(cid1));
-				kwids.incrementAll(clusterKeywordMap.removeKey(cid1));
+				Set<Integer> cidSet = Generics.newHashSet();
+				cidSet.add(cid);
+				cidSet.addAll(tmpClusterMap.getCounter(cid).keySet());
 
-				for (int cid2 : tmpClusterMap.getCounter(cid1).keySet()) {
+				int new_cid = min(cidSet);
+
+				System.out.printf("%d -> %d, %s\n", new_cid, cid, tmpClusterMap.getCounter(cid).keySet());
+
+				for (int cid2 : cidSet) {
 					newCent.incrementAll(centroids.removeKey(cid2));
 					kwids.incrementAll(clusterKeywordMap.removeKey(cid2));
 				}
 
-				int num_merges = tmpClusterMap.getCounter(cid1).keySet().size() + 1;
-				newCent.scale(1f / num_merges);
-
-				int new_cid = min(newCent.keySet());
+				newCent.scale(1f / cidSet.size());
 
 				centroids.setCounter(new_cid, newCent);
 
@@ -358,10 +379,7 @@ public class KeywordClusterer {
 					keywordClusterMap.put(kwid, new_cid);
 				}
 
-				for (int cid2 : newCent.keySet()) {
-					if (new_cid == cid2) {
-						continue;
-					}
+				for (int cid2 : cidSet) {
 					gramClusterMap.replaceAll(cid2, new_cid);
 				}
 			}
@@ -508,8 +526,15 @@ public class KeywordClusterer {
 	}
 
 	private void filter() {
-		for (int cid : clusterKeywordMap.keySet()) {
+		Iterator<Integer> iter = clusterKeywordMap.keySet().iterator();
+		while (iter.hasNext()) {
+			int cid = iter.next();
 			Counter<Integer> kwids = clusterKeywordMap.getCounter(cid);
+			if (kwids.size() < 5) {
+				kwids.clear();
+				iter.remove();
+			}
+
 		}
 	}
 
