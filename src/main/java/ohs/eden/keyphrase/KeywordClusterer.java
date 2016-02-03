@@ -5,6 +5,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import edu.stanford.nlp.io.EncodingPrintWriter.out;
+
 import java.util.Set;
 
 import ohs.eden.linker.Entity;
@@ -116,7 +119,7 @@ public class KeywordClusterer {
 
 		clusterUsingExactLanguageMatch(false);
 
-		filter(3);
+		// filter(3);
 
 		selectClusterLabels();
 
@@ -262,53 +265,58 @@ public class KeywordClusterer {
 
 			int chunk_size = cluster.size() / 100;
 
-			Counter<Pair<Integer, Integer>> searchResult = Generics.newCounter();
+			Counter<Pair<Integer, Integer>> queryOutputPairs = Generics.newCounter();
+			Set<Integer> searched = Generics.newHashSet();
 
 			for (int j = 0; j < cluster.size(); j++) {
 				if ((j + 1) % chunk_size == 0) {
 					int progess = (int) ((j + 1f) / cluster.size() * 100);
-					System.out.printf("\r[%dth, %d percent - %d/%d, %s]", i + 1, progess, j + 1, cluster.size(), stopWatch.stop());
+					System.out.printf("\r[%dth, %d percent - %d/%d, %s]", i + 1, progess, j + 1, cluster.size(),
+							stopWatch.stop());
 				}
+
 				int qid = cluster.get(j);
+
+				if (searched.contains(qid)) {
+					continue;
+				}
+
 				Counter<Integer> queryCent = cents.getCounter(qid);
-				Counter<Integer> candidates = Generics.newCounter();
+				Counter<Integer> outputs = Generics.newCounter();
 				List<Integer> gids = queryCent.getSortedKeys();
 
 				for (int k = 0; k < gids.size() && k < prefix_size; k++) {
 					int gid = gids.get(k);
 					double idf = Math.log((num_clusters + 1f) / gram_freqs[gid]);
 					for (int cid : gramPostings.get(gid)) {
-						candidates.incrementCount(cid, idf);
+						outputs.incrementCount(cid, idf);
 					}
 				}
 
-				candidates.removeKey(qid);
+				outputs.removeKey(qid);
 
-				for (int cid : candidates.getSortedKeys()) {
-					Counter<Integer> cent = cents.getCounter(cid);
-					double cosine = cent.dotProduct(queryCent);
+				searched.add(qid);
+				searched.addAll(outputs.keySet());
+
+				for (int cid : outputs.getSortedKeys()) {
+					double cosine = cents.getCounter(cid).dotProduct(queryCent);
 
 					if (cosine < cutoff_cosine) {
 						break;
 					}
 
 					Pair<Integer, Integer> p1 = Generics.newPair(qid, cid);
-					// Pair<Integer, Integer> p2 = Generics.newPair(cid, qid);
-					//
-					// if (searchResult.containsKey(p1) || searchResult.containsKey(p2)) {
-					// continue;
-					// }
-
-					searchResult.incrementCount(p1, cosine);
+					queryOutputPairs.incrementCount(p1, cosine);
 				}
 			}
 
-			System.out.printf("\r[%dth, %d percent - %d/%d, %s]\n", i + 1, 100, cluster.size(), cluster.size(), stopWatch.stop());
+			System.out.printf("\r[%dth, %d percent - %d/%d, %s]\n", i + 1, 100, cluster.size(), cluster.size(),
+					stopWatch.stop());
 
 			CounterMap<Integer, Integer> queryOutputs = Generics.newCounterMap();
 			Set<Integer> used = Generics.newHashSet();
 
-			for (Pair<Integer, Integer> p : searchResult.getSortedKeys()) {
+			for (Pair<Integer, Integer> p : queryOutputPairs.getSortedKeys()) {
 				int qid = p.getFirst();
 				int cid = p.getSecond();
 
@@ -317,7 +325,7 @@ public class KeywordClusterer {
 				}
 				used.add(cid);
 
-				double cosine = searchResult.getCount(p);
+				double cosine = queryOutputPairs.getCount(p);
 				queryOutputs.setCount(qid, cid, cosine);
 			}
 
@@ -344,23 +352,24 @@ public class KeywordClusterer {
 
 				int new_cid = min(cidSet);
 
-				if (cidSet.size() > 1) {
-					System.out.println("###########################");
-					for (int cid2 : cidSet) {
-						String label = clusterLabel.get(cid2);
-						System.out.printf("Label:\t%s\n", label);
-
-						for (int kwid : clusterKwds.getCounter(cid2).keySet()) {
-							String kwd = kwdIndexer.getObject(kwid);
-							System.out.printf("Keyword:\t%d\t%s\n", kwid, kwd);
-						}
-
-						System.out.println("-------------------------");
-					}
-					System.out.println("");
-				}
-
-				System.out.printf("%d -> %d, %s\n", new_cid, qid, queryOutputs.getCounter(qid).keySet());
+				// if (cidSet.size() > 1) {
+				// System.out.println("###########################");
+				// for (int cid2 : cidSet) {
+				// String label = clusterLabel.get(cid2);
+				// System.out.printf("Label:\t%s\n", label);
+				//
+				// for (int kwid : clusterKwds.getCounter(cid2).keySet()) {
+				// String kwd = kwdIndexer.getObject(kwid);
+				// System.out.printf("Keyword:\t%d\t%s\n", kwid, kwd);
+				// }
+				//
+				// System.out.println("-------------------------");
+				// }
+				// System.out.println("");
+				// }
+				//
+				// System.out.printf("%d -> %d, %s\n", new_cid, qid,
+				// queryOutputs.getCounter(qid).keySet());
 
 				for (int cid : cidSet) {
 					newCent.incrementAll(cents.removeKey(cid));
@@ -702,9 +711,9 @@ public class KeywordClusterer {
 			int cid = cids.get(i);
 
 			StringBuffer sb = new StringBuffer();
-			sb.append(String.format("Cluster Number:\t%d", n));
-			sb.append(String.format("\nCluster ID:\t%d", cid));
-			sb.append(String.format("\nCluater Label:\t%s", clusterLabel.get(cid)));
+			sb.append(String.format("C-Number:\t%d", n));
+			sb.append(String.format("\nC-ID:\t%d", cid));
+			sb.append(String.format("\nC-Label:\t%s", clusterLabel.get(cid)));
 			sb.append(String.format("\nKeywords:\t%d", clusterKwds.getCounter(cid).size()));
 
 			Counter<Integer> c = Generics.newCounter();
