@@ -12,42 +12,42 @@ import ohs.utils.Generics;
 
 public class KeywordData {
 
-	private Indexer<String> keywordIndexer;
+	private Indexer<String> kwdIndexer;
 
 	private Indexer<String> docIndxer;
 
 	private List<List<Integer>> docIdsList;
 
-	private List<Integer> kids;
+	private List<Integer> kwdids;
 
-	private int[] keyword_freqs;
+	private int[] kwd_freqs;
 
 	public List<List<Integer>> getDocIdsList() {
 		return docIdsList;
 	}
 
-	public Indexer<String> getDocIndxer() {
+	public Indexer<String> getDocumentIndxer() {
 		return docIndxer;
 	}
 
 	public int[] getKeywordFreqs() {
-		return keyword_freqs;
-	}
-
-	public List<Integer> getKeywordIds() {
-		return kids;
+		return kwd_freqs;
 	}
 
 	public Indexer<String> getKeywordIndexer() {
-		return keywordIndexer;
+		return kwdIndexer;
+	}
+
+	public List<Integer> getKeywords() {
+		return kwdids;
 	}
 
 	public void read(String fileName) throws Exception {
 		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
-		keywordIndexer = FileUtils.readStrIndexer(ois);
+		kwdIndexer = FileUtils.readStrIndexer(ois);
 		// docIndxer = FileUtils.readIndexer(ois);
-		kids = FileUtils.readIntList(ois);
-		keyword_freqs = FileUtils.readIntArray(ois);
+		kwdids = FileUtils.readIntList(ois);
+		kwd_freqs = FileUtils.readIntArray(ois);
 
 		// int size = ois.readInt();
 		// docIdsList = Generics.newArrayList(size);
@@ -58,12 +58,12 @@ public class KeywordData {
 	}
 
 	public void readFromText(String fileName) {
-		keywordIndexer = Generics.newIndexer();
+		kwdIndexer = Generics.newIndexer();
 		docIndxer = Generics.newIndexer();
 
-		kids = Generics.newArrayList();
+		kwdids = Generics.newArrayList();
 		docIdsList = Generics.newArrayList();
-		Counter<Integer> kwFreqs = Generics.newCounter();
+		Counter<Integer> kwdFreqs = Generics.newCounter();
 
 		TextFileReader reader = new TextFileReader(fileName);
 		while (reader.hasNext()) {
@@ -71,7 +71,7 @@ public class KeywordData {
 
 			if (line.startsWith(FileUtils.LINE_SIZE)) {
 				int size = Integer.parseInt(line.split("\t")[1]);
-				kids = Generics.newArrayList(size);
+				kwdids = Generics.newArrayList(size);
 				docIdsList = Generics.newArrayList(size);
 				continue;
 			}
@@ -80,13 +80,13 @@ public class KeywordData {
 
 			String kor = parts[0];
 			String eng = parts[1];
-			double kw_freq = Double.parseDouble(parts[2]);
+			double kwd_freq = Double.parseDouble(parts[2]);
 
 			String keyword = kor + "\t" + eng;
 
-			int kid = keywordIndexer.getIndex(keyword);
-			kids.add(kid);
-			kwFreqs.setCount(kid, kw_freq);
+			int kwdid = kwdIndexer.getIndex(keyword);
+			kwdids.add(kwdid);
+			kwdFreqs.setCount(kwdid, kwd_freq);
 
 			// List<Integer> dids = Generics.newArrayList();
 			//
@@ -98,20 +98,20 @@ public class KeywordData {
 		}
 		reader.close();
 
-		keyword_freqs = new int[kwFreqs.size()];
+		kwd_freqs = new int[kwdFreqs.size()];
 
-		for (int i = 0; i < keywordIndexer.size(); i++) {
-			keyword_freqs[i] = (int) kwFreqs.getCount(i);
+		for (int i = 0; i < kwdIndexer.size(); i++) {
+			kwd_freqs[i] = (int) kwdFreqs.getCount(i);
 		}
 	}
 
 	public void write(String fileName) throws Exception {
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 
-		FileUtils.writeStrIndexer(oos, keywordIndexer);
+		FileUtils.writeStrIndexer(oos, kwdIndexer);
 		// FileUtils.write(oos, docIndxer);
-		FileUtils.writeIntCollection(oos, kids);
-		FileUtils.writeIntArray(oos, keyword_freqs);
+		FileUtils.writeIntCollection(oos, kwdids);
+		FileUtils.writeIntArray(oos, kwd_freqs);
 
 		// oos.writeInt(docIdsList.size());
 		//

@@ -5,13 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import edu.stanford.nlp.io.EncodingPrintWriter.out;
-
 import java.util.Set;
 
-import ohs.eden.linker.Entity;
-import ohs.eden.linker.EntityLinker;
 import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
 import ohs.math.VectorMath;
@@ -68,10 +63,10 @@ public class KeywordClusterer {
 
 	private GramGenerator gg = new GramGenerator(3);
 
-	public KeywordClusterer(KeywordData kwData) {
-		this.kwdData = kwData;
+	public KeywordClusterer(KeywordData kwdData) {
+		this.kwdData = kwdData;
 
-		kwdIndexer = kwData.getKeywordIndexer();
+		kwdIndexer = kwdData.getKeywordIndexer();
 	}
 
 	private Indexer<String> buildGramIndexer() {
@@ -142,7 +137,7 @@ public class KeywordClusterer {
 
 		clusterUsingExactLanguageMatch(false);
 
-		filter(3);
+		// filter(3);
 
 		selectClusterLabels();
 
@@ -181,9 +176,6 @@ public class KeywordClusterer {
 				keyClusters.incrementCount(key, cid, 1);
 			}
 		}
-
-		// System.out.println(keyClusterMap.invert());
-		// System.out.println();
 
 		for (String key : keyClusters.keySet()) {
 			Set<Integer> cids = keyClusters.getCounter(key).keySet();
@@ -278,8 +270,7 @@ public class KeywordClusterer {
 
 			int chunk_size = cluster.size() / 100;
 
-			Counter<Pair<Integer, Integer>> queryOutputPairs = Generics.newCounter();
-			Set<Integer> searched = Generics.newHashSet();
+			Counter<Pair<Integer, Integer>> queryResultPairs = Generics.newCounter();
 
 			for (int j = 0; j < cluster.size(); j++) {
 				if ((j + 1) % chunk_size == 0) {
@@ -289,12 +280,8 @@ public class KeywordClusterer {
 
 				int qid = cluster.get(j);
 
-				// if (searched.contains(qid)) {
-				// continue;
-				// }
-
 				SparseVector queryCent = cents.get(qid);
-				Counter<Integer> outputs = Generics.newCounter();
+				Counter<Integer> candidates = Generics.newCounter();
 
 				queryCent.sortByValue();
 
@@ -303,35 +290,35 @@ public class KeywordClusterer {
 					double idf = Math.log((num_clusters + 1f) / gram_freqs[gid]);
 					for (int cid : gramPostings[gid]) {
 						int new_cid = clusterToCluster[cid];
-						outputs.incrementCount(new_cid, idf);
+						if (cents.containsKey(new_cid)) {
+							candidates.incrementCount(new_cid, idf);
+						}
 					}
 				}
 
 				queryCent.sortByIndex();
 
-				outputs.removeKey(qid);
+				candidates.removeKey(qid);
 
-				// searched.add(qid);
-				// searched.addAll(outputs.keySet());
-
-				for (int cid : outputs.getSortedKeys()) {
-					double cosine = VectorMath.dotProduct(queryCent, cents.get(cid));
+				for (int cid : candidates.getSortedKeys()) {
+					SparseVector targetCent = cents.get(cid);
+					double cosine = VectorMath.dotProduct(queryCent, targetCent);
 
 					if (cosine < cutoff_cosine) {
 						break;
 					}
 
 					Pair<Integer, Integer> p1 = Generics.newPair(qid, cid);
-					queryOutputPairs.incrementCount(p1, cosine);
+					queryResultPairs.incrementCount(p1, cosine);
 				}
 			}
 
 			System.out.printf("\r[%dth, %d percent - %d/%d, %s]\n", i + 1, 100, cluster.size(), cluster.size(), stopWatch.stop());
 
-			CounterMap<Integer, Integer> queryOutputs = Generics.newCounterMap();
+			CounterMap<Integer, Integer> queryResults = Generics.newCounterMap();
 			Set<Integer> used = Generics.newHashSet();
 
-			for (Pair<Integer, Integer> p : queryOutputPairs.getSortedKeys()) {
+			for (Pair<Integer, Integer> p : queryResultPairs.getSortedKeys()) {
 				int qid = p.getFirst();
 				int cid = p.getSecond();
 
@@ -340,11 +327,11 @@ public class KeywordClusterer {
 				}
 				used.add(cid);
 
-				double cosine = queryOutputPairs.getCount(p);
-				queryOutputs.setCount(qid, cid, cosine);
+				double cosine = queryResultPairs.getCount(p);
+				queryResults.setCount(qid, cid, cosine);
 			}
 
-			Iterator<Integer> iter = queryOutputs.keySet().iterator();
+			Iterator<Integer> iter = queryResults.keySet().iterator();
 
 			while (iter.hasNext()) {
 				int qid = iter.next();
@@ -353,14 +340,14 @@ public class KeywordClusterer {
 				}
 			}
 
-			if (queryOutputs.size() == 0) {
+			if (queryResults.size() == 0) {
 				break;
 			}
 
-			for (int qid : queryOutputs.keySet()) {
+			for (int qid : queryResults.keySet()) {
 				Set<Integer> cidSet = Generics.newHashSet();
 				cidSet.add(qid);
-				cidSet.addAll(queryOutputs.getCounter(qid).keySet());
+				cidSet.addAll(queryResults.getCounter(qid).keySet());
 
 				int new_cid = min(cidSet);
 
