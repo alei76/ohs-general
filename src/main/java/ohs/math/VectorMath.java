@@ -2,6 +2,7 @@ package ohs.math;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map.Entry;
 
 import ohs.matrix.DenseMatrix;
 import ohs.matrix.DenseVector;
@@ -31,11 +32,31 @@ public class VectorMath {
 		return addAfterScale(as, coefs);
 	}
 
-	public static SparseVector addAfterScale(Vector a, Vector b, double ac, double bc) {
-		return addAfterScale(new Vector[] { a, b }, new double[] { ac, bc });
+	public static void addAfterScale(SparseVector a, Counter<Integer> b, double ca, double cb, Counter<Integer> c) {
+		for (int i = 0; i < a.size(); i++) {
+			c.incrementCount(a.indexAtLoc(i), ca * a.valueAtLoc(i));
+		}
+
+		for (Entry<Integer, Double> e : b.entrySet()) {
+			c.incrementCount(e.getKey(), cb * e.getValue().doubleValue());
+		}
 	}
 
-	public static void addAfterScale(Vector a, Vector b, double ac, double bc, Vector c) {
+	public static void addAfterScale(SparseVector a, double ca, Counter<Integer> b) {
+		for (int i = 0; i < a.size(); i++) {
+			b.incrementCount(a.indexAtLoc(i), ca * a.valueAtLoc(i));
+		}
+	}
+
+	public static void add(SparseVector a, Counter<Integer> b) {
+		addAfterScale(a, 1, b);
+	}
+
+	public static SparseVector addAfterScale(Vector a, Vector b, double ca, double cb) {
+		return addAfterScale(new Vector[] { a, b }, new double[] { ca, cb });
+	}
+
+	public static void addAfterScale(Vector a, Vector b, double ca, double cb, Vector c) {
 		if (VectorChecker.isSameDimension(a, b) && VectorChecker.isSameDimension(b, c)) {
 
 		} else {
@@ -43,7 +64,7 @@ public class VectorMath {
 		}
 
 		if (isSparse(c)) {
-			SparseVector sv = addAfterScale(a, b, ac, bc);
+			SparseVector sv = addAfterScale(a, b, ca, cb);
 			c.setIndexes(sv.indexes());
 			c.setValues(sv.values());
 			c.setSum(sv.sum());
@@ -51,26 +72,24 @@ public class VectorMath {
 			for (int i = 0; i < a.size(); i++) {
 				int index = a.indexAtLoc(i);
 				double value = a.valueAtLoc(i);
-				c.increment(index, ac * value);
+				c.increment(index, ca * value);
 			}
 
 			for (int i = 0; i < b.size(); i++) {
 				int index = b.indexAtLoc(i);
 				double value = b.valueAtLoc(i);
-				c.increment(index, ac * value);
+				c.increment(index, ca * value);
 			}
 		}
 	}
 
-	public static SparseVector addAfterScale(Vector[] as, double[] coefs) {
+	public static SparseVector addAfterScale(Vector[] vs, double[] coefs) {
 		Counter<Integer> c = new Counter<Integer>();
-		for (int i = 0; i < as.length; i++) {
-			Vector a = as[i];
+		for (int i = 0; i < vs.length; i++) {
+			Vector a = vs[i];
 			double coef = coefs[i];
 			for (int j = 0; j < a.size(); j++) {
-				int index = a.indexAtLoc(j);
-				double value = a.valueAtLoc(j);
-				c.incrementCount(index, coef * value);
+				c.incrementCount(a.indexAtLoc(j), coef * a.valueAtLoc(j));
 			}
 		}
 		return VectorUtils.toSparseVector(c);
