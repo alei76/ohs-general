@@ -13,7 +13,7 @@ public class DataHandler {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		DataHandler dh = new DataHandler();
-		dh.extractData();
+		// dh.extractData();
 		System.out.println("process ends.");
 	}
 
@@ -201,19 +201,6 @@ public class DataHandler {
 		// FileUtils.write(KPPath.PAPER_ENGLISH_CONTEXT_FILE, cm3, null, true);
 
 		// FileUtils.write(KWPath.PAPER_KEYWORD_FILE, kwCounts, true);
-	}
-
-	private String[] getPaperAbstract(String[] parts) {
-		String cn = parts[0];
-		String korAbs = parts[parts.length - 2];
-		String engAbs = parts[parts.length - 1];
-		return new String[] { cn, korAbs, engAbs };
-	}
-
-	private String[] getReportAbstract(String[] parts) {
-		String[] ret = new String[3];
-
-		return ret;
 	}
 
 }

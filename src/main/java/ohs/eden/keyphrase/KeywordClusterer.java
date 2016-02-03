@@ -649,8 +649,6 @@ public class KeywordClusterer {
 			}
 		}
 
-		// int cutoff = 10;
-
 		for (int i = 0, n = 1; i < cids.size(); i++) {
 			int cid = cids.get(i);
 
@@ -665,10 +663,6 @@ public class KeywordClusterer {
 			for (int kwid : clusterKeywords.getCounter(cid).keySet()) {
 				c.setCount(kwid, kwdData.getKeywordFreqs()[kwid]);
 			}
-
-			// if (c.size() < cutoff) {
-			// continue;
-			// }
 
 			n++;
 
