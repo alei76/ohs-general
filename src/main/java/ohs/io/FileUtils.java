@@ -40,12 +40,11 @@ import org.apache.commons.compress.compressors.CompressorOutputStream;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 
-import com.google.common.base.Stopwatch;
-
 import ohs.math.ArrayUtils;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
+import ohs.types.ListMap;
 import ohs.types.SetMap;
 import ohs.utils.ByteSize;
 import ohs.utils.ByteSize.Type;
@@ -560,11 +559,29 @@ public class FileUtils {
 		return ret;
 	}
 
-	public static List<Integer> readIntList(ObjectInputStream ois) throws Exception {
-		List<Integer> ret = new ArrayList<Integer>();
+	public static Counter<Integer> readIntCounter(ObjectInputStream ois) throws Exception {
 		int size = ois.readInt();
+		Counter<Integer> ret = Generics.newCounter(size);
+		for (int i = 0; i < size; i++) {
+			ret.setCount(ois.readInt(), ois.readDouble());
+		}
+		return ret;
+	}
+
+	public static List<Integer> readIntList(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+		List<Integer> ret = Generics.newArrayList(size);
 		for (int i = 0; i < size; i++) {
 			ret.add(ois.readInt());
+		}
+		return ret;
+	}
+
+	public static ListMap<Integer, Integer> readIntListMap(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+		ListMap<Integer, Integer> ret = Generics.newListMap(size);
+		for (int i = 0; i < size; i++) {
+			ret.put(ois.readInt(), readIntList(ois));
 		}
 		return ret;
 	}
@@ -594,6 +611,33 @@ public class FileUtils {
 		int[][] ret = readIntMatrix(ois);
 		ois.close();
 		System.out.printf("read [%d, %d] matrix at [%s].\n", ret.length, ArrayUtils.maxColumnSize(ret), fileName);
+		return ret;
+	}
+
+	public static Set<Integer> readIntSet(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+		Set<Integer> ret = Generics.newHashSet(size);
+		for (int i = 0; i < size; i++) {
+			ret.add(ois.readInt());
+		}
+		return ret;
+	}
+
+	public static SetMap<Integer, Integer> readIntSetMap(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+		SetMap<Integer, Integer> ret = Generics.newSetMap(size);
+		for (int i = 0; i < size; i++) {
+			ret.put(ois.readInt(), readIntSet(ois));
+		}
+		return ret;
+	}
+
+	public static Map<Integer, String> readIntStrMap(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+		Map<Integer, String> ret = Generics.newHashMap(size);
+		for (int i = 0; i < size; i++) {
+			ret.put(ois.readInt(), ois.readUTF());
+		}
 		return ret;
 	}
 
@@ -886,15 +930,6 @@ public class FileUtils {
 		oos.flush();
 	}
 
-	public static Counter<Integer> readIntCounter(ObjectInputStream ois) throws Exception {
-		int size = ois.readInt();
-		Counter<Integer> ret = Generics.newCounter(size);
-		for (int i = 0; i < size; i++) {
-			ret.setCount(ois.readInt(), ois.readDouble());
-		}
-		return ret;
-	}
-
 	public static void writeIntDoublePairs(ObjectOutputStream oos, int[] indexes, double[] values) throws Exception {
 		int size = indexes.length;
 		oos.writeInt(size);
@@ -903,6 +938,15 @@ public class FileUtils {
 			oos.writeDouble(values[i]);
 		}
 		oos.flush();
+	}
+
+	public static void writeIntListMap(ObjectOutputStream oos, ListMap<Integer, Integer> lm) throws Exception {
+		oos.writeInt(lm.size());
+
+		for (int key : lm.keySet()) {
+			oos.writeInt(key);
+			writeIntCollection(oos, lm.get(key));
+		}
 	}
 
 	public static void writeIntMap(ObjectOutputStream oos, Map<Integer, Integer> m) throws Exception {
@@ -926,6 +970,32 @@ public class FileUtils {
 		ObjectOutputStream oos = openObjectOutputStream(fileName);
 		writeIntMatrix(oos, x);
 		oos.close();
+	}
+
+	public static void writeIntSet(ObjectOutputStream oos, Set<Integer> s) throws Exception {
+		oos.writeInt(s.size());
+		for (int value : s) {
+			oos.writeInt(value);
+		}
+		oos.flush();
+	}
+
+	public static void writeIntSetMap(ObjectOutputStream oos, SetMap<Integer, Integer> m) throws Exception {
+		oos.writeInt(m.size());
+		for (int key : m.keySet()) {
+			oos.writeInt(key);
+			writeIntSet(oos, m.get(key));
+		}
+		oos.flush();
+	}
+
+	public static void writeIntStrMap(ObjectOutputStream oos, Map<Integer, String> m) throws Exception {
+		oos.writeInt(m.size());
+		for (Integer key : m.keySet()) {
+			oos.writeInt(key);
+			oos.writeUTF(m.get(key));
+		}
+		oos.flush();
 	}
 
 	public static void writeStrCollection(ObjectOutputStream oos, Collection<String> c) throws Exception {

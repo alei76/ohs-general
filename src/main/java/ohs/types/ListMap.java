@@ -93,6 +93,10 @@ public class ListMap<K, V> implements Serializable {
 		ensure(key).add(value);
 	}
 
+	public void put(K key, List<V> values) {
+		entries.put(key, values);
+	}
+
 	public List<V> remove(K key) {
 		return entries.remove(key);
 	}

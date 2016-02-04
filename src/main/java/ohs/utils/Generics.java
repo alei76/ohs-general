@@ -223,6 +223,8 @@ public class Generics {
 	public static <E> Set<E> newSet(SetType t) {
 		return newSet(t, 0);
 	}
+	
+	
 
 	public static <E> Set<E> newSet(SetType t, int size) {
 		Set<E> ret = null;

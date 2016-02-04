@@ -13,7 +13,7 @@ public class DataHandler {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		DataHandler dh = new DataHandler();
-		// dh.extractData();
+		dh.extractKeywordData();
 		System.out.println("process ends.");
 	}
 
@@ -32,112 +32,14 @@ public class DataHandler {
 		writer.close();
 	}
 
-	private CounterMap<String, String> getPaperKeywords(String[] parts) {
-		CounterMap<String, String> ret = Generics.newCounterMap();
+	public void process() {
 
-		String cn = parts[0];
-		String korKeywordStr = parts[8];
-		String engKeywordStr = parts[9];
-
-		List<String> kors = Generics.newArrayList();
-		List<String> engs = Generics.newArrayList();
-
-		for (String kw : korKeywordStr.split(";")) {
-			kw = kw.trim();
-			if (kw.length() > 0) {
-				kors.add(kw);
-			}
-		}
-
-		for (String kw : engKeywordStr.split(";")) {
-			kw = kw.trim();
-			if (kw.length() > 0) {
-				engs.add(kw);
-			}
-		}
-
-		if (kors.size() == 0 && engs.size() == 0) {
-			return ret;
-		}
-
-		if (kors.size() == engs.size()) {
-			if (kors.size() > 0) {
-				for (int i = 0; i < kors.size(); i++) {
-					String kor = kors.get(i);
-					String eng = engs.get(i);
-					ret.incrementCount(kor + "\t" + eng, cn, 1);
-				}
-			}
-		} else {
-			for (int i = 0; i < kors.size(); i++) {
-				String kor = kors.get(i);
-				ret.incrementCount(kor + "\t" + "<none>", cn, 1);
-			}
-
-			for (int i = 0; i < engs.size(); i++) {
-				String eng = engs.get(i);
-				ret.incrementCount("<none>" + "\t" + eng, cn, 1);
-			}
-		}
-		return ret;
 	}
 
-	private CounterMap<String, String> getReportKeywords(String[] parts) {
-		CounterMap<String, String> ret = Generics.newCounterMap();
-		String cn = parts[0];
-		String korKeywordStr = parts[5];
-		String engKeywordStr = parts[6];
-
-		korKeywordStr = korKeywordStr.replace("\"", "");
-		engKeywordStr = engKeywordStr.replace("\"", "");
-
-		List<String> kors = Generics.newArrayList();
-		List<String> engs = Generics.newArrayList();
-
-		for (String kw : korKeywordStr.split(";")) {
-			kw = kw.trim();
-			if (kw.length() > 0) {
-				kors.add(kw);
-			}
-		}
-
-		for (String kw : engKeywordStr.split(";")) {
-			kw = kw.trim();
-			if (kw.length() > 0) {
-				engs.add(kw);
-			}
-		}
-
-		if (kors.size() == 0 && engs.size() == 0) {
-			return ret;
-		}
-
-		if (kors.size() == engs.size()) {
-			if (kors.size() > 0) {
-				for (int i = 0; i < kors.size(); i++) {
-					String kor = kors.get(i);
-					String eng = engs.get(i);
-					ret.incrementCount(kor + "\t" + eng, cn, 1);
-				}
-			}
-		} else {
-			for (int i = 0; i < kors.size(); i++) {
-				String kor = kors.get(i);
-				ret.incrementCount(kor + "\t" + "<none>", cn, 1);
-			}
-
-			for (int i = 0; i < engs.size(); i++) {
-				String eng = engs.get(i);
-				ret.incrementCount("<none>" + "\t" + eng, cn, 1);
-			}
-		}
-		return ret;
-	}
-
-	public void extractData() throws Exception {
+	public void extractKeywordData() throws Exception {
 		String[] inFileNames = { KPPath.PAPER_DUMP_FILE, KPPath.REPORT_DUMP_FILE };
 
-		CounterMap<String, String> allKeywords = Generics.newCounterMap();
+		CounterMap<String, String> keywordDocs = Generics.newCounterMap();
 
 		TextFileWriter writer = new TextFileWriter(KPPath.ABSTRACT_FILE);
 
@@ -170,15 +72,43 @@ public class DataHandler {
 						continue;
 					}
 
-					if (i == 0) {
-						allKeywords.incrementAll(getPaperKeywords(parts));
-					} else if (i == 1) {
-						allKeywords.incrementAll(getReportKeywords(parts));
-					}
-
 					String cn = parts[0];
 					String korAbs = parts[parts.length - 2];
 					String engAbs = parts[parts.length - 1];
+					String korKeywordStr = null;
+					String engKeywordStr = null;
+
+					if (i == 0) {
+						korKeywordStr = parts[8];
+						engKeywordStr = parts[9];
+					} else if (i == 1) {
+						korKeywordStr = parts[5];
+						engKeywordStr = parts[6];
+					}
+
+					List<String> kors = getKeywords(korKeywordStr);
+					List<String> engs = getKeywords(engKeywordStr);
+
+					if (kors.size() == 0 && engs.size() == 0) {
+
+					} else if (kors.size() == engs.size()) {
+						if (kors.size() > 0) {
+							for (int j = 0; j < kors.size(); j++) {
+								String kor = kors.get(j);
+								String eng = engs.get(j);
+								keywordDocs.incrementCount(kor + "\t" + eng, cn, 1);
+							}
+						}
+					} else {
+						for (String kor : kors) {
+							keywordDocs.incrementCount(kor + "\t" + "<none>", cn, 1);
+						}
+
+						for (String eng : engs) {
+							keywordDocs.incrementCount("<none>" + "\t" + eng, cn, 1);
+						}
+					}
+
 					writer.write(String.format("\"%s\"\t\"%s\"\t\"%s\"\n", cn, korAbs, engAbs));
 				}
 			}
@@ -196,11 +126,22 @@ public class DataHandler {
 		}
 		writer.close();
 
-		FileUtils.writeStrCounterMap(KPPath.KEYWORD_FILE, allKeywords, null, true);
+		FileUtils.writeStrCounterMap(KPPath.KEYWORD_FILE, keywordDocs, null, true);
 		// FileUtils.write(KPPath.PAPER_KOREAN_CONTEXT_FILE, cm2, null, true);
 		// FileUtils.write(KPPath.PAPER_ENGLISH_CONTEXT_FILE, cm3, null, true);
 
 		// FileUtils.write(KWPath.PAPER_KEYWORD_FILE, kwCounts, true);
+	}
+
+	private List<String> getKeywords(String keywordStr) {
+		List<String> ret = Generics.newArrayList();
+		for (String kw : keywordStr.split(";")) {
+			kw = kw.trim();
+			if (kw.length() > 0) {
+				ret.add(kw);
+			}
+		}
+		return ret;
 	}
 
 }
