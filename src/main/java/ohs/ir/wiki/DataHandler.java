@@ -30,6 +30,18 @@ import ohs.utils.StrUtils;
 
 public class DataHandler {
 
+	public static StanfordCoreNLP getCoreNLP() {
+		Properties prop = new Properties();
+		prop.setProperty("annotators", "tokenize, quote, ssplit, pos, lemma, ner,parse, sentiment");
+		prop.setProperty("parse.maxlen", "100");
+		prop.setProperty("pos.maxlen", "100");
+		prop.setProperty("replaceExtension", "true");
+		prop.setProperty("outputFormat", "XML");
+
+		StanfordCoreNLP nlp = new StanfordCoreNLP(prop);
+		return nlp;
+	}
+
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		DataHandler dh = new DataHandler();
@@ -257,18 +269,6 @@ public class DataHandler {
 
 		reader.printLast();
 		reader.close();
-	}
-
-	public static StanfordCoreNLP getCoreNLP() {
-		Properties prop = new Properties();
-		prop.setProperty("annotators", "tokenize, quote, ssplit, pos, lemma, ner,parse, sentiment");
-		prop.setProperty("parse.maxlen", "100");
-		prop.setProperty("pos.maxlen", "100");
-		prop.setProperty("replaceExtension", "true");
-		prop.setProperty("outputFormat", "XML");
-
-		StanfordCoreNLP nlp = new StanfordCoreNLP(prop);
-		return nlp;
 	}
 
 	public void doNLP() throws Exception {

@@ -4,17 +4,17 @@ package ohs.utils;
  * Simple class for measuring elapsed time.
  */
 public class StopWatch {
+	public static StopWatch newStopWatch() {
+		StopWatch ret = new StopWatch();
+		ret.start();
+		return ret;
+	}
+
 	public long startTime, endTime, ms;
 
 	public int n;
 
 	public StopWatch() {
-	}
-
-	public static StopWatch newStopWatch() {
-		StopWatch ret = new StopWatch();
-		ret.start();
-		return ret;
 	}
 
 	public StopWatch(long ms) {

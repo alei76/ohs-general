@@ -18,6 +18,10 @@ import ohs.types.Counter;
  */
 public class VectorMath {
 
+	public static void add(SparseVector a, Counter<Integer> b) {
+		addAfterScale(a, 1, b);
+	}
+
 	public static SparseVector add(Vector a, Vector b) {
 		return add(new Vector[] { a, b });
 	}
@@ -46,10 +50,6 @@ public class VectorMath {
 		for (int i = 0; i < a.size(); i++) {
 			b.incrementCount(a.indexAtLoc(i), ca * a.valueAtLoc(i));
 		}
-	}
-
-	public static void add(SparseVector a, Counter<Integer> b) {
-		addAfterScale(a, 1, b);
 	}
 
 	public static SparseVector addAfterScale(Vector a, Vector b, double ca, double cb) {

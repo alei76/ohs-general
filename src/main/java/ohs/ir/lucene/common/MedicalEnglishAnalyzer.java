@@ -34,15 +34,6 @@ public final class MedicalEnglishAnalyzer extends StopwordAnalyzerBase {
 		static final CharArraySet DEFAULT_STOP_SET = StandardAnalyzer.STOP_WORDS_SET;
 	}
 
-	public static MedicalEnglishAnalyzer newAnalyzer() throws Exception {
-		return newAnalyzer(MIRPath.STOPWORD_INQUERY_FILE);
-	}
-
-	public static MedicalEnglishAnalyzer newAnalyzer(String stopwordFileName) throws Exception {
-		Set<String> stopwords = FileUtils.readSet(stopwordFileName);
-		return new MedicalEnglishAnalyzer(new CharArraySet(stopwords, true));
-	}
-
 	/**
 	 * Returns an unmodifiable instance of the default stop words set.
 	 * 
@@ -50,6 +41,15 @@ public final class MedicalEnglishAnalyzer extends StopwordAnalyzerBase {
 	 */
 	public static CharArraySet getDefaultStopSet() {
 		return DefaultSetHolder.DEFAULT_STOP_SET;
+	}
+
+	public static MedicalEnglishAnalyzer newAnalyzer() throws Exception {
+		return newAnalyzer(MIRPath.STOPWORD_INQUERY_FILE);
+	}
+
+	public static MedicalEnglishAnalyzer newAnalyzer(String stopwordFileName) throws Exception {
+		Set<String> stopwords = FileUtils.readSet(stopwordFileName);
+		return new MedicalEnglishAnalyzer(new CharArraySet(stopwords, true));
 	}
 
 	private final CharArraySet stemExclusionSet;

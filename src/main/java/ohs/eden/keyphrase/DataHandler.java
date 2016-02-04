@@ -1,6 +1,10 @@
 package ohs.eden.keyphrase;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
@@ -8,15 +12,17 @@ import ohs.io.TextFileWriter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
+import ohs.types.Pair;
 import ohs.utils.Generics;
+import ohs.utils.StrUtils;
 
 public class DataHandler {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		DataHandler dh = new DataHandler();
-		 dh.extractKeywordData();
-//		dh.process();
+		// dh.extractKeywordData();
+		dh.process();
 		System.out.println("process ends.");
 	}
 
@@ -33,40 +39,6 @@ public class DataHandler {
 		}
 		reader.close();
 		writer.close();
-	}
-
-	public void process() throws Exception {
-		KeywordData kwdData = new KeywordData();
-		kwdData.read(KPPath.KEYWORD_FILE.replace(".txt", ".ser"));
-
-		Indexer<String> kwdIndexer = kwdData.getKeywordIndexer();
-		ListMap<Integer, Integer> docKeywords = Generics.newListMap();
-		for (int kwdid : kwdData.getKeywordDocs().keySet()) {
-			List<Integer> docids = kwdData.getKeywordDocs().get(kwdid);
-
-			for (int docid : docids) {
-				docKeywords.put(docid, kwdid);
-			}
-		}
-
-		TextFileReader reader = new TextFileReader(KPPath.ABSTRACT_FILE);
-		while (reader.hasNext()) {
-			String[] parts = reader.next().split("\t");
-
-			for (int i = 0; i < parts.length; i++) {
-				parts[i] = parts[i].substring(1, parts[i].length() - 1);
-			}
-
-			int docid = kwdData.getDocIndexer().indexOf(parts[0]);
-
-			List<Integer> kwds = docKeywords.get(docid, false);
-
-			if (kwds == null) {
-				continue;
-			}
-			reader.close();
-		}
-
 	}
 
 	public void extractKeywordData() throws Exception {
@@ -175,6 +147,105 @@ public class DataHandler {
 			}
 		}
 		return ret;
+	}
+
+	private String tagKeyword(String keyword, String text) throws Exception {
+		StringBuffer sb = new StringBuffer();
+
+		Pattern p = Pattern.compile(keyword, Pattern.CASE_INSENSITIVE);
+		Matcher m = p.matcher(text);
+
+		while (m.find()) {
+			String g = m.group();
+			m.appendReplacement(sb, String.format("<KWD>%s</KWD>", g));
+		}
+		m.appendTail(sb);
+		return sb.toString();
+	}
+
+	public void process() throws Exception {
+		KeywordData kwdData = new KeywordData();
+		kwdData.read(KPPath.KEYWORD_FILE.replace(".txt", ".ser"));
+
+		Indexer<String> kwdIndexer = kwdData.getKeywordIndexer();
+		ListMap<Integer, Integer> docKeywords = Generics.newListMap();
+		for (int kwdid : kwdData.getKeywordDocs().keySet()) {
+			List<Integer> docids = kwdData.getKeywordDocs().get(kwdid);
+
+			for (int docid : docids) {
+				docKeywords.put(docid, kwdid);
+			}
+		}
+
+		TextFileReader reader = new TextFileReader(KPPath.ABSTRACT_FILE);
+		TextFileWriter writer = new TextFileWriter(KPPath.KEYWORD_ABSTRACT_FILE);
+
+		while (reader.hasNext()) {
+			String[] parts = reader.next().split("\t");
+
+			for (int i = 0; i < parts.length; i++) {
+				parts[i] = parts[i].substring(1, parts[i].length() - 1);
+			}
+
+			int docid = kwdData.getDocIndexer().indexOf(parts[0]);
+			String korAbs = parts[1];
+			String engAbs = parts[2];
+
+			List<Integer> kwdids = docKeywords.get(docid, false);
+
+			if (kwdids == null) {
+				continue;
+			}
+
+			String[] abss = { korAbs, engAbs };
+			Set<String>[] kwdSets = new HashSet[2];
+
+			for (int j = 0; j < kwdSets.length; j++) {
+				kwdSets[j] = Generics.newHashSet();
+			}
+
+			for (int kwdid : kwdids) {
+				String keyword = kwdIndexer.getObject(kwdid);
+				String korKwd = keyword.split("\t")[0];
+				String engKwd = keyword.split("\t")[1];
+				kwdSets[0].add(korKwd);
+				kwdSets[1].add(engKwd);
+			}
+
+			for (int j = 0; j < kwdSets.length; j++) {
+				if (j != 0) {
+					continue;
+				}
+
+				Set<String> founds = Generics.newHashSet();
+				String abs = abss[j];
+
+				for (String kwd : kwdSets[j]) {
+					try {
+						abs = StrTagger.tag(abs, kwd, "KWD");
+					} catch (Exception e) {
+
+					}
+				}
+
+				if (abs.length() > abss[j].length()) {
+
+//					StrTagger.extract(abs);
+
+					writer.write(abs + "\n\n");
+				}
+
+				// if (founds.size() > 0) {
+				// writer.write(String.format("Keywords:\t%s\n", founds));
+				// writer.write(String.format("Abstract:\t%s\n", abss[j]));
+				// writer.write("\n");
+				// }
+
+			}
+
+		}
+		reader.close();
+		writer.close();
 	}
 
 }

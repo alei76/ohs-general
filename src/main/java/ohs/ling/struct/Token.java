@@ -1,21 +1,22 @@
 package ohs.ling.struct;
 
-import java.util.HashMap;
-import java.util.Map;
+public class Token {
 
-public class Token extends Span {
+	private String[] attrs = new String[TokenAttr.values().length];
 
-	private Map attrs;
+	private int start;
 
-	public Token(int start, String s) {
-		super(start, s);
+	public Token(int start, String word) {
+		this.start = start;
+		attrs[TokenAttr.WORD.ordinal()] = word;
 	}
 
-	public Map getAttrs() {
-		if (attrs == null) {
-			attrs = new HashMap();
-		}
-		return attrs;
+	public String getValue(TokenAttr attr) {
+		return attrs[attr.ordinal()];
+	}
+
+	public void setValue(TokenAttr attr, String value) {
+		attrs[attr.ordinal()] = value;
 	}
 
 }

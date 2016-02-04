@@ -80,16 +80,16 @@ public class CounterMap<K, V> implements java.io.Serializable {
 		counterMap.clear();
 	}
 
-	public boolean containsKey(K key) {
-		return counterMap.containsKey(key);
-	}
-
 	public boolean containKey(K key, V value) {
 		Counter<V> c = counterMap.get(key);
 		if (c == null) {
 			return false;
 		}
 		return c.containsKey(value);
+	}
+
+	public boolean containsKey(K key) {
+		return counterMap.containsKey(key);
 	}
 
 	protected Counter<V> ensureCounter(K key) {

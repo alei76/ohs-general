@@ -41,8 +41,7 @@ public class KeywordClusterer {
 		KeywordClusterer kc = new KeywordClusterer(data);
 		kc.cluster();
 		kc.writeClusterText(KPPath.KEYWORD_CLUSTER_FILE);
-		
-		
+
 		data.write(KPPath.KEYWORD_FILE.replace("txt", "ser"));
 
 		System.out.println("process ends.");

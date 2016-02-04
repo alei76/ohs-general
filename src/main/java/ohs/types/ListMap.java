@@ -89,12 +89,12 @@ public class ListMap<K, V> implements Serializable {
 		return entries.keySet();
 	}
 
-	public void put(K key, V value) {
-		ensure(key).add(value);
-	}
-
 	public void put(K key, List<V> values) {
 		entries.put(key, values);
+	}
+
+	public void put(K key, V value) {
+		ensure(key).add(value);
 	}
 
 	public List<V> remove(K key) {

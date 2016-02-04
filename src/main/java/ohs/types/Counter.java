@@ -41,13 +41,6 @@ public class Counter<E> implements Serializable {
 		}
 	}
 
-	public void replace(E key1, E key2) {
-		Double value = entries.remove(key1);
-		if (value != null) {
-			incrementCount(key2, value);
-		}
-	}
-
 	private static final long serialVersionUID = 1L;
 
 	public static <L> Counter<L> absCounts(final Counter<L> counts) {
@@ -483,6 +476,13 @@ public class Counter<E> implements Serializable {
 	 */
 	protected void removeKeyFromEntries(final E key) {
 		entries.remove(key);
+	}
+
+	public void replace(E key1, E key2) {
+		Double value = entries.remove(key1);
+		if (value != null) {
+			incrementCount(key2, value);
+		}
 	}
 
 	/**

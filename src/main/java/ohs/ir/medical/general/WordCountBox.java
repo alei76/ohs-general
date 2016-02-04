@@ -30,16 +30,6 @@ import ohs.types.ListMap;
 
 public class WordCountBox {
 
-	public static Counter<String> getDocFreqs(IndexReader ir, String field, Collection<String> c) throws Exception {
-		Counter<String> ret = new Counter<String>();
-		for (String word : c) {
-			Term term = new Term(field, word);
-			double df = ir.docFreq(term);
-			ret.setCount(word, df);
-		}
-		return ret;
-	}
-
 	public static Counter<String> getDocFreqs(IndexReader ir, String field) throws Exception {
 		Counter<String> ret = new Counter<String>();
 
@@ -60,6 +50,16 @@ public class WordCountBox {
 		// double df = ir.docFreq(term);
 		// ret.setCount(word, df);
 		// }
+		return ret;
+	}
+
+	public static Counter<String> getDocFreqs(IndexReader ir, String field, Collection<String> c) throws Exception {
+		Counter<String> ret = new Counter<String>();
+		for (String word : c) {
+			Term term = new Term(field, word);
+			double df = ir.docFreq(term);
+			ret.setCount(word, df);
+		}
 		return ret;
 	}
 

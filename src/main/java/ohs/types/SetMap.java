@@ -56,23 +56,6 @@ public class SetMap<K, V> implements Serializable {
 		return ret;
 	}
 
-	public void replaceValue(K key, V value1, V value2) {
-		Set<V> set = entries.get(key);
-		if (set != null) {
-			if (set.remove(value1)) {
-				set.add(value2);
-			}
-		}
-	}
-
-	public void replaceAll(V value1, V value2) {
-		for (Set<V> set : entries.values()) {
-			if (set.remove(value1)) {
-				set.add(value2);
-			}
-		}
-	}
-
 	public boolean containsKey(K key) {
 		return entries.containsKey(key);
 	}
@@ -110,6 +93,23 @@ public class SetMap<K, V> implements Serializable {
 
 	public Set<V> removeKey(K key) {
 		return entries.remove(key);
+	}
+
+	public void replaceAll(V value1, V value2) {
+		for (Set<V> set : entries.values()) {
+			if (set.remove(value1)) {
+				set.add(value2);
+			}
+		}
+	}
+
+	public void replaceValue(K key, V value1, V value2) {
+		Set<V> set = entries.get(key);
+		if (set != null) {
+			if (set.remove(value1)) {
+				set.add(value2);
+			}
+		}
 	}
 
 	public int size() {

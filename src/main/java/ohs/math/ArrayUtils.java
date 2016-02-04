@@ -284,6 +284,10 @@ public class ArrayUtils {
 		return ret;
 	}
 
+	public static double get(double[][] a, int[] index) {
+		return a[index[0]][index[1]];
+	}
+
 	public static NumberFormat getDoubleNumberFormat(int num_fractions) {
 		NumberFormat ret = NumberFormat.getInstance();
 		ret.setMinimumFractionDigits(num_fractions);
@@ -579,22 +583,6 @@ public class ArrayUtils {
 		return b;
 	}
 
-	public static double reshape(double[] a, double[][] b) {
-		if (sizeOfEntries(b) != a.length) {
-			throw new IllegalArgumentException();
-		}
-		double sum = 0;
-		for (int i = 0, k = 0; i < a.length; i++) {
-			for (int j = 0; j < b[i].length; j++) {
-				b[i][j] = a[k];
-				sum += a[k];
-				k++;
-			}
-		}
-
-		return sum;
-	}
-
 	// public static double random(double min, double max, double[] x) {
 	// Random random = new Random();
 	// double range = max - min;
@@ -643,6 +631,22 @@ public class ArrayUtils {
 	// return sum;
 	// }
 
+	public static double reshape(double[] a, double[][] b) {
+		if (sizeOfEntries(b) != a.length) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		for (int i = 0, k = 0; i < a.length; i++) {
+			for (int j = 0; j < b[i].length; j++) {
+				b[i][j] = a[k];
+				sum += a[k];
+				k++;
+			}
+		}
+
+		return sum;
+	}
+
 	public static double reshape(double[][] a, double[] b) {
 		if (sizeOfEntries(a) != b.length) {
 			throw new IllegalArgumentException();
@@ -679,8 +683,9 @@ public class ArrayUtils {
 		}
 	}
 
-	public static double get(double[][] a, int[] index) {
-		return a[index[0]][index[1]];
+	public static double setAll(double[] a, double value) {
+		Arrays.fill(a, value);
+		return value * a.length;
 	}
 
 	public static double setAll(double[][] a, double value) {
@@ -689,11 +694,6 @@ public class ArrayUtils {
 			ret += setAll(a[i], value);
 		}
 		return ret;
-	}
-
-	public static double setAll(double[] a, double value) {
-		Arrays.fill(a, value);
-		return value * a.length;
 	}
 
 	/**

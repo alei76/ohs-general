@@ -271,10 +271,6 @@ public class FileUtils {
 		return new File(fileName).exists();
 	}
 
-	public static long length(String fileName) {
-		return new File(fileName).length();
-	}
-
 	public static String getCanonicalPath(File file) {
 		String ret = null;
 		try {
@@ -324,6 +320,10 @@ public class FileUtils {
 
 	public static List<File> getFilesUnder(String dirName) {
 		return getFilesUnder(new File(dirName));
+	}
+
+	public static long length(String fileName) {
+		return new File(fileName).length();
 	}
 
 	public static void main(String[] args) throws Exception {
