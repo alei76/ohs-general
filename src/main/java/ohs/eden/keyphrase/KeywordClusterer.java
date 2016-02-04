@@ -34,7 +34,7 @@ public class KeywordClusterer {
 		if (FileUtils.exists(KPPath.KEYWORD_FILE.replace("txt", "ser"))) {
 			data.read(KPPath.KEYWORD_FILE.replace("txt", "ser"));
 		} else {
-			data.readFromText(KPPath.KEYWORD_FILE);
+			data.readText(KPPath.KEYWORD_FILE);
 			data.write(KPPath.KEYWORD_FILE.replace("txt", "ser"));
 		}
 

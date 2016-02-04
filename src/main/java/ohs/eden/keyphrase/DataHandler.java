@@ -6,6 +6,8 @@ import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.types.CounterMap;
+import ohs.types.Indexer;
+import ohs.types.ListMap;
 import ohs.utils.Generics;
 
 public class DataHandler {
@@ -13,7 +15,8 @@ public class DataHandler {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		DataHandler dh = new DataHandler();
-		dh.extractKeywordData();
+		 dh.extractKeywordData();
+//		dh.process();
 		System.out.println("process ends.");
 	}
 
@@ -32,7 +35,37 @@ public class DataHandler {
 		writer.close();
 	}
 
-	public void process() {
+	public void process() throws Exception {
+		KeywordData kwdData = new KeywordData();
+		kwdData.read(KPPath.KEYWORD_FILE.replace(".txt", ".ser"));
+
+		Indexer<String> kwdIndexer = kwdData.getKeywordIndexer();
+		ListMap<Integer, Integer> docKeywords = Generics.newListMap();
+		for (int kwdid : kwdData.getKeywordDocs().keySet()) {
+			List<Integer> docids = kwdData.getKeywordDocs().get(kwdid);
+
+			for (int docid : docids) {
+				docKeywords.put(docid, kwdid);
+			}
+		}
+
+		TextFileReader reader = new TextFileReader(KPPath.ABSTRACT_FILE);
+		while (reader.hasNext()) {
+			String[] parts = reader.next().split("\t");
+
+			for (int i = 0; i < parts.length; i++) {
+				parts[i] = parts[i].substring(1, parts[i].length() - 1);
+			}
+
+			int docid = kwdData.getDocIndexer().indexOf(parts[0]);
+
+			List<Integer> kwds = docKeywords.get(docid, false);
+
+			if (kwds == null) {
+				continue;
+			}
+			reader.close();
+		}
 
 	}
 

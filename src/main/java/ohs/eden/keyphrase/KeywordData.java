@@ -74,7 +74,7 @@ public class KeywordData {
 		ois.close();
 	}
 
-	public void readFromText(String fileName) {
+	public void readText(String fileName) {
 		kwdIndexer = Generics.newIndexer();
 		docIndxer = Generics.newIndexer();
 
@@ -112,7 +112,7 @@ public class KeywordData {
 			List<Integer> docids = Generics.newArrayList();
 
 			for (int i = 3; i < parts.length; i++) {
-				String cn = parts[3];
+				String cn = parts[i].split(":")[0];
 				docids.add(docIndxer.getIndex(cn));
 			}
 			keywordDocs.put(kwdid, docids);
