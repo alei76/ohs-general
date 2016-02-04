@@ -271,6 +271,10 @@ public class FileUtils {
 		return new File(fileName).exists();
 	}
 
+	public static long length(String fileName) {
+		return new File(fileName).length();
+	}
+
 	public static String getCanonicalPath(File file) {
 		String ret = null;
 		try {
@@ -484,7 +488,7 @@ public class FileUtils {
 	}
 
 	public static ObjectOutputStream openObjectOutputStream(String fileName, boolean append) throws Exception {
-		System.out.printf("write at [%s].\n", fileName);
+		System.out.printf("open at [%s].\n", fileName);
 
 		File file = new File(fileName);
 		File parent = file.getParentFile();

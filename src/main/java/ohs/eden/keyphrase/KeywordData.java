@@ -58,6 +58,8 @@ public class KeywordData {
 	}
 
 	public void read(String fileName) throws Exception {
+		System.out.printf("read [%s] at [%s]\n", getClass().getName(), fileName);
+
 		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
 		kwdIndexer = FileUtils.readStrIndexer(ois);
 		kwdids = FileUtils.readIntList(ois);
@@ -133,6 +135,8 @@ public class KeywordData {
 	}
 
 	public void write(String fileName) throws Exception {
+		System.out.printf("write [%s] at [%s]\n", getClass().getName(), fileName);
+
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 
 		FileUtils.writeStrIndexer(oos, kwdIndexer);

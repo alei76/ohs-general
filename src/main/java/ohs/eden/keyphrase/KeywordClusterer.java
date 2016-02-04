@@ -29,18 +29,21 @@ public class KeywordClusterer {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		KeywordData rkd = new KeywordData();
+		KeywordData data = new KeywordData();
 
 		if (FileUtils.exists(KPPath.KEYWORD_FILE.replace("txt", "ser"))) {
-			rkd.read(KPPath.KEYWORD_FILE.replace("txt", "ser"));
+			data.read(KPPath.KEYWORD_FILE.replace("txt", "ser"));
 		} else {
-			rkd.readFromText(KPPath.KEYWORD_FILE);
-			rkd.write(KPPath.KEYWORD_FILE.replace("txt", "ser"));
+			data.readFromText(KPPath.KEYWORD_FILE);
+			data.write(KPPath.KEYWORD_FILE.replace("txt", "ser"));
 		}
 
-		KeywordClusterer kc = new KeywordClusterer(rkd);
+		KeywordClusterer kc = new KeywordClusterer(data);
 		kc.cluster();
 		kc.writeClusterText(KPPath.KEYWORD_CLUSTER_FILE);
+		
+		
+		data.write(KPPath.KEYWORD_FILE.replace("txt", "ser"));
 
 		System.out.println("process ends.");
 	}
@@ -144,6 +147,15 @@ public class KeywordClusterer {
 		clusterUsingGramMatch();
 
 		selectClusterLabels();
+
+		SetMap<Integer, Integer> t = Generics.newSetMap(clusters.size());
+
+		for (int cid : clusters.keySet()) {
+			t.put(cid, clusters.getCounter(cid).keySet());
+		}
+
+		kwdData.setClusterLabel(clusterLabel);
+		kwdData.setClusters(t);
 	}
 
 	private void clusterUsingExactLanguageMatch(boolean isEnglish) {
