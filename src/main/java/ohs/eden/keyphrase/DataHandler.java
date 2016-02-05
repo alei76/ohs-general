@@ -12,7 +12,6 @@ import ohs.io.TextFileWriter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
-import ohs.types.Pair;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 
@@ -220,19 +219,18 @@ public class DataHandler {
 				Set<String> founds = Generics.newHashSet();
 				String abs = abss[j];
 
-				for (String kwd : kwdSets[j]) {
-					try {
-						abs = StrTagger.tag(abs, kwd, "KWD");
-					} catch (Exception e) {
-
-					}
+				try {
+					abs = StrUtils.tag(abs, kwdSets[j], "KWD");
+				} catch (Exception e) {
+					e.printStackTrace();
+					continue;
 				}
 
 				if (abs.length() > abss[j].length()) {
 
-//					StrTagger.extract(abs);
+					// StrUtils.extract(abs);
 
-					writer.write(abs + "\n\n");
+					writer.write(abs.replace(". ", ".\n") + "\n\n");
 				}
 
 				// if (founds.size() > 0) {

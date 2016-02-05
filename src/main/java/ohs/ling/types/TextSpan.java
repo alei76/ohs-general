@@ -1,14 +1,16 @@
-package ohs.ling.struct;
+package ohs.ling.types;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
-public class Span implements Serializable {
+public class TextSpan implements Serializable {
 
 	protected int start;
 
 	protected String s;
 
-	public Span(int start, String s) {
+	public TextSpan(int start, String s) {
 		super();
 		this.start = start;
 		this.s = s;
@@ -22,7 +24,7 @@ public class Span implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Span other = (Span) obj;
+		TextSpan other = (TextSpan) obj;
 		if (s == null) {
 			if (other.s != null)
 				return false;
@@ -58,6 +60,11 @@ public class Span implements Serializable {
 		return s.length();
 	}
 
+	public void read(ObjectInputStream ois) throws Exception {
+		start = ois.readInt();
+		s = ois.readUTF();
+	}
+
 	public void set(int start, String s) {
 		this.start = start;
 		this.s = s;
@@ -66,6 +73,11 @@ public class Span implements Serializable {
 	@Override
 	public String toString() {
 		return String.format("%d-%d\t%s", getStart(), getEnd(), s);
+	}
+
+	public void write(ObjectOutputStream oos) throws Exception {
+		oos.writeInt(start);
+		oos.writeUTF(s);
 	}
 
 }

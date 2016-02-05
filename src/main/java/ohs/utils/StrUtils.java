@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ohs.ling.struct.TextSpan;
 import ohs.math.ArrayMath;
 import ohs.types.Counter;
 
@@ -77,6 +78,91 @@ public class StrUtils {
 		return ret;
 	}
 
+	public static String[] subTokens(String[] toks, int start, int end) {
+		String[] ret = new String[end - start];
+		for (int i = start, j = 0; i < toks.length && i < end; i++) {
+			ret[j] = toks[i];
+		}
+		return ret;
+	}
+
+	public static List<TextSpan> extract(String text) throws Exception {
+		Set<String> tagNames = null;
+		return extract(text, tagNames);
+	}
+
+	public static List<TextSpan> extract(String t, Set<String> tagNames) throws Exception {
+		List<TextSpan> ret = Generics.newArrayList();
+
+		int start_at_tagged = 0;
+		int ext_len = 0;
+
+		int START_TAG_EXT_LEN = 2;
+		int END_TAG_EXT_LEN = 3;
+
+		char OPEN_CHAR = '<';
+		char CLOSE_CHAR = '>';
+
+		for (int i = 0; i < t.length();) {
+			if (t.charAt(i) == OPEN_CHAR) {
+				if ((i + 1) < t.length() && t.charAt(i + 1) == '/') {
+					StringBuffer sb = new StringBuffer();
+					for (int j = i + 2; j < t.length(); j++) {
+						if (t.charAt(j) == CLOSE_CHAR) {
+							break;
+						}
+						sb.append(t.charAt(j));
+					}
+
+					int tag_len = sb.length();
+
+					if (tagNames.contains(sb.toString())) {
+						String value = t.substring(start_at_tagged, i);
+						int start_at_raw = i - ext_len - tag_len;
+
+						ret.add(new TextSpan(start_at_raw, value));
+						System.out.println(value);
+
+						ext_len += (tag_len + END_TAG_EXT_LEN);
+						i += (tag_len + 2);
+					} else {
+						i++;
+					}
+				} else {
+					StringBuffer sb = new StringBuffer();
+					int last_j = 0;
+					for (int j = i + 1; j < t.length(); j++) {
+						System.out.println(markAt(t, j, false));
+						if (t.charAt(j) == CLOSE_CHAR) {
+							last_j = j;
+							break;
+						}
+						sb.append(t.charAt(j));
+					}
+
+					if (tagNames.contains(sb.toString())) {
+						start_at_tagged = last_j + 1;
+						int tag_len = sb.length();
+						ext_len += (tag_len + START_TAG_EXT_LEN);
+						i = last_j + 1;
+					} else {
+						i++;
+					}
+				}
+			} else {
+				i++;
+			}
+		}
+
+		return ret;
+	}
+
+	public static List<TextSpan> extract(String text, String tagName) throws Exception {
+		Set<String> tagNames = Generics.newHashSet();
+		tagNames.add(tagName);
+		return extract(text, tagNames);
+	}
+
 	public static boolean find(String text, Pattern p) {
 		return p.matcher(text).find();
 	}
@@ -85,15 +171,7 @@ public class StrUtils {
 		return find(text, Pattern.compile(regex));
 	}
 
-	public static String getItem(String[] toks, int index, String defaultReturn) {
-		String ret = defaultReturn;
-		if (index < toks.length) {
-			ret = toks[index];
-		}
-		return ret;
-	}
-
-	public static Matcher getMatcher(String regex, String text) {
+	public static Matcher getMatcher(String text, String regex) {
 		Pattern p = getPattern(regex);
 		Matcher m = p.matcher(text);
 		return m;
@@ -117,24 +195,6 @@ public class StrUtils {
 	public static Pattern getPattern(String regex) {
 		Pattern p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL | Pattern.MULTILINE);
 		return p;
-	}
-
-	public static String[] getTags(String text) {
-		String[][] splits = splitWordsAndTags(text.split(" "));
-		return splits[1];
-	}
-
-	public static String getTagsString(String text) {
-		return join(" ", getTags(text));
-	}
-
-	public static String[] getWords(String text) {
-		String[][] splits = splitWordsAndTags(text.split(" "));
-		return splits[0];
-	}
-
-	public static String getWordsString(String text) {
-		return join(" ", getWords(text));
 	}
 
 	public static String join(String glue, Collection<String> list, int start, int end) {
@@ -225,25 +285,42 @@ public class StrUtils {
 		return join(glue, list);
 	}
 
-	public static String[] mergeToArray(String[] words, String[] tags) {
-		String[] ret = new String[words.length];
+	public static void main(String[] args) throws Exception {
+		String text = ">>><><><KWD>태깅</><KWD>태깅</KWD>";
+		// String text = ">>><><>태깅</>태깅";
 
-		for (int i = 0; i < words.length; i++) {
-			ret[i] = words[i] + "/" + tags[i];
-		}
-		return ret;
+		// text = tag(text, "키워드", "KWD");
+
+		List<TextSpan> textSpans = extract(text, "KWD");
+
+		System.out.println();
 	}
 
-	public static String mergeToString(String[] words, String[] tags) {
+	public static String markAt(String s, int i, boolean vertical) {
 		StringBuffer sb = new StringBuffer();
-		String[] toks = mergeToArray(words, tags);
-		for (int i = 0; i < toks.length; i++) {
-			sb.append(toks[i]);
-			if (i != toks.length - 1) {
-				sb.append(" ");
+		if (vertical) {
+			for (int k = 0; k < s.length(); k++) {
+				sb.append(String.format("%d:\t%c\t%s", k, s.charAt(k), i == k ? "#" : ""));
+				if (k != s.length() - 1) {
+					sb.append("\n");
+				}
 			}
+		} else {
+
+			for (int k = 0; k < s.length(); k++) {
+				sb.append(s.charAt(k));
+			}
+			sb.append("\n");
+			for (int k = 0; k < s.length(); k++) {
+				if (k > i) {
+					break;
+				}
+				sb.append(i == k ? String.format("^(%c at %d)", s.charAt(i), i) : "#");
+			}
+
 		}
 		return sb.toString();
+
 	}
 
 	public static Counter<String> ngrams(int ngram_order, List<String> words) {
@@ -365,8 +442,8 @@ public class StrUtils {
 		for (int i = 1; i < text.length(); i++) {
 			char prevCh = text.charAt(i - 1);
 			char currCh = text.charAt(i);
-			if (prevCh == '(' || prevCh == ')' || prevCh == '[' || prevCh == ']' || prevCh == '{' || prevCh == '}'
-					|| prevCh == '<' || prevCh == '>') {
+			if (prevCh == '(' || prevCh == ')' || prevCh == '[' || prevCh == ']' || prevCh == '{' || prevCh == '}' || prevCh == '<'
+					|| prevCh == '>') {
 				sb.append(currCh);
 			}
 		}
@@ -454,28 +531,30 @@ public class StrUtils {
 		return ret;
 	}
 
-	public static String[][] splitWordsAndTags(String[] toks) {
-		String[][] ret = new String[2][toks.length];
-		for (int i = 0; i < toks.length; i++) {
-			String[] two = split2Two("/", toks[i]);
-			ret[0][i] = two[0];
-			ret[1][i] = two[1];
-		}
-		return ret;
-	}
-
 	public static String substring(String text, String startText, String endText) {
 		int start = text.indexOf(startText) + startText.length();
 		int end = text.indexOf(endText);
 		return text.substring(start, end);
 	}
 
-	public static String[] subTokens(String[] toks, int start, int end) {
-		String[] ret = new String[end - start];
-		for (int i = start, loc = 0; i < end; i++, loc++) {
-			ret[loc] = toks[i];
+	public static String tag(String text, Collection<String> targets, String tagName) throws Exception {
+		StringBuffer sb = new StringBuffer();
+
+		Pattern p = Pattern.compile(String.format("(%s)", String.join("|", targets)), Pattern.CASE_INSENSITIVE);
+		Matcher m = p.matcher(text);
+
+		while (m.find()) {
+			String g = m.group();
+			m.appendReplacement(sb, String.format("<%s>%s</%s>", tagName, g, tagName));
 		}
-		return ret;
+		m.appendTail(sb);
+		return sb.toString();
+	}
+
+	public static String tag(String text, String taget, String tagName) throws Exception {
+		List<String> targets = Generics.newArrayList();
+		targets.add(taget);
+		return tag(text, targets, tagName);
 	}
 
 	public static String[] toArray(Collection<String> collection) {

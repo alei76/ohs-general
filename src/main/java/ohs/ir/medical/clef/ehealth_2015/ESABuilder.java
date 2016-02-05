@@ -3,6 +3,7 @@ package ohs.ir.medical.clef.ehealth_2015;
 import java.io.File;
 import java.text.NumberFormat;
 import java.util.List;
+import java.util.Set;
 
 import de.tudarmstadt.ukp.wikipedia.api.WikiConstants.Language;
 import de.tudarmstadt.ukp.wikipedia.parser.ParsedPage;
@@ -18,6 +19,8 @@ import ohs.ir.medical.general.MIRPath;
 import ohs.tree.trie.Node;
 import ohs.tree.trie.Trie;
 import ohs.types.Counter;
+import ohs.types.CounterMap;
+import ohs.utils.Generics;
 
 public class ESABuilder {
 
@@ -44,7 +47,7 @@ public class ESABuilder {
 	public void build1() throws Exception {
 		System.out.println("build ESA using TRIE.");
 
-		StrCounter wordConceptFreqs = new StrCounter();
+		Counter<String> wordConceptFreqs = new Counter<String>();
 		double num_concepts = 0;
 
 		TextFileReader reader = new TextFileReader(new File(MIRPath.ICD10_HIERARCHY_PAGE_FILE));
@@ -64,16 +67,16 @@ public class ESABuilder {
 
 			Node<String> node = trie.insert(keys);
 
-			StrCounter wordCounts = (StrCounter) node.getData();
+			Counter<String> wordCounts = (Counter<String>) node.getData();
 
 			if (wordCounts == null) {
-				wordCounts = new StrCounter();
+				wordCounts = new Counter<String>();
 				node.setData(wordCounts);
 			}
 
 			ParsedPage page = parser.parse(wikiText);
 
-			StrHashSet wordSet = new StrHashSet();
+			Set<String> wordSet = Generics.newHashSet();
 
 			for (int j = 0; j < page.getSections().size(); j++) {
 				Section sec = page.getSection(j);
@@ -105,7 +108,7 @@ public class ESABuilder {
 
 		for (int i = 0; i < leafNodes.size(); i++) {
 			Node<String> node = leafNodes.get(i);
-			StrCounter wordCounts = (StrCounter) node.getData();
+			Counter<String> wordCounts = (Counter<String>) node.getData();
 
 			if (node.getDepth() != 5 || wordCounts.size() == 0) {
 				continue;
@@ -150,8 +153,8 @@ public class ESABuilder {
 		System.out.println("build ESA.");
 		double num_concepts = 0;
 
-		StrCounterMap conceptWordCounts = new StrCounterMap();
-		StrCounter wordConceptFreqs = new StrCounter();
+		CounterMap<String, String> conceptWordCounts = Generics.newCounterMap();
+		Counter<String> wordConceptFreqs = new Counter<String>();
 
 		TextFileReader reader = new TextFileReader(MIRPath.ICD10_HIERARCHY_PAGE_FILE);
 
@@ -176,7 +179,7 @@ public class ESABuilder {
 
 			String ss = page.getText();
 
-			StrCounter wordCounts = new StrCounter();
+			Counter<String> wordCounts = new Counter<String>();
 
 			List<String> words = AnalyzerUtils.getWords(ss, analyzer);
 			for (String word : words) {
@@ -233,6 +236,6 @@ public class ESABuilder {
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMinimumFractionDigits(8);
 
-		FileUtils.writeStrCounter(MIRPath.ICD10_ESA_FILE, conceptWordCounts.invert(), null);
+		FileUtils.writeStrCounterMap(MIRPath.ICD10_ESA_FILE, conceptWordCounts.invert(), null, false);
 	}
 }

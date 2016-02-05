@@ -16,7 +16,7 @@ import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.medical.clef.ehealth_2014.AbbreviationExtractor;
-import ohs.ling.struct.Span;
+import ohs.ling.struct.TextSpan;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Pair;
@@ -99,9 +99,9 @@ public class AbbreviationCollector {
 
 					//
 
-					// List<Span[]> spansList = getSpans(pairs, sent);
+					// List<TextSpan[]> spansList = getSpans(pairs, sent);
 					//
-					// for (Span[] spans : spansList) {
+					// for (TextSpan[] spans : spansList) {
 					// String shortForm = spans[0].getText();
 					// String longForm = spans[1].getText();
 					// String output = String.format("%s\t%s\t%d\t%d",
@@ -219,8 +219,8 @@ public class AbbreviationCollector {
 
 	}
 
-	private static List<Span[]> getSpans(List<Pair<String, String>> pairs, String content) {
-		List<Span[]> ret = new ArrayList<Span[]>();
+	private static List<TextSpan[]> getSpans(List<Pair<String, String>> pairs, String content) {
+		List<TextSpan[]> ret = new ArrayList<TextSpan[]>();
 
 		for (int i = 0; i < pairs.size(); i++) {
 			Pair<String, String> pair = pairs.get(i);
@@ -236,9 +236,9 @@ public class AbbreviationCollector {
 				String g1 = m.group(1);
 				String g4 = m.group(4);
 
-				Span[] spans = new Span[2];
-				spans[0] = new Span(m.start(1), g1);
-				spans[1] = new Span(m.start(4), g4);
+				TextSpan[] spans = new TextSpan[2];
+				spans[0] = new TextSpan(m.start(1), g1);
+				spans[1] = new TextSpan(m.start(4), g4);
 
 				ret.add(spans);
 			}

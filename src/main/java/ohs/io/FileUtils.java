@@ -218,6 +218,22 @@ public class FileUtils {
 		return numLines;
 	}
 
+	public static void writeStrArray(ObjectOutputStream oos, String[] a) throws Exception {
+		oos.writeInt(a.length);
+		for (int i = 0; i < a.length; i++) {
+			oos.writeUTF(a[i]);
+		}
+		oos.flush();
+	}
+
+	public static String[] readStrArray(ObjectInputStream ois) throws Exception {
+		String[] ret = new String[ois.readInt()];
+		for (int i = 0; i < ret.length; i++) {
+			ret[i] = ois.readUTF();
+		}
+		return ret;
+	}
+
 	public static boolean create(File file) {
 		if (file.exists()) {
 			deleteFilesUnder(file);

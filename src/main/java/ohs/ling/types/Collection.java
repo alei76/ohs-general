@@ -1,4 +1,4 @@
-package ohs.ling.struct;
+package ohs.ling.types;
 
 import java.util.ArrayList;
 

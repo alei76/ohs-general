@@ -5,6 +5,8 @@ import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Stopwatch;
+
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.types.Counter;
@@ -12,6 +14,7 @@ import ohs.types.Indexer;
 import ohs.types.ListMap;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
+import ohs.utils.StopWatch;
 
 public class KeywordData {
 
@@ -58,7 +61,7 @@ public class KeywordData {
 	}
 
 	public void read(String fileName) throws Exception {
-		System.out.printf("read [%s] at [%s]\n", getClass().getName(), fileName);
+		StopWatch stopWatch = StopWatch.newStopWatch();
 
 		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
 		kwdIndexer = FileUtils.readStrIndexer(ois);
@@ -72,9 +75,13 @@ public class KeywordData {
 		clusterLabel = FileUtils.readIntStrMap(ois);
 
 		ois.close();
+
+		System.out.printf("read [%s] at [%s] - [%s]\n", getClass().getName(), fileName, stopWatch.stop());
 	}
 
 	public void readText(String fileName) {
+		StopWatch stopWatch = StopWatch.newStopWatch();
+
 		kwdIndexer = Generics.newIndexer();
 		docIndxer = Generics.newIndexer();
 
@@ -124,6 +131,8 @@ public class KeywordData {
 		for (int i = 0; i < kwdIndexer.size(); i++) {
 			kwd_freqs[i] = (int) kwdFreqs.getCount(i);
 		}
+
+		System.out.printf("read [%s] at [%s] - [%s]\n", getClass().getName(), fileName, stopWatch.stop());
 	}
 
 	public void setClusterLabel(Map<Integer, String> clusterLabel) {
