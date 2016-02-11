@@ -27,7 +27,7 @@ public class KeywordClusterer {
 	public static final String NONE = "<none>";
 
 	public static void main(String[] args) throws Exception {
-		System.out.println("process begins.");
+		System.out.printf("[%s] begins.\n", KeywordClusterer.class.getName());
 
 		KeywordData data = new KeywordData();
 

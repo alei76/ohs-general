@@ -18,7 +18,7 @@ public class KPPath {
 
 	public static final String ABSTRACT_FILE = KEYPHRASE_DIR + "abstracts.txt.gz";
 
-	public static final String KEYWORD_ABSTRACT_FILE = KEYPHRASE_DIR + "keyword_abstract.txt";
+	public static final String KEYWORD_EXTRACTOR_DIR = KEYPHRASE_DIR + "ext/";
 
 	public static final String KEYWORD_CLUSTER_FILE = KEYPHRASE_DIR + "keyword_cluster.txt.gz";
 

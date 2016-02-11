@@ -72,7 +72,7 @@ public class TextSpan implements Serializable {
 
 	@Override
 	public String toString() {
-		return String.format("%d-%d\t%s", getStart(), getEnd(), s);
+		return String.format("<%d-%d:\t%s>", getStart(), getEnd(), s);
 	}
 
 	public void write(ObjectOutputStream oos) throws Exception {

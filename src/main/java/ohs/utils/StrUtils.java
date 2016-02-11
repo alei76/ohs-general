@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ohs.ling.struct.TextSpan;
+import ohs.ling.types.TextSpan;
 import ohs.math.ArrayMath;
 import ohs.types.Counter;
 
@@ -88,13 +88,13 @@ public class StrUtils {
 
 	public static List<TextSpan> extract(String text) throws Exception {
 		Set<String> tagNames = null;
-		return extract(text, tagNames);
+		return extract(text, tagNames, false);
 	}
 
-	public static List<TextSpan> extract(String t, Set<String> tagNames) throws Exception {
+	public static List<TextSpan> extract(String t, Set<String> tagNames, boolean get_start_at_plain) throws Exception {
 		List<TextSpan> ret = Generics.newArrayList();
 
-		int start_at_tagged = 0;
+		int start_at_tagged = -1;
 		int ext_len = 0;
 
 		int START_TAG_EXT_LEN = 2;
@@ -118,10 +118,10 @@ public class StrUtils {
 
 					if (tagNames.contains(sb.toString())) {
 						String value = t.substring(start_at_tagged, i);
-						int start_at_raw = i - ext_len - tag_len;
+						int start_at_plain = i - ext_len - tag_len;
 
-						ret.add(new TextSpan(start_at_raw, value));
-						System.out.println(value);
+						ret.add(new TextSpan(get_start_at_plain ? start_at_plain : start_at_tagged, value));
+						// System.out.println(value);
 
 						ext_len += (tag_len + END_TAG_EXT_LEN);
 						i += (tag_len + 2);
@@ -132,7 +132,7 @@ public class StrUtils {
 					StringBuffer sb = new StringBuffer();
 					int last_j = 0;
 					for (int j = i + 1; j < t.length(); j++) {
-						System.out.println(markAt(t, j, false));
+						// System.out.println(markAt(t, j, false));
 						if (t.charAt(j) == CLOSE_CHAR) {
 							last_j = j;
 							break;
@@ -160,7 +160,13 @@ public class StrUtils {
 	public static List<TextSpan> extract(String text, String tagName) throws Exception {
 		Set<String> tagNames = Generics.newHashSet();
 		tagNames.add(tagName);
-		return extract(text, tagNames);
+		return extract(text, tagNames, false);
+	}
+
+	public static List<TextSpan> extract(String text, String tagName, boolean get_plain_start) throws Exception {
+		Set<String> tagNames = Generics.newHashSet();
+		tagNames.add(tagName);
+		return extract(text, tagNames, get_plain_start);
 	}
 
 	public static boolean find(String text, Pattern p) {
@@ -291,9 +297,13 @@ public class StrUtils {
 
 		// text = tag(text, "키워드", "KWD");
 
-		List<TextSpan> textSpans = extract(text, "KWD");
+		List<TextSpan> textSpans = extract(text, "KWD", false);
 
-		System.out.println();
+		for (TextSpan span : textSpans) {
+			System.out.println(span + " -> " + text.substring(span.getStart(), span.getEnd()));
+		}
+
+		// System.out.println(textSpans);
 	}
 
 	public static String markAt(String s, int i, boolean vertical) {
@@ -317,7 +327,6 @@ public class StrUtils {
 				}
 				sb.append(i == k ? String.format("^(%c at %d)", s.charAt(i), i) : "#");
 			}
-
 		}
 		return sb.toString();
 

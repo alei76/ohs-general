@@ -1,19 +1,24 @@
 package ohs.eden.keyphrase;
 
+import java.sql.Struct;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.math.stat.descriptive.SynchronizedMultivariateSummaryStatistics;
+
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
+import ohs.ling.types.TextSpan;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
+import xtc.tree.GNode;
 
 public class DataHandler {
 
@@ -148,20 +153,6 @@ public class DataHandler {
 		return ret;
 	}
 
-	private String tagKeyword(String keyword, String text) throws Exception {
-		StringBuffer sb = new StringBuffer();
-
-		Pattern p = Pattern.compile(keyword, Pattern.CASE_INSENSITIVE);
-		Matcher m = p.matcher(text);
-
-		while (m.find()) {
-			String g = m.group();
-			m.appendReplacement(sb, String.format("<KWD>%s</KWD>", g));
-		}
-		m.appendTail(sb);
-		return sb.toString();
-	}
-
 	public void process() throws Exception {
 		KeywordData kwdData = new KeywordData();
 		kwdData.read(KPPath.KEYWORD_FILE.replace(".txt", ".ser"));
@@ -177,7 +168,7 @@ public class DataHandler {
 		}
 
 		TextFileReader reader = new TextFileReader(KPPath.ABSTRACT_FILE);
-		TextFileWriter writer = new TextFileWriter(KPPath.KEYWORD_ABSTRACT_FILE);
+		TextFileWriter writer = new TextFileWriter(KPPath.KEYWORD_EXTRACTOR_DIR + "raw_tagged.txt");
 
 		while (reader.hasNext()) {
 			String[] parts = reader.next().split("\t");
@@ -186,7 +177,8 @@ public class DataHandler {
 				parts[i] = parts[i].substring(1, parts[i].length() - 1);
 			}
 
-			int docid = kwdData.getDocIndexer().indexOf(parts[0]);
+			String cn = parts[0];
+			int docid = kwdData.getDocIndexer().indexOf(cn);
 			String korAbs = parts[1];
 			String engAbs = parts[2];
 
@@ -216,7 +208,6 @@ public class DataHandler {
 					continue;
 				}
 
-				Set<String> founds = Generics.newHashSet();
 				String abs = abss[j];
 
 				try {
@@ -226,18 +217,26 @@ public class DataHandler {
 					continue;
 				}
 
-				if (abs.length() > abss[j].length()) {
-
-					// StrUtils.extract(abs);
-
-					writer.write(abs.replace(". ", ".\n") + "\n\n");
+				if (!abs.contains("KWD")) {
+					continue;
 				}
 
-				// if (founds.size() > 0) {
-				// writer.write(String.format("Keywords:\t%s\n", founds));
-				// writer.write(String.format("Abstract:\t%s\n", abss[j]));
-				// writer.write("\n");
-				// }
+				List<TextSpan> spans = StrUtils.extract(abs, "KWD");
+
+				for (TextSpan span : spans) {
+					int start = span.getStart();
+					int end = span.getEnd();
+					System.out.println(span + " -> " + abs.substring(start, end));
+				}
+				System.out.println();
+
+				Set<String> kwdSet = kwdSets[j];
+				Set<String> founds = Generics.newHashSet();
+
+				if (abs.length() > abss[j].length()) {
+					writer.write(abs.replace("\\.", "\n"));
+					writer.write("\n\n");
+				}
 
 			}
 
