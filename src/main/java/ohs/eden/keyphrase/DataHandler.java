@@ -1,24 +1,20 @@
 package ohs.eden.keyphrase;
 
-import java.sql.Struct;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.commons.math.stat.descriptive.SynchronizedMultivariateSummaryStatistics;
 
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ling.types.TextSpan;
+import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
+import ohs.types.SetMap;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
-import xtc.tree.GNode;
 
 public class DataHandler {
 
@@ -26,34 +22,21 @@ public class DataHandler {
 		System.out.println("process begins.");
 		DataHandler dh = new DataHandler();
 		// dh.extractKeywordData();
-		dh.process();
+		// dh.process();
+		dh.analyze();
 		System.out.println("process ends.");
-	}
-
-	public void check() {
-		TextFileReader reader = new TextFileReader(KPPath.EDS_DICT_FILE);
-		TextFileWriter writer = new TextFileWriter(KPPath.KEYPHRASE_DIR + "eds_dict.txt");
-		while (reader.hasNext()) {
-			String line = reader.next();
-			String[] parts = line.split(",");
-			int num_commas = parts.length - 1;
-			if (parts.length != 3 && num_commas > 1) {
-				writer.write(line + "\t" + num_commas + "\n");
-			}
-		}
-		reader.close();
-		writer.close();
 	}
 
 	public void extractKeywordData() throws Exception {
 		String[] inFileNames = { KPPath.PAPER_DUMP_FILE, KPPath.REPORT_DUMP_FILE };
 
-		CounterMap<String, String> keywordDocs = Generics.newCounterMap();
+		SetMap<String, String> keywordDocs = Generics.newSetMap();
 
 		TextFileWriter writer = new TextFileWriter(KPPath.ABSTRACT_FILE);
 
 		for (int i = 0; i < inFileNames.length; i++) {
 			String inFileName = inFileNames[i];
+			String type = i == 0 ? "P" : "R";
 
 			TextFileReader reader = new TextFileReader(inFileName);
 			List<String> labels = Generics.newArrayList();
@@ -105,41 +88,32 @@ public class DataHandler {
 							for (int j = 0; j < kors.size(); j++) {
 								String kor = kors.get(j);
 								String eng = engs.get(j);
-								keywordDocs.incrementCount(kor + "\t" + eng, cn, 1);
+								keywordDocs.put(kor + "\t" + eng, type + "_" + cn);
 							}
 						}
 					} else {
 						for (String kor : kors) {
-							keywordDocs.incrementCount(kor + "\t" + "<none>", cn, 1);
+							keywordDocs.put(kor + "\t" + "<none>", type + "_" + cn);
 						}
 
 						for (String eng : engs) {
-							keywordDocs.incrementCount("<none>" + "\t" + eng, cn, 1);
+							keywordDocs.put("<none>" + "\t" + eng, type + "_" + cn);
 						}
 					}
 
 					writer.write(String.format("\"%s\"\t\"%s\"\t\"%s\"\n", cn, korAbs, engAbs));
 				}
+
 			}
 			reader.close();
-			// writer.close();
-
-			// Iterator<String> iter = cm.keySet().iterator();
-			// while (iter.hasNext()) {
-			// String inKey = iter.next();
-			// Counter<String> c = cm.getCounter(inKey);
-			// if (c.totalCount() < 5) {
-			// iter.remove();
-			// }
-			// }
 		}
 		writer.close();
 
-		FileUtils.writeStrCounterMap(KPPath.KEYWORD_FILE, keywordDocs, null, true);
+		FileUtils.writeStrSetMap(KPPath.KEYWORD_DATA_FILE, keywordDocs);
 		// FileUtils.write(KPPath.PAPER_KOREAN_CONTEXT_FILE, cm2, null, true);
 		// FileUtils.write(KPPath.PAPER_ENGLISH_CONTEXT_FILE, cm3, null, true);
-
 		// FileUtils.write(KWPath.PAPER_KEYWORD_FILE, kwCounts, true);
+
 	}
 
 	private List<String> getKeywords(String keywordStr) {
@@ -153,9 +127,32 @@ public class DataHandler {
 		return ret;
 	}
 
+	public void analyze() throws Exception {
+		KeywordData kwdData = new KeywordData();
+		kwdData.read(KPPath.KEYWORD_DATA_FILE.replace(".txt", ".ser"));
+
+		CounterMap<String, String> kwdTypeCounts = Generics.newCounterMap();
+		Counter<String> typeCounts = Generics.newCounter();
+
+		for (int kwdid : kwdData.getKeywordDocs().keySet()) {
+			String kwd = kwdData.getKeywordIndexer().getObject(kwdid);
+			List<Integer> docids = kwdData.getKeywordDocs().get(kwdid);
+			for (int docid : docids) {
+				String docId = kwdData.getDocIndexer().getObject(docid);
+				String[] parts = docId.split("_");
+				String type = parts[0];
+				String cn = parts[1];
+				kwdTypeCounts.incrementCount("KWD", type, 1);
+			}
+		}
+
+		FileUtils.writeStrCounterMap(KPPath.KEYWORD_TEMP_FILE, kwdTypeCounts);
+
+	}
+
 	public void process() throws Exception {
 		KeywordData kwdData = new KeywordData();
-		kwdData.read(KPPath.KEYWORD_FILE.replace(".txt", ".ser"));
+		kwdData.read(KPPath.KEYWORD_DATA_FILE.replace(".txt", ".ser"));
 
 		Indexer<String> kwdIndexer = kwdData.getKeywordIndexer();
 		ListMap<Integer, Integer> docKeywords = Generics.newListMap();
@@ -234,6 +231,7 @@ public class DataHandler {
 				Set<String> founds = Generics.newHashSet();
 
 				if (abs.length() > abss[j].length()) {
+					writer.write(kwdSet + "\n");
 					writer.write(abs.replace("\\.", "\n"));
 					writer.write("\n\n");
 				}

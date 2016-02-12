@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ohs.string.search.ppss.Gram.Type;
+import ohs.utils.StrUtils;
 
 /**
  * 
@@ -28,7 +29,7 @@ public class GramGenerator implements Serializable {
 			if (name.length() == 0 || name.length() < gramGenerator.getQ()) {
 				continue;
 			}
-			ret.add(gramGenerator.generate(name));
+			ret.add(gramGenerator.generateQGrams(name));
 		}
 		return ret;
 	}
@@ -40,14 +41,17 @@ public class GramGenerator implements Serializable {
 		System.out.println("process begins.");
 		GramGenerator p = new GramGenerator(2);
 
-		String[] entities = { "imyouteca", "ubuntucom", "utubbecou", "youtbecom", "yoytubeca" };
-		for (int i = 0; i < entities.length; i++) {
-			String r = entities[i];
-			Gram[] grams = p.generate(r);
+		// {
+		// String[] entities = { "imyouteca", "ubuntucom", "utubbecou", "youtbecom", "yoytubeca" };
+		// for (int i = 0; i < entities.length; i++) {
+		// String r = entities[i];
+		// Gram[] grams = p.generate(r);
+		//
+		// System.out.println(r);
+		// System.out.println(GramUtils.toString(grams) + "\n");
+		// }
+		// }
 
-			System.out.println(r);
-			System.out.println(GramUtils.toString(grams) + "\n");
-		}
 		System.out.println("process ends.");
 	}
 
@@ -60,7 +64,7 @@ public class GramGenerator implements Serializable {
 		this.q = q;
 	}
 
-	public Gram[] generate(String s) {
+	public Gram[] generateQGrams(String s) {
 		int len = s.length();
 		int size = len - q + 1;
 
@@ -75,6 +79,22 @@ public class GramGenerator implements Serializable {
 			}
 		}
 		return ret;
+	}
+
+	public Gram[] generateNGrams(List<String> words) {
+		int len = words.size();
+		int size = len - q + 1;
+
+		Gram[] ret = null;
+		if (len < q) {
+			ret = new Gram[0];
+		} else {
+			ret = new Gram[size];
+			for (int i = 0; i < len - q + 1; i++) {
+				ret[i] = new Gram(StrUtils.join(" ", words, i, i + q), i, Type.NONE);
+			}
+		}
+		return null;
 	}
 
 	public int getQ() {

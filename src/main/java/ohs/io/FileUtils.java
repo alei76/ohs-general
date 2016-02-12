@@ -218,22 +218,6 @@ public class FileUtils {
 		return numLines;
 	}
 
-	public static void writeStrArray(ObjectOutputStream oos, String[] a) throws Exception {
-		oos.writeInt(a.length);
-		for (int i = 0; i < a.length; i++) {
-			oos.writeUTF(a[i]);
-		}
-		oos.flush();
-	}
-
-	public static String[] readStrArray(ObjectInputStream ois) throws Exception {
-		String[] ret = new String[ois.readInt()];
-		for (int i = 0; i < ret.length; i++) {
-			ret[i] = ois.readUTF();
-		}
-		return ret;
-	}
-
 	public static boolean create(File file) {
 		if (file.exists()) {
 			deleteFilesUnder(file);
@@ -707,6 +691,14 @@ public class FileUtils {
 		return new HashSet<String>(readLines(fileName));
 	}
 
+	public static String[] readStrArray(ObjectInputStream ois) throws Exception {
+		String[] ret = new String[ois.readInt()];
+		for (int i = 0; i < ret.length; i++) {
+			ret[i] = ois.readUTF();
+		}
+		return ret;
+	}
+
 	public static Counter<String> readStrCounter(ObjectInputStream ois) throws Exception {
 		int size = ois.readInt();
 		Counter<String> ret = new Counter<String>(size);
@@ -1018,6 +1010,14 @@ public class FileUtils {
 		oos.flush();
 	}
 
+	public static void writeStrArray(ObjectOutputStream oos, String[] a) throws Exception {
+		oos.writeInt(a.length);
+		for (int i = 0; i < a.length; i++) {
+			oos.writeUTF(a[i]);
+		}
+		oos.flush();
+	}
+
 	public static void writeStrCollection(ObjectOutputStream oos, Collection<String> c) throws Exception {
 		oos.writeInt(c.size());
 
@@ -1088,6 +1088,16 @@ public class FileUtils {
 		writeStrCounterMap(fileName, cm, nf, false);
 	}
 
+	public static void writeStrCollection(String fileName, Collection<String> c) throws Exception {
+		BufferedWriter bw = openBufferedWriter(fileName);
+		bw.write(String.format("%s\t%d", LINE_SIZE, c.size()));
+		for (String s : c) {
+			bw.write(String.format("\n%s", s));
+		}
+		bw.flush();
+		bw.close();
+	}
+
 	public static void writeStrCounterMap(String fileName, CounterMap<String, String> cm, NumberFormat nf, boolean orderAlphabetically)
 			throws Exception {
 		StopWatch stopWatch = StopWatch.newStopWatch();
@@ -1117,6 +1127,7 @@ public class FileUtils {
 			}
 			num_entries += ic.size();
 		}
+		bw.flush();
 		bw.close();
 
 		System.out.printf("write [%d] entries at [%s] - [%s]\n", num_entries, fileName, stopWatch.stop());

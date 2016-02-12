@@ -41,35 +41,35 @@ public class PrefixSpan {
 	public static void main(String[] args) {
 		System.out.println("process begins.");
 
-		List<String[]> records = new ArrayList<String[]>();
-
-		StringPartitioner p = new StringPartitioner(3, false);
-
-		TextFileReader reader = new TextFileReader(ELPath.DOMESTIC_PAPER_ORG_NAME_FILE);
-		while (reader.hasNext()) {
-			String line = reader.next();
-			String[] parts = line.split("\t");
-			String korName = parts[0];
-			Gram[] grams = p.partition(korName);
-
-			String[] items = new String[grams.length];
-
-			for (int i = 0; i < grams.length; i++) {
-				items[i] = grams[i].getString();
-			}
-
-			records.add(items);
-
-			if (records.size() == 10000) {
-				break;
-			}
-		}
-		reader.close();
-
-		PrefixSpan s = new PrefixSpan();
-		s.setRecords(records);
-		s.mine();
-		s.write(ELPath.DATA_DIR + "patterns.txt");
+		// List<String[]> records = new ArrayList<String[]>();
+		//
+		// StringPartitioner p = new StringPartitioner(3, false);
+		//
+		// TextFileReader reader = new TextFileReader(ELPath.DOMESTIC_PAPER_ORG_NAME_FILE);
+		// while (reader.hasNext()) {
+		// String line = reader.next();
+		// String[] parts = line.split("\t");
+		// String korName = parts[0];
+		// Gram[] grams = p.partition(korName);
+		//
+		// String[] items = new String[grams.length];
+		//
+		// for (int i = 0; i < grams.length; i++) {
+		// items[i] = grams[i].getString();
+		// }
+		//
+		// records.add(items);
+		//
+		// if (records.size() == 10000) {
+		// break;
+		// }
+		// }
+		// reader.close();
+		//
+		// PrefixSpan s = new PrefixSpan();
+		// s.setRecords(records);
+		// s.mine();
+		// s.write(ELPath.DATA_DIR + "patterns.txt");
 		System.out.println("process ends.");
 	}
 

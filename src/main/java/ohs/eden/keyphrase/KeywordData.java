@@ -119,7 +119,7 @@ public class KeywordData {
 			List<Integer> docids = Generics.newArrayList();
 
 			for (int i = 3; i < parts.length; i++) {
-				String cn = parts[i].split(":")[0];
+				String cn = parts[i];
 				docids.add(docIndxer.getIndex(cn));
 			}
 			keywordDocs.put(kwdid, docids);

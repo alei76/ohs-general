@@ -194,7 +194,7 @@ public class OrganizationIdentificationKernel implements Serializable {
 
 				for (int j = 0; j < srs.size(); j++) {
 					StringRecord sr = srs.get(j);
-					Gram[] grams = searcher.getGramGenerator().generate(sr.getString());
+					Gram[] grams = searcher.getGramGenerator().generateQGrams(sr.getString());
 
 					Counter<Integer> c = new Counter<Integer>();
 					for (int k = 0; k < grams.length; k++) {

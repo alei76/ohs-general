@@ -31,18 +31,18 @@ public class KeywordClusterer {
 
 		KeywordData data = new KeywordData();
 
-		if (FileUtils.exists(KPPath.KEYWORD_FILE.replace("txt", "ser"))) {
-			data.read(KPPath.KEYWORD_FILE.replace("txt", "ser"));
+		if (FileUtils.exists(KPPath.KEYWORD_DATA_FILE.replace("txt", "ser"))) {
+			data.read(KPPath.KEYWORD_DATA_FILE.replace("txt", "ser"));
 		} else {
-			data.readText(KPPath.KEYWORD_FILE);
-			data.write(KPPath.KEYWORD_FILE.replace("txt", "ser"));
+			data.readText(KPPath.KEYWORD_DATA_FILE);
+			data.write(KPPath.KEYWORD_DATA_FILE.replace("txt", "ser"));
 		}
 
 		KeywordClusterer kc = new KeywordClusterer(data);
 		kc.cluster();
 		kc.writeClusterText(KPPath.KEYWORD_CLUSTER_FILE);
 
-		data.write(KPPath.KEYWORD_FILE.replace("txt", "ser"));
+		data.write(KPPath.KEYWORD_DATA_FILE.replace("txt", "ser"));
 
 		System.out.println("process ends.");
 	}
@@ -82,7 +82,7 @@ public class KeywordClusterer {
 						continue;
 					}
 
-					for (Gram g : gg.generate(String.format("<%s>", lang.toLowerCase()))) {
+					for (Gram g : gg.generateQGrams(String.format("<%s>", lang.toLowerCase()))) {
 						gramIndexer.getIndex(g.getString());
 					}
 				}
@@ -441,7 +441,7 @@ public class KeywordClusterer {
 				String lang = keyword.split("\t")[i];
 				int kw_freq = (int) c.getCount(kwid);
 
-				for (Gram g : gg.generate(lang.toLowerCase())) {
+				for (Gram g : gg.generateQGrams(lang.toLowerCase())) {
 					gramProbs.incrementCount(g.getString().substring(0, 2), g.getString().charAt(2), kw_freq);
 				}
 			}
@@ -453,7 +453,7 @@ public class KeywordClusterer {
 			for (int kwid : c.keySet()) {
 				String keyword = kwdIndexer.getObject(kwid);
 				String lang = keyword.split("\t")[i];
-				double log_likelihood = computeLoglikelihood(gg.generate(lang.toLowerCase()), gramProbs);
+				double log_likelihood = computeLoglikelihood(gg.generateQGrams(lang.toLowerCase()), gramProbs);
 				kwdScores.incrementCount(lang, log_likelihood);
 			}
 
@@ -538,7 +538,7 @@ public class KeywordClusterer {
 						continue;
 					}
 
-					for (Gram g : gg.generate(String.format("<%s>", lang.toLowerCase()))) {
+					for (Gram g : gg.generateQGrams(String.format("<%s>", lang.toLowerCase()))) {
 						int gid = gramIndexer.indexOf(g.getString());
 						if (gid < 0) {
 							continue;
@@ -580,38 +580,6 @@ public class KeywordClusterer {
 			}
 		}
 		return ret;
-	}
-
-	private void printClusters() {
-		System.out.printf("Clusters:\t%d\n", clusters.size());
-
-		List<Integer> cids = Generics.newArrayList();
-		for (int cid : clusters.keySet()) {
-			Counter<Integer> kwids = clusters.getCounter(cid);
-
-			if (kwids.size() > 1) {
-				cids.add(cid);
-			}
-		}
-
-		for (int i = 0; i < 10 && i < cids.size(); i++) {
-			int cid = cids.get(i);
-
-			Counter<Integer> kwids = clusters.getCounter(cid);
-
-			List<Integer> temp = kwids.getSortedKeys();
-
-			StringBuffer sb = new StringBuffer();
-			sb.append(String.format("Cluster ID:\t%d", cid));
-
-			for (int j = 0; j < temp.size(); j++) {
-				int kwid = temp.get(j);
-				sb.append(String.format("\n%d:\t%s", j + 1, kwdIndexer.getObject(kwid)));
-			}
-
-			System.out.println(sb.toString() + "\n");
-		}
-		System.out.println();
 	}
 
 	private void selectClusterLabels() {

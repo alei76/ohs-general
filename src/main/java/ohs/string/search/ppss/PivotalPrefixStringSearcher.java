@@ -455,7 +455,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		for (int i = 0; i < input.size(); i++) {
 			StringRecord sr = input.get(i);
 			String s = sr.getString();
-			Gram[] grams = gramGenerator.generate(s.toLowerCase());
+			Gram[] grams = gramGenerator.generateQGrams(s.toLowerCase());
 
 			if (grams.length == 0) {
 				continue;
@@ -568,7 +568,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 			int id = Integer.parseInt(parts[1]);
 			String s = parts[2];
 			srs.add(new StringRecord(id, s));
-			allGrams.add(gramGenerator.generate(s));
+			allGrams.add(gramGenerator.generateQGrams(s));
 		}
 
 		L = new GramInvertedIndex();
@@ -596,7 +596,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 	}
 
 	public Counter<StringRecord> search(String s) {
-		Gram[] sGrams = gramGenerator.generate(s.toLowerCase());
+		Gram[] sGrams = gramGenerator.generateQGrams(s.toLowerCase());
 
 		if (sGrams.length == 0) {
 			return new Counter<StringRecord>();
