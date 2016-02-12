@@ -377,6 +377,10 @@ public class ArrayMath {
 		}
 	}
 
+	public static void doRandomWalk(double[][] trans_probs, double[] cents, int max_iter) {
+		doRandomWalk(trans_probs, cents, max_iter, 0.0000001, 0.85);
+	}
+
 	/**
 	 * @param trans_probs
 	 *            Column-normalized transition probabilities

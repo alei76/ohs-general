@@ -94,7 +94,7 @@ public class GramGenerator implements Serializable {
 				ret[i] = new Gram(StrUtils.join(" ", words, i, i + q), i, Type.NONE);
 			}
 		}
-		return null;
+		return ret;
 	}
 
 	public int getQ() {

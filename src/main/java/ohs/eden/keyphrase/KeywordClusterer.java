@@ -299,10 +299,10 @@ public class KeywordClusterer {
 				for (int k = 0; k < queryCent.size() && k < prefix_size; k++) {
 					int gid = queryCent.indexAtLoc(k);
 					double idf = Math.log((num_clusters + 1f) / gram_freqs[gid]);
-					for (int cid : gramPostings[gid]) {
-						int new_cid = clusterToCluster[cid];
-						if (cents.containsKey(new_cid)) {
-							candidates.incrementCount(new_cid, idf);
+					for (int cluid : gramPostings[gid]) {
+						int new_cluid = clusterToCluster[cluid];
+						if (cents.containsKey(new_cluid)) {
+							candidates.incrementCount(new_cluid, idf);
 						}
 					}
 				}
@@ -603,30 +603,30 @@ public class KeywordClusterer {
 		writer.write(String.format("Clusters:\t%d", clusters.size()));
 		writer.write(String.format("\nKeywords:\t%d", (int) clusters.totalCount()));
 
-		// List<Integer> cids = clusters.getInnerCountSums().getSortedKeys();
-		List<Integer> cids = Generics.newArrayList();
-
-		{
-			List<String> keys = Generics.newArrayList();
-
-			Map<Integer, Integer> map = Generics.newHashMap();
-
-			for (int cid : clusters.keySet()) {
-				int kwdid = clusters.getCounter(cid).argMax();
-				map.put(kwdid, cid);
-				String kwd = kwdIndexer.getObject(kwdid);
-				keys.add(kwd);
-			}
-
-			Collections.sort(keys);
-
-			cids = Generics.newArrayList();
-			for (int i = 0; i < keys.size(); i++) {
-				int kwid = kwdIndexer.indexOf(keys.get(i));
-				int cid = map.get(kwid);
-				cids.add(cid);
-			}
-		}
+		List<Integer> cids = clusters.getInnerCountSums().getSortedKeys();
+		// List<Integer> cids = Generics.newArrayList();
+		//
+		// {
+		// List<String> keys = Generics.newArrayList();
+		//
+		// Map<Integer, Integer> map = Generics.newHashMap();
+		//
+		// for (int cid : clusters.keySet()) {
+		// int kwdid = clusters.getCounter(cid).argMax();
+		// map.put(kwdid, cid);
+		// String kwd = kwdIndexer.getObject(kwdid);
+		// keys.add(kwd);
+		// }
+		//
+		// Collections.sort(keys);
+		//
+		// cids = Generics.newArrayList();
+		// for (int i = 0; i < keys.size(); i++) {
+		// int kwid = kwdIndexer.indexOf(keys.get(i));
+		// int cid = map.get(kwid);
+		// cids.add(cid);
+		// }
+		// }
 
 		for (int i = 0, n = 1; i < cids.size(); i++) {
 			int cid = cids.get(i);

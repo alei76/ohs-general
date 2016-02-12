@@ -683,17 +683,25 @@ public class ArrayUtils {
 		}
 	}
 
-	public static double setAll(double[] a, double value) {
+	public static void setAll(double[] a, double value) {
 		Arrays.fill(a, value);
-		return value * a.length;
 	}
 
-	public static double setAll(double[][] a, double value) {
-		double ret = 0;
+	public static void setAll(double[][] a, double value) {
 		for (int i = 0; i < a.length; i++) {
-			ret += setAll(a[i], value);
+			setAll(a[i], value);
 		}
-		return ret;
+	}
+
+	public static void setAllAtDiagonal(double[][] a, double value) {
+		int row_dim = a.length;
+		int col_dim = a[0].length;
+
+		int dim = Math.min(row_dim, col_dim);
+		for (int i = 0; i < dim; i++) {
+			a[i][i] = value;
+		}
+
 	}
 
 	/**

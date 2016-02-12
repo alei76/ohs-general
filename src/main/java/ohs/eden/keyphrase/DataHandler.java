@@ -2,17 +2,18 @@ package ohs.eden.keyphrase;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.ling.types.TextSpan;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
 import ohs.types.SetMap;
+import ohs.types.Vocab;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 
@@ -23,9 +24,12 @@ public class DataHandler {
 		DataHandler dh = new DataHandler();
 		// dh.extractKeywordData();
 		// dh.process();
-		dh.analyze();
+		// dh.analyze();
+		dh.makeVocab();
 		System.out.println("process ends.");
 	}
+
+	final String NONE = "<none>";
 
 	public void extractKeywordData() throws Exception {
 		String[] inFileNames = { KPPath.PAPER_DUMP_FILE, KPPath.REPORT_DUMP_FILE };
@@ -36,7 +40,6 @@ public class DataHandler {
 
 		for (int i = 0; i < inFileNames.length; i++) {
 			String inFileName = inFileNames[i];
-			String type = i == 0 ? "P" : "R";
 
 			TextFileReader reader = new TextFileReader(inFileName);
 			List<String> labels = Generics.newArrayList();
@@ -88,16 +91,16 @@ public class DataHandler {
 							for (int j = 0; j < kors.size(); j++) {
 								String kor = kors.get(j);
 								String eng = engs.get(j);
-								keywordDocs.put(kor + "\t" + eng, type + "_" + cn);
+								keywordDocs.put(kor + "\t" + eng, cn);
 							}
 						}
 					} else {
 						for (String kor : kors) {
-							keywordDocs.put(kor + "\t" + "<none>", type + "_" + cn);
+							keywordDocs.put(kor + "\t" + NONE, cn);
 						}
 
 						for (String eng : engs) {
-							keywordDocs.put("<none>" + "\t" + eng, type + "_" + cn);
+							keywordDocs.put(NONE + "\t" + eng, cn);
 						}
 					}
 
@@ -148,6 +151,68 @@ public class DataHandler {
 
 		FileUtils.writeStrCounterMap(KPPath.KEYWORD_TEMP_FILE, kwdTypeCounts);
 
+	}
+
+	public void makeVocab() throws Exception {
+		TextFileReader reader = new TextFileReader(KPPath.ABSTRACT_FILE);
+
+		Indexer<String> wordIndexer = Generics.newIndexer();
+		Counter<Integer> wordDocFreqs = Generics.newCounter();
+		Counter<Integer> wordCnts = Generics.newCounter();
+
+		while (reader.hasNext()) {
+			String[] parts = reader.next().split("\t");
+
+			for (int i = 0; i < parts.length; i++) {
+				parts[i] = parts[i].substring(1, parts[i].length() - 1);
+			}
+
+			String cn = parts[0];
+			String korAbs = parts[1];
+			String engAbs = parts[2];
+
+			Counter<String> c = Generics.newCounter();
+
+			if (!korAbs.equals(NONE)) {
+				c.incrementAll(getWordCounts(korAbs));
+			}
+
+			if (!engAbs.equals(NONE)) {
+				c.incrementAll(getWordCounts(engAbs));
+			}
+
+			for (Entry<String, Double> e : c.entrySet()) {
+				String word = e.getKey();
+				double cnt = e.getValue();
+				int w = wordIndexer.getIndex(word);
+				wordDocFreqs.incrementCount(w, 1);
+				wordCnts.incrementCount(w, cnt);
+			}
+		}
+		reader.close();
+
+		int[] word_cnts = new int[wordIndexer.size()];
+		int[] word_doc_freqs = new int[wordIndexer.size()];
+
+		for (int i = 0; i < wordIndexer.size(); i++) {
+			word_cnts[i] = (int) wordCnts.getCount(i);
+			word_doc_freqs[i] = (int) wordDocFreqs.getCount(i);
+		}
+
+		Vocab vocab = new Vocab(wordIndexer, word_cnts, word_doc_freqs);
+		vocab.write(KPPath.VOCAB_FILE);
+
+	}
+
+	private Counter<String> getWordCounts(String text) {
+		Counter<String> ret = Generics.newCounter();
+		text = text.replace(". ", " .\n");
+		for (String sent : text.split("\n")) {
+			for (String word : StrUtils.split(sent)) {
+				ret.incrementCount(word.toLowerCase(), 1);
+			}
+		}
+		return ret;
 	}
 
 	public void process() throws Exception {
@@ -207,37 +272,21 @@ public class DataHandler {
 
 				String abs = abss[j];
 
-				try {
-					abs = StrUtils.tag(abs, kwdSets[j], "KWD");
-				} catch (Exception e) {
-					e.printStackTrace();
-					continue;
-				}
-
-				if (!abs.contains("KWD")) {
-					continue;
-				}
-
-				List<TextSpan> spans = StrUtils.extract(abs, "KWD");
-
-				for (TextSpan span : spans) {
-					int start = span.getStart();
-					int end = span.getEnd();
-					System.out.println(span + " -> " + abs.substring(start, end));
-				}
-				System.out.println();
-
 				Set<String> kwdSet = kwdSets[j];
-				Set<String> founds = Generics.newHashSet();
+				List<String> founds = Generics.newArrayList();
 
-				if (abs.length() > abss[j].length()) {
-					writer.write(kwdSet + "\n");
-					writer.write(abs.replace("\\.", "\n"));
-					writer.write("\n\n");
+				for (String kwd : kwdSet) {
+					if (abs.contains(kwd)) {
+						founds.add(kwd);
+					}
+				}
+
+				if (founds.size() > 0) {
+					writer.write(String.format("Keywords:\t%s\n", StrUtils.join("\t", founds)));
+					writer.write(String.format("ABS:\t%s\n\n", abs));
 				}
 
 			}
-
 		}
 		reader.close();
 		writer.close();
