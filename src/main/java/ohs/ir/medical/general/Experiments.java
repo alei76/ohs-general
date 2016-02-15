@@ -660,7 +660,7 @@ public class Experiments {
 
 				ArrayMath.normalizeColumns(sims);
 
-				ArrayMath.doRandomWalk(sims, cents, 10, 0.000001, 0.8);
+				ArrayMath.randomWalk(sims, cents, 10, 0.000001, 0.8);
 
 				SparseVector qlm2 = qlm1.copy();
 				qlm2.setValues(cents);
@@ -779,7 +779,7 @@ public class Experiments {
 				double[] cents = new double[sim_mat.length];
 				ArrayUtils.setAll(cents, 1f / cents.length);
 
-				ArrayMath.doRandomWalk(sim_mat, cents, 10, 0.00000001, 0.85);
+				ArrayMath.randomWalk(sim_mat, cents, 10, 0.00000001, 0.85);
 				docPriors.setValues(cents);
 				docPriors.summation();
 

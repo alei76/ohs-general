@@ -156,7 +156,6 @@ public class SparseMatrix implements Matrix {
 	@Override
 	public SparseVector columnSums() {
 		Counter<Integer> counter = new Counter<Integer>();
-
 		for (int i = 0; i < rowSize(); i++) {
 			SparseVector row = rows[i];
 			for (int j = 0; j < row.size(); j++) {
@@ -207,34 +206,13 @@ public class SparseMatrix implements Matrix {
 
 	@Override
 	public void normalizeColumns() {
-		int maxColIndex = 0;
-
-		for (int i = 0; i < rows.length; i++) {
-			SparseVector row = rows[i];
-			int lastIndex = row.indexAtLoc(row.size() - 1);
-			if (maxColIndex < lastIndex) {
-				maxColIndex = lastIndex;
-			}
-		}
-
-		double[] columnSums = new double[maxColIndex + 1];
-
-		for (int i = 0; i < rows.length; i++) {
-			SparseVector row = rows[i];
-			for (int j = 0; j < row.size(); j++) {
-				int colIndex = row.indexAtLoc(j);
-				double value = row.valueAtLoc(j);
-				columnSums[colIndex] += value;
-			}
-		}
-
+		SparseVector columnSums = columnSums();
 		for (int i = 0; i < rows.length; i++) {
 			SparseVector row = rows[i];
 			for (int j = 0; j < row.size(); j++) {
 				int colId = row.indexAtLoc(j);
 				double value = row.valueAtLoc(j);
-				double sum = columnSums[colId];
-
+				double sum = columnSums.valueAlways(colId);
 				if (sum != 0) {
 					row.setAtLoc(j, colId, value / sum);
 				}

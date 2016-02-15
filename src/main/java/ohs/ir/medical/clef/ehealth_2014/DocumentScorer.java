@@ -401,7 +401,7 @@ public class DocumentScorer {
 
 		double[] centralities = new double[transMat.length];
 		
-		ArrayMath.doRandomWalk(transMat, centralities, 100, 0.000001, 0.85);
+		ArrayMath.randomWalk(transMat, centralities, 100, 0.000001, 0.85);
 
 		SparseVector ret = new SparseVector(max_words);
 
@@ -620,7 +620,7 @@ public class DocumentScorer {
 
 		double[] importances = new double[m.length]; 
 				
-		ArrayMath.doRandomWalk(m, importances, 10, 0.00001, 0.85);
+		ArrayMath.randomWalk(m, importances, 10, 0.00001, 0.85);
 
 		Counter<String> wordImportances = new Counter<String>();
 

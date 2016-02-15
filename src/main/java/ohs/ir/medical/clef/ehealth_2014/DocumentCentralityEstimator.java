@@ -147,7 +147,7 @@ public class DocumentCentralityEstimator {
 		double[][] transMatrix = computeSimilarityMatrix(docIndexer, docWordCounts);
 		double[] centralities = new double[transMatrix.length];
 
-		ArrayMath.doRandomWalk(transMatrix, centralities, 100, 0.000001, 0.85);
+		ArrayMath.randomWalk(transMatrix, centralities, 100, 0.000001, 0.85);
 
 		int[] indexes = new int[docIndexer.size()];
 

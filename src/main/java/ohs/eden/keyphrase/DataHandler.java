@@ -160,6 +160,8 @@ public class DataHandler {
 		Counter<Integer> wordDocFreqs = Generics.newCounter();
 		Counter<Integer> wordCnts = Generics.newCounter();
 
+		int num_docs = 0;
+
 		while (reader.hasNext()) {
 			String[] parts = reader.next().split("\t");
 
@@ -188,6 +190,7 @@ public class DataHandler {
 				wordDocFreqs.incrementCount(w, 1);
 				wordCnts.incrementCount(w, cnt);
 			}
+			num_docs++;
 		}
 		reader.close();
 
@@ -199,7 +202,7 @@ public class DataHandler {
 			word_doc_freqs[i] = (int) wordDocFreqs.getCount(i);
 		}
 
-		Vocab vocab = new Vocab(wordIndexer, word_cnts, word_doc_freqs);
+		Vocab vocab = new Vocab(wordIndexer, word_cnts, word_doc_freqs, num_docs);
 		vocab.write(KPPath.VOCAB_FILE);
 
 	}

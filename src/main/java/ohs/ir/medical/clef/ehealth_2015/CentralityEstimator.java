@@ -70,7 +70,7 @@ public class CentralityEstimator {
 
 		double[] cents = new double[sim_matrix.length];
 
-		ArrayMath.doRandomWalk(sim_matrix, cents, 100, 0.00000001, 0.85);
+		ArrayMath.randomWalk(sim_matrix, cents, 100, 0.00000001, 0.85);
 
 		Counter<Integer> ret = new Counter<Integer>();
 

@@ -48,7 +48,7 @@ public class DocumentCentralityEstimator {
 		SparseVector ret = new SparseVector(ArrayUtils.copy(wcb.getDocWordCounts().rowIndexes()));
 		double[] cents = ret.values();
 		ArrayUtils.setAll(cents, 1f / cents.length);
-		ArrayMath.doRandomWalk(trans_probs, cents, 10, 0.0000001, 0.85);
+		ArrayMath.randomWalk(trans_probs, cents, 10, 0.0000001, 0.85);
 		ret.summation();
 		return ret;
 

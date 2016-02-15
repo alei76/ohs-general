@@ -16,6 +16,16 @@ import ohs.types.ListMap;
 import ohs.utils.Generics;
 
 public class VectorUtils {
+	public static void copy(CounterMap<Integer, Integer> a, double[][] b) {
+		for (int key1 : a.keySet()) {
+			for (Entry<Integer, Double> e : a.getCounter(key1).entrySet()) {
+				int key2 = e.getKey();
+				double value = e.getValue();
+				b[key1][key2] = value;
+			}
+		}
+	}
+
 	public static void copy(Vector src, Vector tar) {
 		if (VectorChecker.isSparse(src) && VectorChecker.isSparse(tar)) {
 			ArrayUtils.copy(src.indexes(), tar.indexes());
@@ -179,6 +189,18 @@ public class VectorUtils {
 		return ret;
 	}
 
+	public static double[][] toMatrix(CounterMap<Integer, Integer> a, int dim) {
+		double[][] ret = new double[dim][dim];
+		copy(a, ret);
+		return ret;
+	}
+
+	public static double[][] toMatrix(CounterMap<Integer, Integer> a, int row_dim, int col_dim) {
+		double[][] ret = new double[row_dim][col_dim];
+		copy(a, ret);
+		return ret;
+	}
+
 	public static String toRankedString(SparseVector x, Indexer<String> indexer) {
 		StringBuffer sb = new StringBuffer();
 
@@ -191,6 +213,56 @@ public class VectorUtils {
 			sb.append(String.format(" %s:%d", indexer.getObject(index), rank));
 		}
 		return sb.toString().trim();
+	}
+
+	public static SparseMatrix toSparseMatrix(CounterMap<String, String> cm, Indexer<String> rowIndexer, Indexer<String> columnIndexer,
+			boolean addIfUnseen) {
+
+		List<Integer> rs1 = Generics.newArrayList();
+		List<SparseVector> rs2 = Generics.newArrayList();
+
+		for (String rowKey : cm.keySet()) {
+			int rowid = -1;
+			if (addIfUnseen) {
+				rowid = rowIndexer.getIndex(rowKey);
+			} else {
+				rowid = rowIndexer.indexOf(rowKey);
+			}
+
+			if (rowid < 0) {
+				continue;
+			}
+
+			rs1.add(rowid);
+			rs2.add(toSparseVector(cm.getCounter(rowKey), columnIndexer, addIfUnseen));
+		}
+
+		int[] rowIds = new int[rs1.size()];
+		SparseVector[] rows = new SparseVector[rs1.size()];
+
+		for (int i = 0; i < rowIds.length; i++) {
+			rowIds[i] = rs1.get(i);
+			rows[i] = rs2.get(i);
+		}
+		SparseMatrix ret = new SparseMatrix(-1, -1, -1, rowIds, rows);
+		ret.sortByRowIndex();
+		return ret;
+	}
+
+	public static SparseMatrix toSparseMatrix(CounterMap<Integer, Integer> cm) {
+		int[] rowids = new int[cm.keySet().size()];
+		SparseVector[] rows = new SparseVector[cm.keySet().size()];
+
+		int loc = 0;
+		for (int key : cm.keySet()) {
+			rowids[loc] = key;
+			rows[loc] = toSparseVector(cm.getCounter(key));
+			loc++;
+		}
+
+		SparseMatrix ret = new SparseMatrix(-1, -1, -1, rowids, rows);
+		ret.sortByRowIndex();
+		return ret;
 	}
 
 	public static SparseVector toSparseVector(Counter<Integer> x) {
@@ -241,28 +313,6 @@ public class VectorUtils {
 		return ret;
 	}
 
-	public static void copy(CounterMap<Integer, Integer> a, double[][] b) {
-		for (int key1 : a.keySet()) {
-			for (Entry<Integer, Double> e : a.getCounter(key1).entrySet()) {
-				int key2 = e.getKey();
-				double value = e.getValue();
-				b[key1][key2] = value;
-			}
-		}
-	}
-
-	public static double[][] toMatrix(CounterMap<Integer, Integer> a, int row_dim, int col_dim) {
-		double[][] ret = new double[row_dim][col_dim];
-		copy(a, ret);
-		return ret;
-	}
-
-	public static double[][] toMatrix(CounterMap<Integer, Integer> a, int dim) {
-		double[][] ret = new double[dim][dim];
-		copy(a, ret);
-		return ret;
-	}
-
 	public static SparseVector toSparseVector(List<String> x, Indexer<String> indexer, boolean addIfUnseen) {
 		Counter<Integer> ret = new Counter<Integer>();
 
@@ -288,41 +338,6 @@ public class VectorUtils {
 
 	public static SparseMatrix toSpasreMatrix(CounterMap<Integer, Integer> cm) {
 		return toSpasreMatrix(cm, -1, -1, -1);
-	}
-
-	public static SparseMatrix toSparseMatrix(CounterMap<String, String> cm, Indexer<String> rowIndexer, Indexer<String> columnIndexer,
-			boolean addIfUnseen) {
-
-		List<Integer> rs1 = Generics.newArrayList();
-		List<SparseVector> rs2 = Generics.newArrayList();
-
-		for (String rowKey : cm.keySet()) {
-			int rowid = -1;
-			if (addIfUnseen) {
-				rowid = rowIndexer.getIndex(rowKey);
-			} else {
-				rowid = rowIndexer.indexOf(rowKey);
-			}
-
-			if (rowid < 0) {
-				continue;
-			}
-
-			rs1.add(rowid);
-			rs2.add(toSparseVector(cm.getCounter(rowKey), columnIndexer, addIfUnseen));
-		}
-
-		int[] rowIds = new int[rs1.size()];
-		SparseVector[] rows = new SparseVector[rs1.size()];
-
-		for (int i = 0; i < rowIds.length; i++) {
-			rowIds[i] = rs1.get(i);
-			rows[i] = rs2.get(i);
-		}
-		SparseMatrix ret = new SparseMatrix(-1, -1, -1, rowIds, rows);
-		ret.sortByRowIndex();
-		return ret;
-
 	}
 
 	public static SparseMatrix toSpasreMatrix(CounterMap<Integer, Integer> cm, int rowDim, int colDim, int label) {

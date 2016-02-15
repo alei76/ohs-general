@@ -358,7 +358,8 @@ public class DenseVector implements Vector {
 
 	@Override
 	public void setAll(double value) {
-		sum = ArrayUtils.setAll(values, value);
+		ArrayUtils.setAll(values, value);
+		sum = value * values.length;
 	}
 
 	@Override

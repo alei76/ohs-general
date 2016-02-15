@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.commons.math.stat.descriptive.SynchronizedMultivariateSummaryStatistics;
 import org.apache.commons.math.stat.inference.TTestImpl;
+
+import ohs.matrix.SparseVector;
 
 /**
  * @author Heung-Seon Oh
@@ -13,6 +16,8 @@ import org.apache.commons.math.stat.inference.TTestImpl;
  */
 public class ArrayMath {
 	public static final double LOGTOLERANCE = 30.0;
+
+	public static boolean showLog = false;
 
 	public static double abs(double[] a, double[] b) {
 		if (!ArrayChecker.isSameDim(a, b)) {
@@ -377,75 +382,6 @@ public class ArrayMath {
 		}
 	}
 
-	public static void doRandomWalk(double[][] trans_probs, double[] cents, int max_iter) {
-		doRandomWalk(trans_probs, cents, max_iter, 0.0000001, 0.85);
-	}
-
-	/**
-	 * @param trans_probs
-	 *            Column-normalized transition probabilities
-	 * @param cents
-	 * @param max_iter
-	 * @param min_dist
-	 * @param damping_factor
-	 * @return
-	 */
-	public static void doRandomWalk(double[][] trans_probs, double[] cents, int max_iter, double min_dist, double damping_factor) {
-		if (!ArrayChecker.isProductable(trans_probs, cents)) {
-			throw new IllegalArgumentException();
-		}
-
-		int num_docs = trans_probs.length;
-
-		double uniform_cent = 1f / num_docs;
-
-		double[] old_cents = ArrayUtils.copy(cents);
-		double old_dist = Double.MAX_VALUE;
-
-		double tran_prob = 0;
-		double dot_product = 0;
-
-		for (int m = 0; m < max_iter; m++) {
-			double sum1 = 0;
-			for (int i = 0; i < trans_probs.length; i++) {
-				dot_product = 0;
-				for (int j = 0; j < trans_probs[i].length; j++) {
-					tran_prob = (1 - damping_factor) * trans_probs[i][j] + damping_factor * uniform_cent;
-					dot_product += tran_prob * cents[j];
-				}
-				cents[i] = dot_product;
-				sum1 += cents[i];
-			}
-
-			double sum2 = scale(cents, 1f / sum1, cents);
-
-			// double sum1 = LA.product(trans_probs, old_cents, cents);
-			// double sum2 = addAfterScale(cents, uniform_cent, 1 - damping_factor, damping_factor, cents);
-
-			// for (int j = 0; j < cents.length; j++) {
-			// cents[j] = damping_factor * uniform_cent + (1 - damping_factor) * cents[j];
-			// sum += cents[j];
-			// }
-
-			// scale(cents, 1f / sum2, cents);
-
-			double dist = euclideanDistance(old_cents, cents);
-
-			System.out.printf("%d: %s - %s = %s\n", m + 1, old_dist, dist, old_dist - dist);
-
-			if (dist < min_dist) {
-				break;
-			}
-
-			if (dist > old_dist) {
-				ArrayUtils.copy(old_cents, cents);
-				break;
-			}
-			old_dist = dist;
-			ArrayUtils.copy(cents, old_cents);
-		}
-	}
-
 	public static double dotProduct(double[] a, double[] b) {
 		if (!ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException();
@@ -682,9 +618,11 @@ public class ArrayMath {
 			double[] answer = new double[] { 2 / 5f, 2 / 5f, 1 / 5f };
 			normalize(answer);
 
+			System.out.println(ArrayUtils.toString(a));
+
 			double[] cents = new double[3];
 			ArrayUtils.setAll(cents, 1);
-			doRandomWalk(a, cents, 400, 0.0000000001, 0);
+			randomWalk(a, cents, 400, 0.0000000001, 1);
 
 			System.out.printf("answer:   \t%s\n", ArrayUtils.toString(answer));
 			System.out.printf("estimated:\t%s\n", ArrayUtils.toString(cents));
@@ -710,7 +648,25 @@ public class ArrayMath {
 
 			double[] cents = new double[3];
 			ArrayUtils.setAll(cents, 1);
-			doRandomWalk(a, cents, 400, 0.0000000001, 0.2);
+			randomWalk(c, cents, 400, 0.0000000001, 1);
+
+			System.out.printf("answer:   \t%s\n", ArrayUtils.toString(answer));
+			System.out.printf("estimated:\t%s\n", ArrayUtils.toString(cents));
+		}
+
+		{
+			// double[][] a = new double[][] { { 0.5, 0.5, 0 }, { 0.5, 0, 1 }, { 0, 0.5, 0 } };
+			double[][] a = new double[][] { { 0.5, 0.5, 0 }, { 0.5, 0, 0 }, { 0, 0.5, 1 } };
+
+			System.out.println(ArrayUtils.toString(a));
+			System.out.println();
+
+			double[] answer = new double[] { 7 / 11f, 5 / 11f, 21 / 11f };
+			normalize(answer);
+
+			double[] cents = new double[3];
+			ArrayUtils.setAll(cents, 1);
+			randomWalk(a, cents, 400, 0.0000000001, 0.8);
 
 			System.out.printf("answer:   \t%s\n", ArrayUtils.toString(answer));
 			System.out.printf("estimated:\t%s\n", ArrayUtils.toString(cents));
@@ -782,7 +738,7 @@ public class ArrayMath {
 			double[] b = new double[m[0].length];
 			ArrayUtils.setAll(b, 1f / b.length);
 
-			doRandomWalk(m, b, 100, 0.0000001, 0);
+			randomWalk(m, b, 100, 0.0000001, 0);
 
 			System.out.println(ArrayUtils.toString(b));
 		}
@@ -992,6 +948,19 @@ public class ArrayMath {
 		return scale(a, 1f / normL2(a), b);
 	}
 
+	public static double normalizeByMinMax(double[] a) {
+		double[] minMax = minMax(a);
+		double min = minMax[0];
+		double max = minMax[1];
+		double sum = 0;
+
+		for (int j = 0; j < a.length; j++) {
+			a[j] = (a[j] - min) / (max - min);
+			sum += a[j];
+		}
+		return sum;
+	}
+
 	/**
 	 * @param a
 	 *            input
@@ -1009,12 +978,12 @@ public class ArrayMath {
 	}
 
 	public static double normalizeColumns(double[][] a) {
-		double[] colSums = sumColumns(a);
+		double[] col_sums = sumColumns(a);
 		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			for (int j = 0; j < a[i].length; j++) {
-				if (colSums[j] != 0) {
-					a[i][j] /= colSums[j];
+				if (col_sums[j] != 0) {
+					a[i][j] /= col_sums[j];
 				}
 				sum += a[i][j];
 			}
@@ -1224,6 +1193,78 @@ public class ArrayMath {
 		return sum;
 	}
 
+	public static void randomWalk(double[][] trans_probs, double[] cents, int max_iter) {
+		randomWalk(trans_probs, cents, max_iter, 0.0000001, 0.85);
+	}
+
+	/**
+	 * @param trans_probs
+	 *            Column-normalized transition probabilities
+	 * @param cents
+	 * @param max_iter
+	 * @param min_dist
+	 * @param damping_factor
+	 * @return
+	 */
+	public static void randomWalk(double[][] trans_probs, double[] cents, int max_iter, double min_dist, double damping_factor) {
+		if (!ArrayChecker.isProductable(trans_probs, cents)) {
+			throw new IllegalArgumentException();
+		}
+
+		double tran_prob = 0;
+		double dot_product = 0;
+		double[] old_cents = ArrayUtils.copy(cents);
+		double old_dist = Double.MAX_VALUE;
+		int num_docs = trans_probs.length;
+
+		double uniform_cent = (1 - damping_factor) / num_docs;
+
+		for (int m = 0; m < max_iter; m++) {
+			for (int i = 0; i < trans_probs.length; i++) {
+				dot_product = 0;
+				for (int j = 0; j < trans_probs[i].length; j++) {
+					tran_prob = damping_factor * trans_probs[i][j];
+					// tran_prob = damping_factor * trans_probs[i][j] + uniform_cent;
+					dot_product += tran_prob * old_cents[j];
+				}
+				cents[i] = dot_product;
+			}
+
+			double sum = add(cents, uniform_cent, cents);
+
+			if (sum != 1) {
+				scale(cents, 1f / sum, cents);
+			}
+
+			// double sum1 = LA.product(trans_probs, old_cents, cents);
+			// double sum2 = addAfterScale(cents, uniform_cent, 1 - damping_factor, damping_factor, cents);
+
+			// for (int j = 0; j < cents.length; j++) {
+			// cents[j] = damping_factor * uniform_cent + (1 - damping_factor) * cents[j];
+			// sum += cents[j];
+			// }
+
+			// scale(cents, 1f / sum2, cents);
+
+			double dist = euclideanDistance(old_cents, cents);
+
+			if (showLog) {
+				System.out.printf("%d: %s - %s = %s\n", m + 1, old_dist, dist, old_dist - dist);
+			}
+
+			if (dist < min_dist) {
+				break;
+			}
+
+			if (dist > old_dist) {
+				ArrayUtils.copy(old_cents, cents);
+				break;
+			}
+			old_dist = dist;
+			ArrayUtils.copy(cents, old_cents);
+		}
+	}
+
 	public static double round(double[] a, double[] b) {
 		if (!ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException();
@@ -1431,6 +1472,14 @@ public class ArrayMath {
 
 	public static double sum(double[] x) {
 		double ret = 0;
+		for (int i = 0; i < x.length; i++) {
+			ret += x[i];
+		}
+		return ret;
+	}
+
+	public static int sum(int[] x) {
+		int ret = 0;
 		for (int i = 0; i < x.length; i++) {
 			ret += x[i];
 		}

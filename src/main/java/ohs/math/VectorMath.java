@@ -317,13 +317,7 @@ public class VectorMath {
 	}
 
 	public static double geometricMean(Vector x) {
-		double logSum = 0;
-		for (int i = 0; i < x.size(); i++) {
-			int index = x.indexAtLoc(i);
-			double value = x.valueAtLoc(index);
-			logSum += Math.log(value);
-		}
-		return Math.exp(logSum / x.size());
+		return ArrayMath.geometricMean(x.values());
 	}
 
 	public static boolean isSparse(Matrix x) {
@@ -336,7 +330,6 @@ public class VectorMath {
 
 	public static boolean isValid(Vector x) {
 		boolean ret = true;
-
 		for (int i = 0; i < x.size(); i++) {
 			int index = x.indexAtLoc(i);
 			double value = x.valueAtLoc(i);
@@ -399,9 +392,9 @@ public class VectorMath {
 				double value1 = a.sum() == 1 ? a.valueAtLoc(i) : a.probAtLoc(i);
 				double value2 = b.sum() == 1 ? b.valueAtLoc(j) : b.probAtLoc(j);
 				if (value1 != value2 && value1 > 0 && value2 > 0) {
-					double value3 = lambda * value1 + (1 - lambda) * value2;
-					double term1 = value1 * Math.log(value1 / value3);
-					double term2 = value2 * Math.log(value2 / value3);
+					double avg = lambda * value1 + (1 - lambda) * value2;
+					double term1 = value1 * Math.log(value1 / avg);
+					double term2 = value2 * Math.log(value2 / avg);
 					double div = lambda * term1 + (1 - lambda) * term2;
 					ret += div;
 				}
@@ -461,7 +454,6 @@ public class VectorMath {
 		}
 
 		normalizeByMinMax(xs, maxIndex + 1);
-
 	}
 
 	public static void normalizeByMinMax(List<SparseVector> xs, int indexSize) {
@@ -513,6 +505,63 @@ public class VectorMath {
 				x.setAtLoc(j, newValue);
 			}
 			x.summation();
+		}
+	}
+
+	public static void randomWalk(SparseMatrix trans_probs, double[] cents, int max_iter) {
+		randomWalk(trans_probs, cents, max_iter, 0.0000001, 0.85);
+	}
+
+	/**
+	 * @param trans_probs
+	 *            Column-normalized transition probabilities
+	 * @param cents
+	 * @param max_iter
+	 * @param min_dist
+	 * @param damping_factor
+	 * @return
+	 */
+	public static void randomWalk(SparseMatrix trans_probs, double[] cents, int max_iter, double min_dist, double damping_factor) {
+
+		double tran_prob = 0;
+		double dot_product = 0;
+		double[] old_cents = ArrayUtils.copy(cents);
+		double old_dist = Double.MAX_VALUE;
+		int num_docs = trans_probs.rowSize();
+
+		double uniform_cent = (1 - damping_factor) / num_docs;
+
+		for (int m = 0; m < max_iter; m++) {
+			for (int i = 0; i < trans_probs.rowSize(); i++) {
+				dot_product = 0;
+				SparseVector sv = trans_probs.vectorAtRowLoc(i);
+				for (int j = 0; j < sv.size(); j++) {
+					tran_prob = damping_factor * sv.valueAtLoc(j);
+					dot_product += tran_prob * old_cents[sv.indexAtLoc(j)];
+				}
+				cents[i] = dot_product;
+			}
+
+			double sum = ArrayMath.add(cents, uniform_cent, cents);
+
+			if (sum != 1) {
+				ArrayMath.scale(cents, 1f / sum, cents);
+			}
+
+			double dist = ArrayMath.euclideanDistance(old_cents, cents);
+
+			System.out.printf("%d: %s - %s = %s\n", m + 1, old_dist, dist, old_dist - dist);
+
+			if (dist < min_dist) {
+				break;
+			}
+
+			if (dist > old_dist) {
+				ArrayUtils.copy(old_cents, cents);
+				break;
+			}
+			old_dist = dist;
+			ArrayUtils.copy(cents, old_cents);
 		}
 	}
 

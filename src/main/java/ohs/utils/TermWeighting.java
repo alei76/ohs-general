@@ -32,16 +32,26 @@ public class TermWeighting {
 			for (int j = 0; j < doc.size(); j++) {
 				int w = doc.indexAtLoc(j);
 				double cnt = doc.valueAtLoc(j);
-				double tf = Math.log(cnt) + 1;
 				double doc_freq = docFreqs.value(w);
 				double num_docs = docs.size();
-				double idf = doc_freq == 0 ? 0 : Math.log((num_docs + 1) / doc_freq);
-				double tfidf = tf * idf;
+				double tfidf = tfidf(cnt, num_docs, doc_freq);
 				doc.setAtLoc(j, tfidf);
 			}
 			double sum = ArrayMath.normalizeByL2Norm(doc.values(), doc.values());
 			doc.setSum(sum);
 		}
+	}
+
+	public static double idf(double num_docs, double doc_freq) {
+		return Math.log((num_docs + 1) / doc_freq);
+	}
+
+	public static double tf(double word_cnt) {
+		return Math.log(word_cnt) + 1;
+	}
+
+	public static double tfidf(double word_cnt, double num_docs, double doc_freq) {
+		return tf(word_cnt) * idf(num_docs, doc_freq);
 	}
 
 	public static DenseVector docFreq(List<SparseVector> docs, int num_terms) {
