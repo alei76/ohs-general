@@ -35,7 +35,7 @@ import ohs.types.SetMap;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 
-public class WikiDataHandler {
+public class WikiXmlDataHandler {
 	public static boolean accept(Set<String> stopPrefixes, String title) {
 		int idx = title.indexOf(":");
 		if (idx > 0) {
@@ -87,7 +87,7 @@ public class WikiDataHandler {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		WikiDataHandler dh = new WikiDataHandler();
+		WikiXmlDataHandler dh = new WikiXmlDataHandler();
 		// dh.makeTextDump();
 		dh.extractEntityNames();
 		// dh.extractCategories();
@@ -130,8 +130,7 @@ public class WikiDataHandler {
 
 	private Pattern rp2 = Pattern.compile("\\([^\\(\\)]+\\)");
 
-	private Pattern lp1 = Pattern
-			.compile("(rivers|cities|towns|mountains|seas|bridges|airports|buildings|places) (established )?(of|in)");
+	private Pattern lp1 = Pattern.compile("(rivers|cities|towns|mountains|seas|bridges|airports|buildings|places) (established )?(of|in)");
 
 	private Pattern op1 = Pattern.compile(
 			"(organizations|organisations|companies|agencies|institutions|institutes|clubs|universities|schools|colleges) (established|establishments|based) in");
@@ -248,8 +247,7 @@ public class WikiDataHandler {
 		List<String> titles = new ArrayList<String>(titleVariantMap.keySet());
 		Collections.sort(titles);
 
-		String[] outputFileNames = { ELPath.TITLE_FILE, ELPath.NAME_PERSON_FILE, ELPath.NAME_ORGANIZATION_FILE,
-				ELPath.NAME_LOCATION_FILE };
+		String[] outputFileNames = { ELPath.TITLE_FILE, ELPath.NAME_PERSON_FILE, ELPath.NAME_ORGANIZATION_FILE, ELPath.NAME_LOCATION_FILE };
 
 		TextFileWriter[] writers = new TextFileWriter[outputFileNames.length];
 
@@ -321,8 +319,8 @@ public class WikiDataHandler {
 
 	private boolean isLocationName(String catStr) {
 		boolean ret = false;
-		if (catStr.contains("places") || catStr.contains("cities") || catStr.contains("countries")
-				|| catStr.contains("provinces") || catStr.contains("states") || catStr.contains("territories")) {
+		if (catStr.contains("places") || catStr.contains("cities") || catStr.contains("countries") || catStr.contains("provinces")
+				|| catStr.contains("states") || catStr.contains("territories")) {
 			ret = true;
 		}
 		return ret;

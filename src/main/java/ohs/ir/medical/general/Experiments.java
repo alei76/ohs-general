@@ -16,7 +16,7 @@ import com.medallia.word2vec.Word2VecModel;
 
 import ohs.eden.linker.Entity;
 import ohs.eden.linker.EntityLinker;
-import ohs.eden.linker.WikiDataHandler;
+import ohs.eden.linker.WikiXmlDataHandler;
 import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.AnalyzerUtils;
@@ -436,7 +436,7 @@ public class Experiments {
 		System.out.println("search by KLD FB.");
 		IndexSearcher wis = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
 
-		Set<String> stopPrefixes = WikiDataHandler.getStopPrefixes();
+		Set<String> stopPrefixes = WikiXmlDataHandler.getStopPrefixes();
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
@@ -469,7 +469,7 @@ public class Experiments {
 					int docid = docScores.indexAtLoc(k);
 					double score = docScores.valueAtLoc(k);
 					String title = wis.getIndexReader().document(docid).get(CommonFieldNames.TITLE);
-					if (WikiDataHandler.accept(stopPrefixes, title)) {
+					if (WikiXmlDataHandler.accept(stopPrefixes, title)) {
 						wwcs.incrementAll(AnalyzerUtils.getWordCounts(title, analyzer));
 						l++;
 					}
@@ -1045,7 +1045,7 @@ public class Experiments {
 		System.out.println("search by KLD FB.");
 		IndexSearcher wis = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
 
-		Set<String> stopPrefixes = WikiDataHandler.getStopPrefixes();
+		Set<String> stopPrefixes = WikiXmlDataHandler.getStopPrefixes();
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
@@ -1079,7 +1079,7 @@ public class Experiments {
 					int docid = docScores.indexAtLoc(k);
 					double score = docScores.valueAtLoc(k);
 					String title = wis.getIndexReader().document(docid).get(CommonFieldNames.TITLE);
-					if (WikiDataHandler.accept(stopPrefixes, title)) {
+					if (WikiXmlDataHandler.accept(stopPrefixes, title)) {
 						titleScores.setCount(title, score);
 					}
 				}
