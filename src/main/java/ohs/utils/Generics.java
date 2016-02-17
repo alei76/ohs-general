@@ -19,6 +19,7 @@ import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import ohs.types.BidMap;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.DeepMap;
@@ -127,6 +128,10 @@ public class Generics {
 		return new HashMap<K, V>();
 	}
 
+	public static <K, V> BidMap<K, V> newBidMap() {
+		return new BidMap<K, V>();
+	}
+
 	public static <K, V> Map<K, V> newHashMap(int initialCapacity) {
 		return new HashMap<K, V>(initialCapacity);
 	}
@@ -223,8 +228,6 @@ public class Generics {
 	public static <E> Set<E> newSet(SetType t) {
 		return newSet(t, 0);
 	}
-	
-	
 
 	public static <E> Set<E> newSet(SetType t, int size) {
 		Set<E> ret = null;
