@@ -41,6 +41,7 @@ import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 
 import ohs.math.ArrayUtils;
+import ohs.types.BidMap;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
@@ -80,6 +81,31 @@ public class FileUtils {
 				}
 			}
 		}
+	}
+
+	public static BidMap<Integer, String> readIntStrBidMap(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+		BidMap<Integer, String> ret = Generics.newBidMap(size);
+		for (int i = 0; i < size; i++) {
+			ret.put(ois.readInt(), ois.readUTF());
+		}
+		return ret;
+	}
+
+	public static BidMap<Integer, String> readIntStrBidMap(String fileName) throws Exception {
+		ObjectInputStream ois = openObjectInputStream(fileName);
+		BidMap<Integer, String> ret = readIntStrBidMap(ois);
+		ois.close();
+		return ret;
+	}
+
+	public static void writeIntStrBidMap(ObjectOutputStream oos, BidMap<Integer, String> map) throws Exception {
+		oos.writeInt(map.size());
+		for (Entry<Integer, String> e : map.getKeyToValue().entrySet()) {
+			oos.writeInt(e.getKey());
+			oos.writeUTF(e.getValue());
+		}
+		oos.flush();
 	}
 
 	public static File appendFileNameSuffix(File file, String suffix) {
@@ -598,6 +624,7 @@ public class FileUtils {
 			int value = ois.readInt();
 			ret.put(key, value);
 		}
+		System.out.printf("read [%d] entries.\n", ret.size());
 		return ret;
 	}
 

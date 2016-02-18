@@ -132,6 +132,10 @@ public class Generics {
 		return new BidMap<K, V>();
 	}
 
+	public static <K, V> BidMap<K, V> newBidMap(int size) {
+		return new BidMap<K, V>(size);
+	}
+
 	public static <K, V> Map<K, V> newHashMap(int initialCapacity) {
 		return new HashMap<K, V>(initialCapacity);
 	}

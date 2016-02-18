@@ -17,12 +17,16 @@ public class BidMap<K, V> implements Serializable {
 	private Map<V, K> valueToKey;
 
 	public BidMap() {
-		this(Generics.MapType.HASH_MAP);
+		this(Generics.MapType.HASH_MAP, 1000);
 	}
 
-	public BidMap(Generics.MapType mt) {
-		keyToValue = Generics.newMap(mt);
-		valueToKey = Generics.newMap(mt);
+	public BidMap(int size) {
+		this(Generics.MapType.HASH_MAP, size);
+	}
+
+	public BidMap(Generics.MapType mt, int size) {
+		keyToValue = Generics.newMap(mt, size);
+		valueToKey = Generics.newMap(mt, size);
 	}
 
 	public BidMap(Map<K, V> keyToValue, Map<V, K> valueToKey) {
@@ -61,6 +65,10 @@ public class BidMap<K, V> implements Serializable {
 
 	public int size() {
 		return keyToValue.size();
+	}
+
+	public boolean contains(K key, V value) {
+		return keyToValue.containsKey(key) && valueToKey.containsKey(value);
 	}
 
 	@Override

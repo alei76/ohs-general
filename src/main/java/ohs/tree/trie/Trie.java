@@ -29,6 +29,10 @@ public class Trie<K> {
 
 	private Node<K> root;
 
+	public static <K> Trie<K> newTrie() {
+		return new Trie<K>();
+	}
+
 	public Trie() {
 		root = new Node<K>(null, null, depth, null, 0);
 	}
@@ -99,6 +103,26 @@ public class Trie<K> {
 			}
 		}
 
+		return node;
+	}
+
+	public Node<K> insert(List<K> keys) {
+		Node<K> node = root;
+		node.increaseCount();
+		for (K key : keys) {
+			Node<K> child;
+			if (node.hasChild(key)) {
+				child = node.getChild(key);
+				child.increaseCount();
+			} else {
+				child = new Node<K>(node, key, node.getDepth() + 1, null, size++);
+				node.addChild(child);
+			}
+			node = child;
+			if (node.getDepth() > depth) {
+				depth = node.getDepth();
+			}
+		}
 		return node;
 	}
 
