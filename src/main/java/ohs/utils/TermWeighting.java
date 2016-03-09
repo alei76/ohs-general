@@ -43,7 +43,7 @@ public class TermWeighting {
 	}
 
 	public static double idf(double num_docs, double doc_freq) {
-		return Math.log((num_docs + 1) / doc_freq);
+		return Math.log((num_docs + 1) / (doc_freq));
 	}
 
 	public static double tf(double word_cnt) {

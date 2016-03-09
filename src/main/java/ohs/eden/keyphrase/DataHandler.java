@@ -8,6 +8,8 @@ import java.util.Set;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
+import ohs.string.search.ppss.Gram;
+import ohs.string.search.ppss.GramGenerator;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
@@ -19,17 +21,14 @@ import ohs.utils.StrUtils;
 
 public class DataHandler {
 
+	public static final String NONE = "<none>";
+
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		DataHandler dh = new DataHandler();
 		// dh.extractKeywordData();
-		// dh.process();
-		// dh.analyze();
-		dh.makeVocab();
 		System.out.println("process ends.");
 	}
-
-	final String NONE = "<none>";
 
 	public void extractKeywordData() throws Exception {
 		String[] inFileNames = { KPPath.PAPER_DUMP_FILE, KPPath.REPORT_DUMP_FILE };
@@ -128,83 +127,6 @@ public class DataHandler {
 			}
 		}
 		return ret;
-	}
-
-	public void analyze() throws Exception {
-		KeywordData kwdData = new KeywordData();
-		kwdData.read(KPPath.KEYWORD_DATA_FILE.replace(".txt", ".ser"));
-
-		CounterMap<String, String> kwdTypeCounts = Generics.newCounterMap();
-		Counter<String> typeCounts = Generics.newCounter();
-
-		for (int kwdid : kwdData.getKeywordDocs().keySet()) {
-			String kwd = kwdData.getKeywordIndexer().getObject(kwdid);
-			List<Integer> docids = kwdData.getKeywordDocs().get(kwdid);
-			for (int docid : docids) {
-				String docId = kwdData.getDocIndexer().getObject(docid);
-				String[] parts = docId.split("_");
-				String type = parts[0];
-				String cn = parts[1];
-				kwdTypeCounts.incrementCount("KWD", type, 1);
-			}
-		}
-
-		FileUtils.writeStrCounterMap(KPPath.KEYWORD_TEMP_FILE, kwdTypeCounts);
-
-	}
-
-	public void makeVocab() throws Exception {
-		TextFileReader reader = new TextFileReader(KPPath.ABSTRACT_FILE);
-
-		Indexer<String> wordIndexer = Generics.newIndexer();
-		Counter<Integer> wordDocFreqs = Generics.newCounter();
-		Counter<Integer> wordCnts = Generics.newCounter();
-
-		int num_docs = 0;
-
-		while (reader.hasNext()) {
-			String[] parts = reader.next().split("\t");
-
-			for (int i = 0; i < parts.length; i++) {
-				parts[i] = parts[i].substring(1, parts[i].length() - 1);
-			}
-
-			String cn = parts[0];
-			String korAbs = parts[1];
-			String engAbs = parts[2];
-
-			Counter<String> c = Generics.newCounter();
-
-			if (!korAbs.equals(NONE)) {
-				c.incrementAll(getWordCounts(korAbs));
-			}
-
-			if (!engAbs.equals(NONE)) {
-				c.incrementAll(getWordCounts(engAbs));
-			}
-
-			for (Entry<String, Double> e : c.entrySet()) {
-				String word = e.getKey();
-				double cnt = e.getValue();
-				int w = wordIndexer.getIndex(word);
-				wordDocFreqs.incrementCount(w, 1);
-				wordCnts.incrementCount(w, cnt);
-			}
-			num_docs++;
-		}
-		reader.close();
-
-		int[] word_cnts = new int[wordIndexer.size()];
-		int[] word_doc_freqs = new int[wordIndexer.size()];
-
-		for (int i = 0; i < wordIndexer.size(); i++) {
-			word_cnts[i] = (int) wordCnts.getCount(i);
-			word_doc_freqs[i] = (int) wordDocFreqs.getCount(i);
-		}
-
-		Vocab vocab = new Vocab(wordIndexer, word_cnts, word_doc_freqs, num_docs);
-		vocab.write(KPPath.VOCAB_FILE);
-
 	}
 
 	private Counter<String> getWordCounts(String text) {

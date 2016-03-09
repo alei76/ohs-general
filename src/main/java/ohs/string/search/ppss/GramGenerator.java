@@ -64,7 +64,11 @@ public class GramGenerator implements Serializable {
 		this.q = q;
 	}
 
+	private boolean addTags = false;
+
 	public Gram[] generateQGrams(String s) {
+		s = String.format("<%s>", s);
+
 		int len = s.length();
 		int size = len - q + 1;
 

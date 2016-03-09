@@ -82,7 +82,7 @@ public class KeywordClusterer {
 						continue;
 					}
 
-					for (Gram g : gg.generateQGrams(String.format("<%s>", lang.toLowerCase()))) {
+					for (Gram g : gg.generateQGrams(lang.toLowerCase())) {
 						gramIndexer.getIndex(g.getString());
 					}
 				}
@@ -538,7 +538,7 @@ public class KeywordClusterer {
 						continue;
 					}
 
-					for (Gram g : gg.generateQGrams(String.format("<%s>", lang.toLowerCase()))) {
+					for (Gram g : gg.generateQGrams(lang.toLowerCase())) {
 						int gid = gramIndexer.indexOf(g.getString());
 						if (gid < 0) {
 							continue;

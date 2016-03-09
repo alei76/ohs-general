@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.commons.math.stat.descriptive.SynchronizedMultivariateSummaryStatistics;
+
 import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
 import ohs.tree.trie.Trie;
@@ -47,9 +49,9 @@ public class CategoryTreeBuilder {
 
 		writer = new TextFileWriter(ELPath.WIKI_DIR + "wiki_cat_tree.txt");
 
-		for (int c : childParentMap.keySet()) {
-			goUp(c);
-		}
+		// for (int c : childParentMap.keySet()) {
+		// goUp(c);
+		// }
 
 		// trie = Trie.newTrie();
 
@@ -67,7 +69,7 @@ public class CategoryTreeBuilder {
 		// mainTopics = parentChildMap.get(root_id);
 		// mainTopics.remove(health_id);
 
-		// goDown(health_id);
+		goDown(health_id);
 
 	}
 
@@ -77,6 +79,8 @@ public class CategoryTreeBuilder {
 
 		Set<Integer> visited = Generics.newHashSet();
 
+		mainTopics = parentChildMap.get(root_id);
+
 		goDown(catPath, visited);
 
 		writer.close();
@@ -84,7 +88,6 @@ public class CategoryTreeBuilder {
 
 	private void goDown(List<Integer> catPath, Set<Integer> visited) {
 		int c = catPath.get(catPath.size() - 1);
-		Set<Integer> children = parentChildMap.get(c);
 
 		if (visited.contains(c)) {
 			List<String> list = Generics.newArrayList();
@@ -94,33 +97,47 @@ public class CategoryTreeBuilder {
 			}
 			String catPathStr = StrUtils.join("->", list);
 			// System.out.println(catPathStr);
-		} else if (mainTopics.contains(c)) {
-			List<String> list = Generics.newArrayList();
-
-			for (int cc : catPath) {
-				list.add(idCatMap.getValue(cc));
-			}
-			String catPathStr = StrUtils.join("->", list);
-			System.out.println(catPathStr);
 		} else {
 			visited.add(c);
 
-			if (children.size() == 0) {
+			if (catPath.size() > 1 && mainTopics.contains(c)) {
 				List<String> list = Generics.newArrayList();
 
 				for (int cc : catPath) {
 					list.add(idCatMap.getValue(cc));
 				}
+				list.add(idCatMap.getValue(c));
 				Collections.reverse(list);
 				String catPathStr = StrUtils.join("->", list);
-				writer.write(catPathStr + "\n");
+				// writer.write(catPathStr + "\n");
 			} else {
-				for (int child_id : children) {
-					List<Integer> catPath2 = Generics.newArrayList(catPath);
-					Set<Integer> visited2 = Generics.newHashSet(visited);
-					catPath2.add(child_id);
+				Set<Integer> children = parentChildMap.get(c);
 
-					goDown(catPath2, visited2);
+				if (children.size() == 0) {
+					List<String> list = Generics.newArrayList();
+
+					for (int cc : catPath) {
+						list.add(idCatMap.getValue(cc));
+					}
+					// Collections.reverse(list);
+
+					StringBuffer sb = new StringBuffer();
+
+					for (int i = 0; i < catPath.size() - 1; i++) {
+						sb.append("-");
+					}
+					sb.append(idCatMap.getValue(catPath.get(catPath.size() - 1)));
+
+					// String catPathStr = StrUtils.join("->", list);
+					writer.write(sb.toString() + "\n");
+				} else {
+					for (int child_id : children) {
+						List<Integer> catPath2 = Generics.newArrayList(catPath);
+						Set<Integer> visited2 = Generics.newHashSet(visited);
+						catPath2.add(child_id);
+
+						goDown(catPath2, visited2);
+					}
 				}
 			}
 		}
@@ -168,6 +185,7 @@ public class CategoryTreeBuilder {
 	}
 
 	private void goUp(int c) {
+		System.out.printf("Cat:\t%s\n", idCatMap.getValue(c));
 		List<Integer> catPath = Generics.newArrayList();
 		catPath.add(c);
 
@@ -192,16 +210,18 @@ public class CategoryTreeBuilder {
 
 			Set<Integer> parents = childParentMap.get(c);
 
-			if (parentChildMap.get(root_id).contains(c) && c == health_id) {
-				List<String> list = Generics.newArrayList();
+			if (parentChildMap.get(root_id).contains(c)) {
+				if (c == health_id) {
+					List<String> list = Generics.newArrayList();
 
-				for (int cc : catPath) {
-					list.add(idCatMap.getValue(cc));
+					for (int cc : catPath) {
+						list.add(idCatMap.getValue(cc));
+					}
+					String catPathStr = StrUtils.join("->", list);
+					// System.out.println(catPathStr);
+
+					writer.write(catPathStr + "\n");
 				}
-				String catPathStr = StrUtils.join("->", list);
-				// System.out.println(catPathStr);
-
-				writer.write(catPathStr + "\n");
 			} else {
 				if (parents.size() > 0) {
 					for (int p : parents) {

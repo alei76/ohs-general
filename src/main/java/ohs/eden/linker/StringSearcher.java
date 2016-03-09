@@ -118,7 +118,7 @@ public class StringSearcher implements Serializable {
 			}
 
 			StringRecord sr = input.get(i);
-			Gram[] grams = gg.generateQGrams(String.format("<%s>", sr.getString().toLowerCase()));
+			Gram[] grams = gg.generateQGrams(sr.getString().toLowerCase());
 			if (grams.length == 0) {
 				continue;
 			}
@@ -209,7 +209,7 @@ public class StringSearcher implements Serializable {
 			}
 
 			StringRecord sr = input.get(i);
-			Gram[] grams = gg.generateQGrams(String.format("<%s>", sr.getString().toLowerCase()));
+			Gram[] grams = gg.generateQGrams(sr.getString().toLowerCase());
 			if (grams.length == 0) {
 				continue;
 			}
@@ -319,7 +319,7 @@ public class StringSearcher implements Serializable {
 	}
 
 	public Counter<StringRecord> search(String s) {
-		Gram[] grams = gg.generateQGrams(String.format("<%s>", s.toLowerCase()));
+		Gram[] grams = gg.generateQGrams(s.toLowerCase());
 
 		if (grams.length == 0) {
 			return new Counter<StringRecord>();
