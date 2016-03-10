@@ -1,21 +1,19 @@
 package ohs.eden.keyphrase;
 
+import java.sql.Struct;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 
+import kr.co.shineware.nlp.komoran.core.analyzer.Komoran;
+import kr.co.shineware.util.common.model.Pair;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.string.search.ppss.Gram;
-import ohs.string.search.ppss.GramGenerator;
 import ohs.types.Counter;
-import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
 import ohs.types.SetMap;
-import ohs.types.Vocab;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 
@@ -26,8 +24,214 @@ public class DataHandler {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		DataHandler dh = new DataHandler();
+		// dh.mergeDumps();
+		dh.doPosTagging();
 		// dh.extractKeywordData();
 		System.out.println("process ends.");
+	}
+
+	public void mergeDumps() {
+		TextFileWriter writer = new TextFileWriter(KPPath.SINGLE_DUMP_FILE);
+		writer.write("TYPE\tCN\tKOR_KWD\tENG_KWD\tENG_TITLE\tKOR_TITLE\tKOR_ABS\tENG_ABS");
+
+		String[] inFileNames = { KPPath.PAPER_DUMP_FILE, KPPath.REPORT_DUMP_FILE, KPPath.PATENT_DUMP_FILE };
+
+		for (int i = 0; i < inFileNames.length; i++) {
+			String inFileName = inFileNames[i];
+
+			TextFileReader reader = new TextFileReader(inFileName);
+			List<String> labels = Generics.newArrayList();
+
+			while (reader.hasNext()) {
+				// if (reader.getNumLines() > 100000) {
+				// break;
+				// }
+
+				String line = reader.next();
+				String[] parts = line.split("\t");
+
+				for (int j = 0; j < parts.length; j++) {
+					if (parts[j].length() > 1) {
+						parts[j] = parts[j].substring(1, parts[j].length() - 1);
+					}
+				}
+
+				if (reader.getNumLines() == 1) {
+					for (String p : parts) {
+						labels.add(p);
+					}
+				} else {
+					if (parts.length != labels.size()) {
+						continue;
+					}
+
+					String cn = parts[0];
+					String korTitle = "";
+					String engTitle = "";
+					String korAbs = "";
+					String engAbs = "";
+					String korKeywordStr = "";
+					String engKeywordStr = "";
+					String type = "";
+
+					if (i == 0) {
+						korTitle = parts[4];
+						engTitle = parts[5];
+						korAbs = parts[10];
+						engAbs = parts[11];
+						korKeywordStr = parts[8];
+						engKeywordStr = parts[9];
+						type = "paper";
+					} else if (i == 1) {
+						korTitle = parts[1];
+						engTitle = parts[2];
+						korAbs = parts[7];
+						engAbs = parts[8];
+
+						korKeywordStr = parts[5];
+						engKeywordStr = parts[6];
+						type = "report";
+					} else if (i == 2) {
+						String applno = parts[0];
+						korTitle = parts[1];
+						engTitle = parts[2];
+						cn = parts[3];
+						korAbs = parts[4];
+						String cm = parts[5];
+						type = "patent";
+					}
+
+					List<String> korKwds = getKeywords(korKeywordStr);
+					List<String> engKwds = getKeywords(engKeywordStr);
+
+					korKeywordStr = StrUtils.join(";", korKwds);
+					engKeywordStr = StrUtils.join(";", engKwds);
+
+					List<String> res = Generics.newArrayList();
+					res.add(String.format("\"%s\"", type));
+					res.add(String.format("\"%s\"", cn));
+					res.add(String.format("\"%s\"", korKeywordStr));
+					res.add(String.format("\"%s\"", engKeywordStr));
+					res.add(String.format("\"%s\"", korTitle));
+					res.add(String.format("\"%s\"", engTitle));
+					res.add(String.format("\"%s\"", korAbs));
+					res.add(String.format("\"%s\"", engAbs));
+
+					String output = StrUtils.join("\t", res);
+
+					writer.write(String.format("\n%s", output));
+				}
+			}
+			reader.close();
+		}
+		writer.close();
+	}
+
+	private String getText(List<List<List<Pair<String, String>>>> result) {
+		StringBuffer sb = new StringBuffer();
+
+		for (int i = 0; i < result.size(); i++) {
+			List<List<Pair<String, String>>> ll = result.get(i);
+			for (int j = 0; j < ll.size(); j++) {
+				List<Pair<String, String>> l = ll.get(j);
+
+				for (int k = 0; k < l.size(); k++) {
+					Pair<String, String> pair = l.get(k);
+					sb.append(String.format("%s/%s", pair.getFirst(), pair.getSecond()));
+					if (k != l.size() - 1) {
+						sb.append("+");
+					}
+				}
+
+				if (j != ll.size() - 1) {
+					sb.append(" ");
+				}
+
+			}
+			if (i != ll.size() - 1) {
+				sb.append("\n");
+			}
+		}
+
+		return sb.toString().trim();
+	}
+
+	public void doPosTagging() {
+		Komoran komoran = new Komoran("lib/models-full/");
+
+		String s1 = "세계 각국의 노동자조직인 ICEF(세계화학에너지 일반노연)는 7월8일~10일까지 3일간 스위스 제네바에서 고무ㆍ플라스틱 부회 총회가 개최되었다.";
+		String s2 = "I Love You.";
+
+		List<List<List<Pair<String, String>>>> list = komoran.analyze(s2, 1);
+
+		System.out.println(getText(list));
+
+		TextFileWriter writer = new TextFileWriter(KPPath.SINGLE_DUMP_POS_FILE);
+		TextFileReader reader = new TextFileReader(KPPath.SINGLE_DUMP_FILE);
+		List<String> labels = Generics.newArrayList();
+
+		while (reader.hasNext()) {
+			// if (reader.getNumLines() > 100000) {
+			// break;
+			// }
+
+			String line = reader.next();
+			String[] parts = line.split("\t");
+
+			if (reader.getNumLines() == 1) {
+				for (String p : parts) {
+					labels.add(p);
+				}
+				writer.write(line);
+			} else {
+				if (parts.length != labels.size()) {
+					continue;
+				}
+
+				for (int j = 0; j < parts.length; j++) {
+					if (parts[j].length() > 1) {
+						parts[j] = parts[j].substring(1, parts[j].length() - 1);
+					}
+				}
+
+				String type = parts[0];
+				String cn = parts[1];
+				String korKwdStr = parts[2];
+				String engKwdStr = parts[3];
+				String korTitle = parts[4];
+				String engTitle = parts[5];
+				String korAbs = parts[6];
+				String engAbs = parts[7];
+
+				if (korTitle.length() == 0 || korAbs.length() == 0) {
+					continue;
+				}
+
+				List<String> korKwds = getKeywords(korKwdStr);
+
+				if (korKwds.size() == 0) {
+					continue;
+				}
+
+				for (int i = 0; i < korKwds.size(); i++) {
+					String kwd = korKwds.get(i);
+					kwd = getText(komoran.analyze(kwd, 1));
+					korKwds.set(i, kwd);
+				}
+
+				korKwdStr = StrUtils.join(";", korKwds);
+
+				parts[4] = getText(komoran.analyze(korTitle, 1));
+				parts[6] = getText(komoran.analyze(korAbs, 1));
+
+				for (int i = 0; i < parts.length; i++) {
+					parts[i] = String.format("\"%s\"", parts[i]);
+				}
+				writer.write("\n" + StrUtils.join("\t", parts));
+			}
+		}
+		reader.close();
+		writer.close();
 	}
 
 	public void extractKeywordData() throws Exception {

@@ -78,14 +78,6 @@ public class StrUtils {
 		return ret;
 	}
 
-	public static String[] subTokens(String[] toks, int start, int end) {
-		String[] ret = new String[end - start];
-		for (int i = start, j = 0; i < toks.length && i < end; i++) {
-			ret[j] = toks[i];
-		}
-		return ret;
-	}
-
 	public static List<TextSpan> extract(String text) throws Exception {
 		Set<String> tagNames = null;
 		return extract(text, tagNames, false);
@@ -329,7 +321,6 @@ public class StrUtils {
 			}
 		}
 		return sb.toString();
-
 	}
 
 	public static Counter<String> ngrams(int ngram_order, List<String> words) {
@@ -544,6 +535,14 @@ public class StrUtils {
 		int start = text.indexOf(startText) + startText.length();
 		int end = text.indexOf(endText);
 		return text.substring(start, end);
+	}
+
+	public static String[] subTokens(String[] toks, int start, int end) {
+		String[] ret = new String[end - start];
+		for (int i = start, j = 0; i < toks.length && i < end; i++) {
+			ret[j] = toks[i];
+		}
+		return ret;
 	}
 
 	public static String tag(String text, Collection<String> targets, String tagName) throws Exception {

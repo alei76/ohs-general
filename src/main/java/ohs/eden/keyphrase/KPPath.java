@@ -12,6 +12,10 @@ public class KPPath {
 
 	public static final String REPORT_DUMP_FILE = TEXT_DUMP_DIR + "report.csv";
 
+	public static final String SINGLE_DUMP_FILE = TEXT_DUMP_DIR + "3p.csv.gz";
+
+	public static final String SINGLE_DUMP_POS_FILE = TEXT_DUMP_DIR + "3p_pos.csv";
+
 	public static final String KEYPHRASE_DIR = DATA_DIR + "keyphrase/";
 
 	public static final String KEYWORD_DATA_FILE = KEYPHRASE_DIR + "keyword_data.txt.gz";
