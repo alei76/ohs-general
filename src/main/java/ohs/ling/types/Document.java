@@ -30,6 +30,14 @@ public class Document {
 		return sents.length;
 	}
 
+	public String[][] getValues(TokenAttr attr, String delim, int start, int end) {
+		String[][] ret = new String[end - start][];
+		for (int i = start; i < end; i++) {
+			ret[i] = sents[i].getValues(attr, delim, start, end);
+		}
+		return ret;
+	}
+
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 

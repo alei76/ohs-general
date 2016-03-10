@@ -210,6 +210,20 @@ public class Trie<K> {
 		return node;
 	}
 
+	public Node<K> search(K[] keys, int start, int end) {
+		Node<K> node = root;
+		for (int i = start; i < end; i++) {
+			K key = keys[i];
+			if (node.hasChild(key)) {
+				node = node.getChild(key);
+			} else {
+				node = null;
+				break;
+			}
+		}
+		return node;
+	}
+
 	public int size() {
 		return size;
 	}

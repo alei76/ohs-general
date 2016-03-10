@@ -1,6 +1,6 @@
 package ohs.ling.types;
 
 public enum TokenAttr {
-	WORD
+	WORD, POS
 	// WORD, STEM, LEMMA, POS, NER
 }
