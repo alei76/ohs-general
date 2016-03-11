@@ -60,11 +60,27 @@ public class GramGenerator implements Serializable {
 	 */
 	private int q = 2;
 
+	private boolean addTags = false;
+
 	public GramGenerator(int q) {
 		this.q = q;
 	}
 
-	private boolean addTags = false;
+	public Gram[] generateNGrams(List<String> words) {
+		int len = words.size();
+		int size = len - q + 1;
+
+		Gram[] ret = null;
+		if (len < q) {
+			ret = new Gram[0];
+		} else {
+			ret = new Gram[size];
+			for (int i = 0; i < len - q + 1; i++) {
+				ret[i] = new Gram(StrUtils.join(" ", words, i, i + q), i, Type.NONE);
+			}
+		}
+		return ret;
+	}
 
 	public Gram[] generateQGrams(String s) {
 		s = String.format("<%s>", s);
@@ -80,22 +96,6 @@ public class GramGenerator implements Serializable {
 			ret = new Gram[size];
 			for (int i = 0; i < len - q + 1; i++) {
 				ret[i] = new Gram(s.substring(i, i + q), i, Type.NONE);
-			}
-		}
-		return ret;
-	}
-
-	public Gram[] generateNGrams(List<String> words) {
-		int len = words.size();
-		int size = len - q + 1;
-
-		Gram[] ret = null;
-		if (len < q) {
-			ret = new Gram[0];
-		} else {
-			ret = new Gram[size];
-			for (int i = 0; i < len - q + 1; i++) {
-				ret[i] = new Gram(StrUtils.join(" ", words, i, i + q), i, Type.NONE);
 			}
 		}
 		return ret;

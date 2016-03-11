@@ -508,63 +508,6 @@ public class VectorMath {
 		}
 	}
 
-	public static void randomWalk(SparseMatrix trans_probs, double[] cents, int max_iter) {
-		randomWalk(trans_probs, cents, max_iter, 0.0000001, 0.85);
-	}
-
-	/**
-	 * @param trans_probs
-	 *            Column-normalized transition probabilities
-	 * @param cents
-	 * @param max_iter
-	 * @param min_dist
-	 * @param damping_factor
-	 * @return
-	 */
-	public static void randomWalk(SparseMatrix trans_probs, double[] cents, int max_iter, double min_dist, double damping_factor) {
-
-		double tran_prob = 0;
-		double dot_product = 0;
-		double[] old_cents = ArrayUtils.copy(cents);
-		double old_dist = Double.MAX_VALUE;
-		int num_docs = trans_probs.rowSize();
-
-		double uniform_cent = (1 - damping_factor) / num_docs;
-
-		for (int m = 0; m < max_iter; m++) {
-			for (int i = 0; i < trans_probs.rowSize(); i++) {
-				dot_product = 0;
-				SparseVector sv = trans_probs.vectorAtRowLoc(i);
-				for (int j = 0; j < sv.size(); j++) {
-					tran_prob = damping_factor * sv.valueAtLoc(j);
-					dot_product += tran_prob * old_cents[sv.indexAtLoc(j)];
-				}
-				cents[i] = dot_product;
-			}
-
-			double sum = ArrayMath.add(cents, uniform_cent, cents);
-
-			if (sum != 1) {
-				ArrayMath.scale(cents, 1f / sum, cents);
-			}
-
-			double dist = ArrayMath.euclideanDistance(old_cents, cents);
-
-			System.out.printf("%d: %s - %s = %s\n", m + 1, old_dist, dist, old_dist - dist);
-
-			if (dist < min_dist) {
-				break;
-			}
-
-			if (dist > old_dist) {
-				ArrayUtils.copy(old_cents, cents);
-				break;
-			}
-			old_dist = dist;
-			ArrayUtils.copy(cents, old_cents);
-		}
-	}
-
 	public static void normalizeBySigmoid(SparseVector x) {
 		double sum = 0;
 		for (int i = 0; i < x.size(); i++) {
@@ -608,57 +551,6 @@ public class VectorMath {
 		ret = Math.sqrt(ret);
 		return ret;
 	}
-
-	// public static void pointwiseMultiply(Matrix a, Matrix b) {
-	// if (!VectorChecker.isProductable(a, b)) {
-	// new IllegalArgumentException("different dimension");
-	// }
-	//
-	// if (isSparse(a) && isSparse(b)) {
-	// SparseMatrix m1 = (SparseMatrix) a;
-	// SparseMatrix m2 = (SparseMatrix) b;
-	// for (int i = 0; i < m1.rowSize(); i++) {
-	// int rowId = m1.indexAtRowLoc(i);
-	// Vector row1 = m1.vectorAtRowLoc(i);
-	// Vector row2 = m2.rowAlways(rowId);
-	//
-	// if (row2 == null) {
-	// row1.setAll(0);
-	// } else {
-	// pointwiseMultiply(row1, row2);
-	// }
-	// }
-	// } else if (!isSparse(a) && !isSparse(b)) {
-	// DenseMatrix m1 = (DenseMatrix) a;
-	// DenseMatrix m2 = (DenseMatrix) b;
-	// for (int i = 0; i < m1.rowDim(); i++) {
-	// pointwiseMultiply(m1.row(i), m2.row(i));
-	// }
-	// } else if (!isSparse(a) && isSparse(b)) {
-	// DenseMatrix m1 = (DenseMatrix) a;
-	// SparseMatrix m2 = (SparseMatrix) b;
-	//
-	// for (int i = 0; i < m1.rowDim(); i++) {
-	// Vector row1 = m1.row(i);
-	// Vector row2 = m2.rowAlways(i);
-	// if (row2 == null) {
-	// row1.setAll(0);
-	// } else {
-	// pointwiseMultiply(row1, row2);
-	// }
-	// }
-	// } else if (isSparse(a) && !isSparse(b)) {
-	// SparseMatrix m1 = (SparseMatrix) a;
-	// DenseMatrix m2 = (DenseMatrix) b;
-	//
-	// for (int i = 0; i < m1.rowSize(); i++) {
-	// int rowId = m1.indexAtRowLoc(i);
-	// Vector row1 = m1.vectorAtRowLoc(i);
-	// Vector row2 = m2.row(rowId);
-	// pointwiseMultiply(row1, row2);
-	// }
-	// }
-	// }
 
 	public static void pointwiseMultiply(Vector a, Vector b, Vector c) {
 		if (!VectorChecker.isSameDimension(a, b)) {
@@ -751,6 +643,57 @@ public class VectorMath {
 		}
 	}
 
+	// public static void pointwiseMultiply(Matrix a, Matrix b) {
+	// if (!VectorChecker.isProductable(a, b)) {
+	// new IllegalArgumentException("different dimension");
+	// }
+	//
+	// if (isSparse(a) && isSparse(b)) {
+	// SparseMatrix m1 = (SparseMatrix) a;
+	// SparseMatrix m2 = (SparseMatrix) b;
+	// for (int i = 0; i < m1.rowSize(); i++) {
+	// int rowId = m1.indexAtRowLoc(i);
+	// Vector row1 = m1.vectorAtRowLoc(i);
+	// Vector row2 = m2.rowAlways(rowId);
+	//
+	// if (row2 == null) {
+	// row1.setAll(0);
+	// } else {
+	// pointwiseMultiply(row1, row2);
+	// }
+	// }
+	// } else if (!isSparse(a) && !isSparse(b)) {
+	// DenseMatrix m1 = (DenseMatrix) a;
+	// DenseMatrix m2 = (DenseMatrix) b;
+	// for (int i = 0; i < m1.rowDim(); i++) {
+	// pointwiseMultiply(m1.row(i), m2.row(i));
+	// }
+	// } else if (!isSparse(a) && isSparse(b)) {
+	// DenseMatrix m1 = (DenseMatrix) a;
+	// SparseMatrix m2 = (SparseMatrix) b;
+	//
+	// for (int i = 0; i < m1.rowDim(); i++) {
+	// Vector row1 = m1.row(i);
+	// Vector row2 = m2.rowAlways(i);
+	// if (row2 == null) {
+	// row1.setAll(0);
+	// } else {
+	// pointwiseMultiply(row1, row2);
+	// }
+	// }
+	// } else if (isSparse(a) && !isSparse(b)) {
+	// SparseMatrix m1 = (SparseMatrix) a;
+	// DenseMatrix m2 = (DenseMatrix) b;
+	//
+	// for (int i = 0; i < m1.rowSize(); i++) {
+	// int rowId = m1.indexAtRowLoc(i);
+	// Vector row1 = m1.vectorAtRowLoc(i);
+	// Vector row2 = m2.row(rowId);
+	// pointwiseMultiply(row1, row2);
+	// }
+	// }
+	// }
+
 	public static void product(Matrix a, Matrix b, Matrix c) {
 		if (!VectorChecker.isProductable(a, b, c)) {
 			new IllegalArgumentException("different dimension");
@@ -769,6 +712,63 @@ public class VectorMath {
 					c.set(i, j, dotProduct);
 				}
 			}
+		}
+	}
+
+	public static void randomWalk(SparseMatrix trans_probs, double[] cents, int max_iter) {
+		randomWalk(trans_probs, cents, max_iter, 0.0000001, 0.85);
+	}
+
+	/**
+	 * @param trans_probs
+	 *            Column-normalized transition probabilities
+	 * @param cents
+	 * @param max_iter
+	 * @param min_dist
+	 * @param damping_factor
+	 * @return
+	 */
+	public static void randomWalk(SparseMatrix trans_probs, double[] cents, int max_iter, double min_dist, double damping_factor) {
+
+		double tran_prob = 0;
+		double dot_product = 0;
+		double[] old_cents = ArrayUtils.copy(cents);
+		double old_dist = Double.MAX_VALUE;
+		int num_docs = trans_probs.rowSize();
+
+		double uniform_cent = (1 - damping_factor) / num_docs;
+
+		for (int m = 0; m < max_iter; m++) {
+			for (int i = 0; i < trans_probs.rowSize(); i++) {
+				dot_product = 0;
+				SparseVector sv = trans_probs.vectorAtRowLoc(i);
+				for (int j = 0; j < sv.size(); j++) {
+					tran_prob = damping_factor * sv.valueAtLoc(j);
+					dot_product += tran_prob * old_cents[sv.indexAtLoc(j)];
+				}
+				cents[i] = dot_product;
+			}
+
+			double sum = ArrayMath.add(cents, uniform_cent, cents);
+
+			if (sum != 1) {
+				ArrayMath.scale(cents, 1f / sum, cents);
+			}
+
+			double dist = ArrayMath.euclideanDistance(old_cents, cents);
+
+			System.out.printf("%d: %s - %s = %s\n", m + 1, old_dist, dist, old_dist - dist);
+
+			if (dist < min_dist) {
+				break;
+			}
+
+			if (dist > old_dist) {
+				ArrayUtils.copy(old_cents, cents);
+				break;
+			}
+			old_dist = dist;
+			ArrayUtils.copy(cents, old_cents);
 		}
 	}
 

@@ -2,6 +2,7 @@ package ohs.ling.types;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Arrays;
 
 import ohs.io.FileUtils;
 
@@ -28,6 +29,24 @@ public class Token {
 		}
 		values[TokenAttr.WORD.ordinal()] = word;
 		subToks = new Token[0];
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Token other = (Token) obj;
+		if (start != other.start)
+			return false;
+		if (!Arrays.equals(subToks, other.subToks))
+			return false;
+		if (!Arrays.equals(values, other.values))
+			return false;
+		return true;
 	}
 
 	public int getStart() {
@@ -83,16 +102,36 @@ public class Token {
 		return ret;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + start;
+		result = prime * result + Arrays.hashCode(subToks);
+		result = prime * result + Arrays.hashCode(values);
+		return result;
+	}
+
 	public String joinSubTokenValues() {
 		return joinSubTokenValues(DELIM_VALUE, DELIM_SUBTOKEN, TokenAttr.values());
 	}
 
-	public String joinSubTokenValues(String delimValue, String delimSubTok, TokenAttr[] attrs) {
+	/**
+	 * 외/NNG+하/XSV+ㄴ/ETM 각종/NNG
+	 * 
+	 * delimValue: / delimSubtok: +
+	 * 
+	 * @param delimValue
+	 * @param delimSubtok
+	 * @param attrs
+	 * @return
+	 */
+	public String joinSubTokenValues(String delimValue, String delimSubtok, TokenAttr[] attrs) {
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < subToks.length; i++) {
 			sb.append(String.join(delimValue, subToks[i].getValues(attrs)));
 			if (i != subToks.length - 1) {
-				sb.append(delimSubTok);
+				sb.append(delimSubtok);
 			}
 		}
 		return sb.toString();
@@ -107,11 +146,13 @@ public class Token {
 	}
 
 	public int length() {
-		return values[TokenAttr.WORD.ordinal()].length();
-	}
-
-	public int lengthOfSubTokens() {
-		return subToks.length;
+		int ret = values[TokenAttr.WORD.ordinal()].length();
+		if (subToks.length > 0) {
+			for (Token t : subToks) {
+				ret += t.length();
+			}
+		}
+		return ret;
 	}
 
 	public void read(ObjectInputStream ois) throws Exception {
@@ -133,6 +174,10 @@ public class Token {
 
 	public void setValue(TokenAttr attr, String value) {
 		values[attr.ordinal()] = value;
+	}
+
+	public int sizeOfSubTokens() {
+		return subToks.length;
 	}
 
 	public String toString() {

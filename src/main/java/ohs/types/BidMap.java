@@ -20,18 +20,22 @@ public class BidMap<K, V> implements Serializable {
 		this(Generics.MapType.HASH_MAP, 1000);
 	}
 
-	public BidMap(int size) {
-		this(Generics.MapType.HASH_MAP, size);
-	}
-
 	public BidMap(Generics.MapType mt, int size) {
 		keyToValue = Generics.newMap(mt, size);
 		valueToKey = Generics.newMap(mt, size);
 	}
 
+	public BidMap(int size) {
+		this(Generics.MapType.HASH_MAP, size);
+	}
+
 	public BidMap(Map<K, V> keyToValue, Map<V, K> valueToKey) {
 		this.keyToValue = keyToValue;
 		this.valueToKey = valueToKey;
+	}
+
+	public boolean contains(K key, V value) {
+		return keyToValue.containsKey(key) && valueToKey.containsKey(value);
 	}
 
 	public K getKey(V value) {
@@ -65,10 +69,6 @@ public class BidMap<K, V> implements Serializable {
 
 	public int size() {
 		return keyToValue.size();
-	}
-
-	public boolean contains(K key, V value) {
-		return keyToValue.containsKey(key) && valueToKey.containsKey(value);
 	}
 
 	@Override

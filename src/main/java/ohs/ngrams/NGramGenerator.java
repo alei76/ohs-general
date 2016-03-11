@@ -216,7 +216,7 @@ public class NGramGenerator {
 			System.out.printf("read [%d] files from [%s]\n", num_files, dataFile.getName());
 		}
 
-		List<String> journals = cm.getInnerCountSums().getSortedKeys();
+		List<String> journals = cm.getRowCountSums().getSortedKeys();
 		List<String> years = new ArrayList<String>(yearSet);
 
 		Collections.sort(years);

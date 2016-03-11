@@ -83,14 +83,6 @@ public class StrUtils {
 		return extract(text, tagNames, false);
 	}
 
-	public static String[] surround(String[] array, String prefix, String suffix) {
-		String[] ret = new String[array.length];
-		for (int i = 0; i < array.length; i++) {
-			ret[i] = String.format("%s%s%s", prefix, array[i], suffix);
-		}
-		return ret;
-	}
-
 	public static List<TextSpan> extract(String t, Set<String> tagNames, boolean get_start_at_plain) throws Exception {
 		List<TextSpan> ret = Generics.newArrayList();
 
@@ -549,6 +541,14 @@ public class StrUtils {
 		String[] ret = new String[end - start];
 		for (int i = start, j = 0; i < toks.length && i < end; i++) {
 			ret[j] = toks[i];
+		}
+		return ret;
+	}
+
+	public static String[] surround(String[] array, String prefix, String suffix) {
+		String[] ret = new String[array.length];
+		for (int i = 0; i < array.length; i++) {
+			ret[i] = String.format("%s%s%s", prefix, array[i], suffix);
 		}
 		return ret;
 	}

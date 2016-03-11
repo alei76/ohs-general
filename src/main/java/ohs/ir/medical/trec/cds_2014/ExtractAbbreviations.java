@@ -143,7 +143,7 @@ public class ExtractAbbreviations {
 			}
 		}
 
-		Counter<String> short_count = short_long_count.getInnerCountSums();
+		Counter<String> short_count = short_long_count.getRowCountSums();
 
 		TextFileWriter writer = new TextFileWriter(CDSPath.ABBREVIATION_FILTERED_FILE);
 
@@ -205,7 +205,7 @@ public class ExtractAbbreviations {
 			// long_count.pruneKeysBelowThreshold(5);
 		}
 
-		Counter<String> short_count = short_long_count.getInnerCountSums();
+		Counter<String> short_count = short_long_count.getRowCountSums();
 
 		TextFileWriter writer = new TextFileWriter(CDSPath.ABBREVIATION_GROUPED_FILE);
 

@@ -2,6 +2,7 @@ package ohs.ling.types;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Arrays;
 
 public class Sentence {
 
@@ -15,8 +16,38 @@ public class Sentence {
 		this.toks = toks;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Sentence other = (Sentence) obj;
+		if (!Arrays.equals(toks, other.toks))
+			return false;
+		return true;
+	}
+
 	public Token get(int i) {
 		return toks[i];
+	}
+
+	public Token getFirst() {
+		return toks[0];
+	}
+
+	public Token getLast() {
+		return toks[toks.length - 1];
+	}
+
+	public Sentence getSentence(int start, int end) {
+		return new Sentence(getTokens(start, end));
+	}
+
+	public Token[] getTokens() {
+		return toks;
 	}
 
 	public Token[] getTokens(int start, int end) {
@@ -31,14 +62,14 @@ public class Sentence {
 		return getValues(Token.DELIM_VALUE, Token.DELIM_SUBTOKEN, TokenAttr.values(), 0, toks.length);
 	}
 
-	public String[] getValues(String delimValue, String delimSubTok, TokenAttr[] attrs, int start, int end) {
+	public String[] getValues(String delimValue, String delimSubtok, TokenAttr[] attrs, int start, int end) {
 		String[] ret = new String[end - start];
 		for (int i = start, loc = 0; i < end; i++, loc++) {
 			Token t = toks[i];
-			if (t.lengthOfSubTokens() == 0) {
+			if (t.sizeOfSubTokens() == 0) {
 				ret[loc] = t.joinValues(delimValue, attrs);
 			} else {
-				ret[loc] = t.joinSubTokenValues(delimValue, delimSubTok, attrs);
+				ret[loc] = t.joinSubTokenValues(delimValue, delimSubtok, attrs);
 			}
 		}
 		return ret;
@@ -48,12 +79,28 @@ public class Sentence {
 		return getValues(Token.DELIM_VALUE, Token.DELIM_SUBTOKEN, new TokenAttr[] { attr }, 0, toks.length);
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(toks);
+		return result;
+	}
+
 	public String joinValues() {
 		return joinValues(Token.DELIM_VALUE, Token.DELIM_SUBTOKEN, TokenAttr.values(), 0, toks.length);
 	}
 
 	public String joinValues(String delimValue, String delimSubtok, TokenAttr[] attrs, int start, int end) {
 		return String.join(" ", getValues(delimValue, delimSubtok, attrs, start, end));
+	}
+
+	public int length() {
+		int ret = 0;
+		for (Token t : toks) {
+			ret += t.length();
+		}
+		return ret;
 	}
 
 	public void read(ObjectInputStream ois) throws Exception {
@@ -65,6 +112,10 @@ public class Sentence {
 
 	public int size() {
 		return toks.length;
+	}
+
+	public Document toDocument() {
+		return new Document(new Sentence[] { this });
 	}
 
 	@Override

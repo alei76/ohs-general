@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 //import fig.basic.Pair;
@@ -135,10 +136,21 @@ public class CounterMap<K, V> implements java.io.Serializable {
 		return counterMap.entrySet();
 	}
 
-	public Counter<K> getInnerCountSums() {
+	public Counter<K> getRowCountSums() {
 		Counter<K> ret = new Counter<K>();
 		for (K key : counterMap.keySet()) {
 			ret.setCount(key, counterMap.get(key).totalCount());
+		}
+		return ret;
+	}
+
+	public Counter<V> getColumnCountSums() {
+		Counter<V> ret = new Counter<V>();
+		for (K key : counterMap.keySet()) {
+			Counter<V> c = counterMap.get(key);
+			for (Entry<V, Double> e : c.entrySet()) {
+				ret.incrementCount(e.getKey(), e.getValue());
+			}
 		}
 		return ret;
 	}
@@ -390,7 +402,7 @@ public class CounterMap<K, V> implements java.io.Serializable {
 		StringBuilder sb = new StringBuilder("[\n");
 		int numKeys = 0;
 
-		for (K key : getInnerCountSums().getSortedKeys()) {
+		for (K key : getRowCountSums().getSortedKeys()) {
 			Counter<V> inner = counterMap.get(key);
 			if (++numKeys > numPrintRows) {
 				sb.append("...\n");

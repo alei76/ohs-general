@@ -42,18 +42,6 @@ public class TermWeighting {
 		}
 	}
 
-	public static double idf(double num_docs, double doc_freq) {
-		return Math.log((num_docs + 1) / (doc_freq));
-	}
-
-	public static double tf(double word_cnt) {
-		return Math.log(word_cnt) + 1;
-	}
-
-	public static double tfidf(double word_cnt, double num_docs, double doc_freq) {
-		return tf(word_cnt) * idf(num_docs, doc_freq);
-	}
-
 	public static DenseVector docFreq(List<SparseVector> docs, int num_terms) {
 		DenseVector ret = new DenseVector(num_terms);
 		for (SparseVector doc : docs) {
@@ -72,6 +60,10 @@ public class TermWeighting {
 			ret.put(x.label(), i);
 		}
 		return ret;
+	}
+
+	public static double idf(double num_docs, double doc_freq) {
+		return Math.log((num_docs + 1) / (doc_freq));
 	}
 
 	public static List<SparseVector> invertedIndexDoubleVector(List<SparseVector> docs, int num_terms) {
@@ -160,6 +152,10 @@ public class TermWeighting {
 		return ret;
 	}
 
+	public static double tf(double word_cnt) {
+		return Math.log(word_cnt) + 1;
+	}
+
 	public static void tf_rf(List<SparseVector> xs, int termSize) {
 		System.out.println("weight by tf-rf");
 		int[][] term_doc = makeInvertedIndex(xs, termSize);
@@ -228,6 +224,10 @@ public class TermWeighting {
 				VectorMath.unitVector(x);
 			}
 		}
+	}
+
+	public static double tfidf(double word_cnt, double num_docs, double doc_freq) {
+		return tf(word_cnt) * idf(num_docs, doc_freq);
 	}
 
 	public static void weightByBM25(List<SparseVector> docs) {

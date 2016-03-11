@@ -79,6 +79,14 @@ public class Generics {
 		return new ArrayList<E>(size);
 	}
 
+	public static <K, V> BidMap<K, V> newBidMap() {
+		return new BidMap<K, V>();
+	}
+
+	public static <K, V> BidMap<K, V> newBidMap(int size) {
+		return new BidMap<K, V>(size);
+	}
+
 	public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap() {
 		return new ConcurrentHashMap<K, V>();
 	}
@@ -126,14 +134,6 @@ public class Generics {
 	/* Maps */
 	public static <K, V> Map<K, V> newHashMap() {
 		return new HashMap<K, V>();
-	}
-
-	public static <K, V> BidMap<K, V> newBidMap() {
-		return new BidMap<K, V>();
-	}
-
-	public static <K, V> BidMap<K, V> newBidMap(int size) {
-		return new BidMap<K, V>(size);
 	}
 
 	public static <K, V> Map<K, V> newHashMap(int initialCapacity) {

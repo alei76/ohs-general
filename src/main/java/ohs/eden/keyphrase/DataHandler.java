@@ -31,97 +31,6 @@ public class DataHandler {
 		System.out.println("process ends.");
 	}
 
-	public void extractKeywordPatterns() throws Exception {
-		Counter<String> patCnts = Generics.newCounter();
-
-		List<String> labels = Generics.newArrayList();
-
-		TextFileReader reader = new TextFileReader(KPPath.SINGLE_DUMP_POS_FILE);
-		while (reader.hasNext()) {
-			String line = reader.next();
-			String[] parts = line.split("\t");
-
-			if (reader.getNumLines() == 1) {
-				for (String p : parts) {
-					labels.add(p);
-				}
-			} else {
-				if (parts.length != labels.size()) {
-					continue;
-				}
-
-				for (int j = 0; j < parts.length; j++) {
-					if (parts[j].length() > 1) {
-						parts[j] = parts[j].substring(1, parts[j].length() - 1);
-					}
-				}
-
-				String type = parts[0];
-				String cn = parts[1];
-				String korKwdStr = parts[2];
-				String engKwdStr = parts[3];
-				String korTitle = parts[4];
-				String engTitle = parts[5];
-				String korAbs = parts[6];
-				String engAbs = parts[7];
-
-				String[] korKwds = korKwdStr.split(";");
-
-				for (String kwd : korKwds) {
-					Sentence sent = TaggedTextParser.parse(kwd).get(0);
-					String pat = String.join(" ", sent.getValues(TokenAttr.POS));
-					patCnts.incrementCount(pat, 1);
-				}
-			}
-		}
-		reader.close();
-
-		FileUtils.writeStrCounter(KPPath.KEYWORD_POS_CNT_FILE, patCnts);
-
-	}
-
-	public void extractPatterns() {
-		List<String> labels = Generics.newArrayList();
-		TextFileReader reader = new TextFileReader(KPPath.SINGLE_DUMP_POS_FILE);
-		while (reader.hasNext()) {
-
-			String line = reader.next();
-			String[] parts = line.split("\t");
-
-			if (reader.getNumLines() == 1) {
-				for (String p : parts) {
-					labels.add(p);
-				}
-			} else {
-				if (parts.length != labels.size()) {
-					continue;
-				}
-
-				removeSurroundings(parts);
-
-				String type = parts[0];
-				String cn = parts[1];
-				String korKwdStr = parts[2];
-				String engKwdStr = parts[3];
-				String korTitle = parts[4];
-				String engTitle = parts[5];
-				String korAbs = parts[6];
-				String engAbs = parts[7];
-
-				System.out.println(korKwdStr);
-			}
-		}
-		reader.close();
-	}
-
-	private void removeSurroundings(String[] parts) {
-		for (int j = 0; j < parts.length; j++) {
-			if (parts[j].length() > 1) {
-				parts[j] = parts[j].substring(1, parts[j].length() - 1);
-			}
-		}
-	}
-
 	private void appendSurroundings(String[] parts) {
 		for (int j = 0; j < parts.length; j++) {
 			parts[j] = String.format("\"%s\"", parts[j]);
@@ -209,6 +118,59 @@ public class DataHandler {
 		// FileUtils.write(KPPath.PAPER_KOREAN_CONTEXT_FILE, cm2, null, true);
 		// FileUtils.write(KPPath.PAPER_ENGLISH_CONTEXT_FILE, cm3, null, true);
 		// FileUtils.write(KWPath.PAPER_KEYWORD_FILE, kwCounts, true);
+
+	}
+
+	public void extractKeywordPatterns() throws Exception {
+		Counter<String> patCnts = Generics.newCounter();
+
+		List<String> labels = Generics.newArrayList();
+		TextFileReader reader = new TextFileReader(KPPath.SINGLE_DUMP_POS_FILE);
+		reader.setPrintNexts(false);
+
+		while (reader.hasNext()) {
+			reader.print(10000);
+
+			String line = reader.next();
+			String[] parts = line.split("\t");
+
+			if (reader.getNumLines() == 1) {
+				for (String p : parts) {
+					labels.add(p);
+				}
+			} else {
+				if (parts.length != labels.size()) {
+					continue;
+				}
+
+				for (int j = 0; j < parts.length; j++) {
+					if (parts[j].length() > 1) {
+						parts[j] = parts[j].substring(1, parts[j].length() - 1);
+					}
+				}
+
+				String type = parts[0];
+				String cn = parts[1];
+				String korKwdStr = parts[2];
+				String engKwdStr = parts[3];
+				String korTitle = parts[4];
+				String engTitle = parts[5];
+				String korAbs = parts[6];
+				String engAbs = parts[7];
+
+				String[] korKwds = korKwdStr.split(";");
+
+				for (String kwd : korKwds) {
+					Sentence sent = TaggedTextParser.parse(kwd).get(0);
+					String pat = String.join(" ", sent.getValues(TokenAttr.POS));
+					patCnts.incrementCount(pat, 1);
+				}
+			}
+		}
+		reader.printLast();
+		reader.close();
+
+		FileUtils.writeStrCounter(KPPath.KEYWORD_POS_CNT_FILE, patCnts);
 
 	}
 
@@ -426,6 +388,14 @@ public class DataHandler {
 		}
 		reader.close();
 		writer.close();
+	}
+
+	private void removeSurroundings(String[] parts) {
+		for (int j = 0; j < parts.length; j++) {
+			if (parts[j].length() > 1) {
+				parts[j] = parts[j].substring(1, parts[j].length() - 1);
+			}
+		}
 	}
 
 	public void tagPOS() {

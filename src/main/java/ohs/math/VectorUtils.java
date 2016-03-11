@@ -215,6 +215,22 @@ public class VectorUtils {
 		return sb.toString().trim();
 	}
 
+	public static SparseMatrix toSparseMatrix(CounterMap<Integer, Integer> cm) {
+		int[] rowids = new int[cm.keySet().size()];
+		SparseVector[] rows = new SparseVector[cm.keySet().size()];
+
+		int loc = 0;
+		for (int key : cm.keySet()) {
+			rowids[loc] = key;
+			rows[loc] = toSparseVector(cm.getCounter(key));
+			loc++;
+		}
+
+		SparseMatrix ret = new SparseMatrix(-1, -1, -1, rowids, rows);
+		ret.sortByRowIndex();
+		return ret;
+	}
+
 	public static SparseMatrix toSparseMatrix(CounterMap<String, String> cm, Indexer<String> rowIndexer, Indexer<String> columnIndexer,
 			boolean addIfUnseen) {
 
@@ -245,22 +261,6 @@ public class VectorUtils {
 			rows[i] = rs2.get(i);
 		}
 		SparseMatrix ret = new SparseMatrix(-1, -1, -1, rowIds, rows);
-		ret.sortByRowIndex();
-		return ret;
-	}
-
-	public static SparseMatrix toSparseMatrix(CounterMap<Integer, Integer> cm) {
-		int[] rowids = new int[cm.keySet().size()];
-		SparseVector[] rows = new SparseVector[cm.keySet().size()];
-
-		int loc = 0;
-		for (int key : cm.keySet()) {
-			rowids[loc] = key;
-			rows[loc] = toSparseVector(cm.getCounter(key));
-			loc++;
-		}
-
-		SparseMatrix ret = new SparseMatrix(-1, -1, -1, rowids, rows);
 		ret.sortByRowIndex();
 		return ret;
 	}

@@ -18,16 +18,6 @@ import ohs.utils.StrUtils;
 
 public class VocabBuilder {
 
-	public static void main(String[] args) throws Exception {
-		System.out.println("process begins.");
-
-		// buildGramVocab2();
-
-		buildVocabPos();
-
-		System.out.println("ends begins.");
-	}
-
 	public static final String NONE = "<none>";
 
 	public static void buildGramVocab2() throws Exception {
@@ -195,7 +185,9 @@ public class VocabBuilder {
 
 					for (String[] sent : sents) {
 						for (String word : sent) {
-							c.incrementCount(word.replace(" ", "_"), 1);
+							for (String tok : word.split(" ")) {
+								c.incrementCount(tok.toLowerCase(), 1);
+							}
 						}
 					}
 
@@ -222,6 +214,16 @@ public class VocabBuilder {
 
 		Vocab vocab = new Vocab(wordIndexer, word_cnts, word_doc_freqs, num_docs);
 		vocab.write(KPPath.VOCAB_FILE.replace(".ser", "_pos.ser"));
+	}
+
+	public static void main(String[] args) throws Exception {
+		System.out.println("process begins.");
+
+		// buildGramVocab2();
+
+		buildVocabPos();
+
+		System.out.println("ends begins.");
 	}
 
 	public void buildVocabGram() throws Exception {

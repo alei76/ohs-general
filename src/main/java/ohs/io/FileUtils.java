@@ -83,31 +83,6 @@ public class FileUtils {
 		}
 	}
 
-	public static BidMap<Integer, String> readIntStrBidMap(ObjectInputStream ois) throws Exception {
-		int size = ois.readInt();
-		BidMap<Integer, String> ret = Generics.newBidMap(size);
-		for (int i = 0; i < size; i++) {
-			ret.put(ois.readInt(), ois.readUTF());
-		}
-		return ret;
-	}
-
-	public static BidMap<Integer, String> readIntStrBidMap(String fileName) throws Exception {
-		ObjectInputStream ois = openObjectInputStream(fileName);
-		BidMap<Integer, String> ret = readIntStrBidMap(ois);
-		ois.close();
-		return ret;
-	}
-
-	public static void writeIntStrBidMap(ObjectOutputStream oos, BidMap<Integer, String> map) throws Exception {
-		oos.writeInt(map.size());
-		for (Entry<Integer, String> e : map.getKeyToValue().entrySet()) {
-			oos.writeInt(e.getKey());
-			oos.writeUTF(e.getValue());
-		}
-		oos.flush();
-	}
-
 	public static File appendFileNameSuffix(File file, String suffix) {
 		String filePath = getCanonicalPath(file);
 		if (!filePath.endsWith(suffix)) {
@@ -663,6 +638,22 @@ public class FileUtils {
 		return ret;
 	}
 
+	public static BidMap<Integer, String> readIntStrBidMap(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+		BidMap<Integer, String> ret = Generics.newBidMap(size);
+		for (int i = 0; i < size; i++) {
+			ret.put(ois.readInt(), ois.readUTF());
+		}
+		return ret;
+	}
+
+	public static BidMap<Integer, String> readIntStrBidMap(String fileName) throws Exception {
+		ObjectInputStream ois = openObjectInputStream(fileName);
+		BidMap<Integer, String> ret = readIntStrBidMap(ois);
+		ois.close();
+		return ret;
+	}
+
 	public static Map<Integer, String> readIntStrMap(ObjectInputStream ois) throws Exception {
 		int size = ois.readInt();
 		Map<Integer, String> ret = Generics.newHashMap(size);
@@ -1028,6 +1019,15 @@ public class FileUtils {
 		oos.flush();
 	}
 
+	public static void writeIntStrBidMap(ObjectOutputStream oos, BidMap<Integer, String> map) throws Exception {
+		oos.writeInt(map.size());
+		for (Entry<Integer, String> e : map.getKeyToValue().entrySet()) {
+			oos.writeInt(e.getKey());
+			oos.writeUTF(e.getValue());
+		}
+		oos.flush();
+	}
+
 	public static void writeIntStrMap(ObjectOutputStream oos, Map<Integer, String> m) throws Exception {
 		oos.writeInt(m.size());
 		for (Integer key : m.keySet()) {
@@ -1053,6 +1053,16 @@ public class FileUtils {
 			oos.writeUTF(iter.next());
 		}
 		oos.flush();
+	}
+
+	public static void writeStrCollection(String fileName, Collection<String> c) throws Exception {
+		BufferedWriter bw = openBufferedWriter(fileName);
+		bw.write(String.format("%s\t%d", LINE_SIZE, c.size()));
+		for (String s : c) {
+			bw.write(String.format("\n%s", s));
+		}
+		bw.flush();
+		bw.close();
 	}
 
 	public static void writeStrCounter(ObjectOutputStream oos, Counter<String> x) throws Exception {
@@ -1115,16 +1125,6 @@ public class FileUtils {
 		writeStrCounterMap(fileName, cm, nf, false);
 	}
 
-	public static void writeStrCollection(String fileName, Collection<String> c) throws Exception {
-		BufferedWriter bw = openBufferedWriter(fileName);
-		bw.write(String.format("%s\t%d", LINE_SIZE, c.size()));
-		for (String s : c) {
-			bw.write(String.format("\n%s", s));
-		}
-		bw.flush();
-		bw.close();
-	}
-
 	public static void writeStrCounterMap(String fileName, CounterMap<String, String> cm, NumberFormat nf, boolean orderAlphabetically)
 			throws Exception {
 		StopWatch stopWatch = StopWatch.newStopWatch();
@@ -1136,7 +1136,7 @@ public class FileUtils {
 			keys.addAll(cm.keySet());
 			Collections.sort(keys);
 		} else {
-			keys = cm.getInnerCountSums().getSortedKeys();
+			keys = cm.getRowCountSums().getSortedKeys();
 		}
 
 		bw.write(String.format("%s\t%d", LINE_SIZE, keys.size()));

@@ -16,13 +16,11 @@ import ohs.utils.Generics;
 
 public class CandidateSearcher {
 
-
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		// CandidateSearcher.extractKeywordPatterns();
 
-		CandidateSearcher cs = new CandidateSearcher();
-		cs.readPatterns();
+		CandidateSearcher cs = new CandidateSearcher(KPPath.KEYWORD_POS_CNT_FILE);
 
 		List<String> labels = Generics.newArrayList();
 
@@ -74,10 +72,16 @@ public class CandidateSearcher {
 
 	private Trie<String> trie;
 
-	public void readPatterns() throws Exception {
+	public CandidateSearcher(String patFileName) throws Exception {
+		readPatterns(patFileName);
+	}
+
+	private void readPatterns(String patFileName) throws Exception {
 		patCnts = Generics.newCounter();
 
-		TextFileReader reader = new TextFileReader(KPPath.KEYWORD_POS_CNT_FILE);
+		int cutoff = 10;
+
+		TextFileReader reader = new TextFileReader(patFileName);
 		while (reader.hasNext()) {
 			String line = reader.next();
 			if (line.startsWith(FileUtils.LINE_SIZE)) {
@@ -87,7 +91,7 @@ public class CandidateSearcher {
 			String pat = two[0];
 			double cnt = Double.parseDouble(two[1]);
 
-			if (cnt < 10) {
+			if (cnt < cutoff) {
 				break;
 			}
 
@@ -112,24 +116,21 @@ public class CandidateSearcher {
 		}
 	}
 
-	public List<IntPair> search(Document doc) {
-		List<IntPair> ret = Generics.newArrayList();
+	public List<Sentence> search(Document input) {
+		List<Sentence> ret = Generics.newArrayList();
 
-		for (int i = 0; i < doc.size(); i++) {
-			Sentence sent = doc.get(i);
-
+		for (int i = 0; i < input.size(); i++) {
+			Sentence sent = input.get(i);
 			String[] poss = sent.getValues(TokenAttr.POS);
 
-			Set<String> set = Generics.newHashSet();
-
-			for (int start = 0; start < poss.length;) {
+			for (int s = 0; s < poss.length;) {
 				int found = -1;
-				for (int end = start + 1; end < poss.length; end++) {
-					Node<String> node = trie.search(poss, start, end);
+				for (int e = s + 1; e < poss.length; e++) {
+					Node<String> node = trie.search(poss, s, e);
 
 					if (node != null) {
 						if (node.getUniqueCount() > 0) {
-							found = end;
+							found = e;
 						}
 					}
 
@@ -139,20 +140,14 @@ public class CandidateSearcher {
 				}
 
 				if (found == -1) {
-					start++;
+					s++;
 				} else {
-					Sentence candidate = new Sentence(sent.getTokens(start, found));
-					int c_start = candidate.get(0).getStart();
-
-					ret.add(new IntPair(c_start, c_start + candidate.size()));
-
-					System.out.println(candidate.joinValues());
-
-					start = found;
+					Sentence cand = new Sentence(sent.getTokens(s, found));
+					ret.add(cand);
+					s = found;
 				}
 			}
 		}
-
 		return ret;
 	}
 

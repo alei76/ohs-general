@@ -220,7 +220,7 @@ public class DeepCounterMap<K, V, F> implements Serializable {
 				break;
 			}
 
-			for (V k2 : cm.getInnerCountSums().getSortedKeys()) {
+			for (V k2 : cm.getRowCountSums().getSortedKeys()) {
 				Counter<F> c = cm.getCounter(k2);
 				if (++numKeys > num_key2) {
 					break;

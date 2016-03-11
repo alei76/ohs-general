@@ -1,10 +1,12 @@
 package ohs.eden.keyphrase;
 
 import java.util.List;
-
-import org.apache.commons.lang.StringEscapeUtils;
+import java.util.Map.Entry;
 
 import ohs.io.TextFileReader;
+import ohs.ling.types.Document;
+import ohs.ling.types.Sentence;
+import ohs.ling.types.TokenAttr;
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 import ohs.string.search.ppss.Gram;
@@ -14,7 +16,6 @@ import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.Vocab;
 import ohs.utils.Generics;
-import ohs.utils.KoreanUtils;
 import ohs.utils.StrUtils;
 import ohs.utils.TermWeighting;
 
@@ -22,8 +23,8 @@ public class KeywordExtractor {
 
 	public static void main(String[] args) throws Exception {
 		System.out.printf("[%s] begins.\n", KeywordExtractor.class.getName());
-		test1();
-		// test2();
+		// test1();
+		test2();
 		System.out.printf("ends.");
 	}
 
@@ -34,7 +35,7 @@ public class KeywordExtractor {
 		KeywordData kwdData = new KeywordData();
 		kwdData.read(KPPath.KEYWORD_DATA_FILE.replace("txt", "ser"));
 
-		KeywordExtractor e = new KeywordExtractor(vocab, kwdData.getKeywordIndexer().getObjects());
+		KeywordExtractor e = new KeywordExtractor(null, vocab, kwdData.getKeywordIndexer().getObjects());
 
 		TextFileReader reader = new TextFileReader(KPPath.KEYWORD_EXTRACTOR_DIR + "raw_tagged.txt");
 		while (reader.hasNext()) {
@@ -51,44 +52,82 @@ public class KeywordExtractor {
 
 	public static void test2() throws Exception {
 		Vocab vocab = new Vocab();
-		vocab.read(KPPath.VOCAB_FILE.replace(".ser", "_all.ser"));
+		vocab.read(KPPath.VOCAB_FILE.replace(".ser", "_pos.ser"));
 
-		KeywordData kwdData = new KeywordData();
-		kwdData.read(KPPath.KEYWORD_DATA_FILE.replace("txt", "ser"));
+		// KeywordData kwdData = new KeywordData();
+		// kwdData.read(KPPath.KEYWORD_DATA_FILE.replace("txt", "ser"));
 
-		KeywordExtractor ext = new KeywordExtractor(vocab, kwdData.getKeywordIndexer().getObjects());
+		CandidateSearcher candSearcher = new CandidateSearcher(KPPath.KEYWORD_POS_CNT_FILE);
 
-		TextFileReader reader = new TextFileReader(KPPath.PATENT_DUMP_FILE);
+		KeywordExtractor kwdExtractor = new KeywordExtractor(candSearcher, vocab, null);
+
+		List<String> labels = Generics.newArrayList();
+		TextFileReader reader = new TextFileReader(KPPath.SINGLE_DUMP_POS_FILE);
+		reader.setPrintNexts(false);
+
 		while (reader.hasNext()) {
-			if (reader.getNumLines() == 1) {
-				continue;
-			}
-			// if (reader.getNumLines() > 10) {
-			// break;
-			// }
+			reader.print(10000);
+
 			String line = reader.next();
 			String[] parts = line.split("\t");
 
-			for (int j = 0; j < parts.length; j++) {
-				if (parts[j].length() > 1) {
-					parts[j] = parts[j].substring(1, parts[j].length() - 1);
+			if (reader.getNumLines() == 1) {
+				for (String p : parts) {
+					labels.add(p);
 				}
+			} else {
+				if (parts.length != labels.size()) {
+					continue;
+				}
+
+				for (int j = 0; j < parts.length; j++) {
+					if (parts[j].length() > 1) {
+						parts[j] = parts[j].substring(1, parts[j].length() - 1);
+					}
+				}
+
+				String type = parts[0];
+				String cn = parts[1];
+				String korKwdStr = parts[2];
+				String engKwdStr = parts[3];
+				String korTitle = parts[4];
+				String engTitle = parts[5];
+				String korAbs = parts[6];
+				String engAbs = parts[7];
+
+				String text = korTitle + "\n" + korAbs;
+				text = text.trim();
+
+				if (korKwdStr.length() == 0) {
+					continue;
+				}
+
+				if (text.length() == 0) {
+					continue;
+				}
+				Document doc = TaggedTextParser.parse(text);
+
+				if (doc.sizeOfTokens() < 500) {
+					continue;
+				}
+
+				System.out.println("##User Kewwords:");
+				for (String kwd : korKwdStr.split(";")) {
+					Sentence kwdSent = TaggedTextParser.parse(kwd).toSentence();
+
+					System.out.println(kwdSent.joinValues("", "", new TokenAttr[] { TokenAttr.WORD }, 0, kwdSent.size()));
+				}
+
+				System.out.println("##System Kewwords:");
+				Counter<String> kwds = kwdExtractor.extract(doc);
+				System.out.println(kwds.toStringSortedByValues(true, true, 20, "\t"));
+				System.out.println();
 			}
 
-			String applno = parts[0];
-			String kor_title = parts[1];
-			String eng_title = parts[2];
-			String cn = parts[3];
-			String korAbs = parts[4];
-			String cm = parts[5];
-
-			korAbs = StringEscapeUtils.unescapeHtml(korAbs);
-
-			ext.extract(korAbs);
-
-			System.out.println(line);
 		}
+		reader.printLast();
 		reader.close();
+
 	}
 
 	private Vocab vocab;
@@ -99,14 +138,146 @@ public class KeywordExtractor {
 
 	private Counter<String> kwdGramCnts;
 
-	public KeywordExtractor(Vocab vocab, List<String> keywords) {
+	private CandidateSearcher candSearcher;
+
+	public KeywordExtractor(CandidateSearcher candSearcher, Vocab vocab, List<String> keywords) {
+		this.candSearcher = candSearcher;
 		this.vocab = vocab;
 		this.keywords = keywords;
 
-		prepareKeywordQGrams();
+		// prepareKeywordQGrams();
+	}
+
+	public Counter<String> extract(Document doc) {
+		Counter<String> ret = Generics.newCounter();
+
+		List<Sentence> cands = candSearcher.search(doc);
+
+		if (cands.size() == 0) {
+			return ret;
+		}
+
+		Sentence sent = doc.toSentence();
+
+		CounterMap<String, String> cm1 = Generics.newCounterMap();
+		// CounterMap<String, String> cm2 = Generics.newCounterMap();
+
+		int window_size = 2;
+
+		for (int i = 0; i < cands.size(); i++) {
+			Sentence cand1 = cands.get(i);
+			String candStr1 = cand1.joinValues("", "", new TokenAttr[] { TokenAttr.WORD }, 0, cand1.size());
+			String content = cand1.joinValues("", " ", new TokenAttr[] { TokenAttr.WORD }, 0, cand1.size());
+
+			for (String word : content.split(" ")) {
+				cm1.incrementCount(candStr1, word, 1);
+			}
+
+			int left = cand1.getFirst().getStart();
+			int right = cand1.getLast().getStart();
+
+			{
+				int start = Math.max(left - window_size, 0);
+				int end = left;
+
+				if (start >= 0) {
+					String context = sent.joinValues("", " ", new TokenAttr[] { TokenAttr.WORD }, start, end);
+					for (String word : context.split(" ")) {
+						cm1.incrementCount(candStr1, word, 1);
+					}
+				}
+			}
+
+			{
+				int start = right + 1;
+				int end = start + window_size;
+
+				if (end < sent.size()) {
+					String context = sent.joinValues("", " ", new TokenAttr[] { TokenAttr.WORD }, start, end);
+					for (String word : context.split(" ")) {
+						cm1.incrementCount(candStr1, word, 1);
+					}
+				}
+			}
+
+			// for (int j = i + 1; j < cands.size(); j++) {
+			// Sentence cand2 = cands.get(j);
+			// String candStr2 = cand2.joinValues("", "", new TokenAttr[] { TokenAttr.WORD }, 0, cand2.size());
+			//
+			// int dist = cand2.getFirst().getStart() - cand1.getLast().getStart();
+			//
+			// if (dist < 2) {
+			// cm2.incrementCount(candStr1, candStr2, 1);
+			// }
+			// }
+		}
+
+		for (String cand : cm1.keySet()) {
+			Counter<String> wordCnts = cm1.getCounter(cand);
+			for (String word : wordCnts.keySet()) {
+				double cnt = wordCnts.getCount(word);
+				double doc_freq = vocab.getWordDocFreq(word);
+				if (doc_freq == 0) {
+					doc_freq = vocab.getNumDocs();
+				}
+				double tfidf = TermWeighting.tfidf(cnt, vocab.getNumDocs(), doc_freq);
+				wordCnts.setCount(word, tfidf);
+			}
+			ret.setCount(cand, wordCnts.average());
+		}
+
+		Indexer<String> pIndexer = Generics.newIndexer();
+		Indexer<String> wIndexer = Generics.newIndexer();
+
+		for (String p : cm1.keySet()) {
+			pIndexer.add(p);
+			for (String w : cm1.getCounter(p).keySet()) {
+				wIndexer.add(w);
+			}
+		}
+
+		double[][] mat = ArrayUtils.matrix(pIndexer.size(), wIndexer.size(), 0);
+
+		for (String phr : cm1.keySet()) {
+			int k = pIndexer.indexOf(phr);
+			Counter<String> c = cm1.getCounter(phr);
+			for (Entry<String, Double> e : c.entrySet()) {
+				int w = wIndexer.indexOf(e.getKey());
+				mat[k][w] = e.getValue();
+			}
+			ArrayMath.normalizeByL2Norm(mat[k], mat[k]);
+		}
+
+		double[][] trans_mat = ArrayMath.outerProduct(mat);
+
+		double[] cents = new double[trans_mat.length];
+
+		for (String phr : ret.keySet()) {
+			int p = pIndexer.indexOf(phr);
+			cents[p] = ret.getCount(phr);
+		}
+
+		ArrayMath.normalizeColumns(trans_mat);
+
+		ArrayMath.randomWalk(trans_mat, cents, 10, 0.00001, 0.85);
+
+		Counter<String> phrCents = Generics.newCounter();
+
+		for (int i = 0; i < pIndexer.size(); i++) {
+			phrCents.setCount(pIndexer.getObject(i), cents[i]);
+		}
+
+		System.out.printf("Weights:\t%s\n", ret);
+		System.out.printf("Cents:\t%s\n", phrCents);
+
+		return ret;
 	}
 
 	public Counter<String> extract(String text) {
+		return extract(TaggedTextParser.parse(text));
+	}
+
+	public Counter<String> extract00(String text) {
 		Counter<String> ret = Generics.newCounter();
 
 		int window_size = 2;
@@ -213,151 +384,6 @@ public class KeywordExtractor {
 				trans_mat[pid2][pid1] = cocont * weight1 * weight2;
 			}
 		}
-
-		ArrayMath.normalizeColumns(trans_mat);
-
-		double[] cents = ArrayUtils.array(phraseIndexer.size(), 1f / phraseIndexer.size());
-
-		ArrayMath.randomWalk(trans_mat, cents, 10, 0.00001, 0.85);
-
-		Counter<String> phraseCents = Generics.newCounter();
-
-		for (int i = 0; i < phraseIndexer.size(); i++) {
-			phraseCents.setCount(phraseIndexer.getObject(i), cents[i]);
-		}
-
-		System.out.println("Cnts\t" + phraseCnts);
-		System.out.println("Weights\t" + phraseWeights);
-		System.out.println("Probs\t" + phraseProbs);
-		System.out.println("Cents\t" + phraseCents);
-		System.out.println();
-
-		return ret;
-	}
-
-	public Counter<String> extract4(String text) {
-		Counter<String> ret = Generics.newCounter();
-
-		int window_size = 2;
-		int gram_size = 2;
-
-		text = text.replace(". ", ".\n");
-		String[] sents = text.split("\n");
-		List[] wss = new List[sents.length];
-
-		CounterMap<String, String> phraseGramCnts = Generics.newCounterMap();
-		Counter<String> gramCnts = Generics.newCounter();
-		Counter<String> phraseCnts = Generics.newCounter();
-		Counter<String> wordCnts = Generics.newCounter();
-
-		for (int i = 0; i < sents.length; i++) {
-			List<String> words = StrUtils.split(sents[i].toLowerCase().trim());
-			for (int j = 0; j < words.size(); j++) {
-				for (int k = 1; k <= gram_size; k++) {
-					int p_start = j;
-					int p_end = j + k;
-
-					if (p_end < words.size()) {
-						String phrase = StrUtils.join("_", words, p_start, p_end);
-						phraseCnts.incrementCount(phrase, 1);
-
-						{
-							int c_start = Math.max(0, p_start - window_size);
-							int c_end = p_start;
-
-							for (int n = c_start; n < c_end && n < words.size(); n++) {
-								for (Gram gram : gg.generateQGrams(words.get(n))) {
-									phraseGramCnts.incrementCount(phrase, gram.getString(), 1);
-								}
-							}
-						}
-
-						{
-							int c_start = p_end;
-							int c_end = p_end + window_size;
-							for (int n = c_start; n < c_end && n < words.size(); n++) {
-								for (Gram gram : gg.generateQGrams(words.get(n))) {
-									phraseGramCnts.incrementCount(phrase, gram.getString(), 1);
-								}
-							}
-						}
-					}
-				}
-
-				String word = words.get(j);
-				wordCnts.incrementCount(word, 1);
-
-				for (Gram gram : gg.generateQGrams(word)) {
-					gramCnts.incrementCount(gram.getString(), 1);
-				}
-			}
-		}
-
-		Counter<String> gramWeights = Generics.newCounter();
-		for (String gram : gramCnts.keySet()) {
-			double cnt = gramCnts.getCount(gram);
-			double doc_freq = vocab.getWordDocFreq(gram);
-			if (doc_freq == 0) {
-				doc_freq = vocab.getNumDocs();
-			}
-			double tfidf = TermWeighting.tfidf(cnt, vocab.getNumDocs(), doc_freq);
-			gramWeights.setCount(gram, tfidf);
-		}
-
-		Counter<String> gramProbs = Generics.newCounter();
-
-		double[] mixtures = { 1, 1, 1 };
-
-		double check_sum = ArrayMath.normalize(mixtures);
-
-		for (String gram : gramCnts.keySet()) {
-			double prob = gramCnts.getProbability(gram);
-			double prob_in_kwd_data = kwdGramCnts.getProbability(gram);
-			double prob_in_col = vocab.getWordProb(gram);
-			double[] probs = { prob, prob_in_kwd_data, prob_in_col };
-			double new_prob = ArrayMath.dotProduct(mixtures, probs);
-			gramProbs.setCount(gram, new_prob);
-		}
-
-		Counter<String> phraseWeights = Generics.newCounter();
-		Counter<String> phraseProbs = Generics.newCounter();
-
-		for (String phrase : phraseCnts.keySet()) {
-			Gram[] grams = gg.generateQGrams(phrase);
-			double[] weights = new double[grams.length];
-			double[] probs = new double[grams.length];
-			for (int j = 0; j < grams.length; j++) {
-				weights[j] = gramWeights.getCount(grams[j].getString());
-				probs[j] = gramProbs.getCount(grams[j].getString());
-			}
-			phraseWeights.setCount(phrase, ArrayMath.mean(weights));
-			phraseProbs.setCount(phrase, ArrayMath.mean(probs));
-		}
-
-		Indexer<String> phraseIndexer = Generics.newIndexer();
-
-		for (String phrase : phraseWeights.getSortedKeys()) {
-			phraseIndexer.add(phrase);
-		}
-
-		Indexer<String> gramIndexer = Generics.newIndexer();
-
-		for (String gram : gramWeights.getSortedKeys()) {
-			gramIndexer.add(gram);
-		}
-
-		double[][] phraseGramMat = ArrayUtils.matrix(phraseIndexer.size(), gramIndexer.size(), 0);
-
-		for (String phrase : phraseGramCnts.keySet()) {
-			int pid = phraseIndexer.indexOf(phrase);
-			Counter<String> c = phraseGramCnts.getCounter(phrase);
-			for (String gram : c.keySet()) {
-				int gid = gramIndexer.indexOf(gram);
-				phraseGramMat[pid][gid] = gramWeights.getCount(gram);
-			}
-		}
-
-		double[][] trans_mat = ArrayMath.outerProduct(phraseGramMat);
 
 		ArrayMath.normalizeColumns(trans_mat);
 

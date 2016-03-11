@@ -603,7 +603,7 @@ public class KeywordClusterer {
 		writer.write(String.format("Clusters:\t%d", clusters.size()));
 		writer.write(String.format("\nKeywords:\t%d", (int) clusters.totalCount()));
 
-		List<Integer> cids = clusters.getInnerCountSums().getSortedKeys();
+		List<Integer> cids = clusters.getRowCountSums().getSortedKeys();
 		// List<Integer> cids = Generics.newArrayList();
 		//
 		// {

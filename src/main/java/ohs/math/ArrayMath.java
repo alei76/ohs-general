@@ -1049,6 +1049,29 @@ public class ArrayMath {
 		}
 	}
 
+	public static double[][] outerProduct(double[][] a) {
+		double[][] ret = new double[a.length][a.length];
+		outerProduct(a, ret);
+		return ret;
+	}
+
+	public static void outerProduct(double[][] a, double[][] b) {
+		if (a.length == b.length && ArrayChecker.isSquare(b)) {
+
+		} else {
+			throw new IllegalArgumentException();
+		}
+
+		int row_dim = a.length;
+
+		for (int i = 0; i < row_dim; i++) {
+			b[i][i] = 1;
+			for (int j = i + 1; j < row_dim; j++) {
+				b[i][j] = b[j][i] = dotProduct(a[i], a[j]);
+			}
+		}
+	}
+
 	public static int[] over(double[] x, double cutoff, boolean includeCutoff) {
 		List<Integer> set = new ArrayList<Integer>();
 		for (int i = 0; i < x.length; i++) {
@@ -1137,29 +1160,6 @@ public class ArrayMath {
 		}
 	}
 
-	public static void outerProduct(double[][] a, double[][] b) {
-		if (a.length == b.length && ArrayChecker.isSquare(b)) {
-
-		} else {
-			throw new IllegalArgumentException();
-		}
-
-		int row_dim = a.length;
-
-		for (int i = 0; i < row_dim; i++) {
-			b[i][i] = 1;
-			for (int j = i + 1; j < row_dim; j++) {
-				b[i][j] = b[j][i] = dotProduct(a[i], a[j]);
-			}
-		}
-	}
-
-	public static double[][] outerProduct(double[][] a) {
-		double[][] ret = new double[a.length][a.length];
-		outerProduct(a, ret);
-		return ret;
-	}
-
 	public static double random(double min, double max, double[] x) {
 		Random random = new Random();
 		double range = max - min;
@@ -1232,6 +1232,10 @@ public class ArrayMath {
 	public static void randomWalk(double[][] trans_probs, double[] cents, int max_iter, double min_dist, double damping_factor) {
 		if (!ArrayChecker.isProductable(trans_probs, cents)) {
 			throw new IllegalArgumentException();
+		}
+
+		if (sum(cents) == 0) {
+			add(cents, 1f / cents.length, cents);
 		}
 
 		double tran_prob = 0;
@@ -1501,18 +1505,18 @@ public class ArrayMath {
 		return ret;
 	}
 
-	public static int sum(int[] x) {
-		int ret = 0;
-		for (int i = 0; i < x.length; i++) {
-			ret += x[i];
-		}
-		return ret;
-	}
-
 	public static double sum(double[][] x) {
 		double ret = 0;
 		for (int i = 0; i < x.length; i++) {
 			ret += sum(x[i]);
+		}
+		return ret;
+	}
+
+	public static int sum(int[] x) {
+		int ret = 0;
+		for (int i = 0; i < x.length; i++) {
+			ret += x[i];
 		}
 		return ret;
 	}
