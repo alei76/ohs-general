@@ -16,9 +16,14 @@ public class Node<K> implements Serializable {
 		ROOT, NON_LEAF, LEAF;
 	}
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6414918490989194051L;
+
 	protected Map<K, Node<K>> children;
-	protected int count;
-	protected int depth;
+	protected int unique_cnt = 0;
+	protected int depth = 0;
 	protected K key;
 	protected Node<K> parent;
 	protected Object data;
@@ -33,13 +38,15 @@ public class Node<K> implements Serializable {
 
 	protected int id;
 
+	private int duplicate_cnt = 0;
+
 	public Node(Node<K> parent, K key, int depth, Object data, int id) {
 		this.parent = parent;
 		this.key = key;
 		this.depth = depth;
 		this.children = null;
 		this.data = data;
-		this.count = 1;
+		this.unique_cnt = 0;
 		this.id = id;
 	}
 
@@ -91,16 +98,16 @@ public class Node<K> implements Serializable {
 		return ret;
 	}
 
-	public double getCount() {
-		return count;
-	}
-
 	public Object getData() {
 		return data;
 	}
 
 	public int getDepth() {
 		return depth;
+	}
+
+	public int getDuplicateCount() {
+		return duplicate_cnt;
 	}
 
 	public int getID() {
@@ -213,6 +220,10 @@ public class Node<K> implements Serializable {
 		return ret;
 	}
 
+	public int getUniqueCount() {
+		return unique_cnt;
+	}
+
 	public boolean hasChild(K key) {
 		return children == null || !children.containsKey(key) ? false : true;
 	}
@@ -234,12 +245,12 @@ public class Node<K> implements Serializable {
 		return parent == null ? false : true;
 	}
 
-	public void increaseCount() {
-		increaseCount(1);
+	public void increaseDuplicateCount() {
+		duplicate_cnt++;
 	}
 
-	public void increaseCount(int increment) {
-		count += increment;
+	public void increaseUniqueCount() {
+		unique_cnt++;
 	}
 
 	// public boolean isLeaf() {
@@ -269,7 +280,7 @@ public class Node<K> implements Serializable {
 
 		sb.append(String.format("ID:\t%s\n", id));
 		sb.append(String.format("Type\t%s\n", type));
-		sb.append(String.format("Count:\t%d\n", count));
+		sb.append(String.format("Count:\t%d\n", unique_cnt));
 		sb.append(String.format("Depth:\t%d\n", depth));
 		sb.append(String.format("Key:\t%s\n", key == null ? "null" : key.toString()));
 

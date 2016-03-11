@@ -12,8 +12,8 @@ import java.util.Set;
 
 /**
  * Maintains counts of (key, value) pairs. The map is structured so that for every key, one can get a counter over values. Example usage:
- * keys might be words with values being POS tags, and the count being the number of occurences of that word/tag pair. The sub-counters
- * returned by getCounter(word) would be count distributions over tags for that word.
+ * keys might be words with values being POS tags, and the unique_cnt being the number of occurences of that word/tag pair. The sub-counters
+ * returned by getCounter(word) would be unique_cnt distributions over tags for that word.
  * 
  * @author Dan Klein
  */
@@ -31,7 +31,7 @@ public class CounterMap<K, V> implements java.io.Serializable {
 		System.out.println("Count of cats scamper: " + bigramCounterMap.getCount("cats", "scamper"));
 		System.out.println("Count of snakes slither: " + bigramCounterMap.getCount("snakes", "slither"));
 		System.out.println("Total size: " + bigramCounterMap.totalSize());
-		System.out.println("Total count: " + bigramCounterMap.totalCount());
+		System.out.println("Total unique_cnt: " + bigramCounterMap.totalCount());
 		System.out.println(bigramCounterMap);
 	}
 
@@ -51,9 +51,9 @@ public class CounterMap<K, V> implements java.io.Serializable {
 	}
 
 	/**
-	 * Finds the key with maximum count. This is a linear operation, and ties are broken arbitrarily.
+	 * Finds the key with maximum unique_cnt. This is a linear operation, and ties are broken arbitrarily.
 	 * 
-	 * @return a key with minumum count
+	 * @return a key with minumum unique_cnt
 	 */
 	public Pair<K, V> argMax() {
 		double maxCount = Double.NEGATIVE_INFINITY;
@@ -102,7 +102,7 @@ public class CounterMap<K, V> implements java.io.Serializable {
 	}
 
 	/**
-	 * Gets the total count of the given key, or zero if that key is not present. Does not create any objects.
+	 * Gets the total unique_cnt of the given key, or zero if that key is not present. Does not create any objects.
 	 */
 	public double getCount(K key) {
 		Counter<V> valueCounter = counterMap.get(key);
@@ -112,7 +112,7 @@ public class CounterMap<K, V> implements java.io.Serializable {
 	}
 
 	/**
-	 * Gets the count of the given (key, value) entry, or zero if that entry is not present. Does not create any objects.
+	 * Gets the unique_cnt of the given (key, value) entry, or zero if that entry is not present. Does not create any objects.
 	 */
 	public double getCount(K key, V value) {
 		Counter<V> valueCounter = counterMap.get(key);
@@ -218,7 +218,7 @@ public class CounterMap<K, V> implements java.io.Serializable {
 	}
 
 	/**
-	 * Increments the count for a particular (key, value) pair.
+	 * Increments the unique_cnt for a particular (key, value) pair.
 	 */
 	public void incrementCount(K key, V value, double count) {
 		Counter<V> valueCounter = ensureCounter(key);
@@ -254,7 +254,7 @@ public class CounterMap<K, V> implements java.io.Serializable {
 	}
 
 	/**
-	 * Constructs reverse CounterMap where the count of a pair (k,v) is the count of (v,k) in the current CounterMap
+	 * Constructs reverse CounterMap where the unique_cnt of a pair (k,v) is the unique_cnt of (v,k) in the current CounterMap
 	 * 
 	 * @return
 	 */
@@ -352,7 +352,7 @@ public class CounterMap<K, V> implements java.io.Serializable {
 	}
 
 	/**
-	 * Sets the count for a particular (key, value) pair.
+	 * Sets the unique_cnt for a particular (key, value) pair.
 	 */
 	public void setCount(K key, V value, double count) {
 		Counter<V> valueCounter = ensureCounter(key);

@@ -17,7 +17,7 @@ import java.util.TreeSet;
 
 /**
  * A map from objects to doubles. Includes convenience methods for getting, setting, and incrementing element counts. Objects not in the
- * counter will return a count of zero. The counter is backed by a HashMap .(unless specified otherwise with the MapFactory constructor).
+ * counter will return a unique_cnt of zero. The counter is backed by a HashMap .(unless specified otherwise with the MapFactory constructor).
  * 
  * @author lots of people
  */
@@ -108,9 +108,9 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * Finds the key with maximum count. This is a linear operation, and ties are broken arbitrarily.
+	 * Finds the key with maximum unique_cnt. This is a linear operation, and ties are broken arbitrarily.
 	 * 
-	 * @return a key with minumum count
+	 * @return a key with minumum unique_cnt
 	 */
 	public E argMax() {
 		double maxCount = Double.NEGATIVE_INFINITY;
@@ -148,8 +148,8 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * Returns whether the counter contains the given key. Note that this is the way to distinguish keys which are in the counter with count
-	 * zero, and those which are not in the counter (and will therefore return count zero from getCount().
+	 * Returns whether the counter contains the given key. Note that this is the way to distinguish keys which are in the counter with unique_cnt
+	 * zero, and those which are not in the counter (and will therefore return unique_cnt zero from getCount().
 	 * 
 	 * @param key
 	 * @return whether the counter contains the key
@@ -196,7 +196,7 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * Get the count of the element, or zero if the element is not in the counter.
+	 * Get the unique_cnt of the element, or zero if the element is not in the counter.
 	 * 
 	 * @param key
 	 * @return
@@ -302,7 +302,7 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * Increment a key's count by the given amount.
+	 * Increment a key's unique_cnt by the given amount.
 	 * 
 	 * @param key
 	 * @param increment
@@ -426,10 +426,10 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * Set the count for the given key if it is larger than the previous one;
+	 * Set the unique_cnt for the given key if it is larger than the previous one;
 	 * 
 	 * @param key
-	 * @param count
+	 * @param unique_cnt
 	 */
 	public void put(final E key, final double count, final boolean keepHigher) {
 		if (keepHigher && entries.containsKey(key)) {
@@ -553,10 +553,10 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * Set the count for the given key, clobbering any previous count.
+	 * Set the unique_cnt for the given key, clobbering any previous unique_cnt.
 	 * 
 	 * @param key
-	 * @param count
+	 * @param unique_cnt
 	 */
 	public void setCount(final E key, final double count) {
 		entries.put(key, count);
@@ -572,7 +572,7 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * Set's the key's count to the maximum of the current count and val. Always sets to val if key is not yet present.
+	 * Set's the key's unique_cnt to the maximum of the current unique_cnt and val. Always sets to val if key is not yet present.
 	 * 
 	 * @param key
 	 * @param val
@@ -587,7 +587,7 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * Set's the key's count to the minimum of the current count and val. Always sets to val if key is not yet present.
+	 * Set's the key's unique_cnt to the minimum of the current unique_cnt and val. Always sets to val if key is not yet present.
 	 * 
 	 * @param key
 	 * @param val
@@ -602,7 +602,7 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * The number of entries in the counter (not the total count -- use totalCount() instead).
+	 * The number of entries in the counter (not the total unique_cnt -- use totalCount() instead).
 	 */
 	public int size() {
 		return entries.size();

@@ -44,7 +44,7 @@ class Word2VecTrainer {
 			//
 			// try (AC ac = timer.start("Acquiring word frequencies")) {
 			// listener.update(Stage.ACQUIRE_VOCAB, 0.0);
-			// counts = (vocab.isPresent()) ? vocab.get() : count(Iterables.concat(sents));
+			// counts = (vocab.isPresent()) ? vocab.get() : unique_cnt(Iterables.concat(sents));
 			// }
 
 			// try (AC ac = timer.start("Filtering and sorting vocabulary")) {

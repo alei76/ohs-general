@@ -9,6 +9,8 @@ import kr.co.shineware.util.common.model.Pair;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
+import ohs.ling.types.Sentence;
+import ohs.ling.types.TokenAttr;
 import ohs.types.Counter;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
@@ -24,9 +26,58 @@ public class DataHandler {
 		System.out.println("process begins.");
 		DataHandler dh = new DataHandler();
 		// dh.mergeDumps();
-		dh.tagPOS();
+		// dh.tagPOS();
 		// dh.extractKeywordData();
 		System.out.println("process ends.");
+	}
+
+	public void extractKeywordPatterns() throws Exception {
+		Counter<String> patCnts = Generics.newCounter();
+
+		List<String> labels = Generics.newArrayList();
+
+		TextFileReader reader = new TextFileReader(KPPath.SINGLE_DUMP_POS_FILE);
+		while (reader.hasNext()) {
+			String line = reader.next();
+			String[] parts = line.split("\t");
+
+			if (reader.getNumLines() == 1) {
+				for (String p : parts) {
+					labels.add(p);
+				}
+			} else {
+				if (parts.length != labels.size()) {
+					continue;
+				}
+
+				for (int j = 0; j < parts.length; j++) {
+					if (parts[j].length() > 1) {
+						parts[j] = parts[j].substring(1, parts[j].length() - 1);
+					}
+				}
+
+				String type = parts[0];
+				String cn = parts[1];
+				String korKwdStr = parts[2];
+				String engKwdStr = parts[3];
+				String korTitle = parts[4];
+				String engTitle = parts[5];
+				String korAbs = parts[6];
+				String engAbs = parts[7];
+
+				String[] korKwds = korKwdStr.split(";");
+
+				for (String kwd : korKwds) {
+					Sentence sent = TaggedTextParser.parse(kwd).get(0);
+					String pat = String.join(" ", sent.getValues(TokenAttr.POS));
+					patCnts.incrementCount(pat, 1);
+				}
+			}
+		}
+		reader.close();
+
+		FileUtils.writeStrCounter(KPPath.KEYWORD_POS_CNT_FILE, patCnts);
+
 	}
 
 	public void extractPatterns() {
@@ -182,9 +233,9 @@ public class DataHandler {
 
 				for (int k = 0; k < l.size(); k++) {
 					Pair<String, String> pair = l.get(k);
-					sb.append(String.format("%s#S#%s", pair.getFirst().replace(" ", "_"), pair.getSecond()));
+					sb.append(String.format("%s%s%s", pair.getFirst().replace(" ", "_"), TaggedTextParser.DELIM_TAG, pair.getSecond()));
 					if (k != l.size() - 1) {
-						sb.append("#P#");
+						sb.append(TaggedTextParser.DELIM_SUBTOKEN);
 					}
 				}
 

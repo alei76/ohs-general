@@ -14,7 +14,7 @@ public class KPPath {
 
 	public static final String SINGLE_DUMP_FILE = TEXT_DUMP_DIR + "3p.csv.gz";
 
-	public static final String SINGLE_DUMP_POS_FILE = TEXT_DUMP_DIR + "3p_pos.csv";
+	public static final String SINGLE_DUMP_POS_FILE = TEXT_DUMP_DIR + "3p_pos.csv.gz";
 
 	public static final String KEYPHRASE_DIR = DATA_DIR + "keyphrase/";
 
@@ -38,7 +38,7 @@ public class KPPath {
 
 	public static final String EDS_DATA_DIR = KEYPHRASE_DIR + "topic_20151204/";
 
-	public static final String POS_CNT_FILE = KEYPHRASE_DIR + "kwd_pos_seq_cnt.txt";
+	public static final String KEYWORD_POS_CNT_FILE = KEYPHRASE_DIR + "kwd_pos_seq_cnt.txt";
 
 	public static final String EDS_DICT_FILE = EDS_DATA_DIR + "topic_id_20151204.txt";
 

@@ -118,7 +118,7 @@ public class DocumentClusterer {
 		//
 		// double docFreq = term_docFreq.value(termId);
 		// double numDocs = xs.size();
-		// // double tf = 1 + (count == 0 ? 0 : Math.log(count));
+		// // double tf = 1 + (unique_cnt == 0 ? 0 : Math.log(unique_cnt));
 		// double idf = docFreq == 0 ? 0 : Math.log((numDocs + 1) / docFreq);
 		// double tfidf = tf * idf;
 		// x.setAtLoc(j, tfidf);

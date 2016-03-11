@@ -7,6 +7,10 @@ import ohs.io.FileUtils;
 
 public class Token {
 
+	public static final String DELIM_VALUE = "/";
+
+	public static final String DELIM_SUBTOKEN = "+";
+
 	private String[] values = new String[TokenAttr.values().length];
 
 	private int start;
@@ -34,8 +38,12 @@ public class Token {
 		return subToks;
 	}
 
-	public int lengthOfSubTokens() {
-		return subToks.length;
+	public String[] getSubTokenValues(String delimValue, TokenAttr[] attrs) {
+		String[] ret = new String[subToks.length];
+		for (int i = 0; i < subToks.length; i++) {
+			ret[i] = subToks[i].joinValues(delimValue, attrs);
+		}
+		return ret;
 	}
 
 	public String[] getSubTokenValues(TokenAttr attr) {
@@ -46,23 +54,12 @@ public class Token {
 		return ret;
 	}
 
+	public String[] getSubTokenValues(TokenAttr[] attrs) {
+		return getSubTokenValues(DELIM_VALUE, attrs);
+	}
+
 	public String getValue(int ordinal) {
 		return values[ordinal];
-	}
-
-	public String joinValues(String delim) {
-		return String.join(delim, values);
-	}
-
-	public String joinSubTokenValues(String delimInToken, String delimAmongTokens) {
-		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < subToks.length; i++) {
-			sb.append(String.join(delimInToken, subToks[i].getValues()));
-			if (i != subToks.length - 1) {
-				sb.append(delimAmongTokens);
-			}
-		}
-		return sb.toString();
 	}
 
 	public String getValue(TokenAttr attr) {
@@ -70,11 +67,51 @@ public class Token {
 	}
 
 	public String[] getValues() {
-		return values;
+		return getValues(TokenAttr.values());
+	}
+
+	public String[] getValues(TokenAttr[] attrs) {
+		String[] ret = null;
+		if (attrs.length == values.length) {
+			ret = values;
+		} else {
+			ret = new String[attrs.length];
+			for (int i = 0; i < attrs.length; i++) {
+				ret[i] = values[attrs[i].ordinal()];
+			}
+		}
+		return ret;
+	}
+
+	public String joinSubTokenValues() {
+		return joinSubTokenValues(DELIM_VALUE, DELIM_SUBTOKEN, TokenAttr.values());
+	}
+
+	public String joinSubTokenValues(String delimValue, String delimSubTok, TokenAttr[] attrs) {
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < subToks.length; i++) {
+			sb.append(String.join(delimValue, subToks[i].getValues(attrs)));
+			if (i != subToks.length - 1) {
+				sb.append(delimSubTok);
+			}
+		}
+		return sb.toString();
+	}
+
+	public String joinValues() {
+		return joinValues(DELIM_VALUE, TokenAttr.values());
+	}
+
+	public String joinValues(String delim, TokenAttr[] attrs) {
+		return String.join(delim, getValues(attrs));
 	}
 
 	public int length() {
 		return values[TokenAttr.WORD.ordinal()].length();
+	}
+
+	public int lengthOfSubTokens() {
+		return subToks.length;
 	}
 
 	public void read(ObjectInputStream ois) throws Exception {
@@ -84,6 +121,10 @@ public class Token {
 		for (int i = 0; i < subToks.length; i++) {
 			subToks[i].read(ois);
 		}
+	}
+
+	public void setStart(int start) {
+		this.start = start;
 	}
 
 	public void setSubTokens(Token[] subToks) {

@@ -6,6 +6,8 @@ import java.util.Map.Entry;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import ohs.io.TextFileReader;
+import ohs.ling.types.Document;
+import ohs.ling.types.TokenAttr;
 import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.GramGenerator;
 import ohs.types.Counter;
@@ -19,7 +21,9 @@ public class VocabBuilder {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		buildGramVocab2();
+		// buildGramVocab2();
+
+		buildVocabPos();
 
 		System.out.println("ends begins.");
 	}
@@ -142,7 +146,85 @@ public class VocabBuilder {
 		vocab.write(KPPath.VOCAB_FILE.replace(".ser", "_all.ser"));
 	}
 
-	public void buildGramVocab() throws Exception {
+	public static void buildVocabPos() throws Exception {
+		Indexer<String> wordIndexer = Generics.newIndexer();
+		Counter<Integer> wordDocFreqs = Generics.newCounter();
+		Counter<Integer> wordCnts = Generics.newCounter();
+		List<String> labels = Generics.newArrayList();
+		int num_docs = 0;
+
+		TextFileReader reader = new TextFileReader(KPPath.SINGLE_DUMP_POS_FILE);
+		reader.setPrintNexts(false);
+		while (reader.hasNext()) {
+			reader.print(10000);
+
+			String line = reader.next();
+			String[] parts = line.split("\t");
+
+			if (reader.getNumLines() == 1) {
+				for (String p : parts) {
+					labels.add(p);
+				}
+			} else {
+				if (parts.length != labels.size()) {
+					continue;
+				}
+
+				for (int j = 0; j < parts.length; j++) {
+					if (parts[j].length() > 1) {
+						parts[j] = parts[j].substring(1, parts[j].length() - 1);
+					}
+				}
+
+				String type = parts[0];
+				String cn = parts[1];
+				String korKwdStr = parts[2];
+				String engKwdStr = parts[3];
+				String korTitle = parts[4];
+				String engTitle = parts[5];
+				String korAbs = parts[6];
+				String engAbs = parts[7];
+
+				String text = StrUtils.join("\n", new String[] { korTitle, korAbs });
+
+				if (text.length() > 0) {
+					Document doc = TaggedTextParser.parse(text);
+					String[][] sents = doc.getValues(" ", " ", new TokenAttr[] { TokenAttr.WORD }, 0, doc.size());
+
+					Counter<String> c = Generics.newCounter();
+
+					for (String[] sent : sents) {
+						for (String word : sent) {
+							c.incrementCount(word.replace(" ", "_"), 1);
+						}
+					}
+
+					for (String word : c.keySet()) {
+						int cnt = (int) c.getCount(word);
+						int w = wordIndexer.getIndex(word);
+						wordCnts.incrementCount(w, cnt);
+						wordDocFreqs.incrementCount(w, 1);
+					}
+					num_docs++;
+				}
+			}
+		}
+		reader.printLast();
+		reader.close();
+
+		int[] word_cnts = new int[wordIndexer.size()];
+		int[] word_doc_freqs = new int[wordIndexer.size()];
+
+		for (int i = 0; i < wordIndexer.size(); i++) {
+			word_cnts[i] = (int) wordCnts.getCount(i);
+			word_doc_freqs[i] = (int) wordDocFreqs.getCount(i);
+		}
+
+		Vocab vocab = new Vocab(wordIndexer, word_cnts, word_doc_freqs, num_docs);
+		vocab.write(KPPath.VOCAB_FILE.replace(".ser", "_pos.ser"));
+	}
+
+	public void buildVocabGram() throws Exception {
 		TextFileReader reader = new TextFileReader(KPPath.ABSTRACT_FILE);
 
 		Indexer<String> wordIndexer = Generics.newIndexer();

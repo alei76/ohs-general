@@ -473,8 +473,8 @@ public class OrganizationIdentificationKernel implements Serializable {
 
 		for (Organization org : ret.keySet()) {
 			double score = ret.getCount(org);
-			// double cnt = c.getCount(sr);
-			// score /= cnt;
+			// double unique_cnt = c.getCount(sr);
+			// score /= unique_cnt;
 			ret.setCount(org, score / 2);
 		}
 

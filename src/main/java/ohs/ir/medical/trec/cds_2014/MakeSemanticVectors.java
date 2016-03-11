@@ -66,7 +66,7 @@ public class MakeSemanticVectors {
 				tf = Math.log(tf) + 1;
 				double categoryFreq = conceptCategoryFreqs.getCount(cat);
 				double numCategories = conceptCategoryCounts.size();
-				// double tf = 1 + (count == 0 ? 0 : Math.log(count));
+				// double tf = 1 + (unique_cnt == 0 ? 0 : Math.log(unique_cnt));
 				double idf = categoryFreq == 0 ? 0 : Math.log((numCategories + 1) / categoryFreq);
 				double tfidf = tf * idf;
 				norm += tfidf * tfidf;
@@ -217,7 +217,7 @@ public class MakeSemanticVectors {
 				tf = Math.log(tf) + 1;
 				double conceptFreq = wordConceptFreqs.getCount(w);
 				double numConcepts = indexReader.maxDoc();
-				// double tf = 1 + (count == 0 ? 0 : Math.log(count));
+				// double tf = 1 + (unique_cnt == 0 ? 0 : Math.log(unique_cnt));
 				double idf = conceptFreq == 0 ? 0 : Math.log((numConcepts + 1) / conceptFreq);
 				double tfidf = tf * idf;
 				norm += tfidf * tfidf;

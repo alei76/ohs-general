@@ -37,7 +37,7 @@ public class OrganizationNormalizer {
 			BilingualText orgName = new BilingualText(korOrg, engOrg);
 			double cnt = Double.parseDouble(parts[2]);
 
-			// if (count < 50 || count > 100) {
+			// if (unique_cnt < 50 || unique_cnt > 100) {
 			// continue;
 			// }
 

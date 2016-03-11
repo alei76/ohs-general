@@ -27,44 +27,33 @@ public class Sentence {
 		return ret;
 	}
 
-	public String[] getValues(TokenAttr attr) {
-		return getValues(attr, "+", 0, toks.length);
+	public String[] getValues() {
+		return getValues(Token.DELIM_VALUE, Token.DELIM_SUBTOKEN, TokenAttr.values(), 0, toks.length);
 	}
 
-	public String[] getValues(TokenAttr attr, String delim, int start, int end) {
+	public String[] getValues(String delimValue, String delimSubTok, TokenAttr[] attrs, int start, int end) {
 		String[] ret = new String[end - start];
 		for (int i = start, loc = 0; i < end; i++, loc++) {
 			Token t = toks[i];
 			if (t.lengthOfSubTokens() == 0) {
-				ret[loc] = toks[i].getValue(attr);
+				ret[loc] = t.joinValues(delimValue, attrs);
 			} else {
-				ret[loc] = String.join(delim, toks[i].getSubTokenValues(attr));
+				ret[loc] = t.joinSubTokenValues(delimValue, delimSubTok, attrs);
 			}
 		}
 		return ret;
 	}
 
-	public String joinValues() {
-		StringBuffer sb = new StringBuffer();
-
-		for (int i = 0; i < toks.length; i++) {
-			Token tok = toks[i];
-
-			if (tok.lengthOfSubTokens() == 0) {
-				sb.append(tok.joinValues("/"));
-			} else {
-				sb.append(tok.joinSubTokenValues("/", "+"));
-			}
-
-			if (i != toks.length - 1) {
-				sb.append(" ");
-			}
-		}
-		return sb.toString();
+	public String[] getValues(TokenAttr attr) {
+		return getValues(Token.DELIM_VALUE, Token.DELIM_SUBTOKEN, new TokenAttr[] { attr }, 0, toks.length);
 	}
 
-	public String joinValues(TokenAttr attr, String delim, int start, int end) {
-		return String.join(" ", getValues(attr, delim, start, end));
+	public String joinValues() {
+		return joinValues(Token.DELIM_VALUE, Token.DELIM_SUBTOKEN, TokenAttr.values(), 0, toks.length);
+	}
+
+	public String joinValues(String delimValue, String delimSubtok, TokenAttr[] attrs, int start, int end) {
+		return String.join(" ", getValues(delimValue, delimSubtok, attrs, start, end));
 	}
 
 	public void read(ObjectInputStream ois) throws Exception {

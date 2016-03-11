@@ -3,6 +3,7 @@ package ohs.tree.trie;
 import java.io.File;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,15 +24,15 @@ public class Trie<K> {
 		System.out.println("Process ends.");
 	}
 
+	public static <K> Trie<K> newTrie() {
+		return new Trie<K>();
+	}
+
 	private int depth = 1;
 
 	private int size = 1;
 
 	private Node<K> root;
-
-	public static <K> Trie<K> newTrie() {
-		return new Trie<K>();
-	}
 
 	public Trie() {
 		root = new Node<K>(null, null, depth, null, 0);
@@ -85,44 +86,35 @@ public class Trie<K> {
 	}
 
 	public Node<K> insert(K[] keys) {
-		Node<K> node = root;
-		node.increaseCount();
+		return insert(keys, 0, keys.length);
+	}
 
-		for (K key : keys) {
-			Node<K> child;
-			if (node.hasChild(key)) {
-				child = node.getChild(key);
-				child.increaseCount();
-			} else {
-				child = new Node<K>(node, key, node.getDepth() + 1, null, size++);
-				node.addChild(child);
-			}
-			node = child;
-			if (node.getDepth() > depth) {
-				depth = node.getDepth();
-			}
-		}
-
-		return node;
+	public Node<K> insert(K[] keys, int start, int end) {
+		return insert(Arrays.asList(keys), start, end);
 	}
 
 	public Node<K> insert(List<K> keys) {
+		return insert(keys, 0, keys.size());
+	}
+
+	public Node<K> insert(List<K> keys, int start, int end) {
 		Node<K> node = root;
-		node.increaseCount();
-		for (K key : keys) {
+		// node.increaseCount();
+		for (int i = start; i < end; i++) {
+			K key = keys.get(i);
 			Node<K> child;
 			if (node.hasChild(key)) {
 				child = node.getChild(key);
-				child.increaseCount();
+				// child.increaseCount();
 			} else {
 				child = new Node<K>(node, key, node.getDepth() + 1, null, size++);
 				node.addChild(child);
 			}
 			node = child;
-			if (node.getDepth() > depth) {
-				depth = node.getDepth();
-			}
 		}
+		node.increaseUniqueCount();
+		depth = Math.max(depth, node.getDepth());
+
 		return node;
 	}
 
@@ -197,23 +189,17 @@ public class Trie<K> {
 	}
 
 	public Node<K> search(K[] keys) {
-		Node<K> node = root;
-
-		for (K key : keys) {
-			if (node.hasChild(key)) {
-				node = node.getChild(key);
-			} else {
-				node = null;
-				break;
-			}
-		}
-		return node;
+		return search(keys, 0, keys.length);
 	}
 
 	public Node<K> search(K[] keys, int start, int end) {
+		return search(Arrays.asList(keys), start, end);
+	}
+
+	public Node<K> search(List<K> keys, int start, int end) {
 		Node<K> node = root;
 		for (int i = start; i < end; i++) {
-			K key = keys[i];
+			K key = keys.get(i);
 			if (node.hasChild(key)) {
 				node = node.getChild(key);
 			} else {

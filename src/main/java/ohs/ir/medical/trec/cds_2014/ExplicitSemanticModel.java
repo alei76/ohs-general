@@ -142,7 +142,7 @@ public class ExplicitSemanticModel {
 			tf = Math.log(tf) + 1;
 
 			double docFreq = wordDocFreqs.valueAlways(w);
-			// double tf = 1 + (count == 0 ? 0 : Math.log(count));
+			// double tf = 1 + (unique_cnt == 0 ? 0 : Math.log(unique_cnt));
 			double idf = docFreq == 0 ? 0 : Math.log((numDocs + 1) / docFreq);
 			double tfidf = tf * idf;
 			norm += tfidf * tfidf;

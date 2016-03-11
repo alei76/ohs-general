@@ -41,7 +41,7 @@ public class HuffmanCoding {
 		public String toString() {
 			StringBuffer sb = new StringBuffer();
 			sb.append(String.format("idx:\t%d\n", idx));
-			sb.append(String.format("count:\t%d\n", count));
+			sb.append(String.format("unique_cnt:\t%d\n", count));
 			sb.append(String.format("code:"));
 			for (int i = 0; i < code.length; i++) {
 				sb.append(String.format("\t%d", code[i]));
@@ -71,7 +71,7 @@ public class HuffmanCoding {
 	}
 
 	/**
-	 * Populate the count, binary, and parentNode arrays with the Huffman tree This uses the linear time method assuming that the count
+	 * Populate the unique_cnt, binary, and parentNode arrays with the Huffman tree This uses the linear time method assuming that the unique_cnt
 	 * array is sorted
 	 */
 	private void createTree(int numTokens, long[] count, byte[] binary, int[] parentNode) throws InterruptedException {

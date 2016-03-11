@@ -29,9 +29,9 @@ public class DeepCounterMap<K, V, F> implements Serializable {
 	// }
 
 	/**
-	 * Finds the key with maximum count. This is a linear operation, and ties are broken arbitrarily.
+	 * Finds the key with maximum unique_cnt. This is a linear operation, and ties are broken arbitrarily.
 	 * 
-	 * @return a key with minumum count
+	 * @return a key with minumum unique_cnt
 	 */
 	public Triple<K, V, F> argMax() {
 		double maxCount = Double.NEGATIVE_INFINITY;
@@ -68,7 +68,7 @@ public class DeepCounterMap<K, V, F> implements Serializable {
 	}
 
 	/**
-	 * Gets the total count of the given key, or zero if that key is not present. Does not create any objects.
+	 * Gets the total unique_cnt of the given key, or zero if that key is not present. Does not create any objects.
 	 */
 	public double getCount(K key) {
 		CounterMap<V, F> cm = entries.get(key);
@@ -78,7 +78,7 @@ public class DeepCounterMap<K, V, F> implements Serializable {
 	}
 
 	/**
-	 * Gets the count of the given (key, value) entry, or zero if that entry is not present. Does not create any objects.
+	 * Gets the unique_cnt of the given (key, value) entry, or zero if that entry is not present. Does not create any objects.
 	 */
 	public double getCount(K key1, V key2) {
 		Counter<F> cm = entries.get(key1).getCounter(key2);
@@ -120,7 +120,7 @@ public class DeepCounterMap<K, V, F> implements Serializable {
 	}
 
 	/**
-	 * Increments the count for a particular (key, value) pair.
+	 * Increments the unique_cnt for a particular (key, value) pair.
 	 */
 	public void incrementCount(K key1, V key2, F key3, double count) {
 		ensure(key1).incrementCount(key2, key3, count);
@@ -186,7 +186,7 @@ public class DeepCounterMap<K, V, F> implements Serializable {
 	}
 
 	/**
-	 * Sets the count for a particular (key, value) pair.
+	 * Sets the unique_cnt for a particular (key, value) pair.
 	 */
 	public void setCount(K key1, V key2, F key3, double count) {
 		CounterMap<V, F> cm = ensure(key1);
