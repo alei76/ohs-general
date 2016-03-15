@@ -1,4 +1,4 @@
-package ohs.neuralnet;
+package ohs.ml.neuralnet;
 
 import ohs.math.ArrayMath;
 
