@@ -1,6 +1,5 @@
 package ohs.eden.keyphrase;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -279,12 +278,12 @@ public class KeywordClusterer {
 		for (int i = 0; i < Integer.MAX_VALUE; i++) {
 			List<Integer> cluster = Generics.newArrayList(cents.keySet());
 
-			int chunk_size = cluster.size() / 100;
+			int print_chunk_size_ = cluster.size() / 100;
 
 			Counter<Pair<Integer, Integer>> queryResultPairs = Generics.newCounter();
 
 			for (int j = 0; j < cluster.size(); j++) {
-				if ((j + 1) % chunk_size == 0) {
+				if ((j + 1) % print_chunk_size_ == 0) {
 					int progess = (int) ((j + 1f) / cluster.size() * 100);
 					System.out.printf("\r[%dth, %d percent - %d/%d, %s]", i + 1, progess, j + 1, cluster.size(), stopWatch.stop());
 				}

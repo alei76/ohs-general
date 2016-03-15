@@ -20,7 +20,7 @@ public class VocabBuilder {
 
 	public static final String NONE = "<none>";
 
-	public static void buildGramVocab2() throws Exception {
+	public static void buildGramVocab() throws Exception {
 
 		String[] inFileNames = { KPPath.PAPER_DUMP_FILE, KPPath.REPORT_DUMP_FILE, KPPath.PATENT_DUMP_FILE };
 
@@ -224,69 +224,6 @@ public class VocabBuilder {
 		buildVocabPos();
 
 		System.out.println("ends begins.");
-	}
-
-	public void buildVocabGram() throws Exception {
-		TextFileReader reader = new TextFileReader(KPPath.ABSTRACT_FILE);
-
-		Indexer<String> wordIndexer = Generics.newIndexer();
-		Counter<Integer> wordDocFreqs = Generics.newCounter();
-		Counter<Integer> wordCnts = Generics.newCounter();
-
-		int num_docs = 0;
-
-		GramGenerator gg = new GramGenerator(3);
-
-		while (reader.hasNext()) {
-			String[] parts = reader.next().split("\t");
-
-			for (int i = 0; i < parts.length; i++) {
-				parts[i] = parts[i].substring(1, parts[i].length() - 1);
-			}
-
-			String cn = parts[0];
-			String korAbs = parts[1];
-			String engAbs = parts[2];
-
-			Counter<String> c = Generics.newCounter();
-
-			if (!korAbs.equals(NONE)) {
-				for (String word : StrUtils.split(korAbs)) {
-					for (Gram g : gg.generateQGrams(word.toLowerCase())) {
-						c.incrementCount(g.getString(), 1);
-					}
-				}
-			}
-
-			if (!engAbs.equals(NONE)) {
-				for (String word : StrUtils.split(engAbs)) {
-					for (Gram g : gg.generateQGrams(word.toLowerCase())) {
-						c.incrementCount(g.getString(), 1);
-					}
-				}
-			}
-
-			for (Entry<String, Double> e : c.entrySet()) {
-				String word = e.getKey();
-				double cnt = e.getValue();
-				int w = wordIndexer.getIndex(word);
-				wordDocFreqs.incrementCount(w, 1);
-				wordCnts.incrementCount(w, cnt);
-			}
-			num_docs++;
-		}
-		reader.close();
-
-		int[] word_cnts = new int[wordIndexer.size()];
-		int[] word_doc_freqs = new int[wordIndexer.size()];
-
-		for (int i = 0; i < wordIndexer.size(); i++) {
-			word_cnts[i] = (int) wordCnts.getCount(i);
-			word_doc_freqs[i] = (int) wordDocFreqs.getCount(i);
-		}
-
-		Vocab vocab = new Vocab(wordIndexer, word_cnts, word_doc_freqs, num_docs);
-		vocab.write(KPPath.VOCAB_FILE);
 	}
 
 }

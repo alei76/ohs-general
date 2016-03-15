@@ -23,6 +23,7 @@ public class Node<K> implements Serializable {
 
 	protected Map<K, Node<K>> children;
 	protected int unique_cnt = 0;
+	protected int total_cnt = 0;
 	protected int depth = 0;
 	protected K key;
 	protected Node<K> parent;
@@ -37,8 +38,6 @@ public class Node<K> implements Serializable {
 	// }
 
 	protected int id;
-
-	private int duplicate_cnt = 0;
 
 	public Node(Node<K> parent, K key, int depth, Object data, int id) {
 		this.parent = parent;
@@ -104,10 +103,6 @@ public class Node<K> implements Serializable {
 
 	public int getDepth() {
 		return depth;
-	}
-
-	public int getDuplicateCount() {
-		return duplicate_cnt;
 	}
 
 	public int getID() {
@@ -224,6 +219,10 @@ public class Node<K> implements Serializable {
 		return unique_cnt;
 	}
 
+	public int getTotalCount() {
+		return total_cnt;
+	}
+
 	public boolean hasChild(K key) {
 		return children == null || !children.containsKey(key) ? false : true;
 	}
@@ -245,12 +244,12 @@ public class Node<K> implements Serializable {
 		return parent == null ? false : true;
 	}
 
-	public void increaseDuplicateCount() {
-		duplicate_cnt++;
+	public void incrementUniqueCount() {
+		unique_cnt++;
 	}
 
-	public void increaseUniqueCount() {
-		unique_cnt++;
+	public void incrementTotalCount() {
+		total_cnt++;
 	}
 
 	// public boolean isLeaf() {

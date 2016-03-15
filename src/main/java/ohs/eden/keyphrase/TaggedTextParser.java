@@ -1,9 +1,13 @@
 package ohs.eden.keyphrase;
 
+import java.util.List;
+
 import ohs.ling.types.Document;
+import ohs.ling.types.MultiToken;
 import ohs.ling.types.Sentence;
 import ohs.ling.types.Token;
 import ohs.ling.types.TokenAttr;
+import ohs.utils.Generics;
 
 public class TaggedTextParser {
 
@@ -14,40 +18,55 @@ public class TaggedTextParser {
 	public static Document parse(String s) {
 		String[] lines = s.split("\n");
 		Sentence[] sents = new Sentence[lines.length];
-		int loc_in_doc = 0;
 
 		for (int i = 0; i < lines.length; i++) {
 			String[] parts = lines[i].split(" ");
-			Token[] toks = new Token[parts.length];
-
-			int loc_in_sub_tok = 0;
+			MultiToken[] toks = new MultiToken[parts.length];
 
 			for (int j = 0; j < parts.length; j++) {
 				String part = parts[j];
 				String[] subParts = part.split(DELIM_TAG);
-
 				Token[] subToks = new Token[subParts.length];
 
 				for (int k = 0; k < subParts.length; k++) {
 					String subPart = subParts[k];
 					String[] two = subPart.split(DELIM_SUBTOKEN);
+					String word = two[0];
+					String pos = two[1];
 
-					Token t = new Token(loc_in_sub_tok++, two[0]);
-					t.setValue(TokenAttr.POS, two[1]);
+					Token tok = new Token(0, word);
+					tok.setValue(TokenAttr.POS, pos);
+					subToks[k] = tok;
 
-					subToks[k] = t;
 				}
 
-				Token t = new Token();
-				t.setSubTokens(subToks);
-				t.setStart(loc_in_doc++);
+				MultiToken mt = new MultiToken(0, subToks);
+				toks[j] = mt;
 
-				toks[j] = t;
 			}
 			sents[i] = new Sentence(toks);
 		}
 
 		Document doc = new Document(sents);
+		List<MultiToken> mts = Generics.newArrayList();
+
+		for (Sentence sent : doc.getSentences()) {
+			for (MultiToken mt : sent.getTokens()) {
+				mts.add(mt);
+			}
+		}
+
+		for (int i = 0, loc = 0; i < mts.size(); i++) {
+			MultiToken mt = mts.get(i);
+			mt.setStart(i);
+			for (int j = 0; j < mt.size(); j++) {
+				Token t = mt.getToken(j);
+				t.setStart(loc);
+				loc += t.length();
+			}
+			loc++;
+		}
+
 		return doc;
 	}
 

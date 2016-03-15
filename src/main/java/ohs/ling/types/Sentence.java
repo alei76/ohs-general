@@ -6,13 +6,13 @@ import java.util.Arrays;
 
 public class Sentence {
 
-	private Token[] toks;
+	private MultiToken[] toks;
 
 	public Sentence() {
 
 	}
 
-	public Sentence(Token[] toks) {
+	public Sentence(MultiToken[] toks) {
 		this.toks = toks;
 	}
 
@@ -30,15 +30,11 @@ public class Sentence {
 		return true;
 	}
 
-	public Token get(int i) {
-		return toks[i];
-	}
-
-	public Token getFirst() {
+	public MultiToken getFirst() {
 		return toks[0];
 	}
 
-	public Token getLast() {
+	public MultiToken getLast() {
 		return toks[toks.length - 1];
 	}
 
@@ -46,12 +42,16 @@ public class Sentence {
 		return new Sentence(getTokens(start, end));
 	}
 
-	public Token[] getTokens() {
+	public MultiToken getToken(int i) {
+		return toks[i];
+	}
+
+	public MultiToken[] getTokens() {
 		return toks;
 	}
 
-	public Token[] getTokens(int start, int end) {
-		Token[] ret = new Token[end - start];
+	public MultiToken[] getTokens(int start, int end) {
+		MultiToken[] ret = new MultiToken[end - start];
 		for (int i = start, loc = 0; i < end; i++, loc++) {
 			ret[loc] = toks[i];
 		}
@@ -59,24 +59,20 @@ public class Sentence {
 	}
 
 	public String[] getValues() {
-		return getValues(Token.DELIM_VALUE, Token.DELIM_SUBTOKEN, TokenAttr.values(), 0, toks.length);
+		return getValues(Token.DELIM_VALUE, MultiToken.DELIM_TOKEN, TokenAttr.values(), 0, toks.length);
 	}
 
-	public String[] getValues(String delimValue, String delimSubtok, TokenAttr[] attrs, int start, int end) {
+	public String[] getValues(String delimValue, String delimTok, TokenAttr[] attrs, int start, int end) {
 		String[] ret = new String[end - start];
 		for (int i = start, loc = 0; i < end; i++, loc++) {
-			Token t = toks[i];
-			if (t.sizeOfSubTokens() == 0) {
-				ret[loc] = t.joinValues(delimValue, attrs);
-			} else {
-				ret[loc] = t.joinSubTokenValues(delimValue, delimSubtok, attrs);
-			}
+			MultiToken tok = toks[i];
+			ret[loc] = tok.joinValues(delimValue, delimTok, attrs);
 		}
 		return ret;
 	}
 
 	public String[] getValues(TokenAttr attr) {
-		return getValues(Token.DELIM_VALUE, Token.DELIM_SUBTOKEN, new TokenAttr[] { attr }, 0, toks.length);
+		return getValues(Token.DELIM_VALUE, MultiToken.DELIM_TOKEN, new TokenAttr[] { attr }, 0, toks.length);
 	}
 
 	@Override
@@ -88,23 +84,23 @@ public class Sentence {
 	}
 
 	public String joinValues() {
-		return joinValues(Token.DELIM_VALUE, Token.DELIM_SUBTOKEN, TokenAttr.values(), 0, toks.length);
+		return joinValues(Token.DELIM_VALUE, MultiToken.DELIM_TOKEN, TokenAttr.values(), 0, toks.length);
 	}
 
-	public String joinValues(String delimValue, String delimSubtok, TokenAttr[] attrs, int start, int end) {
-		return String.join(" ", getValues(delimValue, delimSubtok, attrs, start, end));
+	public String joinValues(String delimValue, String delimTok, TokenAttr[] attrs, int start, int end) {
+		return String.join(" ", getValues(delimValue, delimTok, attrs, start, end));
 	}
 
 	public int length() {
 		int ret = 0;
-		for (Token t : toks) {
+		for (MultiToken t : toks) {
 			ret += t.length();
 		}
 		return ret;
 	}
 
 	public void read(ObjectInputStream ois) throws Exception {
-		toks = new Token[ois.readInt()];
+		toks = new MultiToken[ois.readInt()];
 		for (int i = 0; i < toks.length; i++) {
 			toks[i].read(ois);
 		}
@@ -135,29 +131,8 @@ public class Sentence {
 		}
 
 		for (int i = 0; i < toks.length; i++) {
-			Token tok = toks[i];
-
-			if (tok.getSubTokens().length == 0) {
-				sb.append(i);
-				for (int j = 0; j < TokenAttr.values().length; j++) {
-					sb.append(String.format("\t%s", tok.getValue(TokenAttr.values()[j])));
-				}
-			} else {
-				sb.append(i);
-
-				Token[] subToks = tok.getSubTokens();
-				for (int j = 0; j < subToks.length; j++) {
-					Token subTok = subToks[j];
-
-					for (int k = 0; k < TokenAttr.values().length; k++) {
-						sb.append(String.format("\t%s", subTok.getValue(TokenAttr.values()[k])));
-					}
-					if (j != subToks.length - 1) {
-						sb.append("\n");
-					}
-				}
-			}
-
+			MultiToken tok = toks[i];
+			sb.append(String.format("%d\t%s", i, tok.joinValues()));
 			if (i != toks.length - 1) {
 				sb.append("\n");
 			}

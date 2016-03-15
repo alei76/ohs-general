@@ -30,12 +30,16 @@ public class Document {
 		return true;
 	}
 
-	public Sentence get(int i) {
+	public Sentence getSentence(int i) {
 		return sents[i];
 	}
 
+	public Sentence[] getSentences() {
+		return sents;
+	}
+
 	public String[][] getValues() {
-		return getValues(Token.DELIM_VALUE, Token.DELIM_SUBTOKEN, TokenAttr.values(), 0, sents.length);
+		return getValues(Token.DELIM_VALUE, MultiToken.DELIM_TOKEN, TokenAttr.values(), 0, sents.length);
 	}
 
 	public String[][] getValues(String delimValue, String delimSubtok, TokenAttr[] attrs, int start, int end) {
@@ -48,11 +52,11 @@ public class Document {
 	}
 
 	public String[][] getValues(TokenAttr attr) {
-		return getValues(Token.DELIM_VALUE, Token.DELIM_SUBTOKEN, new TokenAttr[] { attr }, 0, sents.length);
+		return getValues(Token.DELIM_VALUE, MultiToken.DELIM_TOKEN, new TokenAttr[] { attr }, 0, sents.length);
 	}
 
 	public String[][] getValues(TokenAttr[] attrs) {
-		return getValues(Token.DELIM_VALUE, Token.DELIM_SUBTOKEN, attrs, 0, sents.length);
+		return getValues(Token.DELIM_VALUE, MultiToken.DELIM_TOKEN, attrs, 0, sents.length);
 	}
 
 	@Override
@@ -64,7 +68,11 @@ public class Document {
 	}
 
 	public String joinValues() {
-		return joinValues(Token.DELIM_VALUE, Token.DELIM_SUBTOKEN, TokenAttr.values(), 0, sents.length);
+		return joinValues(Token.DELIM_VALUE, MultiToken.DELIM_TOKEN, TokenAttr.values(), 0, sents.length);
+	}
+
+	public String joinValues(TokenAttr attr) {
+		return joinValues(Token.DELIM_VALUE, MultiToken.DELIM_TOKEN, new TokenAttr[] { attr }, 0, sents.length);
 	}
 
 	public String joinValues(String delimValue, String delimSubtok, TokenAttr[] attrs, int start, int end) {
@@ -107,11 +115,11 @@ public class Document {
 	}
 
 	public Sentence toSentence() {
-		Token[] toks = new Token[sizeOfTokens()];
+		MultiToken[] toks = new MultiToken[sizeOfTokens()];
 		for (int i = 0, loc = 0; i < sents.length; i++) {
 			Sentence sent = sents[i];
 			for (int j = 0; j < sent.size(); j++) {
-				toks[loc++] = sent.get(j);
+				toks[loc++] = sent.getToken(j);
 			}
 		}
 		Sentence ret = new Sentence(toks);

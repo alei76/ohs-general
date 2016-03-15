@@ -20,32 +20,12 @@ public class KPPath {
 
 	public static final String KEYWORD_DATA_FILE = KEYPHRASE_DIR + "keyword_data.txt.gz";
 
-	public static final String KEYWORD_TEMP_FILE = KEYPHRASE_DIR + "keyword_temp.txt";
-
-	public static final String ABSTRACT_FILE = KEYPHRASE_DIR + "abstracts.txt.gz";
-
 	public static final String VOCAB_FILE = KEYPHRASE_DIR + "vocab.ser.gz";
-
-	public static final String KEYWORD_EXTRACTOR_DIR = KEYPHRASE_DIR + "ext/";
 
 	public static final String KEYWORD_CLUSTER_FILE = KEYPHRASE_DIR + "keyword_cluster.txt.gz";
 
-	public static final String PAPER_KOREAN_CONTEXT_FILE = KEYPHRASE_DIR + "paper_context_kor.txt";
-
-	public static final String PAPER_ENGLISH_CONTEXT_FILE = KEYPHRASE_DIR + "paper_context_eng.txt";
-
-	public static final String REPORT_KEYWORD_FILE = KEYPHRASE_DIR + "report_keyword.txt";
-
-	public static final String EDS_DATA_DIR = KEYPHRASE_DIR + "topic_20151204/";
-
 	public static final String KEYWORD_POS_CNT_FILE = KEYPHRASE_DIR + "kwd_pos_seq_cnt.txt";
 
-	public static final String EDS_DICT_FILE = EDS_DATA_DIR + "topic_id_20151204.txt";
-
-	public static final String EDS_REPORT_FILE = EDS_DATA_DIR + "topic-report_20151204.txt";
-
-	public static final String EDS_PATENT_FILE = EDS_DATA_DIR + "topic-patent_20151204.txt";
-
-	public static final String EDS_PAPER_FILE = EDS_DATA_DIR + "topic-paper_20151204.txt";
+	public static final String PATENT_KEYWORD_MATCH_FILE = KEYPHRASE_DIR + "patent_kwd_match.txt";
 
 }

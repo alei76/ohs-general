@@ -99,20 +99,21 @@ public class Trie<K> {
 
 	public Node<K> insert(List<K> keys, int start, int end) {
 		Node<K> node = root;
-		// node.increaseCount();
+		node.incrementTotalCount();
+
 		for (int i = start; i < end; i++) {
 			K key = keys.get(i);
 			Node<K> child;
 			if (node.hasChild(key)) {
 				child = node.getChild(key);
-				// child.increaseCount();
 			} else {
 				child = new Node<K>(node, key, node.getDepth() + 1, null, size++);
 				node.addChild(child);
 			}
 			node = child;
+			node.incrementTotalCount();
 		}
-		node.increaseUniqueCount();
+		node.incrementUniqueCount();
 		depth = Math.max(depth, node.getDepth());
 
 		return node;

@@ -6,6 +6,11 @@ import java.io.Serializable;
 
 public class TextSpan implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3963874236917138978L;
+
 	protected int start;
 
 	protected String s;

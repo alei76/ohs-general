@@ -25,6 +25,8 @@ import ohs.types.Counter;
 
 public class StrUtils {
 
+	public static final String LINE_SEP = System.getProperty("line.separator");
+
 	private static Pattern p = Pattern.compile("\\d+[\\d,\\.]*");
 
 	/**

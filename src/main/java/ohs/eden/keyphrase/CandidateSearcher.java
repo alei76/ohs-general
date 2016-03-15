@@ -1,17 +1,17 @@
 package ohs.eden.keyphrase;
 
 import java.util.List;
-import java.util.Set;
 
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.ling.types.Document;
+import ohs.ling.types.MultiToken;
 import ohs.ling.types.Sentence;
+import ohs.ling.types.Token;
 import ohs.ling.types.TokenAttr;
 import ohs.tree.trie.Node;
 import ohs.tree.trie.Trie;
 import ohs.types.Counter;
-import ohs.types.common.IntPair;
 import ohs.utils.Generics;
 
 public class CandidateSearcher {
@@ -120,7 +120,7 @@ public class CandidateSearcher {
 		List<Sentence> ret = Generics.newArrayList();
 
 		for (int i = 0; i < input.size(); i++) {
-			Sentence sent = input.get(i);
+			Sentence sent = input.getSentence(i);
 			String[] poss = sent.getValues(TokenAttr.POS);
 
 			for (int s = 0; s < poss.length;) {
