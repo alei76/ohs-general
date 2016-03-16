@@ -3,7 +3,9 @@ package ohs.ml.hmm;
 import java.util.List;
 
 import org.apache.commons.math.stat.descriptive.SynchronizedMultivariateSummaryStatistics;
+import org.apache.lucene.index.NoMergePolicy;
 
+import kr.co.shineware.nlp.komoran.b.b;
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 
@@ -157,6 +159,7 @@ public class HMM {
 	public void train(int[] obs) {
 		double[][] alpha = forward(obs);
 		double[][] beta = backward(obs);
+
 	}
 
 	private double[][] tmp_fwd;
@@ -166,9 +169,15 @@ public class HMM {
 	private int[][] tmp_backtrace;
 
 	public double gamma(int i, int t, double[][] alpha, double[][] beta) {
+		double ret = (alpha[i][t] * beta[i][t]);
 		double norm = 0;
-
-		return 0;
+		for (int j = 0; j < num_states; j++) {
+			norm += alpha[j][t] * beta[j][t];
+		}
+		if (ret != 0) {
+			ret /= norm;
+		}
+		return ret;
 	}
 
 	public int[] viterbi(int[] obs) {
