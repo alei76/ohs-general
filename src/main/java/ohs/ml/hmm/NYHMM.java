@@ -2,12 +2,54 @@ package ohs.ml.hmm;
 
 import java.text.*;
 
+import ohs.math.ArrayUtils;
+
 /**
  * This class implements a Hidden Markov Model, as well as the Baum-Welch Algorithm for training HMMs.
  * 
  * @author Holger Wunsch (wunsch@sfs.nphil.uni-tuebingen.de)
  */
 public class NYHMM {
+
+	public static void main(String[] args) {
+		System.out.println("process begins.");
+
+		int[] states = { 0, 1 };
+		int num_states = states.length;
+
+		double[][] trans_probs = ArrayUtils.matrix(num_states);
+		trans_probs[0][0] = 0.7;
+		trans_probs[0][1] = 0.3;
+		trans_probs[1][0] = 0.4;
+		trans_probs[1][1] = 0.6;
+
+		int voc_size = 3;
+
+		double[][] emission_probs = ArrayUtils.matrix(num_states, voc_size, 0);
+
+		/*
+		 * 산책:0, 쇼핑:1, 청소:2
+		 */
+
+		emission_probs[0][0] = 0.1;
+		emission_probs[0][1] = 0.4;
+		emission_probs[0][2] = 0.5;
+		emission_probs[1][0] = 0.6;
+		emission_probs[1][1] = 0.3;
+		emission_probs[1][2] = 0.1;
+
+		double[] start_probs = new double[] { 0.6, 0.4 };
+
+		NYHMM hmm = new NYHMM(start_probs, trans_probs, emission_probs);
+
+		int[] obs = new int[] { 0, 0, 2, 1 };
+
+		hmm.forwardProc(obs);
+		hmm.backwardProc(obs);
+
+		System.out.println("process ends.");
+	}
+
 	/** number of states */
 	public int numStates;
 
@@ -22,6 +64,15 @@ public class NYHMM {
 
 	/** emission probabilities */
 	public double b[][];
+
+	public NYHMM(double[] start_prs, double[][] trans_prs, double[][] emission_prs) {
+		this.numStates = start_prs.length;
+		this.sigmaSize = emission_prs[0].length;
+
+		this.pi = start_prs;
+		this.a = trans_prs;
+		this.b = emission_prs;
+	}
 
 	/**
 	 * initializes an NYHMM.
@@ -126,6 +177,9 @@ public class NYHMM {
 			}
 		}
 
+		System.out.println(ArrayUtils.toString(fwd));
+		System.out.println();
+
 		return fwd;
 	}
 
@@ -152,6 +206,9 @@ public class NYHMM {
 					bwd[i][t] += (bwd[j][t + 1] * a[i][j] * b[j][o[t + 1]]);
 			}
 		}
+		
+		System.out.println(ArrayUtils.toString(bwd));
+		System.out.println();
 
 		return bwd;
 	}

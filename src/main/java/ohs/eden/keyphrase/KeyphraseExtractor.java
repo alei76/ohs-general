@@ -28,8 +28,8 @@ public class KeyphraseExtractor {
 
 	public static void main(String[] args) throws Exception {
 		System.out.printf("[%s] begins.\n", KeyphraseExtractor.class.getName());
-		run1();
-		// run2();
+		// run1();
+		run2();
 		System.out.printf("ends.");
 	}
 
@@ -195,7 +195,7 @@ public class KeyphraseExtractor {
 				// sb.append(String.format("ENG KWDS:\t%s", cs[1].toString(cs[1].size())));
 				// writer.write(sb.toString() + "\n\n");
 
-				writer.write(String.format("%s\t%s\n", cn, cs[0].toString(cs[0].size())));
+				writer.write(String.format("\"%s\"\t\"%s\"\n", cn, String.join(";", cs[0].keySet())));
 
 				// if (++num_docs > 1000) {
 				// break;
@@ -250,12 +250,16 @@ public class KeyphraseExtractor {
 				String korAbs = parts[6];
 				String engAbs = parts[7];
 
+				if (!type.equals("patent")) {
+					continue;
+				}
+
 				String text = korTitle + "\n" + korAbs;
 				text = text.trim();
 
-				if (korKwdStr.length() == 0) {
-					continue;
-				}
+//				if (korKwdStr.length() == 0) {
+//					continue;
+//				}
 
 				if (text.length() == 0) {
 					continue;

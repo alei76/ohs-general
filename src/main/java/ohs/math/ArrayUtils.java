@@ -22,6 +22,38 @@ public class ArrayUtils {
 		return ret;
 	}
 
+	public static double[] array(int size) {
+		return array(size, 0);
+	}
+
+	public static int[] arrayInt(int size, int init) {
+		int[] ret = new int[size];
+		for (int i = 0; i < size; i++) {
+			ret[i] = init;
+		}
+		return ret;
+	}
+
+	public static int[][] matrixInt(int row_size, int col_size, int init) {
+		int[][] ret = new int[row_size][col_size];
+		if (init != 0) {
+			for (int i = 0; i < ret.length; i++) {
+				for (int j = 0; j < ret[i].length; j++) {
+					ret[i][j] = init;
+				}
+			}
+		}
+		return ret;
+	}
+
+	public static int[] arrayInt(int size) {
+		return arrayInt(size, 0);
+	}
+
+	public static int[][] matrixInt(int row_size, int col_size) {
+		return matrixInt(row_size, col_size, 0);
+	}
+
 	public static double copy(Collection<Double> a, double[] b) {
 		int loc = 0;
 		Iterator<Double> iter = a.iterator();
@@ -188,6 +220,14 @@ public class ArrayUtils {
 			sum += b[i][bj];
 		}
 		return sum;
+	}
+
+	public static double[] copyColumn(double[][] a, int j) {
+		double[] ret = new double[a.length];
+		for (int i = 0; i < a.length; i++) {
+			ret[i] = a[i][j];
+		}
+		return ret;
 	}
 
 	public static double copyColumn(double[][] a, int aj, double[] b) {
@@ -380,19 +420,23 @@ public class ArrayUtils {
 	}
 
 	public static double[][] matrix(int size) {
-		return matrix(size, 0);
+		return matrix(size, size, 0);
 	}
 
 	public static double[][] matrix(int size, double init) {
 		return matrix(size, size, init);
 	}
 
-	public static double[][] matrix(int rowSize, int colSize, double init) {
-		double[][] ret = new double[rowSize][colSize];
+	public static double[][] matrix(int row_size, int col_size, double init) {
+		double[][] ret = new double[row_size][col_size];
 		for (int i = 0; i < ret.length; i++) {
-			ret[i] = array(colSize, init);
+			ret[i] = array(col_size, init);
 		}
 		return ret;
+	}
+
+	public static double[][] matrix(int row_size, int col_size) {
+		return matrix(row_size, col_size, 0);
 	}
 
 	public static int maxColumnSize(int[][] a) {
@@ -918,8 +962,7 @@ public class ArrayUtils {
 	public static String toString(double[][] x, int num_print_rows, int num_print_cols, boolean sparse, NumberFormat nf) {
 
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("[Row size\t%d]\n", x.length));
-		sb.append(String.format("[Col size\t%d]\n", x[0].length));
+		sb.append(String.format("dim:\t(%d, %d)\n", x.length, x[0].length));
 
 		if (sparse) {
 			for (int i = 0; i < x.length && i < num_print_rows; i++) {
@@ -997,11 +1040,10 @@ public class ArrayUtils {
 
 	public static String toString(int[][] x) {
 		StringBuffer sb = new StringBuffer();
+		sb.append(String.format("dim:\t(%d, %d)", x.length, x[0].length));
 		for (int i = 0; i < x.length; i++) {
+			sb.append("\n");
 			sb.append(toString(x[i], false, false));
-			if (i != x.length - 1) {
-				sb.append("\n");
-			}
 		}
 		return sb.toString();
 	}

@@ -29,7 +29,15 @@ public class DataHandler {
 		// dh.tagPOS();
 		// dh.buildKeywordData();
 		// dh.getKeywords();
+
+		delete();
 		System.out.println("process ends.");
+	}
+
+	public static void delete() {
+		String dirName = "F:/data/";
+
+		FileUtils.deleteFilesUnder(dirName);
 	}
 
 	public void getKeywords() throws Exception {
