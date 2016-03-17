@@ -86,7 +86,7 @@ public class DataHandler {
 						content = "";
 					}
 
-					sb.append(String.format("Document-%d: %f\n%s\n%s\n", k + 1, docScores.getCount(docId), title, content));
+					sb.append(String.format("KDocument-%d: %f\n%s\n%s\n", k + 1, docScores.getCount(docId), title, content));
 				}
 
 				writer.write(sb.toString().trim() + "\n\n");
@@ -126,7 +126,7 @@ public class DataHandler {
 				String title = doc.get(CommonFieldNames.TITLE);
 				String content = doc.get(CommonFieldNames.CONTENT);
 				content = StrUtils.join("\n", NLPUtils.tokenize(content));
-				sb.append(String.format("Document-%d: %f\n%s\n%s\n", k + 1, docRelevances.getCount(docId), title, content));
+				sb.append(String.format("KDocument-%d: %f\n%s\n%s\n", k + 1, docRelevances.getCount(docId), title, content));
 			}
 
 			writer.write(sb.toString().trim() + "\n\n");

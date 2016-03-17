@@ -153,7 +153,7 @@ public class WikiQueryExpander {
 		// double score2 = conceptScores2.valueAtLoc(i);
 		// double score1 = conceptScores1.valueAlways(cid);
 		//
-		// Document article = wikiIndexSearcher.doc(cid);
+		// KDocument article = wikiIndexSearcher.doc(cid);
 		// String concept = article.get(CommonFieldNames.TITLE);
 		// String categories = article.get(CommonFieldNames.CATEGORY);
 		// conceptMap.put(cid, concept);

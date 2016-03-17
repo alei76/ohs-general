@@ -1,18 +1,25 @@
-package ohs.ling.types;
+package ohs.nlp.ling.types;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
+import java.util.List;
 
-public class Sentence {
+import ohs.utils.Generics;
+
+public class KSentence {
+
+	public static final String START_SYMBOL = "<s>";
+
+	public static final String END_SYMBOL = "</s>";
 
 	private MultiToken[] toks;
 
-	public Sentence() {
+	public KSentence() {
 
 	}
 
-	public Sentence(MultiToken[] toks) {
+	public KSentence(MultiToken[] toks) {
 		this.toks = toks;
 	}
 
@@ -24,7 +31,7 @@ public class Sentence {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Sentence other = (Sentence) obj;
+		KSentence other = (KSentence) obj;
 		if (!Arrays.equals(toks, other.toks))
 			return false;
 		return true;
@@ -38,8 +45,8 @@ public class Sentence {
 		return toks[toks.length - 1];
 	}
 
-	public Sentence getSentence(int start, int end) {
-		return new Sentence(getTokens(start, end));
+	public KSentence getSentence(int start, int end) {
+		return new KSentence(getTokens(start, end));
 	}
 
 	public MultiToken getToken(int i) {
@@ -102,7 +109,9 @@ public class Sentence {
 	public void read(ObjectInputStream ois) throws Exception {
 		toks = new MultiToken[ois.readInt()];
 		for (int i = 0; i < toks.length; i++) {
-			toks[i].read(ois);
+			MultiToken mt = new MultiToken();
+			mt.read(ois);
+			toks[i] = mt;
 		}
 	}
 
@@ -110,8 +119,8 @@ public class Sentence {
 		return toks.length;
 	}
 
-	public Document toDocument() {
-		return new Document(new Sentence[] { this });
+	public KDocument toDocument() {
+		return new KDocument(new KSentence[] { this });
 	}
 
 	@Override
@@ -138,6 +147,16 @@ public class Sentence {
 			}
 		}
 		return sb.toString();
+	}
+
+	public Token[] toTokens() {
+		List<Token> ret = Generics.newArrayList();
+		for (MultiToken mt : toks) {
+			for (Token t : mt.getTokens()) {
+				ret.add(t);
+			}
+		}
+		return ret.toArray(new Token[ret.size()]);
 	}
 
 	public void write(ObjectOutputStream oos) throws Exception {

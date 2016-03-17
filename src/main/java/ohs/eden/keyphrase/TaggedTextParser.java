@@ -2,7 +2,7 @@ package ohs.eden.keyphrase;
 
 import java.util.List;
 
-import ohs.ling.types.Document;
+import ohs.ling.types.KDocument;
 import ohs.ling.types.MultiToken;
 import ohs.ling.types.Sentence;
 import ohs.ling.types.Token;
@@ -15,9 +15,9 @@ public class TaggedTextParser {
 
 	public static final String DELIM_SUBTOKEN = "#S#";
 
-	public static Document parse(String s) {
+	public static KDocument parse(String s) {
 		String[] lines = s.split("\n");
-		Sentence[] sents = new Sentence[lines.length];
+		KSentence[] sents = new KSentence[lines.length];
 
 		for (int i = 0; i < lines.length; i++) {
 			String[] parts = lines[i].split(" ");
@@ -44,13 +44,13 @@ public class TaggedTextParser {
 				toks[j] = mt;
 
 			}
-			sents[i] = new Sentence(toks);
+			sents[i] = new KSentence(toks);
 		}
 
-		Document doc = new Document(sents);
+		KDocument doc = new KDocument(sents);
 		List<MultiToken> mts = Generics.newArrayList();
 
-		for (Sentence sent : doc.getSentences()) {
+		for (KSentence sent : doc.getSentences()) {
 			for (MultiToken mt : sent.getTokens()) {
 				mts.add(mt);
 			}

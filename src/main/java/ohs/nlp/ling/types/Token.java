@@ -1,4 +1,4 @@
-package ohs.ling.types;
+package ohs.nlp.ling.types;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -16,6 +16,17 @@ public class Token {
 
 	public Token() {
 
+	}
+
+	public static Token parse(int start, String s) {
+		String[] values = s.split(DELIM_VALUE);
+		Token ret = new Token();
+		ret.setStart(start);
+
+		for (TokenAttr attr : TokenAttr.values()) {
+			ret.setValue(attr, values[attr.ordinal()]);
+		}
+		return ret;
 	}
 
 	public Token(int start, String word) {

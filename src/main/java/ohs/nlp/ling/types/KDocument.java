@@ -1,18 +1,18 @@
-package ohs.ling.types;
+package ohs.nlp.ling.types;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
 
-public class Document {
+public class KDocument {
 
-	private Sentence[] sents;
+	private KSentence[] sents;
 
-	public Document() {
+	public KDocument() {
 
 	}
 
-	public Document(Sentence[] sents) {
+	public KDocument(KSentence[] sents) {
 		this.sents = sents;
 	}
 
@@ -24,17 +24,17 @@ public class Document {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Document other = (Document) obj;
+		KDocument other = (KDocument) obj;
 		if (!Arrays.equals(sents, other.sents))
 			return false;
 		return true;
 	}
 
-	public Sentence getSentence(int i) {
+	public KSentence getSentence(int i) {
 		return sents[i];
 	}
 
-	public Sentence[] getSentences() {
+	public KSentence[] getSentences() {
 		return sents;
 	}
 
@@ -45,7 +45,7 @@ public class Document {
 	public String[][] getValues(String delimValue, String delimSubtok, TokenAttr[] attrs, int start, int end) {
 		String[][] ret = new String[end - start][];
 		for (int i = start; i < end; i++) {
-			Sentence sent = sents[i];
+			KSentence sent = sents[i];
 			ret[i] = sent.getValues(delimValue, delimSubtok, attrs, 0, sent.size());
 		}
 		return ret;
@@ -89,16 +89,18 @@ public class Document {
 
 	public int length() {
 		int ret = 0;
-		for (Sentence sent : sents) {
+		for (KSentence sent : sents) {
 			ret += sent.length();
 		}
 		return ret;
 	}
 
 	public void read(ObjectInputStream ois) throws Exception {
-		sents = new Sentence[ois.readInt()];
+		sents = new KSentence[ois.readInt()];
 		for (int i = 0; i < sents.length; i++) {
-			sents[i].read(ois);
+			KSentence sent = new KSentence();
+			sent.read(ois);
+			sents[i] = sent;
 		}
 	}
 
@@ -108,21 +110,21 @@ public class Document {
 
 	public int sizeOfTokens() {
 		int ret = 0;
-		for (Sentence s : sents) {
+		for (KSentence s : sents) {
 			ret += s.size();
 		}
 		return ret;
 	}
 
-	public Sentence toSentence() {
+	public KSentence toSentence() {
 		MultiToken[] toks = new MultiToken[sizeOfTokens()];
 		for (int i = 0, loc = 0; i < sents.length; i++) {
-			Sentence sent = sents[i];
+			KSentence sent = sents[i];
 			for (int j = 0; j < sent.size(); j++) {
 				toks[loc++] = sent.getToken(j);
 			}
 		}
-		Sentence ret = new Sentence(toks);
+		KSentence ret = new KSentence(toks);
 		return ret;
 	}
 

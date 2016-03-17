@@ -4,7 +4,7 @@ import java.util.List;
 
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
-import ohs.ling.types.Document;
+import ohs.ling.types.KDocument;
 import ohs.ling.types.MultiToken;
 import ohs.ling.types.Sentence;
 import ohs.ling.types.Token;
@@ -54,7 +54,7 @@ public class CandidateSearcher {
 				String engAbs = parts[7];
 
 				if (korAbs.length() > 0) {
-					Document doc = TaggedTextParser.parse(korAbs);
+					KDocument doc = TaggedTextParser.parse(korAbs);
 
 					cs.search(doc);
 
@@ -116,11 +116,11 @@ public class CandidateSearcher {
 		}
 	}
 
-	public List<Sentence> search(Document input) {
-		List<Sentence> ret = Generics.newArrayList();
+	public List<KSentence> search(KDocument input) {
+		List<KSentence> ret = Generics.newArrayList();
 
 		for (int i = 0; i < input.size(); i++) {
-			Sentence sent = input.getSentence(i);
+			KSentence sent = input.getSentence(i);
 			String[] poss = sent.getValues(TokenAttr.POS);
 
 			for (int s = 0; s < poss.length;) {
@@ -142,7 +142,7 @@ public class CandidateSearcher {
 				if (found == -1) {
 					s++;
 				} else {
-					Sentence cand = new Sentence(sent.getTokens(s, found));
+					KSentence cand = new KSentence(sent.getTokens(s, found));
 					ret.add(cand);
 					s = found;
 				}

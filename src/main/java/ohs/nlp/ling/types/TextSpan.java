@@ -1,4 +1,4 @@
-package ohs.ling.types;
+package ohs.nlp.ling.types;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;

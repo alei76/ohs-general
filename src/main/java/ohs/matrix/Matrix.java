@@ -23,6 +23,8 @@ public interface Matrix extends Serializable {
 
 	public Vector row(int rowId);
 
+	public double[][] values();
+
 	public int rowDim();
 
 	public int[] rowIndexes();

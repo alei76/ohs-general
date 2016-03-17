@@ -154,7 +154,7 @@ public class ESADocumentScorer {
 			SparseVector conceptWeights4Document = esm.getConceptWeights(wordCounts);
 			SparseVector categoryWeights4Document = esm.getCategoryWeights(conceptWeights4Document);
 
-			// System.out.printf("[Document %d]\n", i + 1);
+			// System.out.printf("[KDocument %d]\n", i + 1);
 			// System.out.printf("Word Weights:\t%s\n", VectorUtils.toCounter(wordWeights4Document, esm.getWordIndexer()));
 			// System.out.printf("Concept Weights:\t%s\n", VectorUtils.toCounter(conceptWeights4Document, esm.getConceptIndexer()));
 			// System.out.printf("Category Weights:\t%s\n", VectorUtils.toCounter(categoryWeights4Document, esm.getCategoryIndexer()));

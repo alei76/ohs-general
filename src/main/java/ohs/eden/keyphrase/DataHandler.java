@@ -172,7 +172,7 @@ public class DataHandler {
 				String[] korKwds = korKwdStr.split(";");
 
 				for (String kwd : korKwds) {
-					Sentence sent = TaggedTextParser.parse(kwd).getSentence(0);
+					KSentence sent = TaggedTextParser.parse(kwd).getSentence(0);
 					String pat = String.join(" ", sent.getValues(TokenAttr.POS));
 					patCnts.incrementCount(pat, 1);
 				}

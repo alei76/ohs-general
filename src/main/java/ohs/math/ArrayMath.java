@@ -382,6 +382,24 @@ public class ArrayMath {
 		}
 	}
 
+	public static double dotProductColumns(double[][] a, int j1, double[][] b, int j2) {
+		if (!ArrayChecker.isSameDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		double ret = 0;
+		for (int i = 0; i < a.length; i++) {
+			ret += a[i][j1] * b[i][j2];
+		}
+		return ret;
+	}
+
+	public static double dotProductRows(double[][] a, int i1, double[][] b, int i2) {
+		if (!ArrayChecker.isSameDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		return dotProduct(a[i1], b[i2]);
+	}
+
 	public static double dotProduct(double[] a, double[] b) {
 		if (!ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException();
@@ -1538,6 +1556,14 @@ public class ArrayMath {
 		}
 
 		return sum(b);
+	}
+
+	public static double sumColumn(double[][] a, int j) {
+		double ret = 0;
+		for (int i = 0; i < a.length; i++) {
+			ret += a[i][j];
+		}
+		return ret;
 	}
 
 	/**

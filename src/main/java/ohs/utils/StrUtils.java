@@ -11,8 +11,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ohs.ling.types.TextSpan;
 import ohs.math.ArrayMath;
+import ohs.nlp.ling.types.TextSpan;
 import ohs.types.Counter;
 
 /**
@@ -253,34 +253,34 @@ public class StrUtils {
 		return sb.toString();
 	}
 
-	public static String join(String glue, String[] array) {
-		return join(glue, array, 0, array.length);
+	public static String join(String glue, String[] ar) {
+		return join(glue, ar, 0, ar.length);
 	}
 
-	public static String join(String glue, String[] array, int start) {
-		return join(glue, array, start, array.length);
+	public static String join(String glue, String[] ar, int start) {
+		return join(glue, ar, start, ar.length);
 	}
 
-	public static String join(String glue, String[] array, int start, int end) {
+	public static String join(String glue, String[] ar, int start, int end) {
 		StringBuffer sb = new StringBuffer();
 		if (start < 0) {
 			start = 0;
 		}
 
-		if (end > array.length) {
-			end = array.length;
+		if (end > ar.length) {
+			end = ar.length;
 		}
 
 		for (int i = start; i < end; i++) {
-			sb.append((array[i] == null ? "null" : array[i]) + (i == end - 1 ? "" : glue));
+			sb.append((ar[i] == null ? "null" : ar[i]) + (i == end - 1 ? "" : glue));
 		}
 		return sb.toString();
 	}
 
-	public static String join(String glue, String[] array, int[] indexList) {
+	public static String join(String glue, String[] ar, int[] indexList) {
 		List<String> list = new ArrayList<String>();
 		for (int index : indexList) {
-			list.add(array[index]);
+			list.add(ar[index]);
 		}
 		return join(glue, list);
 	}
@@ -634,6 +634,10 @@ public class StrUtils {
 			}
 		}
 		return sb.toString();
+	}
+
+	public static String value(boolean condition, String s1, String s2) {
+		return condition ? s1 : s2;
 	}
 
 };

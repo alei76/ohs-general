@@ -501,7 +501,7 @@ public class FileUtils {
 		if (file.getName().endsWith(".ser.gz")) {
 			ret = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream(file, append)));
 		} else if (file.getName().endsWith(".ser")) {
-			ret = new ObjectOutputStream(new FileOutputStream(file));
+			ret = new ObjectOutputStream(new FileOutputStream(file, append));
 		}
 		return ret;
 	}

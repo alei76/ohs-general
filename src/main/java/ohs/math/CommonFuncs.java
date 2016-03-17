@@ -296,6 +296,18 @@ public class CommonFuncs {
 		return ret;
 	}
 
+	public static double divide(double numerator, double denominator) {
+		double ret = 0;
+		if (numerator > 0 && denominator > 0) {
+			ret = numerator / denominator;
+		}
+		return ret;
+	}
+
+	public static double value(boolean condition, double true_value, double false_value) {
+		return condition ? true_value : false_value;
+	}
+
 	/**
 	 * Z = (x - mu) / sigma
 	 * 

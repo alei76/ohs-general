@@ -8,7 +8,7 @@ import java.util.Set;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.ling.types.Document;
+import ohs.ling.types.KDocument;
 import ohs.ling.types.MultiToken;
 import ohs.ling.types.Sentence;
 import ohs.ling.types.TokenAttr;
@@ -264,7 +264,7 @@ public class KeyphraseExtractor {
 				if (text.length() == 0) {
 					continue;
 				}
-				Document doc = TaggedTextParser.parse(text);
+				KDocument doc = TaggedTextParser.parse(text);
 
 				if (doc.sizeOfTokens() < 500) {
 					continue;
@@ -275,7 +275,7 @@ public class KeyphraseExtractor {
 				int num_matches = 0;
 
 				for (String kwd : korKwdStr.split(";")) {
-					Sentence kwdSent = TaggedTextParser.parse(kwd).toSentence();
+					KSentence kwdSent = TaggedTextParser.parse(kwd).toSentence();
 					String s = kwdSent.joinValues("", MultiToken.DELIM_TOKEN, new TokenAttr[] { TokenAttr.WORD }, 0, kwdSent.size());
 					keywordSet.add(s);
 
@@ -325,16 +325,16 @@ public class KeyphraseExtractor {
 		this.vocab = vocab;
 	}
 
-	public Counter<String> extract(Document doc) {
+	public Counter<String> extract(KDocument doc) {
 		Counter<String> ret = Generics.newCounter();
 
-		List<Sentence> cands = candSearcher.search(doc);
+		List<KSentence> cands = candSearcher.search(doc);
 
 		if (cands.size() == 0) {
 			return ret;
 		}
 
-		Sentence sent = doc.toSentence();
+		KSentence sent = doc.toSentence();
 
 		CounterMap<String, String> cm1 = Generics.newCounterMap();
 		// CounterMap<String, String> cm2 = Generics.newCounterMap();
@@ -342,7 +342,7 @@ public class KeyphraseExtractor {
 		int window_size = 2;
 
 		for (int i = 0; i < cands.size(); i++) {
-			Sentence cand1 = cands.get(i);
+			KSentence cand1 = cands.get(i);
 			String candStr1 = cand1.joinValues("", MultiToken.DELIM_TOKEN, new TokenAttr[] { TokenAttr.WORD }, 0, cand1.size());
 			String content = cand1.joinValues("", " ", new TokenAttr[] { TokenAttr.WORD }, 0, cand1.size());
 
@@ -378,7 +378,7 @@ public class KeyphraseExtractor {
 			}
 
 			// for (int j = i + 1; j < cands.size(); j++) {
-			// Sentence cand2 = cands.get(j);
+			// KSentence cand2 = cands.get(j);
 			// String candStr2 = cand2.joinValues("", "", new TokenAttr[] { TokenAttr.WORD }, 0, cand2.size());
 			//
 			// int dist = cand2.getFirst().getStart() - cand1.getLast().getStart();

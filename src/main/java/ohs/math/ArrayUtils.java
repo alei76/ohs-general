@@ -1,5 +1,6 @@
 package ohs.math;
 
+import java.sql.Struct;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,6 +12,7 @@ import java.util.Random;
 import java.util.Set;
 
 import ohs.utils.ByteSize;
+import ohs.utils.StrUtils;
 
 public class ArrayUtils {
 
@@ -88,6 +90,12 @@ public class ArrayUtils {
 			loc++;
 		}
 		return sum;
+	}
+
+	public static int[] copy(Collection<Integer> a) {
+		int[] ret = new int[a.size()];
+		copy(a, ret);
+		return ret;
 	}
 
 	public static double[] copy(double[] a) {
@@ -927,78 +935,81 @@ public class ArrayUtils {
 	}
 
 	public static String toString(double[] x) {
-		return toString(x, x.length, false, false, getDoubleNumberFormat(4));
+		return toString("None", x, x.length, false, false, getDoubleNumberFormat(4));
 	}
 
-	public static String toString(double[] x, int num_print, boolean sparse, boolean vertical, NumberFormat nf) {
+	public static String toString(String label, double[] x) {
+		return toString(label, x, x.length, false, false, getDoubleNumberFormat(4));
+	}
+
+	public static String toString(String label, double[] x, int len, boolean sparse, boolean vertical, NumberFormat nf) {
 		StringBuffer sb = new StringBuffer();
 
-		String delim = "\t";
+		String delim = StrUtils.value(vertical, "\t", "\n");
 
-		if (vertical) {
-			delim = "\n";
-		}
+		sb.append(String.format("(%s)", label));
 
 		if (sparse) {
-			for (int i = 0; i < x.length && i < num_print; i++) {
+			for (int i = 0; i < x.length && i < len; i++) {
 				sb.append(String.format("%s%d:%s", delim, i, nf.format(x[i])));
 			}
 		} else {
-			for (int i = 0; i < x.length && i < num_print; i++) {
+			for (int i = 0; i < x.length && i < len; i++) {
 				sb.append(String.format("%s%s", delim, nf.format(x[i])));
 			}
 		}
-		return sb.toString().trim();
+		return sb.toString();
 	}
 
 	public static String toString(double[][] x) {
-		int num_rows = x.length;
-		int num_cols = x[0].length;
-		boolean sparse = false;
-
-		return toString(x, num_rows, num_cols, sparse, getDoubleNumberFormat(4));
+		return toString("None", x, x.length, x[0].length, false, getDoubleNumberFormat(4));
 	}
 
-	public static String toString(double[][] x, int num_print_rows, int num_print_cols, boolean sparse, NumberFormat nf) {
+	public static String toString(String label, double[][] x) {
+		return toString(label, x, x.length, x[0].length, false, getDoubleNumberFormat(4));
+	}
+
+	public static String toString(String label, double[][] x, int rows, int cols, boolean sparse, NumberFormat nf) {
 
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("dim:\t(%d, %d)\n", x.length, x[0].length));
+		sb.append(String.format("(%s)", label));
+		sb.append(String.format("\ndim:\t(%d, %d)\n", x.length, x[0].length));
 
 		if (sparse) {
-			for (int i = 0; i < x.length && i < num_print_rows; i++) {
+			for (int i = 0; i < x.length && i < rows; i++) {
 				StringBuffer sb2 = new StringBuffer();
 				sb2.append(i);
 
-				int num_nonzero_print_cols = 0;
+				int num_nonzero_cols = 0;
 
-				for (int j = 0; j < x[i].length && num_nonzero_print_cols < num_print_cols; j++) {
+				for (int j = 0; j < x[i].length && num_nonzero_cols < cols; j++) {
 					Double v = new Double(x[i][j]);
 					if (v != 0) {
 						if (Double.isFinite(v) || Double.isInfinite(v) || Double.isNaN(v)) {
 							sb2.append(String.format("\t%d:%s", j, v.toString()));
-							num_nonzero_print_cols++;
+							num_nonzero_cols++;
 						} else {
 							sb2.append(String.format("\t%d:%s", j, nf.format(v.doubleValue())));
-							num_nonzero_print_cols++;
+							num_nonzero_cols++;
 						}
 					}
 				}
 
-				if (num_nonzero_print_cols > 0) {
+				if (num_nonzero_cols > 0) {
 					sb.append(sb2.toString());
 					sb.append("\n");
 				}
 			}
 		} else {
 			sb.append("#");
-			for (int i = 0; i < x[0].length && i < num_print_cols; i++) {
+			for (int i = 0; i < x[0].length && i < cols; i++) {
 				sb.append(String.format("\t%d", i));
 			}
 			sb.append("\n");
 
-			for (int i = 0; i < x.length && i < num_print_rows; i++) {
+			for (int i = 0; i < x.length && i < rows; i++) {
 				sb.append(i);
-				for (int j = 0; j < x[i].length && j < num_print_cols; j++) {
+				for (int j = 0; j < x[i].length && j < cols; j++) {
 					Double v = new Double(x[i][j]);
 					if (!Double.isFinite(v)) {
 						sb.append(String.format("\t%s", v.toString()));

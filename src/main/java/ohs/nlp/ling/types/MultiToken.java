@@ -1,11 +1,11 @@
-package ohs.ling.types;
+package ohs.nlp.ling.types;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 public class MultiToken {
 
-	public static final String DELIM_TOKEN = "+";
+	public static final String DELIM_TOKEN = " + ";
 
 	private Token[] toks = new Token[0];
 
@@ -13,6 +13,22 @@ public class MultiToken {
 
 	public MultiToken() {
 
+	}
+
+	public static MultiToken parse(int start, String s) {
+		String[] parts = s.split(DELIM_TOKEN);
+		Token[] toks = new Token[parts.length];
+
+		for (int i = 0; i < parts.length; i++) {
+			toks[i] = Token.parse(0, parts[i]);
+		}
+
+		MultiToken ret = new MultiToken(start, toks);
+		for (int i = 0, loc = start; i < ret.length(); i++) {
+			ret.getToken(i).setStart(loc);
+			loc += ret.getValue(TokenAttr.WORD).length;
+		}
+		return ret;
 	}
 
 	public MultiToken(int start, Token[] toks) {
@@ -84,7 +100,9 @@ public class MultiToken {
 		start = ois.readInt();
 		toks = new Token[ois.readInt()];
 		for (int i = 0; i < toks.length; i++) {
-			toks[i].read(ois);
+			Token t = new Token();
+			t.read(ois);
+			toks[i] = t;
 		}
 	}
 
@@ -135,6 +153,7 @@ public class MultiToken {
 
 	public void write(ObjectOutputStream oos) throws Exception {
 		oos.writeInt(start);
+		oos.writeInt(toks.length);
 		for (int i = 0; i < toks.length; i++) {
 			toks[i].write(oos);
 		}

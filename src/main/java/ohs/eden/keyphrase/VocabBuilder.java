@@ -6,7 +6,7 @@ import java.util.Map.Entry;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import ohs.io.TextFileReader;
-import ohs.ling.types.Document;
+import ohs.ling.types.KDocument;
 import ohs.ling.types.TokenAttr;
 import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.GramGenerator;
@@ -178,7 +178,7 @@ public class VocabBuilder {
 				String text = StrUtils.join("\n", new String[] { korTitle, korAbs });
 
 				if (text.length() > 0) {
-					Document doc = TaggedTextParser.parse(text);
+					KDocument doc = TaggedTextParser.parse(text);
 					String[][] sents = doc.getValues(" ", " ", new TokenAttr[] { TokenAttr.WORD }, 0, doc.size());
 
 					Counter<String> c = Generics.newCounter();

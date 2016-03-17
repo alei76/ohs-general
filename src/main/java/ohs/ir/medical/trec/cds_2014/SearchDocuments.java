@@ -253,7 +253,7 @@ public class SearchDocuments {
 		writer.close();
 
 		writer = new TextFileWriter(CDSPath.OUTPUT_DOCUMENT_ID_MAP_FILE);
-		writer.write("Document ID\tIndex ID");
+		writer.write("KDocument ID\tIndex ID");
 
 		for (String docId : documentIdMap.keySet()) {
 			Integer indexId = documentIdMap.get(docId);

@@ -9,7 +9,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Strings;
 
 /**
- * Collection of file-related utilities.
+ * KCollection of file-related utilities.
  */
 public final class FileUtils {
 
