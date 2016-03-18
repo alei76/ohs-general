@@ -145,7 +145,7 @@ public class SearchResultEvaluator {
 		TextFileWriter writer2 = new TextFileWriter(perfDetailFileName);
 
 		StringBuffer sb = new StringBuffer();
-		sb.append("KCollection\tQueries\tModel\tTop-K");
+		sb.append("KDocumentCollection\tQueries\tModel\tTop-K");
 
 		sb.append(String.format("\t%s", MetricType.RELEVANT));
 		sb.append(String.format("\t%s", MetricType.RETRIEVED));
@@ -241,7 +241,7 @@ public class SearchResultEvaluator {
 					baselines = targets;
 				}
 
-				writer2.write(String.format("KCollection:\t%s\n", collName));
+				writer2.write(String.format("KDocumentCollection:\t%s\n", collName));
 				writer2.write(String.format("FileName:\t%s\n", resFile.getName()));
 
 				NumberFormat nf = NumberFormat.getInstance();
@@ -421,7 +421,7 @@ public class SearchResultEvaluator {
 
 		StringBuffer sb = new StringBuffer();
 		sb.append(
-				"KCollection\tQuery\tModel\tTopN\tTopK\tWikiTopK\tFBDocs\tFBWords\tDIR\tAllCollMix\tUseDocPrior\tUseDoubleScoring\tUseWiki\tFBMix\tUseSmoothCollMix\tAdjustNumbers");
+				"KDocumentCollection\tQuery\tModel\tTopN\tTopK\tWikiTopK\tFBDocs\tFBWords\tDIR\tAllCollMix\tUseDocPrior\tUseDoubleScoring\tUseWiki\tFBMix\tUseSmoothCollMix\tAdjustNumbers");
 		sb.append("\tRelevant_ALL");
 		sb.append("\tRetrieved All");
 		sb.append("\tRelevant_All_In_Retreived_All");
@@ -516,7 +516,7 @@ public class SearchResultEvaluator {
 				// continue;
 				// }
 
-				writer2.write(String.format("KCollection:\t%s\n", collName));
+				writer2.write(String.format("KDocumentCollection:\t%s\n", collName));
 				writer2.write(String.format("FileName:\t%s\n", resultFile.getName()));
 
 				NumberFormat nf = NumberFormat.getInstance();

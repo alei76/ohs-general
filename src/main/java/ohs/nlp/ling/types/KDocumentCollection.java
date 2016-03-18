@@ -3,10 +3,11 @@ package ohs.nlp.ling.types;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 import ohs.io.FileUtils;
 
-public class KCollection extends ArrayList<KDocument> {
+public class KDocumentCollection extends ArrayList<KDocument> {
 
 	/**
 	 * 
@@ -21,6 +22,16 @@ public class KCollection extends ArrayList<KDocument> {
 			doc.read(ois);
 			add(doc);
 		}
+	}
+
+	public KSentence[] getSentences() {
+		List<KSentence> ret = new ArrayList<KSentence>();
+		for (KDocument doc : this) {
+			for (KSentence sent : doc.getSentences()) {
+				ret.add(sent);
+			}
+		}
+		return ret.toArray(new KSentence[ret.size()]);
 	}
 
 	public void read(String fileName) throws Exception {

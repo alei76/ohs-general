@@ -3,8 +3,20 @@ package ohs.nlp.ling.types;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
+import java.util.List;
+
+import ohs.utils.Generics;
 
 public class KDocument {
+
+	public static KDocument parse(String s) {
+		String[] lines = s.split("\n\n");
+		KSentence[] sents = new KSentence[lines.length];
+		for (int i = 0; i < sents.length; i++) {
+			sents[i] = KSentence.parse(lines[i]);
+		}
+		return new KDocument(sents);
+	}
 
 	private KSentence[] sents;
 
@@ -36,6 +48,16 @@ public class KDocument {
 
 	public KSentence[] getSentences() {
 		return sents;
+	}
+
+	public MultiToken[] getTokens() {
+		List<MultiToken> ret = Generics.newArrayList();
+		for (KSentence sent : sents) {
+			for (MultiToken mt : sent.getTokens()) {
+				ret.add(mt);
+			}
+		}
+		return ret.toArray(new MultiToken[ret.size()]);
 	}
 
 	public String[][] getValues() {
@@ -71,10 +93,6 @@ public class KDocument {
 		return joinValues(Token.DELIM_VALUE, MultiToken.DELIM_TOKEN, TokenAttr.values(), 0, sents.length);
 	}
 
-	public String joinValues(TokenAttr attr) {
-		return joinValues(Token.DELIM_VALUE, MultiToken.DELIM_TOKEN, new TokenAttr[] { attr }, 0, sents.length);
-	}
-
 	public String joinValues(String delimValue, String delimSubtok, TokenAttr[] attrs, int start, int end) {
 		String[][] vals = getValues(delimValue, delimSubtok, attrs, start, end);
 		StringBuffer sb = new StringBuffer();
@@ -85,6 +103,10 @@ public class KDocument {
 			}
 		}
 		return sb.toString();
+	}
+
+	public String joinValues(TokenAttr attr) {
+		return joinValues(Token.DELIM_VALUE, MultiToken.DELIM_TOKEN, new TokenAttr[] { attr }, 0, sents.length);
 	}
 
 	public int length() {

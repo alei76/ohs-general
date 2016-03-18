@@ -8,7 +8,7 @@ import ohs.io.FileUtils;
 
 public class Token {
 
-	public static final String DELIM_VALUE = "/";
+	public static final String DELIM_VALUE = " / ";
 
 	private String[] values = new String[TokenAttr.values().length];
 
@@ -18,11 +18,9 @@ public class Token {
 
 	}
 
-	public static Token parse(int start, String s) {
+	public static Token parse(String s) {
 		String[] values = s.split(DELIM_VALUE);
 		Token ret = new Token();
-		ret.setStart(start);
-
 		for (TokenAttr attr : TokenAttr.values()) {
 			ret.setValue(attr, values[attr.ordinal()]);
 		}

@@ -1,5 +1,6 @@
 package ohs.ml.hmm;
 
+
 import java.text.*;
 
 import org.apache.commons.math.stat.descriptive.SynchronizedMultivariateSummaryStatistics;
@@ -46,9 +47,9 @@ public class NYHMM {
 
 		int[] obs = new int[] { 0, 0, 2, 1 };
 
-		hmm.forwardProc(obs);
-		hmm.backwardProc(obs);
-		hmm.train(obs, 2);
+		// hmm.forwardProc(obs);
+		// hmm.backwardProc(obs);
+		hmm.train(obs, 1);
 
 		System.out.println("process ends.");
 	}
@@ -154,18 +155,12 @@ public class NYHMM {
 			a = a1;
 			b = b1;
 		}
+
+//		print();
 		
-		System.out.println("pi:");
-		System.out.println(ArrayUtils.toString(pi));
-		System.out.println();
-
-		System.out.println("a:");
-		System.out.println(ArrayUtils.toString(a));
-		System.out.println();
-
-		System.out.println("b:");
-		System.out.println(ArrayUtils.toString(b));
-		System.out.println();
+		ArrayUtils.print("phi", pi);
+		ArrayUtils.print("a", a);
+		ArrayUtils.print("b", b);
 	}
 
 	/**
@@ -193,8 +188,8 @@ public class NYHMM {
 			}
 		}
 
-//		System.out.println(ArrayUtils.toString(fwd));
-//		System.out.println();
+		// System.out.println(ArrayUtils.toString(fwd));
+		// System.out.println();
 
 		return fwd;
 	}
@@ -223,8 +218,8 @@ public class NYHMM {
 			}
 		}
 
-//		System.out.println(ArrayUtils.toString(bwd));
-//		System.out.println();
+		// System.out.println(ArrayUtils.toString(bwd));
+		// System.out.println();
 
 		return bwd;
 	}

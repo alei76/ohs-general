@@ -43,6 +43,18 @@ public class ArrayMath {
 		return sum;
 	}
 
+	public static double add(double[][] a, double b, double[][] c) {
+		if (!ArrayChecker.isSameDim(a, c)) {
+			throw new IllegalArgumentException();
+		}
+
+		double ret = 0;
+		for (int i = 0; i < a.length; i++) {
+			ret += add(a[i], b, c[i]);
+		}
+		return ret;
+	}
+
 	public static double add(double[] a, double[] b, double[] c) {
 		if (!ArrayChecker.isSameDim(a, b, c)) {
 			throw new IllegalArgumentException();

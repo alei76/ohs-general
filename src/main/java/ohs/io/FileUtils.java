@@ -663,18 +663,18 @@ public class FileUtils {
 		return ret;
 	}
 
-	public static List<String> readLines(BufferedReader reader, int num_lines_to_read) throws Exception {
+	public static List<String> readLines(BufferedReader reader, int size) throws Exception {
 		List<String> ret = Generics.newArrayList();
 		String line = reader.readLine();
 		if (line.startsWith(LINE_SIZE)) {
 			String[] parts = line.split("\t");
-			num_lines_to_read = Integer.parseInt(parts[1]);
-			ret = Generics.newArrayList(num_lines_to_read);
+			size = Integer.parseInt(parts[1]);
+			ret = Generics.newArrayList(size);
 		} else {
 			ret.add(line);
 		}
 
-		for (int i = 0; i < num_lines_to_read; i++) {
+		for (int i = 0; i < size; i++) {
 			line = reader.readLine();
 			if (line == null) {
 				break;
@@ -688,25 +688,21 @@ public class FileUtils {
 		return readLines(fileName, UTF_8, Integer.MAX_VALUE);
 	}
 
-	public static List<String> readLines(String fileName, int num_read) throws Exception {
-		return readLines(fileName, UTF_8, num_read);
+	public static List<String> readLines(String fileName, int size) throws Exception {
+		return readLines(fileName, UTF_8, size);
 	}
 
 	public static List<String> readLines(String fileName, String encoding) throws Exception {
 		return readLines(fileName, encoding, Integer.MAX_VALUE);
 	}
 
-	public static List<String> readLines(String fileName, String encoding, int num_read) throws Exception {
+	public static List<String> readLines(String fileName, String encoding, int size) throws Exception {
 		BufferedReader reader = openBufferedReader(fileName, encoding);
-		List<String> ret = readLines(reader, num_read);
+		List<String> ret = readLines(reader, size);
 		reader.close();
 
 		System.out.printf("read [%d] lines at [%s]\n", ret.size(), fileName);
 		return ret;
-	}
-
-	public static HashSet<String> readSet(String fileName) throws Exception {
-		return new HashSet<String>(readLines(fileName));
 	}
 
 	public static String[] readStrArray(ObjectInputStream ois) throws Exception {
@@ -828,6 +824,10 @@ public class FileUtils {
 			ret.put(parts[0], parts[1]);
 		}
 		return ret;
+	}
+
+	public static HashSet<String> readStrSet(String fileName) throws Exception {
+		return new HashSet<String>(readLines(fileName));
 	}
 
 	public static String readText(File file) throws Exception {

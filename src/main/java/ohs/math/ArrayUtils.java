@@ -11,10 +11,17 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import org.apache.commons.math.stat.descriptive.SynchronizedMultivariateSummaryStatistics;
+
 import ohs.utils.ByteSize;
+import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 
 public class ArrayUtils {
+
+	public static double[] array(int size) {
+		return array(size, 0);
+	}
 
 	public static double[] array(int size, double init) {
 		double[] ret = new double[size];
@@ -24,8 +31,8 @@ public class ArrayUtils {
 		return ret;
 	}
 
-	public static double[] array(int size) {
-		return array(size, 0);
+	public static int[] arrayInt(int size) {
+		return arrayInt(size, 0);
 	}
 
 	public static int[] arrayInt(int size, int init) {
@@ -34,26 +41,6 @@ public class ArrayUtils {
 			ret[i] = init;
 		}
 		return ret;
-	}
-
-	public static int[][] matrixInt(int row_size, int col_size, int init) {
-		int[][] ret = new int[row_size][col_size];
-		if (init != 0) {
-			for (int i = 0; i < ret.length; i++) {
-				for (int j = 0; j < ret[i].length; j++) {
-					ret[i][j] = init;
-				}
-			}
-		}
-		return ret;
-	}
-
-	public static int[] arrayInt(int size) {
-		return arrayInt(size, 0);
-	}
-
-	public static int[][] matrixInt(int row_size, int col_size) {
-		return matrixInt(row_size, col_size, 0);
 	}
 
 	public static double copy(Collection<Double> a, double[] b) {
@@ -80,6 +67,12 @@ public class ArrayUtils {
 		return sum;
 	}
 
+	public static int[] copy(Collection<Integer> a) {
+		int[] ret = new int[a.size()];
+		copy(a, ret);
+		return ret;
+	}
+
 	public static int copy(Collection<Integer> a, int[] b) {
 		int sum = 0;
 		int loc = 0;
@@ -90,12 +83,6 @@ public class ArrayUtils {
 			loc++;
 		}
 		return sum;
-	}
-
-	public static int[] copy(Collection<Integer> a) {
-		int[] ret = new int[a.size()];
-		copy(a, ret);
-		return ret;
 	}
 
 	public static double[] copy(double[] a) {
@@ -435,6 +422,10 @@ public class ArrayUtils {
 		return matrix(size, size, init);
 	}
 
+	public static double[][] matrix(int row_size, int col_size) {
+		return matrix(row_size, col_size, 0);
+	}
+
 	public static double[][] matrix(int row_size, int col_size, double init) {
 		double[][] ret = new double[row_size][col_size];
 		for (int i = 0; i < ret.length; i++) {
@@ -443,8 +434,20 @@ public class ArrayUtils {
 		return ret;
 	}
 
-	public static double[][] matrix(int row_size, int col_size) {
-		return matrix(row_size, col_size, 0);
+	public static int[][] matrixInt(int row_size, int col_size) {
+		return matrixInt(row_size, col_size, 0);
+	}
+
+	public static int[][] matrixInt(int row_size, int col_size, int init) {
+		int[][] ret = new int[row_size][col_size];
+		if (init != 0) {
+			for (int i = 0; i < ret.length; i++) {
+				for (int j = 0; j < ret[i].length; j++) {
+					ret[i][j] = init;
+				}
+			}
+		}
+		return ret;
 	}
 
 	public static int maxColumnSize(int[][] a) {
@@ -499,15 +502,15 @@ public class ArrayUtils {
 	}
 
 	public static int[] nonzeroIndexes(double[] x) {
-		List<Integer> set = new ArrayList<Integer>();
+		List<Integer> ids = new ArrayList<Integer>();
 		for (int i = 0; i < x.length; i++) {
 			if (x[i] != 0) {
-				set.add(i);
+				ids.add(i);
 			}
 		}
 
-		int[] ret = new int[set.size()];
-		copy(set, ret);
+		int[] ret = new int[ids.size()];
+		copy(ids, ret);
 		return ret;
 	}
 
@@ -521,6 +524,26 @@ public class ArrayUtils {
 		int[] ret = new int[set.size()];
 		copy(set, ret);
 		return ret;
+	}
+
+	public static void print(int[] x, boolean sparse, boolean vertical) {
+		System.out.println(toString(x, sparse, vertical) + "\n");
+	}
+
+	public static void print(int[][] x) {
+		System.out.println(toString("None", x) + "\n");
+	}
+
+	public static void print(String label, double[] x) {
+		System.out.println(toString(label, x) + "\n");
+	}
+
+	public static void print(String label, double[][] x) {
+		System.out.println(toString(label, x) + "\n");
+	}
+
+	public static void print(String label, double[][] x, int rows, int cols, boolean sparse, NumberFormat nf) {
+		System.out.println(toString(label, x, rows, cols, sparse, nf) + "\n");
 	}
 
 	public static void quickSort(int[] indexes, double[] values, boolean sortByIndex) {
@@ -608,33 +631,6 @@ public class ArrayUtils {
 		return range(size, 0, 1);
 	}
 
-	public static double[] range(int size, double start, double increment) {
-		double[] a = new double[size];
-		range(a, start, increment);
-		return a;
-	}
-
-	public static int[] range(int size, int start, int increment) {
-		int[] a = new int[size];
-		range(a, 0, 1);
-		return a;
-	}
-
-	public static int range(int[] a, int start, int increment) {
-		int sum = 0;
-		for (int i = 0; i < a.length; i++) {
-			a[i] = start + i * increment;
-			sum += a[i];
-		}
-		return sum;
-	}
-
-	public static int[] rankedIndexes(double[] a) {
-		int[] b = range(a.length);
-		quickSort(b, copy(a), false);
-		return b;
-	}
-
 	// public static double random(double min, double max, double[] x) {
 	// Random random = new Random();
 	// double range = max - min;
@@ -682,6 +678,33 @@ public class ArrayUtils {
 	// }
 	// return sum;
 	// }
+
+	public static double[] range(int size, double start, double increment) {
+		double[] a = new double[size];
+		range(a, start, increment);
+		return a;
+	}
+
+	public static int[] range(int size, int start, int increment) {
+		int[] a = new int[size];
+		range(a, 0, 1);
+		return a;
+	}
+
+	public static int range(int[] a, int start, int increment) {
+		int sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			a[i] = start + i * increment;
+			sum += a[i];
+		}
+		return sum;
+	}
+
+	public static int[] rankedIndexes(double[] a) {
+		int[] b = range(a.length);
+		quickSort(b, copy(a), false);
+		return b;
+	}
 
 	public static double reshape(double[] a, double[][] b) {
 		if (sizeOfEntries(b) != a.length) {
@@ -938,8 +961,37 @@ public class ArrayUtils {
 		return toString("None", x, x.length, false, false, getDoubleNumberFormat(4));
 	}
 
+	public static String toString(double[][] x) {
+		return toString("None", x, x.length, x[0].length, false, getDoubleNumberFormat(4));
+	}
+
+	public static String toString(int[] x) {
+		return toString(x, false, false);
+	}
+
+	public static String toString(int[] x, boolean sparse, boolean vertical) {
+		StringBuffer sb = new StringBuffer();
+		String delim = "\t";
+		if (vertical) {
+			delim = "\n";
+		}
+
+		if (sparse) {
+			for (int i = 0; i < x.length; i++) {
+				if (x[i] != 0) {
+					sb.append(String.format("%s%d:%s", delim, i, x[i]));
+				}
+			}
+		} else {
+			for (int i = 0; i < x.length; i++) {
+				sb.append(String.format("%s%s", delim, x[i]));
+			}
+		}
+		return sb.toString().trim();
+	}
+
 	public static String toString(String label, double[] x) {
-		return toString(label, x, x.length, false, false, getDoubleNumberFormat(4));
+		return toString(label, x, x.length, false, false, getDoubleNumberFormat(5));
 	}
 
 	public static String toString(String label, double[] x, int len, boolean sparse, boolean vertical, NumberFormat nf) {
@@ -961,16 +1013,11 @@ public class ArrayUtils {
 		return sb.toString();
 	}
 
-	public static String toString(double[][] x) {
-		return toString("None", x, x.length, x[0].length, false, getDoubleNumberFormat(4));
-	}
-
 	public static String toString(String label, double[][] x) {
-		return toString(label, x, x.length, x[0].length, false, getDoubleNumberFormat(4));
+		return toString(label, x, x.length, x[0].length, false, getDoubleNumberFormat(5));
 	}
 
 	public static String toString(String label, double[][] x, int rows, int cols, boolean sparse, NumberFormat nf) {
-
 		StringBuffer sb = new StringBuffer();
 		sb.append(String.format("(%s)", label));
 		sb.append(String.format("\ndim:\t(%d, %d)\n", x.length, x[0].length));
@@ -1024,39 +1071,27 @@ public class ArrayUtils {
 		return sb.toString().trim();
 	}
 
-	public static String toString(int[] x) {
-		return toString(x, false, false);
-	}
-
-	public static String toString(int[] x, boolean sparse, boolean vertical) {
+	public static String toString(String label, int[][] x) {
 		StringBuffer sb = new StringBuffer();
-		String delim = "\t";
-		if (vertical) {
-			delim = "\n";
-		}
-
-		if (sparse) {
-			for (int i = 0; i < x.length; i++) {
-				if (x[i] != 0) {
-					sb.append(String.format("%s%d:%s", delim, i, x[i]));
-				}
-			}
-		} else {
-			for (int i = 0; i < x.length; i++) {
-				sb.append(String.format("%s%s", delim, x[i]));
-			}
-		}
-		return sb.toString().trim();
-	}
-
-	public static String toString(int[][] x) {
-		StringBuffer sb = new StringBuffer();
+		sb.append(String.format("(%s)", label));
 		sb.append(String.format("dim:\t(%d, %d)", x.length, x[0].length));
 		for (int i = 0; i < x.length; i++) {
 			sb.append("\n");
 			sb.append(toString(x[i], false, false));
 		}
 		return sb.toString();
+	}
+
+	public static int[] zeroIndexes(double[] x) {
+		List<Integer> ids = Generics.newArrayList();
+		for (int i = 0; i < x.length; i++) {
+			if (x[i] == 0) {
+				ids.add(i);
+			}
+		}
+		int[] ret = new int[ids.size()];
+		copy(ids, ret);
+		return ret;
 	}
 
 	public ByteSize byteSize(double[] a) {

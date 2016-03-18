@@ -35,23 +35,12 @@ public class HMM {
 
 	private Indexer<String> wordIndexer;
 
-	public HMM(double[] start_prs, double[][] trans_prs, double[][] emission_prs) {
-		this.N = start_prs.length;
-		this.V = emission_prs[0].length;
-
-		this.phi = start_prs;
-		this.a = trans_prs;
-		this.b = emission_prs;
-	}
-
 	public HMM(Indexer<String> stateIndexer, Indexer<String> wordIndexer) {
 		this.stateIndexer = stateIndexer;
 		this.wordIndexer = wordIndexer;
-	}
 
-	public HMM(int N, int V) {
-		this.N = N;
-		this.V = V;
+		N = stateIndexer.size();
+		V = wordIndexer.size();
 
 		phi = ArrayUtils.array(N);
 		a = ArrayUtils.matrix(N, N);
@@ -70,16 +59,8 @@ public class HMM {
 		return a;
 	}
 
-	public double getA(int i, int j) {
-		return a[i][j];
-	}
-
 	public double[][] getB() {
 		return b;
-	}
-
-	public double getB(int i, int t) {
-		return b[i][t];
 	}
 
 	public int getN() {
@@ -90,55 +71,32 @@ public class HMM {
 		return phi;
 	}
 
-	public double getPhi(int i) {
-		return phi[i];
-	}
-
 	public int getV() {
 		return V;
 	}
 
 	public void print() {
-		System.out.println(ArrayUtils.toString("phi", phi));
-		System.out.println();
-
-		System.out.println(ArrayUtils.toString("a", a));
-		System.out.println();
-
-		System.out.println(ArrayUtils.toString("b", b));
-		System.out.println();
+		ArrayUtils.print("phi", phi);
+		ArrayUtils.print("a", a);
+		ArrayUtils.print("b", b);
 	}
 
 	public void setA(double[][] a) {
 		this.a = a;
 	}
 
-	public void setA(int i, int j, double value) {
-		a[i][j] = value;
-	}
-
 	public void setB(double[][] b) {
 		this.b = b;
 	}
 
-	public void setB(int i, int t, double value) {
-		b[i][t] = value;
-	}
-
-	public void setN(int n) {
-		N = n;
+	public void setParams(double[] phi, double[][] a, double[][] b) {
+		this.phi = phi;
+		this.a = a;
+		this.b = b;
 	}
 
 	public void setPhi(double[] phi) {
 		this.phi = phi;
-	}
-
-	public void setPhi(int i, double value) {
-		phi[i] = value;
-	}
-
-	public void setV(int v) {
-		V = v;
 	}
 
 	public int[] viterbi(int[] obs) {
@@ -147,7 +105,7 @@ public class HMM {
 		int[][] backPointers = ArrayUtils.matrixInt(N, T);
 
 		for (int i = 0; i < N; i++) {
-			fwd[i][0] = phi[i] * b[i][obs[i]];
+			fwd[i][0] = phi[i] * b[i][obs[0]];
 		}
 
 		double[] tmp = ArrayUtils.array(N);

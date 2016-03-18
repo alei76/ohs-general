@@ -48,7 +48,7 @@ public final class MedicalEnglishAnalyzer extends StopwordAnalyzerBase {
 	}
 
 	public static MedicalEnglishAnalyzer newAnalyzer(String stopwordFileName) throws Exception {
-		Set<String> stopwords = FileUtils.readSet(stopwordFileName);
+		Set<String> stopwords = FileUtils.readStrSet(stopwordFileName);
 		return new MedicalEnglishAnalyzer(new CharArraySet(stopwords, true));
 	}
 

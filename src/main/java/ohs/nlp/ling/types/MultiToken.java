@@ -2,33 +2,52 @@ package ohs.nlp.ling.types;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.List;
 
 public class MultiToken {
 
 	public static final String DELIM_TOKEN = " + ";
 
+	public static MultiToken parse(String s) {
+		String[] parts = s.split(DELIM_TOKEN.replace(" + ", " \\+ "));
+		Token[] toks = new Token[parts.length];
+		for (int i = 0; i < parts.length; i++) {
+			toks[i] = Token.parse(parts[i]);
+		}
+
+		MultiToken ret = new MultiToken(0, toks);
+		// for (int i = 0, loc = start; i < ret.size(); i++) {
+		// ret.getToken(i).setStart(loc);
+		// loc += ret.getValue(TokenAttr.WORD).length;
+		// }
+		return ret;
+	}
+
 	private Token[] toks = new Token[0];
 
 	private int start;
+
+	private String text = "";
+
+	public void setText(String text) {
+		this.text = text;
+	}
+
+	public String getText() {
+		return text;
+	}
 
 	public MultiToken() {
 
 	}
 
-	public static MultiToken parse(int start, String s) {
-		String[] parts = s.split(DELIM_TOKEN);
-		Token[] toks = new Token[parts.length];
+	public MultiToken(int start, List<Token> toks) {
+		this.start = start;
+		this.toks = toks.toArray(new Token[toks.size()]);
+	}
 
-		for (int i = 0; i < parts.length; i++) {
-			toks[i] = Token.parse(0, parts[i]);
-		}
-
-		MultiToken ret = new MultiToken(start, toks);
-		for (int i = 0, loc = start; i < ret.length(); i++) {
-			ret.getToken(i).setStart(loc);
-			loc += ret.getValue(TokenAttr.WORD).length;
-		}
-		return ret;
+	public MultiToken(int start, Token tok) {
+		this(start, new Token[] { tok });
 	}
 
 	public MultiToken(int start, Token[] toks) {

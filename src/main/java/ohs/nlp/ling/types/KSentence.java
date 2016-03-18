@@ -5,6 +5,8 @@ import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.tools.ant.taskdefs.SendEmail;
+
 import ohs.utils.Generics;
 
 public class KSentence {
@@ -17,6 +19,20 @@ public class KSentence {
 
 	public KSentence() {
 
+	}
+
+	public KSentence(List<MultiToken> toks) {
+		this(toks.toArray(new MultiToken[toks.size()]));
+	}
+
+	public static KSentence parse(String s) {
+		String[] lines = s.split("\n");
+		MultiToken[] mts = new MultiToken[lines.length];
+		for (int i = 0; i < lines.length; i++) {
+			String[] parts = lines[i].split("\t");
+			mts[i] = MultiToken.parse(parts[1]);
+		}
+		return new KSentence(mts);
 	}
 
 	public KSentence(MultiToken[] toks) {
@@ -147,6 +163,28 @@ public class KSentence {
 			}
 		}
 		return sb.toString();
+	}
+
+	public KSentence toSymbolTaggedSentence() {
+		List<MultiToken> ret = Generics.newArrayList();
+
+		Token t = new Token();
+		for (TokenAttr attr : TokenAttr.values()) {
+			t.setValue(attr, START_SYMBOL);
+		}
+		ret.add(new MultiToken(-1, t));
+
+		for (MultiToken mt : toks) {
+			ret.add(mt);
+		}
+
+		t = new Token();
+		for (TokenAttr attr : TokenAttr.values()) {
+			t.setValue(attr, END_SYMBOL);
+		}
+		ret.add(new MultiToken(-1, t));
+
+		return new KSentence(ret);
 	}
 
 	public Token[] toTokens() {

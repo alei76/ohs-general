@@ -1,14 +1,17 @@
 package ohs.ml.hmm;
 
-import edu.stanford.nlp.ling.Word;
+import java.util.List;
+
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 import ohs.math.CommonFuncs;
-import ohs.nlp.ling.types.KCollection;
+import ohs.nlp.ling.types.KDocument;
+import ohs.nlp.ling.types.KDocumentCollection;
 import ohs.nlp.ling.types.KSentence;
 import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
 import ohs.nlp.pos.NLPPath;
+import ohs.nlp.pos.SejongDocumentReader;
 import ohs.types.Indexer;
 import ohs.utils.Generics;
 
@@ -23,60 +26,69 @@ public class HMMTrainer {
 		System.out.println("process ends.");
 	}
 
-	public static void test01() {
-		int[] states = { 0, 1 };
-		int N = states.length;
-
-		double[][] tr_prs = ArrayUtils.matrix(N);
-		tr_prs[0][0] = 0.7;
-		tr_prs[0][1] = 0.3;
-		tr_prs[1][0] = 0.4;
-		tr_prs[1][1] = 0.6;
-
-		int V = 3;
-
-		double[][] ems_prs = ArrayUtils.matrix(N, V, 0);
-
-		/*
-		 * 산책:0, 쇼핑:1, 청소:2
-		 */
-
-		ems_prs[0][0] = 0.1;
-		ems_prs[0][1] = 0.4;
-		ems_prs[0][2] = 0.5;
-		ems_prs[1][0] = 0.6;
-		ems_prs[1][1] = 0.3;
-		ems_prs[1][2] = 0.1;
-
-		double[] start_prs = new double[] { 0.6, 0.4 };
-
-		HMM hmm = new HMM(start_prs, tr_prs, ems_prs);
-
-		int[] obs = new int[] { 0, 0, 2, 1 };
-
-		// hmm.forward(obs);
-
-		// hmm.viterbi(obs);
-
-		// hmm.backward(obs);
-
-		HMMTrainer t = new HMMTrainer();
-
-		t.train(hmm, obs, 2);
-	}
+	// public static void test01() {
+	// int[] states = { 0, 1 };
+	// int N = states.length;
+	//
+	// double[][] tr_prs = ArrayUtils.matrix(N);
+	// tr_prs[0][0] = 0.7;
+	// tr_prs[0][1] = 0.3;
+	// tr_prs[1][0] = 0.4;
+	// tr_prs[1][1] = 0.6;
+	//
+	// int V = 3;
+	//
+	// double[][] ems_prs = ArrayUtils.matrix(N, V, 0);
+	//
+	// /*
+	// * 산책:0, 쇼핑:1, 청소:2
+	// */
+	//
+	// ems_prs[0][0] = 0.1;
+	// ems_prs[0][1] = 0.4;
+	// ems_prs[0][2] = 0.5;
+	// ems_prs[1][0] = 0.6;
+	// ems_prs[1][1] = 0.3;
+	// ems_prs[1][2] = 0.1;
+	//
+	// double[] start_prs = new double[] { 0.6, 0.4 };
+	//
+	// HMM hmm = new HMM(start_prs, tr_prs, ems_prs);
+	//
+	// int[] obs = new int[] { 0, 0, 2, 1 };
+	//
+	// // hmm.forward(obs);
+	//
+	// // hmm.viterbi(obs);
+	//
+	// // hmm.backward(obs);
+	//
+	// HMMTrainer t = new HMMTrainer();
+	//
+	// t.train(hmm, obs, 1);
+	// }
 
 	public static void test02() throws Exception {
-		KCollection col = new KCollection();
-		col.read(NLPPath.POS_SENT_COL_FILE);
+
+		KDocumentCollection col = new KDocumentCollection();
+
+		SejongDocumentReader r = new SejongDocumentReader(NLPPath.POS_DATA_FILE);
+		while (r.hasNext()) {
+			KDocument doc = r.next();
+			col.add(doc);
+		}
+		r.close();
 
 		Indexer<String> wordIndexer = Generics.newIndexer();
 		Indexer<String> posIndexer = Generics.newIndexer();
 
-		int[][] obss = new int[col.size()][];
-		int[][] stss = new int[col.size()][];
+		KSentence[] sents = col.getSentences();
 
-		for (int i = 0; i < col.size(); i++) {
-			KSentence sent = col.get(i).toSentence();
+		int[][] obss = new int[sents.length][];
+		int[][] stss = new int[sents.length][];
+
+		for (int i = 0; i < sents.length; i++) {
+			KSentence sent = sents[i];
 
 			Token[] toks = sent.toTokens();
 			int[] obs = ArrayUtils.arrayInt(toks.length);
@@ -92,14 +104,36 @@ public class HMMTrainer {
 			stss[i] = sts;
 		}
 
-		int N = posIndexer.size();
-		int V = wordIndexer.size();
-
-		HMM hmm = new HMM(N, V);
+		HMM hmm = new HMM(posIndexer, wordIndexer);
 
 		HMMTrainer trainer = new HMMTrainer();
-		trainer.train(hmm, obss, 1);
+		// trainer.trainUnsupervised(hmm, obss, 1);
+		trainer.trainSupervised(hmm, obss, stss);
 
+		for (int i = 0; i < obss.length; i++) {
+			int[] obs = obss[i];
+			int[] sts = stss[i];
+			int[] path = hmm.viterbi(obs);
+
+			List<String> words = Generics.newArrayList();
+			List<String> anss = Generics.newArrayList();
+			List<String> preds = Generics.newArrayList();
+
+			for (int j = 0; j < obs.length; j++) {
+				String word = wordIndexer.getObject(obs[j]);
+				String pred = posIndexer.getObject(path[j]);
+				String ans = posIndexer.getObject(sts[j]);
+
+				words.add(word);
+				preds.add(pred);
+				anss.add(ans);
+			}
+
+			System.out.println(words);
+			System.out.println(anss);
+			System.out.println(preds);
+			System.out.println();
+		}
 	}
 
 	private HMM hmm;
@@ -108,7 +142,11 @@ public class HMMTrainer {
 
 	private int V;
 
-	private HMM tmp;
+	private double[] tmp_phi;
+
+	private double[][] tmp_a;
+
+	private double[][] tmp_b;
 
 	public HMMTrainer() {
 
@@ -179,12 +217,15 @@ public class HMMTrainer {
 		return ArrayMath.sumColumn(alpha, alpha[0].length - 1);
 	}
 
-	private void train(HMM hmm, HMM tmp, int[][] obss, int iter) {
+	public void trainUnsupervised(HMM hmm, int[][] obss, int iter) {
 		this.hmm = hmm;
-		this.tmp = tmp;
 
 		this.N = hmm.getN();
 		this.V = hmm.getV();
+
+		tmp_phi = ArrayUtils.array(N);
+		tmp_a = ArrayUtils.matrix(N, N);
+		tmp_b = ArrayUtils.matrix(N, V);
 
 		for (int i = 0; i < iter; i++) {
 			for (int j = 0; j < obss.length; j++) {
@@ -193,32 +234,51 @@ public class HMMTrainer {
 		}
 	}
 
-	public void train(HMM hmm, int[] obs, int iter) {
-		tmp = new HMM(hmm.getN(), hmm.getV());
-		int[][] d = new int[1][];
-		d[0] = obs;
-		train(hmm, tmp, d, iter);
-	}
+	public void trainSupervised(HMM hmm, int[][] obss, int[][] stss) {
+		double[] phi = hmm.getPhi();
+		double[][] a = hmm.getA();
+		double[][] b = hmm.getB();
 
-	public void train(HMM hmm, int[][] obss, int iter) {
-		tmp = new HMM(hmm.getN(), hmm.getV());
-		train(hmm, tmp, obss, iter);
-	}
+		ArrayUtils.setAll(phi, 0);
+		ArrayUtils.setAll(a, 0);
+		ArrayUtils.setAll(b, 0);
 
-	public void train(int N, int V, int[][] obss, int iter) {
-		hmm = new HMM(N, V);
-		tmp = new HMM(N, V);
+		for (int i = 0; i < obss.length; i++) {
+			int[] obs = obss[i];
+			int[] sts = stss[i];
 
-		train(hmm, tmp, obss, iter);
+			for (int j = 0; j < obs.length; j++) {
+				int o1 = obs[j];
+				int s1 = sts[j];
+
+				if (i == 0) {
+					phi[o1]++;
+				}
+
+				b[s1][o1]++;
+
+				if (j + 1 < obs.length) {
+					int s2 = sts[j + 1];
+					a[s1][s2]++;
+				}
+			}
+		}
+
+		ArrayMath.add(b, 1f, b);
+
+		ArrayMath.normalize(phi);
+		ArrayMath.normalizeRows(a);
+		ArrayMath.normalizeRows(b);
+
 	}
 
 	public void train(int[] obs) {
-		double[] tmp_phi = tmp.getPhi();
-		double[][] tmp_a = tmp.getA();
-		double[][] tmp_b = tmp.getB();
 
 		double[][] alpha = forward(obs);
 		double[][] beta = backward(obs);
+
+		ArrayUtils.print("alpha", alpha);
+		ArrayUtils.print("beta", alpha);
 
 		for (int i = 0; i < N; i++) {
 			tmp_phi[i] = gamma(0, i, alpha, beta);
@@ -255,7 +315,7 @@ public class HMMTrainer {
 		ArrayUtils.copy(tmp_a, hmm.getA());
 		ArrayUtils.copy(tmp_b, hmm.getB());
 
-		// hmm.print();
+		hmm.print();
 	}
 
 	public void train(int[] obs, int iter) {
