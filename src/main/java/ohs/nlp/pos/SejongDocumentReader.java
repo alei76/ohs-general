@@ -64,7 +64,6 @@ public class SejongDocumentReader implements Iterator<KDocument> {
 		String text = sb.toString().trim();
 
 		boolean hasNext = false;
-
 		if (text.length() > 0) {
 			doc = KDocument.parse(text);
 			MultiToken[] mts = doc.getTokens();

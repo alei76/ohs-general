@@ -3,7 +3,7 @@ package ohs.types;
 import java.io.Serializable;
 
 /**
- * A generic-typed pair of objects.
+ * A generic-typed pair of objs.
  * 
  * @author Dan Klein
  */

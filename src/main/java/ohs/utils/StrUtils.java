@@ -325,6 +325,10 @@ public class StrUtils {
 		return sb.toString();
 	}
 
+	public static String[] newStrings(int size) {
+		return new String[size];
+	}
+
 	public static Counter<String> ngrams(int ngram_order, List<String> words) {
 		Counter<String> ret = new Counter<String>();
 		for (int j = 0; j < words.size() - ngram_order + 1; j++) {

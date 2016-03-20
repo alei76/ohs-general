@@ -140,7 +140,7 @@ public class StringIndexer extends AbstractList<String> implements Serializable 
 	@Override
 	@Deprecated
 	public String get(int index) {
-		// return objects.get(index);
+		// return objs.get(index);
 		return null;
 	}
 
@@ -294,7 +294,7 @@ public class StringIndexer extends AbstractList<String> implements Serializable 
 	}
 
 	/**
-	 * Returns the number of objects indexed.
+	 * Returns the number of objs indexed.
 	 */
 	@Override
 	public int size() {

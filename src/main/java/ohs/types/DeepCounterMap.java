@@ -68,7 +68,7 @@ public class DeepCounterMap<K, V, F> implements Serializable {
 	}
 
 	/**
-	 * Gets the total unique_cnt of the given key, or zero if that key is not present. Does not create any objects.
+	 * Gets the total unique_cnt of the given key, or zero if that key is not present. Does not create any objs.
 	 */
 	public double getCount(K key) {
 		CounterMap<V, F> cm = entries.get(key);
@@ -78,7 +78,7 @@ public class DeepCounterMap<K, V, F> implements Serializable {
 	}
 
 	/**
-	 * Gets the unique_cnt of the given (key, value) entry, or zero if that entry is not present. Does not create any objects.
+	 * Gets the unique_cnt of the given (key, value) entry, or zero if that entry is not present. Does not create any objs.
 	 */
 	public double getCount(K key1, V key2) {
 		Counter<F> cm = entries.get(key1).getCounter(key2);

@@ -499,6 +499,15 @@ public class SparseMatrix implements Matrix {
 	}
 
 	@Override
+	public double[][] values() {
+		double[][] ret = new double[rows.length][];
+		for (int i = 0; i < ret.length; i++) {
+			ret[i] = rows[i].values();
+		}
+		return null;
+	}
+
+	@Override
 	public SparseVector vectorAtRowLoc(int loc) {
 		return rows[loc];
 	}
@@ -522,15 +531,6 @@ public class SparseMatrix implements Matrix {
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 		write(oos);
 		oos.close();
-	}
-
-	@Override
-	public double[][] values() {
-		double[][] ret = new double[rows.length][];
-		for (int i = 0; i < ret.length; i++) {
-			ret[i] = rows[i].values();
-		}
-		return null;
 	}
 
 }

@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * A map from objects to doubles. Includes convenience methods for getting, setting, and incrementing element counts. Objects not in the
+ * A map from objs to doubles. Includes convenience methods for getting, setting, and incrementing element counts. Objects not in the
  * counter will return a unique_cnt of zero. The counter is backed by a HashMap .(unless specified otherwise with the MapFactory constructor).
  * 
  * @author lots of people

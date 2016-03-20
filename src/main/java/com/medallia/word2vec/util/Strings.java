@@ -1,7 +1,7 @@
 package com.medallia.word2vec.util;
 
 /**
- * Various utility functions for working with String objects
+ * Various utility functions for working with String objs
  */
 public class Strings {
 	private static String capitalizeFirstCharacterLowercaseRest(String s) {
@@ -39,8 +39,8 @@ public class Strings {
 		return sepList(sep, null, os, max);
 	}
 
-	/** @return The concatenation of toString of the objects obtained from the iterable, separated by sep, and if max
-	 * is > 0 include no more than that number of objects. If wrap is non-null, prepend and append each object with it
+	/** @return The concatenation of toString of the objs obtained from the iterable, separated by sep, and if max
+	 * is > 0 include no more than that number of objs. If wrap is non-null, prepend and append each object with it
 	 */
 	public static String sepList(String sep, String wrap, Iterable<?> os, int max) {
 		StringBuilder sb = new StringBuilder();

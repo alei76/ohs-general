@@ -103,7 +103,7 @@ public class CounterMap<K, V> implements java.io.Serializable {
 	}
 
 	/**
-	 * Gets the total unique_cnt of the given key, or zero if that key is not present. Does not create any objects.
+	 * Gets the total unique_cnt of the given key, or zero if that key is not present. Does not create any objs.
 	 */
 	public double getCount(K key) {
 		Counter<V> valueCounter = counterMap.get(key);
@@ -113,7 +113,7 @@ public class CounterMap<K, V> implements java.io.Serializable {
 	}
 
 	/**
-	 * Gets the unique_cnt of the given (key, value) entry, or zero if that entry is not present. Does not create any objects.
+	 * Gets the unique_cnt of the given (key, value) entry, or zero if that entry is not present. Does not create any objs.
 	 */
 	public double getCount(K key, V value) {
 		Counter<V> valueCounter = counterMap.get(key);

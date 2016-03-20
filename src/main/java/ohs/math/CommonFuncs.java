@@ -17,6 +17,14 @@ public class CommonFuncs {
 		return 1 / (1 + Math.exp(-alpha * x));
 	}
 
+	public static boolean isEqual(int a, int b) {
+		return a == b;
+	}
+
+	public static boolean isEqual(double a, double b) {
+		return a == b;
+	}
+
 	public static double binarySigmoidDerivative(double alpha, double x) {
 		return alpha * binarySigmoid(alpha, x) * (1 - binarySigmoid(alpha, x));
 	}

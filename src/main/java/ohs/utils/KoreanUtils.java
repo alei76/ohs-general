@@ -38,17 +38,17 @@ public class KoreanUtils {
 	public static final String[] SINGLE_JAUM_ENG = { "r", "R", "rt", "s", "sw", "sg", "e", "E", "f", "fr", "fa", "fq", "ft", "fx", "fv",
 			"fg", "a", "q", "Q", "qt", "t", "T", "d", "w", "W", "c", "z", "x", "v", "g" };
 
-	public static char[] decomposeKoreanChar(char c) {
-		c = (char) (c - 0xAC00);
+	public static char[] decomposeSyllableToPhonemes(char syllable) {
+		syllable = (char) (syllable - 0xAC00);
 		StringBuffer sb = new StringBuffer();
 
-		if (c >= 0 && c <= 11172) {
+		if (syllable >= 0 && syllable <= 11172) {
 			/* A. 자음과 모음이 합쳐진 글자인경우 */
 
 			/* A-1. 초/중/종성 분리 */
-			int chosung = c / (21 * 28);
-			int jungsung = c % (21 * 28) / 28;
-			int jongsung = c % (21 * 28) % 28;
+			int chosung = syllable / (21 * 28);
+			int jungsung = syllable % (21 * 28) / 28;
+			int jongsung = syllable % (21 * 28) % 28;
 
 			sb.append(CHO_SUNG[chosung]);
 			sb.append(JUNG_SUNG[jungsung]);
@@ -63,13 +63,13 @@ public class KoreanUtils {
 			/* B. 한글이 아니거나 자음만 있을경우 */
 
 			/* 자음분리 */
-			sb.append((char) (c + 0xAC00));
+			sb.append((char) (syllable + 0xAC00));
 		} // if
 
 		return getChars(sb);
 	}
 
-	public static char[] decomposeKoreanCharToEnglish(char c) {
+	public static char[] decomposeKoreanSyllableToEnglish(char c) {
 		StringBuffer sb = new StringBuffer();
 
 		c = (char) (c - 0xAC00);
@@ -111,10 +111,10 @@ public class KoreanUtils {
 		return getChars(sb);
 	}
 
-	public static char[][] decomposeKoreanWord(String word) {
+	public static char[][] decomposeKoreanWordToPhonemes(String word) {
 		char[][] ret = new char[word.length()][];
 		for (int i = 0; i < word.length(); i++) {
-			ret[i] = decomposeKoreanChar(word.charAt(i));
+			ret[i] = decomposeSyllableToPhonemes(word.charAt(i));
 		}
 		return ret;
 	}
@@ -122,7 +122,7 @@ public class KoreanUtils {
 	public static char[][] decomposeKoreanWordToEnglish(String word) {
 		char[][] ret = new char[word.length()][];
 		for (int i = 0; i < word.length(); i++) {
-			ret[i] = decomposeKoreanCharToEnglish(word.charAt(i));
+			ret[i] = decomposeKoreanSyllableToEnglish(word.charAt(i));
 		}
 		return ret;
 	}
@@ -138,7 +138,7 @@ public class KoreanUtils {
 	}
 
 	public static String getDecomposedKoreanWord(String word) {
-		return getString(decomposeKoreanWord(word));
+		return getString(decomposeKoreanWordToPhonemes(word));
 	}
 
 	private static String getString(char[][] chars) {
@@ -160,7 +160,7 @@ public class KoreanUtils {
 
 		System.out.println("============ result ==========");
 		System.out.println("단어     : " + word);
-		System.out.println("자음분리 : " + getString(decomposeKoreanWord(word)));
+		System.out.println("자음분리 : " + getString(decomposeKoreanWordToPhonemes(word)));
 		System.out.println("알파벳   : " + getString(decomposeKoreanWordToEnglish(word)));
 	}
 }

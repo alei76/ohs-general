@@ -30,7 +30,7 @@ import com.google.common.base.Preconditions;
  */
 public final class IO {
 	
-	/** a Comparator that orders {@link File} objects as by the last modified date */
+	/** a Comparator that orders {@link File} objs as by the last modified date */
 	public static final Comparator<File> FILE_LAST_MODIFIED_COMPARATOR = new Comparator<File>() {
 		@Override public int compare(File o1, File o2) {
 			return Long.compare(o1.lastModified(), o2.lastModified());

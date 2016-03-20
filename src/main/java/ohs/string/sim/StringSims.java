@@ -51,11 +51,9 @@ public class StringSims {
 	}
 
 	/**
-	 * http://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance#
-	 * Optimal_string_alignment_distance
+	 * http://en.wikipedia.org/wiki/Damerau%E2%80%93Levenshtein_distance# Optimal_string_alignment_distance
 	 * 
-	 * http://stackoverflow.com/questions/6033631/levenshtein-to-damerau-
-	 * levenshtein/6035519#6035519
+	 * http://stackoverflow.com/questions/6033631/levenshtein-to-damerau- levenshtein/6035519#6035519
 	 * 
 	 * @param a
 	 * @param b
@@ -85,8 +83,8 @@ public class StringSims {
 				int d = ((a.charAt(i - 1) == b.charAt(j - 1)) ? 0 : 1);
 				if (d == 0)
 					DB = j;
-				H[i + 1][j + 1] = ArrayMath.min(new int[] { H[i][j] + d, H[i + 1][j] + 1, H[i][j + 1] + 1,
-						H[i1][j1] + (i - i1 - 1) + 1 + (j - j1 - 1) });
+				H[i + 1][j + 1] = ArrayMath
+						.min(new int[] { H[i][j] + d, H[i + 1][j] + 1, H[i][j + 1] + 1, H[i1][j1] + (i - i1 - 1) + 1 + (j - j1 - 1) });
 			}
 			DA[a.charAt(i - 1)] = i;
 		}
@@ -94,15 +92,12 @@ public class StringSims {
 	}
 
 	/**
-	 * Compute the Damerau-Levenshtein distance between the specified source
-	 * string and the specified target string.
+	 * Compute the Damerau-Levenshtein distance between the specified source string and the specified target string.
 	 * 
 	 * https://github.com/KevinStern/software-and-algorithms/blob/master/src/
-	 * main/java/blogspot/software_and_algorithms/stern_library/string
-	 * /DamerauLevenshteinAlgorithm.java
+	 * main/java/blogspot/software_and_algorithms/stern_library/string /DamerauLevenshteinAlgorithm.java
 	 */
-	public static int DamerauLevenshteinDistance(String s, String t, int insert_cost, int delete_cost, int replace_cost,
-			int swap_cost) {
+	public static int DamerauLevenshteinDistance(String s, String t, int insert_cost, int delete_cost, int replace_cost, int swap_cost) {
 		if (s.length() == 0) {
 			return t.length() * insert_cost;
 		}
@@ -371,8 +366,6 @@ public class StringSims {
 
 		double norm = Math.min(len_s, len_t) * match_cost;
 
-		System.out.println(ArrayUtils.toString(d));
-
 		return ret;
 	}
 
@@ -428,8 +421,6 @@ public class StringSims {
 		double sim = d[max_i][max_j];
 		double norm = Math.min(len_s, len_t) * match_cost;
 
-		System.out.println(ArrayUtils.toString(d));
-
 		return sim;
 	}
 
@@ -478,9 +469,8 @@ public class StringSims {
 	/**
 	 * Similarity Measure for Text Processing
 	 *
-	 * 1. Lin, Y.-S., Jiang, J.-Y., Lee, S.-J.: A Similarity Measure for Text
-	 * Classification and Clustering. IEEE Transactions on Knowledge and Data
-	 * Engineering. 26, 1575–1590 (2014).
+	 * 1. Lin, Y.-S., Jiang, J.-Y., Lee, S.-J.: A Similarity Measure for Text Classification and Clustering. IEEE Transactions on Knowledge
+	 * and Data Engineering. 26, 1575–1590 (2014).
 	 * 
 	 * 
 	 * @param s

@@ -29,8 +29,7 @@ public class KSentence {
 		String[] lines = s.split("\n");
 		MultiToken[] mts = new MultiToken[lines.length];
 		for (int i = 0; i < lines.length; i++) {
-			String[] parts = lines[i].split("\t");
-			mts[i] = MultiToken.parse(parts[1]);
+			mts[i] = MultiToken.parse(lines[i]);
 		}
 		return new KSentence(mts);
 	}
@@ -147,17 +146,24 @@ public class KSentence {
 	public String toString(boolean printAttrNames) {
 		StringBuffer sb = new StringBuffer();
 
-		if (printAttrNames) {
-			sb.append("Loc");
-			for (int i = 0; i < TokenAttr.values().length; i++) {
-				sb.append(String.format("\t%s", TokenAttr.values()[i]));
-			}
-			sb.append("\n");
-		}
+		// if (printAttrNames) {
+		// sb.append("Loc");
+		// for (int i = 0; i < TokenAttr.values().length; i++) {
+		// sb.append(String.format("\t%s", TokenAttr.values()[i]));
+		// }
+		// sb.append("\n");
+		// }
+		//
+		// for (int i = 0; i < toks.length; i++) {
+		// MultiToken tok = toks[i];
+		// sb.append(String.format("%d\t%s", i, tok.joinValues()));
+		// if (i != toks.length - 1) {
+		// sb.append("\n");
+		// }
+		// }
 
 		for (int i = 0; i < toks.length; i++) {
-			MultiToken tok = toks[i];
-			sb.append(String.format("%d\t%s", i, tok.joinValues()));
+			sb.append(String.format("%d\t%s\t%s", i, toks[i].getText(), toks[i].joinValues()));
 			if (i != toks.length - 1) {
 				sb.append("\n");
 			}

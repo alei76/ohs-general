@@ -5,6 +5,8 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.tools.ant.taskdefs.SendEmail;
+
 import ohs.io.FileUtils;
 
 public class KDocumentCollection extends ArrayList<KDocument> {
@@ -14,16 +16,6 @@ public class KDocumentCollection extends ArrayList<KDocument> {
 	 */
 	private static final long serialVersionUID = -8797495521485834143L;
 
-	public void read(ObjectInputStream ois) throws Exception {
-		int size = ois.readInt();
-
-		for (int i = 0; i < size; i++) {
-			KDocument doc = new KDocument();
-			doc.read(ois);
-			add(doc);
-		}
-	}
-
 	public KSentence[] getSentences() {
 		List<KSentence> ret = new ArrayList<KSentence>();
 		for (KDocument doc : this) {
@@ -32,6 +24,24 @@ public class KDocumentCollection extends ArrayList<KDocument> {
 			}
 		}
 		return ret.toArray(new KSentence[ret.size()]);
+	}
+
+	public int sizeOfTokens() {
+		int ret = 0;
+		for (int i = 0; i < size(); i++) {
+			ret += get(i).sizeOfTokens();
+		}
+		return ret;
+	}
+
+	public void read(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+
+		for (int i = 0; i < size; i++) {
+			KDocument doc = new KDocument();
+			doc.read(ois);
+			add(doc);
+		}
 	}
 
 	public void read(String fileName) throws Exception {

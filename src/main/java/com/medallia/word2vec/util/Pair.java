@@ -23,7 +23,7 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 
 /**
- * Simple class for storing two arbitrary objects in one.
+ * Simple class for storing two arbitrary objs in one.
  *
  * @param <K>
  *            the type of the first value

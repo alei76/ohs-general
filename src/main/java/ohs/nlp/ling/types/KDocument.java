@@ -152,7 +152,12 @@ public class KDocument {
 
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-
+		for (int i = 0; i < sents.length; i++) {
+			sb.append(sents[i].toString());
+			if(i != sents.length-1){
+				sb.append("\n\n");
+			}
+		}
 		return sb.toString();
 	}
 

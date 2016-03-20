@@ -1,19 +1,24 @@
 package ohs.ml.hmm;
 
 import java.util.List;
+import java.util.Set;
 
+import ohs.io.FileUtils;
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 import ohs.math.CommonFuncs;
 import ohs.nlp.ling.types.KDocument;
 import ohs.nlp.ling.types.KDocumentCollection;
 import ohs.nlp.ling.types.KSentence;
+import ohs.nlp.ling.types.MultiToken;
 import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
 import ohs.nlp.pos.NLPPath;
 import ohs.nlp.pos.SejongDocumentReader;
+import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.utils.Generics;
+import ohs.utils.KoreanUtils;
 
 public class HMMTrainer {
 
@@ -70,49 +75,91 @@ public class HMMTrainer {
 
 	public static void test02() throws Exception {
 
-		KDocumentCollection col = new KDocumentCollection();
+		KDocumentCollection coll = new KDocumentCollection();
 
 		SejongDocumentReader r = new SejongDocumentReader(NLPPath.POS_DATA_FILE);
 		while (r.hasNext()) {
+			if (coll.size() == 1000) {
+				break;
+			}
 			KDocument doc = r.next();
-			col.add(doc);
+			coll.add(doc);
+
 		}
 		r.close();
+
+		for (KDocument doc : coll) {
+			for (KSentence sent : doc.getSentences()) {
+				for (MultiToken mt : sent.getTokens()) {
+					String[] words = mt.getValue(TokenAttr.WORD);
+					String[] poss = mt.getValue(TokenAttr.POS);
+
+					for (String word : words) {
+						char[][] phomenes = KoreanUtils.decomposeKoreanWordToPhonemes(word);
+
+						System.out.println();
+					}
+
+				}
+			}
+		}
+
+		Set<String> posSet = Generics.newHashSet();
+
+		for (String line : FileUtils.readLines(NLPPath.POS_TAG_SET_FILE)) {
+			String[] parts = line.split("\t");
+			posSet.add(parts[0]);
+		}
 
 		Indexer<String> wordIndexer = Generics.newIndexer();
 		Indexer<String> posIndexer = Generics.newIndexer();
 
-		KSentence[] sents = col.getSentences();
+		wordIndexer.add("UNK");
 
-		int[][] obss = new int[sents.length][];
-		int[][] stss = new int[sents.length][];
+		KSentence[] sents = coll.getSentences();
+
+		int[][] wss = new int[sents.length][];
+		int[][] posss = new int[sents.length][];
 
 		for (int i = 0; i < sents.length; i++) {
 			KSentence sent = sents[i];
 
 			Token[] toks = sent.toTokens();
-			int[] obs = ArrayUtils.arrayInt(toks.length);
-			int[] sts = ArrayUtils.arrayInt(toks.length);
+			int[] ws = ArrayUtils.arrayInt(toks.length);
+			int[] poss = ArrayUtils.arrayInt(toks.length);
 
 			for (int j = 0; j < toks.length; j++) {
 				Token t = toks[j];
-				obs[j] = wordIndexer.getIndex(t.getValue(TokenAttr.WORD));
-				sts[j] = posIndexer.getIndex(t.getValue(TokenAttr.POS));
+				ws[j] = wordIndexer.getIndex(t.getValue(TokenAttr.WORD));
+				poss[j] = posIndexer.getIndex(t.getValue(TokenAttr.POS));
 			}
 
-			obss[i] = obs;
-			stss[i] = sts;
+			wss[i] = ws;
+			posss[i] = poss;
 		}
 
 		HMM hmm = new HMM(posIndexer, wordIndexer);
 
 		HMMTrainer trainer = new HMMTrainer();
 		// trainer.trainUnsupervised(hmm, obss, 1);
-		trainer.trainSupervised(hmm, obss, stss);
 
-		for (int i = 0; i < obss.length; i++) {
-			int[] obs = obss[i];
-			int[] sts = stss[i];
+		trainer.trainSupervised(hmm, wss, posss);
+
+		hmm.write(NLPPath.POS_HMM_MODEL_FILE);
+
+		// for (int i = 0; i < col.size(); i++) {
+		// KDocument doc = col.get(i);
+		//
+		// for (int j = 0; j < doc.size(); j++) {
+		// for (int k = 0; k < doc.size(); k++) {
+		// KSentence sent = doc.getSentence(k);
+		// }
+		// }
+		// }
+
+		for (int i = 0; i < wss.length; i++) {
+			int[] obs = wss[i];
+			int[] sts = posss[i];
 			int[] path = hmm.viterbi(obs);
 
 			List<String> words = Generics.newArrayList();
@@ -234,42 +281,55 @@ public class HMMTrainer {
 		}
 	}
 
-	public void trainSupervised(HMM hmm, int[][] obss, int[][] stss) {
+	public void trainSupervised(HMM hmm, int[][] wss, int[][] posss) {
 		double[] phi = hmm.getPhi();
 		double[][] a = hmm.getA();
 		double[][] b = hmm.getB();
+
+		double[] posPrs = ArrayUtils.array(hmm.getN());
+		double[] wordPrs = ArrayUtils.array(hmm.getV());
 
 		ArrayUtils.setAll(phi, 0);
 		ArrayUtils.setAll(a, 0);
 		ArrayUtils.setAll(b, 0);
 
-		for (int i = 0; i < obss.length; i++) {
-			int[] obs = obss[i];
-			int[] sts = stss[i];
+		CounterMap<Integer, Integer> bigramCnts = Generics.newCounterMap();
 
-			for (int j = 0; j < obs.length; j++) {
-				int o1 = obs[j];
-				int s1 = sts[j];
+		for (int i = 0; i < wss.length; i++) {
+			int[] ws = wss[i];
+			int[] poss = posss[i];
+
+			for (int j = 0; j < ws.length; j++) {
+				int w1 = ws[j];
+				int pos1 = poss[j];
+
+				posPrs[pos1]++;
+				wordPrs[w1]++;
 
 				if (i == 0) {
-					phi[o1]++;
+					phi[w1]++;
 				}
 
-				b[s1][o1]++;
+				b[pos1][w1]++;
 
-				if (j + 1 < obs.length) {
-					int s2 = sts[j + 1];
-					a[s1][s2]++;
+				if (j + 1 < ws.length) {
+					int w2 = ws[j + 1];
+					int pos2 = poss[j + 1];
+					a[pos1][pos2]++;
+					bigramCnts.incrementCount(w1, w2, 1);
 				}
 			}
 		}
 
-		ArrayMath.add(b, 1f, b);
-
 		ArrayMath.normalize(phi);
-		ArrayMath.normalizeRows(a);
-		ArrayMath.normalizeRows(b);
 
+		ArrayMath.normalizeRows(a);
+		ArrayMath.normalize(posPrs);
+		ArrayMath.addAfterScaleRows(a, posPrs, 0.5, 0.5, a);
+
+		ArrayMath.normalizeRows(b);
+		ArrayMath.normalize(wordPrs);
+		ArrayMath.addAfterScaleRows(b, wordPrs, 0.5, 0.5, b);
 	}
 
 	public void train(int[] obs) {

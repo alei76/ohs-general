@@ -9,17 +9,15 @@ public class MultiToken {
 	public static final String DELIM_TOKEN = " + ";
 
 	public static MultiToken parse(String s) {
-		String[] parts = s.split(DELIM_TOKEN.replace(" + ", " \\+ "));
+		String[] two = s.split("\t");
+
+		String suface = two[0];
+		String[] parts = two[1].split(DELIM_TOKEN.replace(" + ", " \\+ "));
 		Token[] toks = new Token[parts.length];
 		for (int i = 0; i < parts.length; i++) {
 			toks[i] = Token.parse(parts[i]);
 		}
-
-		MultiToken ret = new MultiToken(0, toks);
-		// for (int i = 0, loc = start; i < ret.size(); i++) {
-		// ret.getToken(i).setStart(loc);
-		// loc += ret.getValue(TokenAttr.WORD).length;
-		// }
+		MultiToken ret = new MultiToken(0, suface, toks);
 		return ret;
 	}
 
@@ -29,14 +27,6 @@ public class MultiToken {
 
 	private String text = "";
 
-	public void setText(String text) {
-		this.text = text;
-	}
-
-	public String getText() {
-		return text;
-	}
-
 	public MultiToken() {
 
 	}
@@ -44,6 +34,12 @@ public class MultiToken {
 	public MultiToken(int start, List<Token> toks) {
 		this.start = start;
 		this.toks = toks.toArray(new Token[toks.size()]);
+	}
+
+	public MultiToken(int start, String text, Token[] toks) {
+		this.start = start;
+		this.text = text;
+		this.toks = toks;
 	}
 
 	public MultiToken(int start, Token tok) {
@@ -57,6 +53,10 @@ public class MultiToken {
 
 	public int getStart() {
 		return start;
+	}
+
+	public String getText() {
+		return text;
 	}
 
 	public Token getToken(int i) {
@@ -129,6 +129,10 @@ public class MultiToken {
 		this.start = start;
 	}
 
+	public void setText(String text) {
+		this.text = text;
+	}
+
 	public void setValue(TokenAttr attr, String[] values) {
 		for (int i = 0; i < toks.length; i++) {
 			toks[i].setValue(attr, values[i]);
@@ -146,26 +150,30 @@ public class MultiToken {
 	public String toString(boolean printAttrNames) {
 		StringBuffer sb = new StringBuffer();
 
-		if (printAttrNames) {
-			sb.append("Loc\tLoc");
-			for (int i = 0; i < TokenAttr.values().length; i++) {
-				TokenAttr ta = TokenAttr.values()[i];
-				sb.append("\t" + ta);
-			}
-			sb.append("\n");
-		}
+		sb.append(text);
+		sb.append("\t");
+		sb.append(joinValues());
 
-		for (int i = 0; i < toks.length; i++) {
-			Token tok = toks[i];
-			sb.append(start + "\t" + tok.getStart());
-			for (int j = 0; j < TokenAttr.values().length; j++) {
-				TokenAttr attr = TokenAttr.values()[j];
-				sb.append("\t" + tok.getValue(attr));
-			}
-			if (i != toks.length - 1) {
-				sb.append("\n");
-			}
-		}
+		// if (printAttrNames) {
+		// sb.append("Loc\tLoc");
+		// for (int i = 0; i < TokenAttr.values().length; i++) {
+		// TokenAttr ta = TokenAttr.values()[i];
+		// sb.append("\t" + ta);
+		// }
+		// sb.append("\n");
+		// }
+		//
+		// for (int i = 0; i < toks.length; i++) {
+		// Token tok = toks[i];
+		// sb.append(start + "\t" + tok.getStart());
+		// for (int j = 0; j < TokenAttr.values().length; j++) {
+		// TokenAttr attr = TokenAttr.values()[j];
+		// sb.append("\t" + tok.getValue(attr));
+		// }
+		// if (i != toks.length - 1) {
+		// sb.append("\n");
+		// }
+		// }
 
 		return sb.toString();
 	}

@@ -1,8 +1,16 @@
 package ohs.ml.hmm;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+import kr.co.shineware.util.common.file.FileUtil;
+import ohs.io.FileUtils;
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
+import ohs.matrix.SparseMatrix;
+import ohs.matrix.SparseVector;
 import ohs.types.Indexer;
+import ohs.utils.StrUtils;
 
 public class HMM {
 
@@ -30,6 +38,8 @@ public class HMM {
 	 * number of unique observations in vocabulary
 	 */
 	private int V;
+
+	private SparseMatrix bigramProbs = new SparseMatrix(0, 0, 0, new int[0], new SparseVector[0]);
 
 	private Indexer<String> stateIndexer;
 
@@ -81,6 +91,24 @@ public class HMM {
 		ArrayUtils.print("b", b);
 	}
 
+	public void read(ObjectInputStream ois) throws Exception {
+		stateIndexer = FileUtils.readStrIndexer(ois);
+		wordIndexer = FileUtils.readStrIndexer(ois);
+
+		phi = FileUtils.readDoubleArray(ois);
+		a = FileUtils.readDoubleMatrix(ois);
+		b = FileUtils.readDoubleMatrix(ois);
+
+		N = stateIndexer.size();
+		V = wordIndexer.size();
+	}
+
+	public void read(String fileName) throws Exception {
+		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
+		read(ois);
+		ois.close();
+	}
+
 	public void setA(double[][] a) {
 		this.a = a;
 	}
@@ -97,6 +125,13 @@ public class HMM {
 
 	public void setPhi(double[] phi) {
 		this.phi = phi;
+	}
+
+	public String[] tag(String[] words) {
+		int[] ws = wordIndexer.indexesOf(words);
+		int[] sts = viterbi(ws);
+		String[] ret = stateIndexer.getObjects(sts);
+		return ret;
 	}
 
 	public int[] viterbi(int[] obs) {
@@ -122,15 +157,30 @@ public class HMM {
 			}
 		}
 
-		int[] path = ArrayUtils.arrayInt(T);
+		int[] bestPath = ArrayUtils.arrayInt(T);
 		ArrayUtils.copyColumn(fwd, T - 1, tmp);
 		int q = ArrayMath.argMax(tmp);
 
 		for (int t = T - 1; t >= 0; t--) {
-			path[t] = q;
+			bestPath[t] = q;
 			q = backPointers[q][t];
 		}
-		return path;
+		return bestPath;
+	}
+
+	public void write(ObjectOutputStream oos) throws Exception {
+		FileUtils.writeStrIndexer(oos, stateIndexer);
+		FileUtils.writeStrIndexer(oos, wordIndexer);
+
+		FileUtils.writeDoubleArray(oos, phi);
+		FileUtils.writeDoubleMatrix(oos, a);
+		FileUtils.writeDoubleMatrix(oos, b);
+	}
+
+	public void write(String fileName) throws Exception {
+		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
+		write(oos);
+		oos.close();
 	}
 
 }

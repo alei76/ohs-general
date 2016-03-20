@@ -67,6 +67,37 @@ public class ArrayMath {
 		return sum;
 	}
 
+	public static double addAfterScaleRows(double[][] a, double[] b, double ac, double bc, double[][] c) {
+		if (ArrayChecker.isSameDim(a, c) && a[0].length == b.length) {
+
+		} else {
+			throw new IllegalArgumentException();
+		}
+
+		double ret = 0;
+		for (int i = 0; i < a.length; i++) {
+			ret += addAfterScale(a[i], b, ac, bc, c[i]);
+		}
+		return ret;
+	}
+
+	public static double addAfterScaleColumns(double[][] a, double[] b, double ac, double bc, double[][] c) {
+		if (ArrayChecker.isSameDim(a, c) && a.length == b.length) {
+
+		} else {
+			throw new IllegalArgumentException();
+		}
+		double ret = 0;
+		for (int j = 0; j < a[0].length; j++) {
+			for (int i = 0; i < a.length; i++) {
+				c[i][j] = ac * a[i][j] + bc * b[i];
+				ret += c[i][j];
+			}
+		}
+		return ret;
+
+	}
+
 	public static double addAfterScale(double[] a, double b, double ac, double bc, double[] c) {
 		if (!ArrayChecker.isSameDim(a, c)) {
 			throw new IllegalArgumentException();
