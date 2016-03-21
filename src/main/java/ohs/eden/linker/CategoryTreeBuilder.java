@@ -53,7 +53,7 @@ public class CategoryTreeBuilder {
 		// goUp(c);
 		// }
 
-		// trie = Trie.newTrie();
+		// trie = KTrie.newTrie();
 
 		// Stack<Integer> path = new Stack<Integer>();
 		// path.push(health_id);

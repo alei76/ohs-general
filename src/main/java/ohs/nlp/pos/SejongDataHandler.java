@@ -27,10 +27,10 @@ public class SejongDataHandler {
 		System.out.println("process begins.");
 
 		SejongDataHandler sdh = new SejongDataHandler();
-		sdh.extractPosData();
+		// sdh.extractPosData();
 		// sdh.extractCounts();
-		// sdh.buildSystemDict();
-		// sdh.buildAnalyzedDict();
+		sdh.buildSystemDict();
+		sdh.buildAnalyzedDict();
 
 		System.out.println("process ends.");
 	}

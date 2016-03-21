@@ -1,6 +1,5 @@
 package ohs.math;
 
-import java.sql.Struct;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,8 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-
-import org.apache.commons.math.stat.descriptive.SynchronizedMultivariateSummaryStatistics;
 
 import ohs.utils.ByteSize;
 import ohs.utils.Generics;

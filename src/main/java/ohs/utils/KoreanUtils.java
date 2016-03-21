@@ -1,5 +1,6 @@
 package ohs.utils;
 
+import java.sql.Struct;
 import java.util.List;
 
 /**
@@ -113,36 +114,26 @@ public class KoreanUtils {
 		return getChars(sb);
 	}
 
-	public static char[][] decomposeKoreanWordToPhonemes(String word) {
-		char[][] ret = new char[word.length()][];
-		for (int i = 0; i < word.length(); i++) {
-			ret[i] = decomposeSyllableToPhonemes(word.charAt(i));
-		}
-		return ret;
-	}
-
-	public static char[] decomposeKoreanWordToPhonemesAsArray(String word) {
-		List<Character> chs = Generics.newArrayList();
+	public static char[] decomposeKoreanWordToPhonemes(String word) {
+		List<Character> ret = Generics.newArrayList();
 		for (int i = 0; i < word.length(); i++) {
 			for (char c : decomposeSyllableToPhonemes(word.charAt(i))) {
-				chs.add(c);
+				ret.add(c);
 			}
 		}
-
-		char[] ret = new char[chs.size()];
-		for (int i = 0; i < chs.size(); i++) {
-			ret[i] = chs.get(i);
-		}
-		return ret;
+		return StrUtils.toChars(ret);
 
 	}
 
-	public static char[][] decomposeKoreanWordToEnglish(String word) {
-		char[][] ret = new char[word.length()][];
+	public static char[] decomposeKoreanWordToEnglish(String word) {
+		List<Character> ret = Generics.newArrayList();
 		for (int i = 0; i < word.length(); i++) {
-			ret[i] = decomposeKoreanSyllableToEnglish(word.charAt(i));
+			char[] chs = decomposeKoreanSyllableToEnglish(word.charAt(i));
+			for (char ch : chs) {
+				ret.add(ch);
+			}
 		}
-		return ret;
+		return StrUtils.toChars(ret);
 	}
 
 	private static char[] getChars(StringBuffer sb) {
@@ -159,16 +150,8 @@ public class KoreanUtils {
 		return getString(decomposeKoreanWordToPhonemes(word));
 	}
 
-	private static String getString(char[][] chars) {
-		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < chars.length; i++) {
-			char[] chs = chars[i];
-			for (int j = 0; j < chs.length; j++) {
-				sb.append(chs[j]);
-			}
-		}
-
-		return sb.toString();
+	private static String getString(char[] chars) {
+		return String.valueOf(chars);
 	}
 
 	public static void main(String args[]) {

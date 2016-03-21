@@ -579,32 +579,37 @@ public class StrUtils {
 		return tag(text, targets, tagName);
 	}
 
-	public static String[] toArray(Collection<String> collection) {
-		String[] ret = new String[collection.size()];
-		int loc = 0;
-		Iterator<String> iter = collection.iterator();
-		while (iter.hasNext()) {
-			ret[loc] = iter.next();
-			loc++;
+	public static String[] toArray(Collection<String> c) {
+		return c.toArray(new String[c.size()]);
+	}
+
+	public static Character[] toCharacters(String s) {
+		Character[] ret = new Character[s.length()];
+		for (int i = 0; i < s.length(); i++) {
+			ret[i] = new Character(s.charAt(i));
 		}
 		return ret;
 	}
 
-	public static String[] toArray(List<String> list) {
-		return list.toArray(new String[list.size()]);
-	}
-
-	public static Character[] toCharacters(String text) {
-		Character[] ret = new Character[text.length()];
-		for (int i = 0; i < text.length(); i++) {
-			ret[i] = new Character(text.charAt(i));
+	public static char[] toChars(Character[] chs) {
+		char[] ret = new char[chs.length];
+		for (int i = 0; i < chs.length; i++) {
+			ret[i] = chs[i].charValue();
 		}
 		return ret;
 	}
 
-	public static List<String> toList(String[] array) {
-		List<String> ret = new ArrayList<String>();
-		for (String s : array) {
+	public static char[] toChars(List<Character> chs) {
+		char[] ret = new char[chs.size()];
+		for (int i = 0; i < chs.size(); i++) {
+			ret[i] = chs.get(i).charValue();
+		}
+		return ret;
+	}
+
+	public static List<String> toList(String[] ss) {
+		List<String> ret = Generics.newArrayList(ss.length);
+		for (String s : ss) {
 			ret.add(s);
 		}
 		return ret;

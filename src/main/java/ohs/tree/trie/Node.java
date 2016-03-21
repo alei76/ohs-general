@@ -89,6 +89,10 @@ public class Node<K> implements Serializable {
 		return children.get(key);
 	}
 
+	public void setChildren(Map<K, Node<K>> children) {
+		this.children = children;
+	}
+
 	public Map<K, Node<K>> getChildren() {
 		Map<K, Node<K>> ret = children;
 		if (ret == null) {

@@ -8,10 +8,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TreeSet;
 
 import ohs.tree.trie.Node.Type;
+import ohs.utils.Generics;
 
 public class Trie<K> {
 
@@ -129,6 +132,26 @@ public class Trie<K> {
 		return ret;
 	}
 
+	public void optimize() {
+		optimize(root);
+	}
+
+	private void optimize(Node<K> node) {
+
+		if (node.hasChildren()) {
+			Map<K, Node<K>> children = node.getChildren();
+			Map<K, Node<K>> newChildren = Generics.newHashMap(children.size());
+			newChildren.putAll(children);
+			node.setChildren(newChildren);
+			children = null;
+
+			for (Node<K> child : node.getChildren().values()) {
+				optimize(child);
+			}
+		}
+
+	}
+
 	public Set<K> keySetAtLevel(int level) {
 		Set<K> ret = new HashSet<K>();
 		for (Node<K> node : getNodes()) {
@@ -140,7 +163,7 @@ public class Trie<K> {
 	}
 
 	// public void SmithWatermanScorer(){
-	// Trie<Integer> trie = new Trie<Integer>();
+	// KTrie<Integer> trie = new KTrie<Integer>();
 	// for (int topicId : topicIds) {
 	// int[] path = info.path(topicId);
 	// trie.insert(ArrayUtils.toArray(path));
