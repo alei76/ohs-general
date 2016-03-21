@@ -58,7 +58,7 @@ class Word2VecTrainer {
 			}
 
 			final NeuralNetworkModel model;
-			try (AC task = timer.start("Training model %s", neuralNetworkConfig)) {
+			try (AC task = timer.start("Training model %text", neuralNetworkConfig)) {
 				model = neuralNetworkConfig.createTrainer(vocab, huffmanNodes, listener).train(sents);
 			}
 

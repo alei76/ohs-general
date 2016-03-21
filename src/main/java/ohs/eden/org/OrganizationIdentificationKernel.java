@@ -112,7 +112,7 @@ public class OrganizationIdentificationKernel implements Serializable {
 					Organization org = keys.get(i);
 					BilingualText oName = org.getName();
 					double score = ret.getCount(org);
-					sb.append(String.format("\n%d\t%s\t%s\t%f", i + 1, oName.getKorean(), oName.getEnglish(), score));
+					sb.append(String.format("\n%d\t%text\t%text\t%f", i + 1, oName.getKorean(), oName.getEnglish(), score));
 				}
 
 				System.out.println(sb.toString() + "\n\n");
@@ -139,7 +139,7 @@ public class OrganizationIdentificationKernel implements Serializable {
 				}
 
 				if (++num_orgs % 100 == 0) {
-					System.out.printf("\r[%d, %s]", num_orgs, stopWatch.stop());
+					System.out.printf("\r[%d, %text]", num_orgs, stopWatch.stop());
 				}
 
 				Counter<Organization> ret = oik.identify(orgName);
@@ -152,13 +152,13 @@ public class OrganizationIdentificationKernel implements Serializable {
 				for (int i = 0; i < keys.size() && i < num_candidates; i++) {
 					Organization sr = keys.get(i);
 					double score = ret.getCount(sr);
-					sb.append(String.format("\n%d\t%s\t%f", i + 1, sr, score));
+					sb.append(String.format("\n%d\t%text\t%f", i + 1, sr, score));
 				}
 
 				writer.write(sb.toString() + "\n\n");
 			}
 			writer.close();
-			System.out.printf("\r[%d, %s]\n", num_orgs, stopWatch.stop());
+			System.out.printf("\r[%d, %text]\n", num_orgs, stopWatch.stop());
 		}
 	}
 

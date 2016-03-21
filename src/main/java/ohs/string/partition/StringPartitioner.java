@@ -59,7 +59,7 @@ public class StringPartitioner {
 	 * Partition an entity into a set of segments
 	 * 
 	 * 
-	 * @param s
+	 * @param text
 	 * @return
 	 */
 	public Gram[] partition(String s) {

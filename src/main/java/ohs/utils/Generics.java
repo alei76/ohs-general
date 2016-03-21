@@ -47,7 +47,7 @@ import ohs.types.Triple;
  * Java type-inference will almost always just <em>do the right thing</em> (every once in a while, the compiler will get confused before you
  * do, so you might still occasionally have to specify the appropriate types).
  *
- * This class is based on the examples in Brian Goetz's article <a href="http://www.ibm.com/developerworks/library/j-jtp02216.html">Java
+ * This class is based on the examples in Brian Goetz'text article <a href="http://www.ibm.com/developerworks/library/j-jtp02216.html">Java
  * theory and practice: The pseudo-typedef antipattern</a>.
  *
  * @author Ilya Sherman

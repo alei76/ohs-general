@@ -110,7 +110,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 				for (int j = 0; j < orgs.size() && j < 10; j++) {
 					StringRecord sr = orgs.get(j);
 					double score = res.getCount(sr);
-					sb.append(String.format("%d, %d, %s, %s\n", j + 1, sr.getId(), sr.getString(), score + ""));
+					sb.append(String.format("%d, %d, %text, %text\n", j + 1, sr.getId(), sr.getString(), score + ""));
 				}
 
 				System.out.println(sb.toString());
@@ -196,8 +196,8 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		// // continue;
 		// // }
 		// Counter<String> res = ext.search(str);
-		// writer.write(String.format("Input:\t%s\n", str));
-		// writer.write(String.format("Output:\t%s\n\n",
+		// writer.write(String.format("Input:\t%text\n", str));
+		// writer.write(String.format("Output:\t%text\n\n",
 		// res.toStringSortedByValues(false, false, res.size())));
 		// }
 		//
@@ -235,7 +235,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 			for (int i = 0; i < keys.size() && i < num_candidates; i++) {
 				StringRecord sr = keys.get(i);
 				double score = ret.getCount(sr);
-				sb.append(String.format("\n%d\t%s\t%f", i + 1, sr, score));
+				sb.append(String.format("\n%d\t%text\t%f", i + 1, sr, score));
 			}
 
 			writer.write(sb.toString() + "\n\n");
@@ -443,7 +443,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 	}
 
 	public void index(List<StringRecord> input) {
-		System.out.printf("index [%s] records.\n", input.size());
+		System.out.printf("index [%text] records.\n", input.size());
 
 		StringSorter.sortByLength(input);
 
@@ -664,10 +664,10 @@ public class PivotalPrefixStringSearcher implements Serializable {
 					}
 
 					/*
-					 * Lemma 2. If srs r and s are similar, we have
+					 * Lemma 2. If srs r and text are similar, we have
 					 * 
-					 * If last(pre(r)) > last(pre(s)), piv(s) ∩ pre(r) != phi ;
-					 * If last(pre(r)) <= last(pre(s)), piv(r) ∩ pre(s) != phi;
+					 * If last(pre(r)) > last(pre(text)), piv(text) ∩ pre(r) != phi ;
+					 * If last(pre(r)) <= last(pre(text)), piv(r) ∩ pre(text) != phi;
 					 */
 
 					if (Math.abs(p - gram.getStart()) > tau
@@ -697,13 +697,13 @@ public class PivotalPrefixStringSearcher implements Serializable {
 				System.out.println();
 			}
 
-			// if (!stringVerifier.verify(s, sGrams, r)) {
+			// if (!stringVerifier.verify(text, sGrams, r)) {
 			// continue;
 			// }
 
 			double swScore = sw.getSimilarity(new CharacterSequence(s), new CharacterSequence(r));
 
-			// double long_len = Math.max(s.length(), r.length());
+			// double long_len = Math.max(text.length(), r.length());
 			// double sim = 1 - (ed / long_len);
 
 			// double edit_dist = stringVerifier.getEditDistance();
@@ -726,14 +726,14 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		writer.write(String.format("## Basic Parameters\t%d\n", 3));
 		writer.write(String.format("q\t%d\n", q));
 		writer.write(String.format("tau\t%d\n", tau));
-		writer.write(String.format("useOptimalPivotSelector\t%s\n",
+		writer.write(String.format("useOptimalPivotSelector\t%text\n",
 				pivotSelector instanceof OptimalPivotSelector ? true : false));
 		writer.write("\n");
 		writer.write(String.format("## Strings\t%d\n", srs.size()));
 
 		for (int i = 0; i < srs.size(); i++) {
 			StringRecord sr = srs.get(i);
-			writer.write(String.format("%d\t%d\t%s", i, sr.getId(), sr.getString()));
+			writer.write(String.format("%d\t%d\t%text", i, sr.getId(), sr.getString()));
 			if (i != srs.size() - 1) {
 				writer.write("\n");
 			}
@@ -754,7 +754,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		for (int i = 0; i < grams.size(); i++) {
 			String g = grams.get(i);
 			double weight = gramWeights.getCount(g);
-			writer.write(String.format("%s\t%s", g, Double.toString(weight)));
+			writer.write(String.format("%text\t%text", g, Double.toString(weight)));
 			if (i != grams.size() - 1) {
 				writer.write("\n");
 			}

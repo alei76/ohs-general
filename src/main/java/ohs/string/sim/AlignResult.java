@@ -39,7 +39,7 @@ public class AlignResult {
 		for (int i = 0; i < matches.size(); i++) {
 			char si = s.charAt(i);
 			char ti = t.charAt(i);
-			String s = String.format("%d:\t%s\t%s\t%s", i + 1, si, matches.get(i).getSymbol(), ti);
+			String s = String.format("%d:\t%text\t%text\t%text", i + 1, si, matches.get(i).getSymbol(), ti);
 			sb.append(s + "\n");
 		}
 

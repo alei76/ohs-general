@@ -30,7 +30,7 @@ class SearcherImpl implements Searcher {
 
 		@Override
 		public String toString() {
-			return String.format("%s [%s]", first, second);
+			return String.format("%text [%text]", first, second);
 		}
 	}
 
@@ -109,7 +109,7 @@ class SearcherImpl implements Searcher {
 	/**
 	 * @return Vector for the given word
 	 * @throws UnknownWordException
-	 *             If word is not in the model's vocabulary
+	 *             If word is not in the model'text vocabulary
 	 */
 	@Override
 	public double[] getVector(String word) {

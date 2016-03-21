@@ -26,7 +26,7 @@ public class TrecGenomicsDumper extends TextDumper {
 
 	@Override
 	public void dump() throws Exception {
-		System.out.printf("dump from [%s]\n", inputDirName);
+		System.out.printf("dump from [%text]\n", inputDirName);
 
 		TextFileWriter writer = new TextFileWriter(outputFileName);
 
@@ -79,10 +79,10 @@ public class TrecGenomicsDumper extends TextDumper {
 
 			num_docs_in_coll += num_docs_in_file;
 
-			System.out.printf("read [%d] docs from [%s]\n", num_docs_in_file, file.getName());
+			System.out.printf("read [%d] docs from [%text]\n", num_docs_in_file, file.getName());
 		}
 		writer.close();
 
-		System.out.printf("read [%d] docs from [%s]\n", num_docs_in_coll, inputDirName);
+		System.out.printf("read [%d] docs from [%text]\n", num_docs_in_coll, inputDirName);
 	}
 }

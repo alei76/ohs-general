@@ -88,7 +88,7 @@ public class BidMap<K, V> implements Serializable {
 		while (iter.hasNext() && cnt++ < num_print_keys) {
 			K key = iter.next();
 			V value = keyToValue.get(key);
-			sb.append(String.format("\n%d\t%s\t%s", cnt, key.toString(), value.toString()));
+			sb.append(String.format("\n%d\t%text\t%text", cnt, key.toString(), value.toString()));
 		}
 		return sb.toString();
 	}

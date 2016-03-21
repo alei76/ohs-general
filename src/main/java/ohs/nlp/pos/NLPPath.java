@@ -13,7 +13,13 @@ public class NLPPath {
 	public static final String POS_HMM_MODEL_FILE = DATA_DIR + "pos_hmm.ser.gz";
 
 	public static final String POS_DATA_FILE = DATA_DIR + "pos_data.txt.gz";
-	
+
 	public static final String WORD_POS_CNT_ILE = DATA_DIR + "word_pos_cnt.txt";
+
+	public static final String WORD_CNT_ILE = DATA_DIR + "word_cnt.txt";
+
+	public static final String DICT_SYSTEM_FILE = DATA_DIR + "dic_sys.txt";
+
+	public static final String DICT_ANALYZED_FILE = DATA_DIR + "dic_anal.txt";
 
 }

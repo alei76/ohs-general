@@ -68,7 +68,7 @@ public class TopicEval {
 			double numCorrect = label_correct.valueAtLoc(i);
 			double[] prf = getPrecisionRecallF1(numAnswer, numPredict, numCorrect);
 
-			sb.append(String.format("%s\t%d\t%d\t%d\t%s\t%s\t%s\n",
+			sb.append(String.format("%text\t%d\t%d\t%d\t%text\t%text\t%text\n",
 
 			label == null ? labelId : label, (int) numAnswer, (int) numPredict, (int) numCorrect, nf.format(prf[0]), nf.format(prf[1]),
 					nf.format(prf[2])));
@@ -88,12 +88,12 @@ public class TopicEval {
 
 		double[] prf = getPrecisionRecallF1(totalAnswer, totalPredict, totalCorrect);
 
-		sb.append(String.format("%s\t%d\t%d\t%d\t%s\t%s\t%s\n",
+		sb.append(String.format("%text\t%d\t%d\t%d\t%text\t%text\t%text\n",
 
 		"Macro", (int) totalAnswer, (int) totalPredict, (int) totalCorrect, nf.format(macroPrecision), nf.format(macroRecall),
 				nf.format(macroF1)));
 
-		sb.append(String.format("%s\t%d\t%d\t%d\t%s\t%s\t%s\n",
+		sb.append(String.format("%text\t%d\t%d\t%d\t%text\t%text\t%text\n",
 
 		"Micro", (int) totalAnswer, (int) totalPredict, (int) totalCorrect, nf.format(prf[0]), nf.format(prf[1]), nf.format(prf[2])));
 
@@ -252,7 +252,7 @@ public class TopicEval {
 			precisionSum += precision;
 			recallSum += recall;
 
-			list.add(String.format("%s\t%d\t%d\t%d\t%s\t%s\t%s",
+			list.add(String.format("%text\t%d\t%d\t%d\t%text\t%text\t%text",
 
 			topic, (int) numAnswer, (int) numPredict, (int) numCorrect,
 
@@ -267,7 +267,7 @@ public class TopicEval {
 		double macroRecall = recallSum / numTopics;
 		double macroF1 = f1Sum / numTopics;
 
-		list.add(String.format("%s\t%d\t%d\t%d\t%s\t%s\t%s", "macro",
+		list.add(String.format("%text\t%d\t%d\t%d\t%text\t%text\t%text", "macro",
 
 		numTotalAnswers, numTotalPredict, numTotalCorrect,
 
@@ -278,7 +278,7 @@ public class TopicEval {
 		double microRecall = scores[1];
 		double microF1 = scores[2];
 
-		list.add(String.format("%s\t%d\t%d\t%d\t%s\t%s\t%s", "micro",
+		list.add(String.format("%text\t%d\t%d\t%d\t%text\t%text\t%text", "micro",
 
 		numTotalAnswers, numTotalPredict, numTotalCorrect,
 

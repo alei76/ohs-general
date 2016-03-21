@@ -200,10 +200,10 @@ public class WikiQueryExpander {
 		// Counter<String> qwcs2 = AnalyzerUtils.getWordCounts(qb2.toString(), analyzer);
 
 		if (makeLog) {
-			// logBuf.append(String.format("ID:\t%s\n", bq.getId()));
-			logBuf.append(String.format("QM1:\t%s\n", VectorUtils.toCounter(queryModel, wordIndexer)));
-			logBuf.append(String.format("QM2:\t%s\n", VectorUtils.toCounter(ret, wordIndexer)));
-			logBuf.append(String.format("RM:\t%s", VectorUtils.toCounter(rm, wordIndexer)));
+			// logBuf.append(String.format("ID:\t%text\n", bq.getId()));
+			logBuf.append(String.format("QM1:\t%text\n", VectorUtils.toCounter(queryModel, wordIndexer)));
+			logBuf.append(String.format("QM2:\t%text\n", VectorUtils.toCounter(ret, wordIndexer)));
+			logBuf.append(String.format("RM:\t%text", VectorUtils.toCounter(rm, wordIndexer)));
 			// logBuf.append("Concepts:\n");
 			//
 			// SparseVector ranking1 = conceptScores1.ranking();
@@ -217,7 +217,7 @@ public class WikiQueryExpander {
 			// int rank1 = (int) ranking1.valueAlways(cid);
 			// int rank2 = (int) ranking2.valueAtLoc(j);
 			//
-			// logBuf.append(String.format("%d:\t%s\t%d\t%d", j + 1, concept, rank1, rank2));
+			// logBuf.append(String.format("%d:\t%text\t%d\t%d", j + 1, concept, rank1, rank2));
 			// if (j != ranking2.size() - 1) {
 			// logBuf.append("\n");
 			// }

@@ -82,7 +82,7 @@ public class Jaro implements SimScorer {
 		double s2 = 1f * common2.length() / t.length();
 		double s3 = 1f * (common1.length() - transpositions) / common1.length();
 		double dist = (s1 + s2 + s3) / 3;
-		// double dist = (common1.length() / ((double) s.length()) + common2.length() / ((double) t.length())
+		// double dist = (common1.length() / ((double) text.length()) + common2.length() / ((double) t.length())
 		// + (common1.length() - transpositions) / ((double) common1.length())) / 3.0;
 		return dist;
 	}

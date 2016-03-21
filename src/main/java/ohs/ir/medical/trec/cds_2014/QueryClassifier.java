@@ -61,7 +61,7 @@ public class QueryClassifier implements Serializable {
 			CDSQuery cdsQuery = cdsQueries.get(i);
 			String qId = cdsQuery.getId();
 
-			// System.out.printf("%dth query: %s\n", i + 1, cdsQuery.getDescription());
+			// System.out.printf("%dth query: %text\n", i + 1, cdsQuery.getDescription());
 
 			StringBuffer qBuff = new StringBuffer();
 			qBuff.append(cdsQuery.getDescription());
@@ -79,10 +79,10 @@ public class QueryClassifier implements Serializable {
 				numCorrect++;
 			}
 
-			System.out.printf("Ans: %s -> Pred:\t %s\n", answer, predict);
+			System.out.printf("Ans: %text -> Pred:\t %text\n", answer, predict);
 		}
 
-		System.out.printf("accuracy:\t%s\n", numCorrect / cdsQueries.size());
+		System.out.printf("accuracy:\t%text\n", numCorrect / cdsQueries.size());
 
 		System.out.println("process ends.");
 	}

@@ -3,6 +3,7 @@ package ohs.nlp.pos;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -13,6 +14,8 @@ import ohs.io.TextFileWriter;
 import ohs.nlp.ling.types.KDocument;
 import ohs.nlp.ling.types.KSentence;
 import ohs.nlp.ling.types.MultiToken;
+import ohs.nlp.ling.types.Token;
+import ohs.nlp.ling.types.TokenAttr;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.utils.Generics;
@@ -24,18 +27,15 @@ public class SejongDataHandler {
 		System.out.println("process begins.");
 
 		SejongDataHandler sdh = new SejongDataHandler();
-		// sdh.extractPosData();
-		sdh.extractCounts();
+		sdh.extractPosData();
+		// sdh.extractCounts();
+		// sdh.buildSystemDict();
+		// sdh.buildAnalyzedDict();
 
 		System.out.println("process ends.");
 	}
 
 	public void extractCounts() throws Exception {
-
-		Counter<String> posCnts = Generics.newCounter();
-		Counter<String> wordCnts = Generics.newCounter();
-		CounterMap<String, String> posTransCnts = Generics.newCounterMap();
-		CounterMap<String, String> wordPosCnts = Generics.newCounterMap();
 
 		Set<String> posSet = Generics.newHashSet();
 
@@ -45,21 +45,93 @@ public class SejongDataHandler {
 		}
 
 		CounterMap<String, String> cm = Generics.newCounterMap();
+		CounterMap<String, String> cm2 = Generics.newCounterMap();
 
-		SejongDocumentReader reader = new SejongDocumentReader(NLPPath.POS_DATA_FILE);
+		SejongReader reader = new SejongReader(NLPPath.POS_DATA_FILE, NLPPath.POS_TAG_SET_FILE);
 		while (reader.hasNext()) {
 			KDocument doc = reader.next();
 
 			for (KSentence sent : doc.getSentences()) {
-				for (MultiToken mt : sent.getTokens()) {
+				for (Token tok : sent.getTokens()) {
+					MultiToken mt = (MultiToken) tok;
+
+					for (Token t : mt.getTokens()) {
+						String word = t.getValue(TokenAttr.WORD);
+						String pos = t.getValue(TokenAttr.POS);
+						cm2.incrementCount(word, pos, 1);
+					}
+				}
+			}
+		}
+		reader.close();
+		FileUtils.writeStrCounterMap(NLPPath.WORD_POS_CNT_ILE, cm);
+		FileUtils.writeStrCounterMap(NLPPath.WORD_CNT_ILE, cm2);
+	}
+
+	public void buildSystemDict() throws Exception {
+		CounterMap<String, String> cm = Generics.newCounterMap();
+
+		SejongReader reader = new SejongReader(NLPPath.POS_DATA_FILE, NLPPath.POS_TAG_SET_FILE);
+		while (reader.hasNext()) {
+			KDocument doc = reader.next();
+
+			for (KSentence sent : doc.getSentences()) {
+				for (Token tok : sent.getTokens()) {
+					MultiToken mt = (MultiToken) tok;
+
+					for (Token t : mt.getTokens()) {
+						cm.incrementCount(t.getValue(TokenAttr.WORD), t.getValue(TokenAttr.POS), 1);
+					}
+				}
+			}
+		}
+		reader.close();
+
+		List<String> dict = Generics.newArrayList();
+
+		for (String word : cm.keySet()) {
+			Counter<String> c = cm.getCounter(word);
+
+			if (c.size() == 1) {
+				dict.add(word + "\t" + c.argMax());
+			}
+		}
+
+		Collections.sort(dict);
+
+		FileUtils.writeStrCollection(NLPPath.DICT_SYSTEM_FILE, dict);
+	}
+
+	public void buildAnalyzedDict() throws Exception {
+		CounterMap<String, String> cm = Generics.newCounterMap();
+
+		SejongReader reader = new SejongReader(NLPPath.POS_DATA_FILE, NLPPath.POS_TAG_SET_FILE);
+		while (reader.hasNext()) {
+			KDocument doc = reader.next();
+
+			for (KSentence sent : doc.getSentences()) {
+				for (Token tok : sent.getTokens()) {
+					MultiToken mt = (MultiToken) tok;
 					cm.incrementCount(mt.getText(), mt.joinValues(), 1);
 				}
 			}
 		}
 		reader.close();
 
-		FileUtils.writeStrCounterMap(NLPPath.WORD_POS_CNT_ILE, cm);
+		List<String> words = Generics.newArrayList(cm.keySet());
+		Collections.sort(words);
 
+		for (int i = 0; i < words.size(); i++) {
+			String word = words.get(i);
+			Counter<String> c = cm.getCounter(word);
+
+			List<String> res = Generics.newArrayList();
+			res.add(word);
+			res.addAll(c.keySet());
+			words.set(i, String.join("\t", res));
+		}
+
+		FileUtils.writeStrCollection(NLPPath.DICT_ANALYZED_FILE, words);
 	}
 
 	public void extractPosData() throws Exception {

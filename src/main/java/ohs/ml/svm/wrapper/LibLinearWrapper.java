@@ -21,7 +21,7 @@ public class LibLinearWrapper implements Serializable {
 	private static final long serialVersionUID = -3273222430839071709L;
 
 	public static LibLinearWrapper read(String fileName) throws Exception {
-		System.out.printf("read [%s]\n", fileName);
+		System.out.printf("read [%text]\n", fileName);
 
 		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
 
@@ -134,7 +134,7 @@ public class LibLinearWrapper implements Serializable {
 	}
 
 	public void write(String fileName) throws Exception {
-		System.out.printf("write to [%s].\n", fileName);
+		System.out.printf("write to [%text].\n", fileName);
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 
 		FileUtils.writeStrIndexer(oos, labelIndexer);

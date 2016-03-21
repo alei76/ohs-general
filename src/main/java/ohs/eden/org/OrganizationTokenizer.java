@@ -29,7 +29,7 @@ public class OrganizationTokenizer {
 			String res = lm.tokenize(orgName.getKorean());
 
 			if (res.length() != orgName.getKorean().length()) {
-				System.out.printf("%s => %s\n", orgName.getKorean(), res);
+				System.out.printf("%text => %text\n", orgName.getKorean(), res);
 			}
 		}
 
@@ -77,7 +77,7 @@ public class OrganizationTokenizer {
 			}
 
 			String s = orgName.getKorean();
-			s = String.format("^%s$", s);
+			s = String.format("^%text$", s);
 
 			int len = s.length();
 
@@ -122,11 +122,11 @@ public class OrganizationTokenizer {
 	}
 
 	public String tokenize(String s) {
-		String ret = String.format("^%s$", s);
+		String ret = String.format("^%text$", s);
 
 		StringBuffer sb = new StringBuffer();
 
-		// if (s.equals("충남대 교육학과")) {
+		// if (text.equals("충남대 교육학과")) {
 		// System.out.println();
 		// }
 

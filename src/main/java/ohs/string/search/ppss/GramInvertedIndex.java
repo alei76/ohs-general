@@ -176,7 +176,7 @@ public class GramInvertedIndex implements Serializable {
 
 			StringBuffer sb = new StringBuffer();
 			GramPostings p = map.get(g);
-			sb.append(String.format("(%s, %d) -> ", g, p.getEntries().size()));
+			sb.append(String.format("(%text, %d) -> ", g, p.getEntries().size()));
 			String[] splits = p.toString(true).split("\n");
 			for (int j = 0; j < splits.length; j++) {
 				sb.append(splits[j]);

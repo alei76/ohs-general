@@ -69,10 +69,10 @@ public class BilingualText implements Serializable {
 	public String toString(boolean isSimpleFormat) {
 		StringBuffer sb = new StringBuffer();
 		if (isSimpleFormat) {
-			sb.append(String.format("%s\t%s", korean, english));
+			sb.append(String.format("%text\t%text", korean, english));
 		} else {
-			sb.append(String.format("Korean = %s\n", korean));
-			sb.append(String.format("English = %s", english));
+			sb.append(String.format("Korean = %text\n", korean));
+			sb.append(String.format("English = %text", english));
 		}
 		return sb.toString();
 	}

@@ -88,7 +88,7 @@ public class SearchDocuments {
 	}
 
 	private static void writeResults(String fileName, CounterMap<String, String> resultData) {
-		System.out.printf("write to [%s]\n", fileName);
+		System.out.printf("write to [%text]\n", fileName);
 		TextFileWriter writer = new TextFileWriter(fileName);
 
 		NumberFormat nf = NumberFormat.getInstance();
@@ -112,10 +112,10 @@ public class SearchDocuments {
 				int iter = 0;
 				int rank = 0;
 				int runId = 0;
-				// String output = String.format("%s\tQ%d\t%s\t%d\t%s\t%d", qId,
+				// String output = String.format("%text\tQ%d\t%text\t%d\t%text\t%d", qId,
 				// iter, docId, rank, nf.format(score), runId);
 				double logScore = Math.log(score);
-				String output = String.format("%s\t%s\t%s", qId, docId, logScore);
+				String output = String.format("%text\t%text\t%text", qId, docId, logScore);
 				writer.write(output + "\n");
 			}
 		}
@@ -123,7 +123,7 @@ public class SearchDocuments {
 	}
 
 	private static void writeResults(String fileName, CounterMap<String, String> resultData, CounterMap<String, String> relevanceData) {
-		System.out.printf("write to [%s]\n", fileName);
+		System.out.printf("write to [%text]\n", fileName);
 		TextFileWriter writer = new TextFileWriter(fileName);
 
 		NumberFormat nf = NumberFormat.getInstance();
@@ -137,7 +137,7 @@ public class SearchDocuments {
 			for (String docId : docScores.getSortedKeys()) {
 				double score = docScores.getCount(docId);
 				double relevance = docRelevances.getCount(docId);
-				String output = String.format("%s\t%s\t%s\t%d", qId, docId, nf.format(score), (int) relevance);
+				String output = String.format("%text\t%text\t%text\t%d", qId, docId, nf.format(score), (int) relevance);
 				writer.write(output + "\n");
 			}
 		}
@@ -187,7 +187,7 @@ public class SearchDocuments {
 					int indexId = Integer.parseInt(parts[1]);
 					String score = parts[2];
 					String docId = documentIdMap.getKey(indexId);
-					String output = String.format("%s\t%s\t%s", queryId, docId, score);
+					String output = String.format("%text\t%text\t%text", queryId, docId, score);
 					writer.write(output + "\n");
 				}
 			}
@@ -212,7 +212,7 @@ public class SearchDocuments {
 			CDSQuery cdsQuery = cdsQueries.get(i);
 			String qId = cdsQuery.getId();
 
-			System.out.printf("%dth query: %s\n", i + 1, cdsQuery.getDescription());
+			System.out.printf("%dth query: %text\n", i + 1, cdsQuery.getDescription());
 
 			StringBuffer qBuff = new StringBuffer();
 			qBuff.append(cdsQuery.getDescription());
@@ -242,7 +242,7 @@ public class SearchDocuments {
 				String docId = doc.getField(CommonFieldNames.DOCUMENT_ID).stringValue();
 				String content = doc.getField(CommonFieldNames.CONTENT).stringValue();
 
-				sb.append(String.format("%s\t%d\t%s\n",
+				sb.append(String.format("%text\t%d\t%text\n",
 
 				new DecimalFormat("00").format(Integer.parseInt(qId)), indexId, score));
 
@@ -257,7 +257,7 @@ public class SearchDocuments {
 
 		for (String docId : documentIdMap.keySet()) {
 			Integer indexId = documentIdMap.get(docId);
-			writer.write(String.format("\n%s\t%d", docId, indexId));
+			writer.write(String.format("\n%text\t%d", docId, indexId));
 		}
 		writer.close();
 	}
@@ -297,7 +297,7 @@ public class SearchDocuments {
 
 			Counter<Integer> docScores = queryDocumentScores.getCounter(i + 1);
 
-			System.out.printf("%dth query: %s\n", i + 1, cdsQuery.getDescription());
+			System.out.printf("%dth query: %text\n", i + 1, cdsQuery.getDescription());
 
 			StringBuffer qBuff = new StringBuffer();
 			qBuff.append(cdsQuery.getDescription());
@@ -315,7 +315,7 @@ public class SearchDocuments {
 			for (int j = 0; j < docIds.size(); j++) {
 				int docId = docIds.get(j);
 				double score = newDocScores.getCount(docId);
-				sb.append(String.format("%s\t%d\t%s\n", new DecimalFormat("00").format(Integer.parseInt(qId)), docId, nf.format(score)));
+				sb.append(String.format("%text\t%d\t%text\n", new DecimalFormat("00").format(Integer.parseInt(qId)), docId, nf.format(score)));
 			}
 			writer.write(sb.toString().trim() + "\n");
 		}
@@ -355,7 +355,7 @@ public class SearchDocuments {
 
 			Counter<Integer> docScores = queryDocumentScores.getCounter(i + 1);
 
-			System.out.printf("%dth query: %s\n", i + 1, cdsQuery.getDescription());
+			System.out.printf("%dth query: %text\n", i + 1, cdsQuery.getDescription());
 
 			StringBuffer qBuff = new StringBuffer();
 			qBuff.append(cdsQuery.getDescription());
@@ -374,7 +374,7 @@ public class SearchDocuments {
 				int docId = docIds.get(j);
 				double score = newDocScores.getCount(docId);
 
-				sb.append(String.format("%s\t%d\t%s\n",
+				sb.append(String.format("%text\t%d\t%text\n",
 
 				new DecimalFormat("00").format(Integer.parseInt(qId)), docId, nf.format(score)));
 			}
@@ -418,7 +418,7 @@ public class SearchDocuments {
 
 			Counter<Integer> docScores = queryDocumentScores.getCounter(i + 1);
 
-			System.out.printf("%dth query: %s\n", i + 1, cdsQuery.getDescription());
+			System.out.printf("%dth query: %text\n", i + 1, cdsQuery.getDescription());
 
 			StringBuffer qBuff = new StringBuffer();
 			qBuff.append(cdsQuery.getDescription());
@@ -437,7 +437,7 @@ public class SearchDocuments {
 				int docId = docIds.get(j);
 				double score = newDocScores.getCount(docId);
 
-				sb.append(String.format("%s\t%d\t%s\n",
+				sb.append(String.format("%text\t%d\t%text\n",
 
 				new DecimalFormat("00").format(Integer.parseInt(qId)), docId, nf.format(score)));
 			}

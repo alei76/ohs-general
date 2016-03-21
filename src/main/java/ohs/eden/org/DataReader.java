@@ -159,7 +159,7 @@ public class DataReader {
 	}
 
 	public static Counter<BilingualText> readBilingualTextCounter(String fileName) {
-		System.out.printf("read [%s].\n", fileName);
+		System.out.printf("read [%text].\n", fileName);
 		Counter<BilingualText> ret = new Counter<BilingualText>();
 		TextFileReader reader = new TextFileReader(fileName);
 		while (reader.hasNext()) {
@@ -178,7 +178,7 @@ public class DataReader {
 	}
 
 	public static List<Organization> readOrganizationHistories(String fileName) {
-		System.out.printf("read [%s].\n", fileName);
+		System.out.printf("read [%text].\n", fileName);
 		List<Organization> ret = new ArrayList<Organization>();
 
 		// List<Entity> lines = new ArrayList<Entity>();
@@ -208,7 +208,7 @@ public class DataReader {
 	}
 
 	public static List<Organization> readOrganizations(String fileName) {
-		System.out.printf("read [%s].\n", fileName);
+		System.out.printf("read [%text].\n", fileName);
 		List<Organization> ret = new ArrayList<Organization>();
 		TextFileReader reader = new TextFileReader(fileName, FileUtils.EUC_KR);
 		while (reader.hasNext()) {

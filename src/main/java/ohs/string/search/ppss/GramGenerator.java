@@ -83,7 +83,7 @@ public class GramGenerator implements Serializable {
 	}
 
 	public Gram[] generateQGrams(String s) {
-		s = String.format("<%s>", s);
+		s = String.format("<%text>", s);
 
 		int len = s.length();
 		int size = len - q + 1;

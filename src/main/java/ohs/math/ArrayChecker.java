@@ -200,7 +200,7 @@ public class ArrayChecker {
 	 * 
 	 * Let A be an n x n matrix. Then A is invertible iff:
 	 * 
-	 * s. The number 0 is not an eigenvalue of A.
+	 * text. The number 0 is not an eigenvalue of A.
 	 * 
 	 * t. The determinant of A is not zero.
 	 * 

@@ -167,14 +167,14 @@ public class DataHandler {
 					}
 
 					StringBuffer sb = new StringBuffer();
-					sb.append(String.format("%s\t%s\t%s", date, id, ssentis.get(0)));
+					sb.append(String.format("%text\t%text\t%text", date, id, ssentis.get(0)));
 
 					for (int k = 0; k < nerOffets.size(); k++) {
 						int start = nerOffets.get(k).getFirst();
 						int end = nerOffets.get(k).getSecond();
 						String nerSeq = StrUtils.join(" ", words, start, end);
 						String type = ners.get(start);
-						sb.append(String.format("\t%s/%s", nerSeq, type));
+						sb.append(String.format("\t%text/%text", nerSeq, type));
 					}
 					writer.write(sb.toString() + "\n");
 				}
@@ -231,8 +231,8 @@ public class DataHandler {
 				//
 				// }
 
-				String outputFileName1 = NSPath.DATA_DIR + String.format("content/%s/%s/%s.txt", mediaType, date, id);
-				String outputFileName2 = NSPath.DATA_DIR + String.format("content/%s-title/%s/%s.txt", mediaType, date, id);
+				String outputFileName1 = NSPath.DATA_DIR + String.format("content/%text/%text/%text.txt", mediaType, date, id);
+				String outputFileName2 = NSPath.DATA_DIR + String.format("content/%text-title/%text/%text.txt", mediaType, date, id);
 
 				FileUtils.write(outputFileName1.toLowerCase(), content);
 				FileUtils.write(outputFileName2.toLowerCase(), title);
@@ -283,7 +283,7 @@ public class DataHandler {
 
 			Counter<String> c = Generics.newCounter();
 
-			String visitFileName = NSPath.DATA_DIR + String.format("visit_%s.txt", type);
+			String visitFileName = NSPath.DATA_DIR + String.format("visit_%text.txt", type);
 
 			if (FileUtils.exists(visitFileName)) {
 				c = FileUtils.readStrCounter(visitFileName);
@@ -426,7 +426,7 @@ public class DataHandler {
 	private void write(String mediaType, Map<String, String> map, int num_dirs) throws Exception {
 		for (String fileName : map.keySet()) {
 			String content = map.get(fileName);
-			String outputFileName = NSPath.DATA_DIR + String.format("content/%s/%05d/%s.txt", mediaType, num_dirs, fileName);
+			String outputFileName = NSPath.DATA_DIR + String.format("content/%text/%05d/%text.txt", mediaType, num_dirs, fileName);
 			FileUtils.write(outputFileName, content);
 		}
 		map.clear();

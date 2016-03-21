@@ -1437,7 +1437,7 @@ public class LA {
 	 * 
 	 * /** [Theorem 2.1]
 	 * 
-	 * Let A, B, and C be matrices of the same size, and let r and s be scalars.
+	 * Let A, B, and C be matrices of the same size, and let r and text be scalars.
 	 * 
 	 * a. A + B = B + A
 	 * 
@@ -1447,7 +1447,7 @@ public class LA {
 	 * 
 	 * d. r(A + B) = rA + rB
 	 * 
-	 * e. (r + s)A = rA + sA
+	 * e. (r + text)A = rA + sA
 	 * 
 	 * f. r(sA) = (rs)A
 	 * 
@@ -1805,7 +1805,7 @@ public class LA {
 	/**
 	 * 
 	 * 
-	 * [Theorem 3.7 - Cramer's Rule]
+	 * [Theorem 3.7 - Cramer'text Rule]
 	 * 
 	 * Let A be an invertible n x n matrix. For any b in R^n, the unique solution x of Ax=b has entries given by
 	 * 

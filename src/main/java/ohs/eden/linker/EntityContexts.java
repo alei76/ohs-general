@@ -47,7 +47,7 @@ public class EntityContexts {
 
 			VectorMath.unitVector(sv);
 		}
-		System.out.printf("read [%s] - [%s]\n", this.getClass().getName(), stopWatch.stop());
+		System.out.printf("read [%text] - [%text]\n", this.getClass().getName(), stopWatch.stop());
 	}
 
 	public void read(String fileName) throws Exception {
@@ -74,7 +74,7 @@ public class EntityContexts {
 			sv.write(oos);
 		}
 
-		System.out.printf("write [%s] - [%s]\n", this.getClass().getName(), stopWatch.stop());
+		System.out.printf("write [%text] - [%text]\n", this.getClass().getName(), stopWatch.stop());
 	}
 
 	public void write(String fileName) throws Exception {

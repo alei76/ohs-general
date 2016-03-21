@@ -94,7 +94,7 @@ public class DataStats {
 		// sb.append("KDocumentCollection\t#Docs\tVoc\tAvg Doc Len\t#Queries\t#Avg Query Len\t#Query-Doc Pairs");
 
 		for (int i = 0; i < collNames.length; i++) {
-			sb.append(String.format("\t%s", collNames[i]));
+			sb.append(String.format("\t%text", collNames[i]));
 		}
 
 		for (int i = 0; i < labels.length; i++) {
@@ -105,7 +105,7 @@ public class DataStats {
 			}
 		}
 
-		// sb.append(String.format("\n%s\t%d\t%d\t%f\t%d\t%f\t%d", collNames[i],
+		// sb.append(String.format("\n%text\t%d\t%d\t%f\t%d\t%f\t%d", collNames[i],
 		// num_docs, num_words, avg_doc_len, num_queries,
 		// avg_query_len,
 		// num_query_doc_pairs));
@@ -199,7 +199,7 @@ public class DataStats {
 		// sb.append("KDocumentCollection\t#Docs\tVoc\tAvg Doc Len\t#Queries\t#Avg Query Len\t#Query-Doc Pairs");
 
 		for (int i = 0; i < collNames.length; i++) {
-			sb.append(String.format("\t%s", collNames[i]));
+			sb.append(String.format("\t%text", collNames[i]));
 		}
 
 		for (int i = 0; i < labels.length; i++) {

@@ -51,7 +51,7 @@ public class TrecCdsDumper extends TextDumper {
 
 	@Override
 	public void dump() throws Exception {
-		System.out.printf("dump from [%s]\n", inputDirName);
+		System.out.printf("dump from [%text]\n", inputDirName);
 
 		makeSingleFile();
 		extractText();
@@ -159,7 +159,7 @@ public class TrecCdsDumper extends TextDumper {
 				for (int k = 0; k < nodeList.getLength(); k++) {
 					Element paraElem = (Element) nodeList.item(k);
 					String text = paraElem.getTextContent().trim();
-					text = text.replaceAll("[\\s]+", " ").trim();
+					text = text.replaceAll("[\\text]+", " ").trim();
 					sb.append(text + "\n");
 				}
 				body = sb.toString().trim().replace("\n", "\\n");
@@ -245,7 +245,7 @@ public class TrecCdsDumper extends TextDumper {
 				}
 
 				if (num_docs_in_coll % 5000 == 0) {
-					System.out.printf("read [%d] docs so far in time [%s].\n", num_docs_in_coll, stopWatch.stop());
+					System.out.printf("read [%d] docs so far in time [%text].\n", num_docs_in_coll, stopWatch.stop());
 				}
 
 				num_docs_in_file++;
@@ -267,11 +267,11 @@ public class TrecCdsDumper extends TextDumper {
 			}
 			tis.close();
 
-			System.out.printf("read [%d] docs from [%s] in time [%s]\n", num_docs_in_file, file.getName(), stopWatch.stop());
+			System.out.printf("read [%d] docs from [%text] in time [%text]\n", num_docs_in_file, file.getName(), stopWatch.stop());
 		}
 		writer.close();
 
-		System.out.printf("read [%d] docs from [%s] in time [%s]\n", num_docs_in_coll, xmlFileName, stopWatch.stop());
+		System.out.printf("read [%d] docs from [%text] in time [%text]\n", num_docs_in_coll, xmlFileName, stopWatch.stop());
 	}
 
 	public void readValidDocIDs(String fileName) {

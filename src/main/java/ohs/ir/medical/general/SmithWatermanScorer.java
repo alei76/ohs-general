@@ -122,8 +122,8 @@ public class SmithWatermanScorer {
 			t.add(strs[1].charAt(i) + "");
 		}
 
-		// s.add("a");
-		// s.add("e");
+		// text.add("a");
+		// text.add("e");
 		//
 		// t.add("a");
 		// t.add("e");
@@ -132,7 +132,7 @@ public class SmithWatermanScorer {
 		SmithWatermanScorer sw = new SmithWatermanScorer();
 		// sw.setChWeight(weights);
 
-		// System.out.println(sw.compute(s, t));
+		// System.out.println(sw.compute(text, t));
 		//
 		//
 		// SmithWatermanAligner al = new SmithWatermanAligner();

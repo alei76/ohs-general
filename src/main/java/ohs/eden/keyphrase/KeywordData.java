@@ -76,7 +76,7 @@ public class KeywordData {
 
 		ois.close();
 
-		System.out.printf("read [%s] at [%s] - [%s]\n", getClass().getName(), fileName, stopWatch.stop());
+		System.out.printf("read [%text] at [%text] - [%text]\n", getClass().getName(), fileName, stopWatch.stop());
 	}
 
 	public void readText(String fileName) {
@@ -132,7 +132,7 @@ public class KeywordData {
 			kwd_freqs[i] = (int) kwdFreqs.getCount(i);
 		}
 
-		System.out.printf("read [%s] at [%s] - [%s]\n", getClass().getName(), fileName, stopWatch.stop());
+		System.out.printf("read [%text] at [%text] - [%text]\n", getClass().getName(), fileName, stopWatch.stop());
 	}
 
 	public void setClusterLabel(Map<Integer, String> clusterLabel) {
@@ -144,7 +144,7 @@ public class KeywordData {
 	}
 
 	public void write(String fileName) throws Exception {
-		System.out.printf("write [%s] at [%s]\n", getClass().getName(), fileName);
+		System.out.printf("write [%text] at [%text]\n", getClass().getName(), fileName);
 
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 

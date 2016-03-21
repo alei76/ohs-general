@@ -94,7 +94,7 @@ public class EntityContextGenerator {
 
 			if ((i + 1) % chunk_size == 0) {
 				int progess = (int) ((i + 1f) / ents.size() * 100);
-				System.out.printf("\r[%d percent, %s]", progess, stopWatch.stop());
+				System.out.printf("\r[%d percent, %text]", progess, stopWatch.stop());
 			}
 
 			Entity ent = ents.get(i);
@@ -143,7 +143,7 @@ public class EntityContextGenerator {
 
 			contVecs.put(ent.getId(), sv);
 		}
-		System.out.printf("\r[%d percent, %s]\n", 100, stopWatch.stop());
+		System.out.printf("\r[%d percent, %text]\n", 100, stopWatch.stop());
 
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(outputFileName);
 

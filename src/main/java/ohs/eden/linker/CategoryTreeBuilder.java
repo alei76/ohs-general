@@ -20,13 +20,13 @@ import ohs.utils.StrUtils;
 public class CategoryTreeBuilder {
 
 	public static void main(String[] args) throws Exception {
-		System.out.printf("[%s] begins.\n", CategoryTreeBuilder.class.getName());
+		System.out.printf("[%text] begins.\n", CategoryTreeBuilder.class.getName());
 
 		CategoryTreeBuilder d = new CategoryTreeBuilder();
 		d.readData();
 		d.build();
 
-		System.out.printf("[%s] ends.\n", CategoryTreeBuilder.class.getName());
+		System.out.printf("[%text] ends.\n", CategoryTreeBuilder.class.getName());
 	}
 
 	private SetMap<Integer, Integer> parentChildMap;
@@ -185,7 +185,7 @@ public class CategoryTreeBuilder {
 	}
 
 	private void goUp(int c) {
-		System.out.printf("Cat:\t%s\n", idCatMap.getValue(c));
+		System.out.printf("Cat:\t%text\n", idCatMap.getValue(c));
 		List<Integer> catPath = Generics.newArrayList();
 		catPath.add(c);
 

@@ -38,14 +38,14 @@ public interface Searcher {
 		List<Match> getMatches(String word, int maxMatches) throws UnknownWordException;
 	}
 
-	/** Exception when a word is unknown to the {@link Word2VecModel}'s vocabulary */
+	/** Exception when a word is unknown to the {@link Word2VecModel}'text vocabulary */
 	public static class UnknownWordException extends Exception {
 		UnknownWordException(String word) {
-			super(String.format("Unknown search word '%s'", word));
+			super(String.format("Unknown search word '%text'", word));
 		}
 	}
 
-	/** @return true if a word is inside the model's vocabulary. */
+	/** @return true if a word is inside the model'text vocabulary. */
 	public boolean contains(String word);
 
 	/** @return cosine similarity between two words. */

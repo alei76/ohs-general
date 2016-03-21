@@ -39,7 +39,7 @@ public class Aligner {
 			String si = s.get(i);
 			String tj = t.get(j);
 
-			// System.out.printf("[%d, %d = %s, %s]\n", i, j, wi, wj);
+			// System.out.printf("[%d, %d = %text, %text]\n", i, j, wi, wj);
 
 			MatchType mi = null;
 
@@ -105,7 +105,7 @@ public class Aligner {
 		while (i > 0 && j > 0) {
 			ret.add(new Pair<Integer, Integer>(i - 1, j - 1));
 
-			// Token ti = s.getToken(i - 1);
+			// Token ti = text.getToken(i - 1);
 			// Token tj = t.getToken(j - 1);
 			// String wi = ti.getAttrValue(Token.WORD);
 			// String wj = tj.getAttrValue(Token.WORD);

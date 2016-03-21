@@ -282,7 +282,7 @@ public class DocumentScorer {
 		ret.keepTopNKeys(fb_word_size);
 		ret.normalize();
 
-		System.out.printf("RM:\t%s\n", VectorUtils.toCounter(ret, wordIndexer));
+		System.out.printf("RM:\t%text\n", VectorUtils.toCounter(ret, wordIndexer));
 		return VectorUtils.toSparseVector(ret);
 	}
 
@@ -318,7 +318,7 @@ public class DocumentScorer {
 		ret.keepTopNKeys(fb_word_size);
 		ret.normalize();
 
-		System.out.printf("RMM:\t%s\n", VectorUtils.toCounter(ret, wordIndexer));
+		System.out.printf("RMM:\t%text\n", VectorUtils.toCounter(ret, wordIndexer));
 		return VectorUtils.toSparseVector(ret);
 	}
 
@@ -555,7 +555,7 @@ public class DocumentScorer {
 
 					double hal = CountPropagation.hal(pos1, pos2, windowSize);
 					double association = hal;
-					// System.out.printf("[%d, %d = %s]\n", pos1, pos2,
+					// System.out.printf("[%d, %d = %text]\n", pos1, pos2,
 					// gaussian);
 					co.incrementCount(w1, w2, association);
 					co.incrementCount(w2, w1, association);
@@ -665,7 +665,7 @@ public class DocumentScorer {
 
 		SparseVector ret = VectorUtils.toSparseVector(newModel);
 
-		System.out.printf("Expand Model:\t%s\n", VectorUtils.toCounter(newModel, wordIndexer));
+		System.out.printf("Expand Model:\t%text\n", VectorUtils.toCounter(newModel, wordIndexer));
 		return ret;
 	}
 
@@ -738,7 +738,7 @@ public class DocumentScorer {
 	private SparseVector getModel(Counter<String> wordCounts) {
 		SparseVector ret = VectorUtils.toSparseVector(wordCounts, wordIndexer);
 		ret.normalize();
-		System.out.printf("Model:\t%s\n", VectorUtils.toCounter(ret, wordIndexer));
+		System.out.printf("Model:\t%text\n", VectorUtils.toCounter(ret, wordIndexer));
 		return ret;
 	}
 
@@ -851,7 +851,7 @@ public class DocumentScorer {
 				SparseVector clusterWordCounts = docClusterer.getClusterWordCountData().get(i);
 				Set<Integer> docIds = docClusterer.getClusterDocumentMap().get(cId);
 
-				// System.out.printf("%d, %d, %s, %s\n", cId, docIds.size(),
+				// System.out.printf("%d, %d, %text, %text\n", cId, docIds.size(),
 				// cluster_score,
 				// VectorUtils.toCounter(clusterWordCounts, wordIndexer));
 
@@ -930,7 +930,7 @@ public class DocumentScorer {
 	//
 	// SparseVector ret = VectorUtils.toSparseVector(newQM);
 	//
-	// System.out.printf("QM-2:\t%s\n", VectorUtils.toCounter(newQM,
+	// System.out.printf("QM-2:\t%text\n", VectorUtils.toCounter(newQM,
 	// wordIndexer));
 	// return ret;
 	// }
@@ -989,7 +989,7 @@ public class DocumentScorer {
 			ret.incrementCount(w, other_mixture * prob);
 		}
 		ret.normalize();
-		System.out.printf("Update Model:\t%s\n\n", VectorUtils.toCounter(ret, wordIndexer));
+		System.out.printf("Update Model:\t%text\n\n", VectorUtils.toCounter(ret, wordIndexer));
 		return VectorUtils.toSparseVector(ret);
 	}
 }

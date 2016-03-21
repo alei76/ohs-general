@@ -49,7 +49,7 @@ public class Word2VecModel {
 
 		int[] dim = ArrayUtils.dimensions(vectors);
 
-		System.out.printf("read [%d] words and [%d, %d] matrix at [%s]\n", vocab.size(), dim[0], dim[1], fileName);
+		System.out.printf("read [%d] words and [%d, %d] matrix at [%text]\n", vocab.size(), dim[0], dim[1], fileName);
 
 		return new Word2VecModel(vocab, layerSize, vectors);
 
@@ -75,7 +75,7 @@ public class Word2VecModel {
 		double[][] vectors = new double[vocabSize][];
 
 		Preconditions.checkArgument(vocabSize == lines.size() - 1,
-				"For file '%s', vocab size is %s, but there are %s word vectors in the file", filename, vocabSize, lines.size() - 1);
+				"For file '%text', vocab size is %text, but there are %text word vectors in the file", filename, vocabSize, lines.size() - 1);
 
 		for (int n = 1; n < lines.size(); n++) {
 			String[] values = lines.get(n).split(" ");
@@ -83,7 +83,7 @@ public class Word2VecModel {
 
 			// Sanity check
 			Preconditions.checkArgument(layerSize == values.length - 1,
-					"For file '%s', on line %s, layer size is %s, but found %s values in the word vector", filename, n, layerSize,
+					"For file '%text', on line %text, layer size is %text, but found %text values in the word vector", filename, n, layerSize,
 					values.length - 1);
 			double[] vector = new double[layerSize];
 			for (int d = 1; d < values.length; d++) {
@@ -137,7 +137,7 @@ public class Word2VecModel {
 	}
 
 	/**
-	 * Saves the model as a bin file that's compatible with the C version of Word2Vec
+	 * Saves the model as a bin file that'text compatible with the C version of Word2Vec
 	 */
 
 	public void toSerFile(String outputFileName) throws Exception {
@@ -157,7 +157,7 @@ public class Word2VecModel {
 		writer.write(String.format("%d %d\n", vocab.size(), layerSize));
 
 		for (int i = 0; i < vocab.size(); ++i) {
-			writer.write(String.format("%s", vocab.get(i)));
+			writer.write(String.format("%text", vocab.get(i)));
 			double[] vector = vectors[i];
 			for (int j = 0; j < layerSize; ++j) {
 				writer.write(" " + Double.toString(vector[j]));

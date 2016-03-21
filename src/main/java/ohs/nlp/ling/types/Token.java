@@ -6,53 +6,39 @@ import java.util.Arrays;
 
 import ohs.io.FileUtils;
 
-public class Token {
+public class Token extends TextSpan {
 
-	public static final String DELIM_VALUE = " / ";
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 353783289264943298L;
 
-	private String[] values = new String[TokenAttr.values().length];
+	public static final String DELIM_TOKEN = " / ";
 
-	private int start;
+	protected String[] values = new String[TokenAttr.values().length];
 
 	public Token() {
-
-	}
-
-	public static Token parse(String s) {
-		String[] values = s.split(DELIM_VALUE);
-		Token ret = new Token();
-		for (TokenAttr attr : TokenAttr.values()) {
-			ret.setValue(attr, values[attr.ordinal()]);
-		}
-		return ret;
-	}
-
-	public Token(int start, String word) {
-		this.start = start;
 		for (int i = 0; i < values.length; i++) {
 			values[i] = "";
 		}
-		values[TokenAttr.WORD.ordinal()] = word;
+	}
+
+	public Token(int start, String text) {
+		super(start, text);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		Token other = (Token) obj;
-		if (start != other.start)
-			return false;
 		if (!Arrays.equals(values, other.values))
 			return false;
 		return true;
-	}
-
-	public int getStart() {
-		return start;
 	}
 
 	public String getValue(int ordinal) {
@@ -78,38 +64,29 @@ public class Token {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + start;
+		int result = super.hashCode();
 		result = prime * result + Arrays.hashCode(values);
 		return result;
 	}
 
 	public String joinValues() {
-		return joinValues(DELIM_VALUE, TokenAttr.values());
+		return joinValues(DELIM_TOKEN, TokenAttr.values());
 	}
 
 	public String joinValues(String delim, TokenAttr[] attrs) {
 		return String.join(delim, getValues(attrs));
 	}
 
-	public int length() {
-		int ret = values[TokenAttr.WORD.ordinal()].length();
-		return ret;
-	}
-
 	public void read(ObjectInputStream ois) throws Exception {
-		start = ois.readInt();
+		super.read(ois);
 		values = FileUtils.readStrArray(ois);
-	}
-
-	public void setStart(int start) {
-		this.start = start;
 	}
 
 	public void setValue(TokenAttr attr, String value) {
 		values[attr.ordinal()] = value;
 	}
 
+	@Override
 	public String toString() {
 		return toString(true);
 	}
@@ -135,7 +112,7 @@ public class Token {
 	}
 
 	public void write(ObjectOutputStream oos) throws Exception {
-		oos.writeInt(start);
+		super.write(oos);
 		FileUtils.writeStrArray(oos, values);
 	}
 

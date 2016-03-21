@@ -72,7 +72,7 @@ public class ParsimoniousEstimator {
 		nf.setMinimumFractionDigits(2);
 		nf.setGroupingUsed(false);
 
-		System.out.printf("0th iter:\t%s\n", VectorUtils.toCounter(ret, wordIndexer));
+		System.out.printf("0th iter:\t%text\n", VectorUtils.toCounter(ret, wordIndexer));
 
 		for (int j = 0; j < max_iter; j++) {
 			for (int k = 0; k < term_count.size(); k++) {
@@ -97,7 +97,7 @@ public class ParsimoniousEstimator {
 			old_log_likelihood = log_likelihood;
 		}
 
-		System.out.printf("%dth iter:\t%s\n", max_iter, VectorUtils.toCounter(ret, wordIndexer));
+		System.out.printf("%dth iter:\t%text\n", max_iter, VectorUtils.toCounter(ret, wordIndexer));
 
 		return ret;
 	}

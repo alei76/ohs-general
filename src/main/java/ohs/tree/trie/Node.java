@@ -277,11 +277,11 @@ public class Node<K> implements Serializable {
 		StringBuffer sb = new StringBuffer();
 		Type type = getType();
 
-		sb.append(String.format("ID:\t%s\n", id));
-		sb.append(String.format("Type\t%s\n", type));
+		sb.append(String.format("ID:\t%text\n", id));
+		sb.append(String.format("Type\t%text\n", type));
 		sb.append(String.format("Count:\t%d\n", unique_cnt));
 		sb.append(String.format("Depth:\t%d\n", depth));
-		sb.append(String.format("Key:\t%s\n", key == null ? "null" : key.toString()));
+		sb.append(String.format("Key:\t%text\n", key == null ? "null" : key.toString()));
 
 		if (type != Type.ROOT) {
 			StringBuffer sb2 = new StringBuffer();
@@ -290,13 +290,13 @@ public class Node<K> implements Serializable {
 				Node<K> node = nodes.get(i);
 				sb2.append(i == nodes.size() - 1 ? node.getKey().toString() : node.getKey().toString() + "->");
 			}
-			sb.append(String.format("Key Path\t%s\n", sb2.toString()));
+			sb.append(String.format("Key Path\t%text\n", sb2.toString()));
 		}
 
 		sb.append(String.format("Children:\t%d\n", getChildren().size()));
 		int no = 0;
 		for (Node<K> child : getChildren().values()) {
-			sb.append(String.format("  %dth %s -> %d children\n", ++no, child.key, child.getChildren().size()));
+			sb.append(String.format("  %dth %text -> %d children\n", ++no, child.key, child.getChildren().size()));
 		}
 		return sb.toString().trim();
 	}

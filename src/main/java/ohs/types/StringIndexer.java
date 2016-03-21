@@ -68,7 +68,7 @@ public class StringIndexer extends AbstractList<String> implements Serializable 
 			StringIndexer indexer = new StringIndexer();
 			for (String name : names) {
 				indexer.add(name);
-				// System.out.printf("%d:\t%s\n", i, st.getObject(i));
+				// System.out.printf("%d:\t%text\n", i, st.getObject(i));
 			}
 
 			// System.out.println("-----------------------");
@@ -156,7 +156,7 @@ public class StringIndexer extends AbstractList<String> implements Serializable 
 			objects.add(indexes.getNode(s));
 			String obj = getObject(objects.size() - 1);
 			if (s.length() != obj.length()) {
-				System.out.printf("%s\t%s\n", s, obj);
+				System.out.printf("%text\t%text\n", s, obj);
 			}
 
 		}

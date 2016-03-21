@@ -979,12 +979,12 @@ public class ArrayUtils {
 		if (sparse) {
 			for (int i = 0; i < x.length; i++) {
 				if (x[i] != 0) {
-					sb.append(String.format("%s%d:%s", delim, i, x[i]));
+					sb.append(String.format("%text%d:%text", delim, i, x[i]));
 				}
 			}
 		} else {
 			for (int i = 0; i < x.length; i++) {
-				sb.append(String.format("%s%s", delim, x[i]));
+				sb.append(String.format("%text%text", delim, x[i]));
 			}
 		}
 		return sb.toString().trim();
@@ -999,15 +999,15 @@ public class ArrayUtils {
 
 		String delim = StrUtils.value(vertical, "\t", "\n");
 
-		sb.append(String.format("(%s)", label));
+		sb.append(String.format("(%text)", label));
 
 		if (sparse) {
 			for (int i = 0; i < x.length && i < len; i++) {
-				sb.append(String.format("%s%d:%s", delim, i, nf.format(x[i])));
+				sb.append(String.format("%text%d:%text", delim, i, nf.format(x[i])));
 			}
 		} else {
 			for (int i = 0; i < x.length && i < len; i++) {
-				sb.append(String.format("%s%s", delim, nf.format(x[i])));
+				sb.append(String.format("%text%text", delim, nf.format(x[i])));
 			}
 		}
 		return sb.toString();
@@ -1019,7 +1019,7 @@ public class ArrayUtils {
 
 	public static String toString(String label, double[][] x, int rows, int cols, boolean sparse, NumberFormat nf) {
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("(%s)", label));
+		sb.append(String.format("(%text)", label));
 		sb.append(String.format("\ndim:\t(%d, %d)\n", x.length, x[0].length));
 
 		if (sparse) {
@@ -1033,10 +1033,10 @@ public class ArrayUtils {
 					Double v = new Double(x[i][j]);
 					if (v != 0) {
 						if (Double.isFinite(v) || Double.isInfinite(v) || Double.isNaN(v)) {
-							sb2.append(String.format("\t%d:%s", j, v.toString()));
+							sb2.append(String.format("\t%d:%text", j, v.toString()));
 							num_nonzero_cols++;
 						} else {
-							sb2.append(String.format("\t%d:%s", j, nf.format(v.doubleValue())));
+							sb2.append(String.format("\t%d:%text", j, nf.format(v.doubleValue())));
 							num_nonzero_cols++;
 						}
 					}
@@ -1059,9 +1059,9 @@ public class ArrayUtils {
 				for (int j = 0; j < x[i].length && j < cols; j++) {
 					Double v = new Double(x[i][j]);
 					if (!Double.isFinite(v)) {
-						sb.append(String.format("\t%s", v.toString()));
+						sb.append(String.format("\t%text", v.toString()));
 					} else {
-						sb.append(String.format("\t%s", nf.format(v.doubleValue())));
+						sb.append(String.format("\t%text", nf.format(v.doubleValue())));
 					}
 				}
 				sb.append("\n");
@@ -1073,7 +1073,7 @@ public class ArrayUtils {
 
 	public static String toString(String label, int[][] x) {
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("(%s)", label));
+		sb.append(String.format("(%text)", label));
 		sb.append(String.format("dim:\t(%d, %d)", x.length, x[0].length));
 		for (int i = 0; i < x.length; i++) {
 			sb.append("\n");

@@ -19,7 +19,7 @@ import ohs.types.Pair;
 
 /**
  * 
- * A class for mining sequential patterns. This implementation is ported from Taku Kudo's C++ version.
+ * A class for mining sequential patterns. This implementation is ported from Taku Kudo'text C++ version.
  * 
  * Reference:
  * 
@@ -66,10 +66,10 @@ public class PrefixSpan {
 		// }
 		// reader.close();
 		//
-		// PrefixSpan s = new PrefixSpan();
-		// s.setRecords(records);
-		// s.mine();
-		// s.write(ELPath.DATA_DIR + "patterns.txt");
+		// PrefixSpan text = new PrefixSpan();
+		// text.setRecords(records);
+		// text.mine();
+		// text.write(ELPath.DATA_DIR + "patterns.txt");
 		System.out.println("process ends.");
 	}
 
@@ -300,7 +300,7 @@ public class PrefixSpan {
 
 			StringBuffer sb = new StringBuffer();
 
-			sb.append(String.format("%s\t%d\t", pat, recordIds.size()));
+			sb.append(String.format("%text\t%d\t", pat, recordIds.size()));
 
 			for (int j = 0; j < recordIds.size(); j++) {
 				sb.append(recordIds.get(j));

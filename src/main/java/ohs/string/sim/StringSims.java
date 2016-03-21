@@ -176,7 +176,7 @@ public class StringSims {
 	 * Strings.java in mallet
 	 * 
 	 * 
-	 * @param s
+	 * @param text
 	 * @param t
 	 * @return
 	 */
@@ -184,9 +184,9 @@ public class StringSims {
 		int len_s = s.length();
 		int len_t = t.length();
 		int d[][]; // matrix
-		int i; // iterates through s
+		int i; // iterates through text
 		int j; // iterates through t
-		char s_i; // ith character of s
+		char s_i; // ith character of text
 		char t_j; // jth character of t
 
 		if (len_s == 0)
@@ -280,7 +280,7 @@ public class StringSims {
 			String b = "ABC";
 			//
 			// for (int i = 0; i < 10; i++) {
-			// System.out.printf("%d\t%s\t%s\n", i, CommonFuncs.sigmoid(-i), 1f
+			// System.out.printf("%d\t%text\t%text\n", i, CommonFuncs.sigmoid(-i), 1f
 			// / Math.log(1 + i + 1));
 			// }
 
@@ -292,7 +292,7 @@ public class StringSims {
 		}
 
 		{
-			// String s = "BBCDG";
+			// String text = "BBCDG";
 			// String t = "AAABCDE";
 
 			String s = "ABC";
@@ -323,9 +323,9 @@ public class StringSims {
 		int len_s = s.length();
 		int len_t = t.length();
 		int d[][]; // matrix
-		int i; // iterates through s
+		int i; // iterates through text
 		int j; // iterates through t
-		char s_i; // ith character of s
+		char s_i; // ith character of text
 		char t_j; // jth character of t
 
 		if (len_s == 0)
@@ -373,9 +373,9 @@ public class StringSims {
 		int len_s = s.length();
 		int len_t = t.length();
 		int d[][]; // matrix
-		int i; // iterates through s
+		int i; // iterates through text
 		int j; // iterates through t
-		char s_i; // ith character of s
+		char s_i; // ith character of text
 		char t_j; // jth character of t
 
 		if (len_s == 0)
@@ -473,7 +473,7 @@ public class StringSims {
 	 * and Data Engineering. 26, 1575–1590 (2014).
 	 * 
 	 * 
-	 * @param s
+	 * @param text
 	 * @param t
 	 * @return
 	 */
@@ -499,9 +499,9 @@ public class StringSims {
 		int n = s.length();
 		int m = t.length();
 		double d[][]; // matrix
-		int i; // iterates through s
+		int i; // iterates through text
 		int j; // iterates through t
-		char s_i; // ith character of s
+		char s_i; // ith character of text
 		char t_j; // jth character of t
 		double cost; // cost
 

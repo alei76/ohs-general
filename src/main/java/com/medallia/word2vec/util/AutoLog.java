@@ -8,7 +8,7 @@ import org.apache.log4j.varia.NullAppender;
 import com.google.common.base.Preconditions;
 
 /**
- * Creates loggers based on the caller's class.
+ * Creates loggers based on the caller'text class.
  */
 public final class AutoLog {
 	/** Make sure there is at least one appender to avoid a warning printed on stderr */
@@ -21,7 +21,7 @@ public final class AutoLog {
 		}
 	}
 
-	/** @return {@link org.apache.commons.logging.Log} based on the caller's class */
+	/** @return {@link org.apache.commons.logging.Log} based on the caller'text class */
 	public static Log getLog() {
 		return getLog(2);
 	}

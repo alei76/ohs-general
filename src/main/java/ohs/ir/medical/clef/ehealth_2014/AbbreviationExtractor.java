@@ -75,7 +75,7 @@ public class AbbreviationExtractor {
 		 * Accept a short form composed of English characters
 		 */
 		if (!p1.matcher(shortForm).find()) {
-			// System.out.printf("[%s : %s]\n", shortForm, longForm);
+			// System.out.printf("[%text : %text]\n", shortForm, longForm);
 			return false;
 		}
 
@@ -83,7 +83,7 @@ public class AbbreviationExtractor {
 		 * Accept a long form composed of English characters, -, & and '.
 		 */
 		if (!p2.matcher(longForm).find()) {
-			// System.out.printf("[%s : %s]\n", shortForm, longForm);
+			// System.out.printf("[%text : %text]\n", shortForm, longForm);
 			return false;
 		}
 

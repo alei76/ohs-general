@@ -108,7 +108,7 @@ public class DataHandler {
 			reader.close();
 			totalDocs += numDocs;
 
-			System.out.printf("%d: [%s] file with [%d] documents \n", i, inputFile.getName(), numDocs);
+			System.out.printf("%d: [%text] file with [%d] documents \n", i, inputFile.getName(), numDocs);
 		}
 
 		writer.close();

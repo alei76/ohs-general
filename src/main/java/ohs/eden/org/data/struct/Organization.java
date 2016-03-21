@@ -155,17 +155,17 @@ public class Organization implements Serializable {
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		// sb.append(String.format("ID = %d\n", id));
-		// sb.append(String.format("SID = %s\n", sid));
-		sb.append(String.format("Korean Name = %s\n", name.getKorean()));
-		// sb.append(String.format("English Name = %s\n", name.getEnglish()));
+		// sb.append(String.format("SID = %text\n", sid));
+		sb.append(String.format("Korean Name = %text\n", name.getKorean()));
+		// sb.append(String.format("English Name = %text\n", name.getEnglish()));
 		sb.append(String.format("Year = %d\n", year));
-		// sb.append(String.format("Korean Variants = %s\n", korVariants));
-		// sb.append(String.format("English Variants = %s\n", engVariants));
-		// sb.append(String.format("Homepage = %s\n", homepage));
+		// sb.append(String.format("Korean Variants = %text\n", korVariants));
+		// sb.append(String.format("English Variants = %text\n", engVariants));
+		// sb.append(String.format("Homepage = %text\n", homepage));
 		sb.append(String.format("History\n"));
 		for (int i = 0; i < history.size(); i++) {
 			Organization org = history.get(i);
-			sb.append(String.format("%d\t%s\t%d\n", i + 1, org.getName().getKorean(), org.getYear()));
+			sb.append(String.format("%d\t%text\t%d\n", i + 1, org.getName().getKorean(), org.getYear()));
 		}
 		return sb.toString().trim();
 	}

@@ -116,7 +116,7 @@ public class NGramGenerator {
 			for (int k = 0; k < nodeList.getLength(); k++) {
 				Element paraElem = (Element) nodeList.item(k);
 				String text = paraElem.getTextContent().trim();
-				text = text.replaceAll("[\\s]+", " ").trim();
+				text = text.replaceAll("[\\text]+", " ").trim();
 				sb.append(text + "\n");
 			}
 			body = sb.toString().trim();
@@ -213,7 +213,7 @@ public class NGramGenerator {
 			}
 			is.close();
 
-			System.out.printf("read [%d] files from [%s]\n", num_files, dataFile.getName());
+			System.out.printf("read [%d] files from [%text]\n", num_files, dataFile.getName());
 		}
 
 		List<String> journals = cm.getRowCountSums().getSortedKeys();
@@ -232,7 +232,7 @@ public class NGramGenerator {
 		for (int i = 0; i < journals.size(); i++) {
 			String journal = journals.get(i);
 
-			sb.append(String.format("\n%s", journal));
+			sb.append(String.format("\n%text", journal));
 
 			for (int j = 0; j < years.size(); j++) {
 				String year = years.get(j);

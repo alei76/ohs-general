@@ -62,12 +62,12 @@ public class TextFileWriter {
 		}
 
 		if (num_writes % amount == 0) {
-			System.out.print(String.format("\r[%d writes, %s]", num_writes, stopWatch.stop()));
+			System.out.print(String.format("\r[%d writes, %text]", num_writes, stopWatch.stop()));
 		}
 	}
 
 	public void printLast() {
-		System.out.println(String.format("\r[%d writes, %s]", num_writes, stopWatch.stop()));
+		System.out.println(String.format("\r[%d writes, %text]", num_writes, stopWatch.stop()));
 	}
 
 	public void write(String text) {

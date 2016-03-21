@@ -11,14 +11,18 @@ public class TextSpan implements Serializable {
 	 */
 	private static final long serialVersionUID = -3963874236917138978L;
 
-	protected int start;
+	protected int start = 0;
 
-	protected String s;
+	protected String text = "";
 
-	public TextSpan(int start, String s) {
+	public TextSpan() {
+
+	}
+
+	public TextSpan(int start, String text) {
 		super();
 		this.start = start;
-		this.s = s;
+		this.text = text;
 	}
 
 	@Override
@@ -30,10 +34,10 @@ public class TextSpan implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		TextSpan other = (TextSpan) obj;
-		if (s == null) {
-			if (other.s != null)
+		if (text == null) {
+			if (other.text != null)
 				return false;
-		} else if (!s.equals(other.s))
+		} else if (!text.equals(other.text))
 			return false;
 		if (start != other.start)
 			return false;
@@ -41,48 +45,51 @@ public class TextSpan implements Serializable {
 	}
 
 	public int getEnd() {
-		return start + s.length();
+		return start + text.length();
 	}
 
 	public int getStart() {
 		return start;
 	}
 
-	public String getString() {
-		return s;
+	public String getText() {
+		return text;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((s == null) ? 0 : s.hashCode());
+		result = prime * result + ((text == null) ? 0 : text.hashCode());
 		result = prime * result + start;
 		return result;
 	}
 
 	public int length() {
-		return s.length();
+		return text.length();
 	}
 
 	public void read(ObjectInputStream ois) throws Exception {
 		start = ois.readInt();
-		s = ois.readUTF();
+		text = ois.readUTF();
 	}
 
-	public void set(int start, String s) {
+	public void setStart(int start) {
 		this.start = start;
-		this.s = s;
+	}
+
+	public void setText(String text) {
+		this.setText(text);
 	}
 
 	@Override
 	public String toString() {
-		return String.format("<%d-%d:\t%s>", getStart(), getEnd(), s);
+		return String.format("<%d-%d:\t%text>", getStart(), getEnd(), text);
 	}
 
 	public void write(ObjectOutputStream oos) throws Exception {
 		oos.writeInt(start);
-		oos.writeUTF(s);
+		oos.writeUTF(text);
 	}
 
 }

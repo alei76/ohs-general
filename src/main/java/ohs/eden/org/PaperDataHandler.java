@@ -103,7 +103,7 @@ public class PaperDataHandler {
 
 		for (int i = 0; i < files.length; i++) {
 			File file = files[i];
-			System.out.printf("process [%s]\n", file.getName());
+			System.out.printf("process [%text]\n", file.getName());
 
 			PaperDataFileIterator iter = new PaperDataFileIterator(file.getPath());
 			while (iter.hasNext()) {
@@ -217,12 +217,12 @@ public class PaperDataHandler {
 			Counter<BilingualText> c = cm.getCounter(aid);
 			List<BilingualText> orgNames = c.getSortedKeys();
 
-			writer.write(String.format("Author:\t%s\t%s\n", aid, name));
+			writer.write(String.format("Author:\t%text\t%text\n", aid, name));
 
 			for (int j = 0; j < orgNames.size(); j++) {
 				BilingualText orgName = orgNames.get(j);
 				double cnt = c.getCount(orgName);
-				writer.write(String.format("%d\t(%s , %s)\t%d\n", j + 1, orgName.getKorean(), orgName.getEnglish(), (int) cnt));
+				writer.write(String.format("%d\t(%text , %text)\t%d\n", j + 1, orgName.getKorean(), orgName.getEnglish(), (int) cnt));
 			}
 			writer.write("\n");
 		}

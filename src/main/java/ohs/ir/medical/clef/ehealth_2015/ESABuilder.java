@@ -133,7 +133,7 @@ public class ESABuilder {
 			StringBuffer sb = new StringBuffer();
 			for (String word : wordCounts.getSortedKeys()) {
 				double tfidf = wordCounts.getCount(word);
-				sb.append(String.format("%s:%f ", word, tfidf));
+				sb.append(String.format("%text:%f ", word, tfidf));
 			}
 			writer.write(keyPath + "\t" + sb.toString().trim() + "\n");
 		}
@@ -227,7 +227,7 @@ public class ESABuilder {
 			// StringBuffer sb = new StringBuffer();
 			// for (String word : wordCounts.getSortedKeys()) {
 			// double tfidf = wordCounts.getCount(word);
-			// sb.append(String.format("%s:%f ", word, tfidf));
+			// sb.append(String.format("%text:%f ", word, tfidf));
 			// }
 			// writer.write(keyPath + "\t" + sb.toString().trim() + "\n");
 		}

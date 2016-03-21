@@ -1,4 +1,4 @@
-package ohs.ml.hmm;
+package ohs.nlp.pos;
 
 import java.util.List;
 import java.util.Set;
@@ -13,8 +13,7 @@ import ohs.nlp.ling.types.KSentence;
 import ohs.nlp.ling.types.MultiToken;
 import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
-import ohs.nlp.pos.NLPPath;
-import ohs.nlp.pos.SejongDocumentReader;
+import ohs.nlp.ling.types.TypeCaster;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.utils.Generics;
@@ -77,7 +76,7 @@ public class HMMTrainer {
 
 		KDocumentCollection coll = new KDocumentCollection();
 
-		SejongDocumentReader r = new SejongDocumentReader(NLPPath.POS_DATA_FILE);
+		SejongReader r = new SejongReader(NLPPath.POS_DATA_FILE, NLPPath.POS_TAG_SET_FILE);
 		while (r.hasNext()) {
 			if (coll.size() == 1000) {
 				break;
@@ -90,15 +89,12 @@ public class HMMTrainer {
 
 		for (KDocument doc : coll) {
 			for (KSentence sent : doc.getSentences()) {
-				for (MultiToken mt : sent.getTokens()) {
-					String[] words = mt.getValue(TokenAttr.WORD);
-					String[] poss = mt.getValue(TokenAttr.POS);
+				for (MultiToken mt : TypeCaster.toMultiTokens(sent.getTokens())) {
+					String text = mt.getText();
+					String text2 = KoreanUtils.getDecomposedKoreanWord(text);
 
-					for (String word : words) {
-						char[][] phomenes = KoreanUtils.decomposeKoreanWordToPhonemes(word);
-
-						System.out.println();
-					}
+					System.out.println(text + "\t" + text2 + "\t" + String.valueOf(text2.getBytes()));
+					// char[][] phomenes = KoreanUtils.decomposeKoreanWordToPhonemes(word);
 
 				}
 			}
@@ -124,7 +120,7 @@ public class HMMTrainer {
 		for (int i = 0; i < sents.length; i++) {
 			KSentence sent = sents[i];
 
-			Token[] toks = sent.toTokens();
+			MultiToken[] toks = TypeCaster.toMultiTokens(sent.getTokens());
 			int[] ws = ArrayUtils.arrayInt(toks.length);
 			int[] poss = ArrayUtils.arrayInt(toks.length);
 

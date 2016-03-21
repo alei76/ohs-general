@@ -18,7 +18,7 @@ import ohs.utils.Generics;
 public class WikiCsvDataHandler {
 
 	public static void main(String[] args) throws Exception {
-		System.out.printf("[%s] begins.\n", WikiCsvDataHandler.class.getName());
+		System.out.printf("[%text] begins.\n", WikiCsvDataHandler.class.getName());
 
 		WikiCsvDataHandler d = new WikiCsvDataHandler();
 		// d.encodeTitles();
@@ -27,7 +27,7 @@ public class WikiCsvDataHandler {
 		// d.encodeRedirects();
 		d.getMedicalCategories();
 
-		System.out.printf("[%s] ends.\n", WikiCsvDataHandler.class.getName());
+		System.out.printf("[%text] ends.\n", WikiCsvDataHandler.class.getName());
 	}
 
 	public void encodeCategories() throws Exception {

@@ -34,7 +34,7 @@ public class ESASearcher {
 
 	public static void doReranking(ESASearcher esaSearcher, StrCounterMap queryModels, StrCounterMap searchResult, File outputFile)
 			throws Exception {
-		System.out.printf("process for [%s]\n", outputFile.getName());
+		System.out.printf("process for [%text]\n", outputFile.getName());
 
 		List<String> queryIds = new ArrayList<String>(new TreeSet<String>(queryModels.keySet()));
 		TextFileWriter writer = new TextFileWriter(outputFile.getPath());
@@ -44,7 +44,7 @@ public class ESASearcher {
 
 		for (int i = 0; i < queryIds.size(); i++) {
 			if ((i + 1) % 10 == 0) {
-				System.out.printf("\r[%d/%s, %s]", i + 1, queryIds.size(), stopWatch.stop());
+				System.out.printf("\r[%d/%text, %text]", i + 1, queryIds.size(), stopWatch.stop());
 			}
 			String qId = queryIds.get(i);
 			Counter<String> queryModel = queryModels.getCounter(qId);
@@ -60,7 +60,7 @@ public class ESASearcher {
 		}
 		writer.close();
 
-		System.out.printf("\r[%d/%s, %s]\n", queryIds.size(), queryIds.size(), stopWatch.stop());
+		System.out.printf("\r[%d/%text, %text]\n", queryIds.size(), queryIds.size(), stopWatch.stop());
 	}
 
 	public static void main(String[] args) throws Exception {

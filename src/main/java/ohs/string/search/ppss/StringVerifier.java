@@ -16,9 +16,9 @@ public class StringVerifier implements Serializable {
 		int n = g.length();
 		int m = sub_r.length();
 		int ed[][]; // matrix
-		int i; // iterates through s
+		int i; // iterates through text
 		int j; // iterates through t
-		char s_i; // ith character of s
+		char s_i; // ith character of text
 		char t_j; // jth character of t
 		int cost; // cost
 
@@ -130,9 +130,9 @@ public class StringVerifier implements Serializable {
 		int n = s.length();
 		int m = r.length();
 		int ed[][]; // matrix
-		int i; // iterates through s
+		int i; // iterates through text
 		int j; // iterates through t
-		char s_i; // ith character of s
+		char s_i; // ith character of text
 		char t_j; // jth character of t
 		int cost; // cost
 
@@ -163,7 +163,7 @@ public class StringVerifier implements Serializable {
 
 		int ret = ed[n][m];
 
-		// System.out.println(show(s, t, ed) + "\n\n");
+		// System.out.println(show(text, t, ed) + "\n\n");
 
 		return ret;
 	}

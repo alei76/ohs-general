@@ -1,4 +1,4 @@
-package ohs.ml.hmm;
+package ohs.nlp.pos;
 
 
 import java.text.*;

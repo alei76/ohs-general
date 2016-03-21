@@ -42,7 +42,7 @@ public class NeuralNetworkConfig {
 	@Override
 	public String toString() {
 		return String.format(
-				"%s with %s threads, %s iterations[%s layer size, %s window, %s hierarchical softmax, %s negative samples, %s initial learning rate, %s down sample rate]",
+				"%text with %text threads, %text iterations[%text layer size, %text window, %text hierarchical softmax, %text negative samples, %text initial learning rate, %text down sample rate]",
 				type.name(), numThreads, iterations, layerSize, windowSize, useHierarchicalSoftmax ? "using" : "not using", negativeSamples,
 				initialLearningRate, downSampleRate);
 	}

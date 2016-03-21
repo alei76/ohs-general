@@ -259,11 +259,11 @@ public class CBEEMSearcher {
 														hyperParameter.setAdjustNumbers(adjustNumbers[h11]);
 
 														String resultFileName = resultDirName
-																+ String.format("cbeem_%s.txt", hyperParameter.toString(true));
+																+ String.format("cbeem_%text.txt", hyperParameter.toString(true));
 														String logFileName = logDirName
-																+ String.format("cbeem_%s.txt", hyperParameter.toString(true));
+																+ String.format("cbeem_%text.txt", hyperParameter.toString(true));
 
-														System.out.printf("process for [%s].\n", resultFileName);
+														System.out.printf("process for [%text].\n", resultFileName);
 
 														CBEEMSearcher ds = new CBEEMSearcher(indexSearchers, docPriorData, hyperParameter);
 														ds.search(1, baseQueries, resultFileName, logFileName);
@@ -507,7 +507,7 @@ public class CBEEMSearcher {
 				}
 			}
 
-			sb.append(String.format("\n%d\t%d\t%d\t%d\t%d\t%s", docId, (int) relevance, rank1, rank2, change, effect));
+			sb.append(String.format("\n%d\t%d\t%d\t%d\t%d\t%text", docId, (int) relevance, rank1, rank2, change, effect));
 		}
 
 		sb.append(String.format("\nPOSs:\t%d", num_poss));
@@ -638,8 +638,8 @@ public class CBEEMSearcher {
 		SparseVector ret = scoreDocuments(newQM, targetId);
 
 		logBuff.append(baseQuery.toString() + "\n");
-		logBuff.append(String.format("QM1:\t%s\n", VectorUtils.toCounter(queryModel, wordIndexer).toString(queryModel.size())));
-		logBuff.append(String.format("QM2:\t%s\n", VectorUtils.toCounter(newQM, wordIndexer).toString(newQM.size())));
+		logBuff.append(String.format("QM1:\t%text\n", VectorUtils.toCounter(queryModel, wordIndexer).toString(queryModel.size())));
+		logBuff.append(String.format("QM2:\t%text\n", VectorUtils.toCounter(newQM, wordIndexer).toString(newQM.size())));
 
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMinimumFractionDigits(4);
@@ -647,10 +647,10 @@ public class CBEEMSearcher {
 		for (int i = 0; i < rms.length; i++) {
 			SparseVector rm = rms[i];
 			double mixture = mixture_for_each_coll_rm[i];
-			logBuff.append(String.format("RM%d (%s):\t%s\n", i + 1, nf.format(mixture), VectorUtils.toCounter(rm, wordIndexer).toString()));
+			logBuff.append(String.format("RM%d (%text):\t%text\n", i + 1, nf.format(mixture), VectorUtils.toCounter(rm, wordIndexer).toString()));
 		}
 
-		logBuff.append(String.format("RMM:\t%s\n\n", VectorUtils.toCounter(cbeem, wordIndexer).toString()));
+		logBuff.append(String.format("RMM:\t%text\n\n", VectorUtils.toCounter(cbeem, wordIndexer).toString()));
 		return ret;
 	}
 

@@ -80,18 +80,18 @@ public class WikiIndexer4ICD {
 			//
 			// String[] ss = content.getText().split("[\\n]+");
 			//
-			// for (String s : ss) {
-			// s = s.trim();
-			// if (s.length() > 0) {
-			// sents.add(s);
+			// for (String text : ss) {
+			// text = text.trim();
+			// if (text.length() > 0) {
+			// sents.add(text);
 			// }
 			// }
 			// }
 			//
-			// String s = StrUtils.join("\n", sents);
+			// String text = StrUtils.join("\n", sents);
 			//
-			// if (s.length() > 0) {
-			// sb.append(s + "\n\n");
+			// if (text.length() > 0) {
+			// sb.append(text + "\n\n");
 			// }
 			// }
 

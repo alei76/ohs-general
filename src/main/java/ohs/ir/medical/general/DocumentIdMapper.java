@@ -22,7 +22,7 @@ public class DocumentIdMapper {
 				if (indexId != null) {
 					ret.setCount(queryId, indexId, score);
 				} else {
-					System.out.printf("index id for doc id [%s] is not found.\n", docId);
+					System.out.printf("index id for doc id [%text] is not found.\n", docId);
 				}
 			}
 		}
@@ -42,7 +42,7 @@ public class DocumentIdMapper {
 				String indexId = docIdMap.getKey(docId);
 
 				if (indexId == null) {
-					System.out.printf("index-id is not found for doc-id [%s]\n", docId);
+					System.out.printf("index-id is not found for doc-id [%text]\n", docId);
 					continue;
 				}
 				counter.setCount(Integer.parseInt(indexId), score);
@@ -64,7 +64,7 @@ public class DocumentIdMapper {
 				if (docId != null) {
 					ret.setCount(queryId, docId, score);
 				} else {
-					System.out.printf("doc id for index id [%s] is not found.\n", indexId);
+					System.out.printf("doc id for index id [%text] is not found.\n", indexId);
 				}
 			}
 		}
@@ -79,7 +79,7 @@ public class DocumentIdMapper {
 			ret.put(parts[0], parts[1]);
 		}
 		reader.close();
-		System.out.printf("read [%d] doc-id pairs at [%s].\n", ret.size(), fileName);
+		System.out.printf("read [%d] doc-id pairs at [%text].\n", ret.size(), fileName);
 		return ret;
 	}
 }

@@ -81,7 +81,7 @@ public class StringRecord implements Serializable {
 
 	@Override
 	public String toString() {
-		return String.format("(%d, %s)", id, s);
+		return String.format("(%d, %text)", id, s);
 	}
 
 	public void write(ObjectOutputStream oos) throws Exception {

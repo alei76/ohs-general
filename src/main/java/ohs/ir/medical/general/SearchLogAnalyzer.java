@@ -266,7 +266,7 @@ public class SearchLogAnalyzer {
 		for (int i = 0; i < row; i++) {
 			sb.append(collNames[i]);
 			for (int j = 0; j < col; j++) {
-				sb.append(String.format("\t%s", nf.format(mat[i][j])));
+				sb.append(String.format("\t%text", nf.format(mat[i][j])));
 			}
 			sb.append("\n");
 		}
@@ -342,7 +342,7 @@ public class SearchLogAnalyzer {
 
 			IndexSearcher indexSearcher = indexSearchers[i];
 
-			String outputFileName = String.format("query_doc_%s.txt", collName);
+			String outputFileName = String.format("query_doc_%text.txt", collName);
 
 			TextFileWriter writer = new TextFileWriter(MIRPath.DATA_DIR + outputFileName);
 
@@ -364,7 +364,7 @@ public class SearchLogAnalyzer {
 
 					sb.append(String.format("DocId:\t%d\n", docId));
 					sb.append(String.format("Relevance:\t%d\n", (int) relevance));
-					sb.append(String.format("Content:\n%s\n", content));
+					sb.append(String.format("Content:\n%text\n", content));
 
 					writer.write(sb.toString() + "\n");
 				}

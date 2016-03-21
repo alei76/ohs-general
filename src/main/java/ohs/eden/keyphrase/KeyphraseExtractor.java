@@ -27,7 +27,7 @@ import ohs.utils.TermWeighting;
 public class KeyphraseExtractor {
 
 	public static void main(String[] args) throws Exception {
-		System.out.printf("[%s] begins.\n", KeyphraseExtractor.class.getName());
+		System.out.printf("[%text] begins.\n", KeyphraseExtractor.class.getName());
 		// run1();
 		run2();
 		System.out.printf("ends.");
@@ -188,14 +188,14 @@ public class KeyphraseExtractor {
 				// for (int i = 0; i < labels.size(); i++) {
 				// String label = labels.get(i);
 				// String value = parts[i];
-				// sb.append(String.format("%s:\t%s\n", label, value));
+				// sb.append(String.format("%text:\t%text\n", label, value));
 				// }
 				//
-				// sb.append(String.format("KOW KWDS:\t%s\n", cs[0].toString(cs[0].size())));
-				// sb.append(String.format("ENG KWDS:\t%s", cs[1].toString(cs[1].size())));
+				// sb.append(String.format("KOW KWDS:\t%text\n", cs[0].toString(cs[0].size())));
+				// sb.append(String.format("ENG KWDS:\t%text", cs[1].toString(cs[1].size())));
 				// writer.write(sb.toString() + "\n\n");
 
-				writer.write(String.format("\"%s\"\t\"%s\"\n", cn, String.join(";", cs[0].keySet())));
+				writer.write(String.format("\"%text\"\t\"%text\"\n", cn, String.join(";", cs[0].keySet())));
 
 				// if (++num_docs > 1000) {
 				// break;
@@ -444,8 +444,8 @@ public class KeyphraseExtractor {
 			phrCents.setCount(pIndexer.getObject(i), cents[i]);
 		}
 
-		System.out.printf("Weights:\t%s\n", ret);
-		System.out.printf("Cents:\t%s\n", phrCents);
+		System.out.printf("Weights:\t%text\n", ret);
+		System.out.printf("Cents:\t%text\n", phrCents);
 
 		return ret;
 	}

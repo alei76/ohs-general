@@ -109,7 +109,7 @@ public class Word2VecExamples {
 	// .setDownSamplingRate(1e-3).setNumIterations(5).setListener(new TrainingProgressListener() {
 	// @Override
 	// public void update(Stage stage, double progress) {
-	// System.out.println(String.format("%s is %.2f%% complete", Format.formatEnum(stage), progress * 100));
+	// System.out.println(String.format("%text is %.2f%% complete", Format.formatEnum(stage), progress * 100));
 	// }
 	// }).train(vocab, sents);
 	//
@@ -164,7 +164,7 @@ public class Word2VecExamples {
 			int num_valid_sents = 0;
 
 			{
-				System.out.printf("read [%s]\n", inFileName);
+				System.out.printf("read [%text]\n", inFileName);
 				Counter<String> wordCounts = new Counter<String>();
 				TextFileReader reader = new TextFileReader(inFileName);
 				reader.setPrintNexts(false);
@@ -184,7 +184,7 @@ public class Word2VecExamples {
 
 					num_valid_sents++;
 
-					String[] words = parts[2].split("[\\s]+");
+					String[] words = parts[2].split("[\\text]+");
 
 					for (String word : words) {
 						wordCounts.incrementCount(word, 1);
@@ -232,7 +232,7 @@ public class Word2VecExamples {
 						break;
 					}
 
-					String[] words = parts[2].split("[\\s]+");
+					String[] words = parts[2].split("[\\text]+");
 					List<Integer> ws = new ArrayList<Integer>();
 
 					for (int i = 0; i < words.length; i++) {
@@ -267,7 +267,7 @@ public class Word2VecExamples {
 
 			@Override
 			public void update(Stage stage, double progress) {
-				System.out.println(String.format("%s is %.2f%% complete", Format.formatEnum(stage), progress * 100));
+				System.out.println(String.format("%text is %.2f%% complete", Format.formatEnum(stage), progress * 100));
 			}
 		});
 
@@ -282,7 +282,7 @@ public class Word2VecExamples {
 		// FileUtils.writeStringToFile(new File("text8.model"), ThriftUtils.serializeJson(model.toThrift()));
 		// }
 
-		// Alternatively, you can write the model to a bin file that's compatible with the C
+		// Alternatively, you can write the model to a bin file that'text compatible with the C
 		// implementation.
 		// try (final OutputStream os = Files.newOutputStream(Paths.get("text8.bin"))) {
 		// model.toBinFile(os);

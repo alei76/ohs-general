@@ -131,12 +131,12 @@ public class WordDataHandler {
 
 				List<String> ws2 = c.getSortedKeys();
 
-				sb.append(String.format("%s:%d", w1, (int) c.totalCount()));
+				sb.append(String.format("%text:%d", w1, (int) c.totalCount()));
 
 				for (int k = 0; k < ws2.size(); k++) {
 					String w2 = ws2.get(k);
 					int cnt = (int) c.getCount(w2);
-					sb.append(String.format("\t%s:%d", w2, cnt));
+					sb.append(String.format("\t%text:%d", w2, cnt));
 				}
 
 				if (j != ws1.size() - 1) {
@@ -156,7 +156,7 @@ public class WordDataHandler {
 	}
 
 	public void makeVocabulary(String indexDirName, String vocFileName) throws Exception {
-		System.out.printf("make a vocabulary from [%s]\n", indexDirName);
+		System.out.printf("make a vocabulary from [%text]\n", indexDirName);
 		IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(indexDirName);
 
 		IndexReader indexReader = indexSearcher.getIndexReader();
@@ -295,13 +295,13 @@ public class WordDataHandler {
 			List<Integer> ws2 = c.getSortedKeys();
 
 			StringBuffer sb = new StringBuffer();
-			sb.append(String.format("%s:%f", word1, c.totalCount()));
+			sb.append(String.format("%text:%f", word1, c.totalCount()));
 
 			for (int j = 0; j < ws2.size(); j++) {
 				int w2 = ws2.get(j);
 				double cnt = c.getCount(w2);
 				String word2 = wordIndexer.getObject(w2);
-				sb.append(String.format("\t%s:%f", word2, cnt));
+				sb.append(String.format("\t%text:%f", word2, cnt));
 			}
 			writer.write(sb.toString());
 

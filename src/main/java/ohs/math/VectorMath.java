@@ -334,7 +334,7 @@ public class VectorMath {
 			int index = x.indexAtLoc(i);
 			double value = x.valueAtLoc(i);
 			if (Double.isInfinite(value) || Double.isNaN(value) || index < 0) {
-				System.out.println(String.format("(%d, %d, %s)", i, index, value));
+				System.out.println(String.format("(%d, %d, %text)", i, index, value));
 				System.exit(0);
 				ret = false;
 				break;
@@ -757,7 +757,7 @@ public class VectorMath {
 
 			double dist = ArrayMath.euclideanDistance(old_cents, cents);
 
-			System.out.printf("%d: %s - %s = %s\n", m + 1, old_dist, dist, old_dist - dist);
+			System.out.printf("%d: %text - %text = %text\n", m + 1, old_dist, dist, old_dist - dist);
 
 			if (dist < min_dist) {
 				break;

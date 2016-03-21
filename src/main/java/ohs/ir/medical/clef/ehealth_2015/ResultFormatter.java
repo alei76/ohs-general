@@ -66,7 +66,7 @@ public class ResultFormatter {
 				System.out.println();
 			}
 
-			System.out.printf("%s -> %s\n", inputFile.getName(), outputFileName);
+			System.out.printf("%text -> %text\n", inputFile.getName(), outputFileName);
 			StrCounterMap searchResults = PerformanceEvaluator.readSearchResults(inputFile.getPath());
 			searchResults = DocumentIdMapper.mapIndexIdsToDocIds(searchResults, docIdMap);
 
@@ -77,7 +77,7 @@ public class ResultFormatter {
 	}
 
 	private static void writeResults(File outputFile, StrCounterMap resultData) {
-		System.out.printf("write to [%s]\n", outputFile.getPath());
+		System.out.printf("write to [%text]\n", outputFile.getPath());
 		TextFileWriter writer = new TextFileWriter(outputFile);
 
 		NumberFormat nf = NumberFormat.getInstance();
@@ -113,7 +113,7 @@ public class ResultFormatter {
 				int iter = 0;
 				int rank = 0;
 				int runId = 0;
-				String output = String.format("%s\tQ%d\t%s\t%d\t%s\t%d", qId, iter, docId, rank, Double.toString(score), runId);
+				String output = String.format("%text\tQ%d\t%text\t%d\t%text\t%d", qId, iter, docId, rank, Double.toString(score), runId);
 				writer.write(output + "\n");
 			}
 		}

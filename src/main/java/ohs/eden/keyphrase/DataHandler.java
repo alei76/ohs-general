@@ -206,7 +206,7 @@ public class DataHandler {
 
 				for (int k = 0; k < l.size(); k++) {
 					Pair<String, String> pair = l.get(k);
-					sb.append(String.format("%s%s%s", pair.getFirst().replace(" ", "_"), TaggedTextParser.DELIM_TAG, pair.getSecond()));
+					sb.append(String.format("%text%text%text", pair.getFirst().replace(" ", "_"), TaggedTextParser.DELIM_TAG, pair.getSecond()));
 					if (k != l.size() - 1) {
 						sb.append(TaggedTextParser.DELIM_SUBTOKEN);
 					}
@@ -294,18 +294,18 @@ public class DataHandler {
 					engKwdStr = StrUtils.join(";", engKwds);
 
 					List<String> res = Generics.newArrayList();
-					res.add(String.format("\"%s\"", type));
-					res.add(String.format("\"%s\"", cn));
-					res.add(String.format("\"%s\"", korKwdStr));
-					res.add(String.format("\"%s\"", engKwdStr));
-					res.add(String.format("\"%s\"", korTitle));
-					res.add(String.format("\"%s\"", engTitle));
-					res.add(String.format("\"%s\"", korAbs));
-					res.add(String.format("\"%s\"", engAbs));
+					res.add(String.format("\"%text\"", type));
+					res.add(String.format("\"%text\"", cn));
+					res.add(String.format("\"%text\"", korKwdStr));
+					res.add(String.format("\"%text\"", engKwdStr));
+					res.add(String.format("\"%text\"", korTitle));
+					res.add(String.format("\"%text\"", engTitle));
+					res.add(String.format("\"%text\"", korAbs));
+					res.add(String.format("\"%text\"", engAbs));
 
 					String output = StrUtils.join("\t", res);
 
-					writer.write(String.format("\n%s", output));
+					writer.write(String.format("\n%text", output));
 				}
 			}
 			reader.close();
@@ -394,7 +394,7 @@ public class DataHandler {
 				parts[6] = getText(komoran.analyze(korAbs, 1));
 
 				for (int i = 0; i < parts.length; i++) {
-					parts[i] = String.format("\"%s\"", parts[i]);
+					parts[i] = String.format("\"%text\"", parts[i]);
 				}
 				writer.write("\n" + StrUtils.join("\t", parts));
 

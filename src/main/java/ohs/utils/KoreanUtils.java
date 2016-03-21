@@ -1,5 +1,7 @@
 package ohs.utils;
 
+import java.util.List;
+
 /**
  * http://secr.tistory.com/207
  *
@@ -23,19 +25,19 @@ public class KoreanUtils {
 	 * ********************************************** 알파벳으로 변환 설연수 -> tjfdustn, 멍충 -> ajdcnd
 	 **********************************************/
 	/** 초성 - 가(ㄱ), 날(ㄴ) 닭(ㄷ) */
-	public static final String[] CHO_SUNG_ENG = { "r", "R", "s", "e", "E", "f", "a", "q", "Q", "t", "T", "d", "w", "W", "c", "z", "x", "v",
-			"g" };
+	public static final String[] CHO_SUNG_ENG = { "r", "R", "text", "e", "E", "f", "a", "q", "Q", "t", "T", "d", "w", "W", "c", "z", "x",
+			"v", "g" };
 
 	/** 중성 - 가(ㅏ), 야(ㅑ), 뺨(ㅑ) */
 	public static final String[] JUNG_SUNG_ENG = { "k", "o", "i", "O", "j", "p", "u", "P", "h", "hk", "ho", "hl", "y", "n", "nj", "np",
 			"nl", "b", "m", "ml", "l" };
 
 	/** 종성 - 가(없음), 갈(ㄹ) 천(ㄴ) */
-	public static final String[] JONG_SUNG_ENG = { "", "r", "R", "rt", "s", "sw", "sg", "e", "f", "fr", "fa", "fq", "ft", "fx", "fv", "fg",
-			"a", "q", "qt", "t", "T", "d", "w", "c", "z", "x", "v", "g" };
+	public static final String[] JONG_SUNG_ENG = { "", "r", "R", "rt", "text", "sw", "sg", "e", "f", "fr", "fa", "fq", "ft", "fx", "fv",
+			"fg", "a", "q", "qt", "t", "T", "d", "w", "c", "z", "x", "v", "g" };
 
 	/** 단일 자음 - ㄱ,ㄴ,ㄷ,ㄹ... (ㄸ,ㅃ,ㅉ은 단일자음(초성)으로 쓰이지만 단일자음으론 안쓰임) */
-	public static final String[] SINGLE_JAUM_ENG = { "r", "R", "rt", "s", "sw", "sg", "e", "E", "f", "fr", "fa", "fq", "ft", "fx", "fv",
+	public static final String[] SINGLE_JAUM_ENG = { "r", "R", "rt", "text", "sw", "sg", "e", "E", "f", "fr", "fa", "fq", "ft", "fx", "fv",
 			"fg", "a", "q", "Q", "qt", "t", "T", "d", "w", "W", "c", "z", "x", "v", "g" };
 
 	public static char[] decomposeSyllableToPhonemes(char syllable) {
@@ -119,6 +121,22 @@ public class KoreanUtils {
 		return ret;
 	}
 
+	public static char[] decomposeKoreanWordToPhonemesAsArray(String word) {
+		List<Character> chs = Generics.newArrayList();
+		for (int i = 0; i < word.length(); i++) {
+			for (char c : decomposeSyllableToPhonemes(word.charAt(i))) {
+				chs.add(c);
+			}
+		}
+
+		char[] ret = new char[chs.size()];
+		for (int i = 0; i < chs.size(); i++) {
+			ret[i] = chs.get(i);
+		}
+		return ret;
+
+	}
+
 	public static char[][] decomposeKoreanWordToEnglish(String word) {
 		char[][] ret = new char[word.length()][];
 		for (int i = 0; i < word.length(); i++) {
@@ -149,6 +167,7 @@ public class KoreanUtils {
 				sb.append(chs[j]);
 			}
 		}
+
 		return sb.toString();
 	}
 

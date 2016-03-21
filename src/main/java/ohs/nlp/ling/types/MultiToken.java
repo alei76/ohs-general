@@ -4,59 +4,23 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
 
-public class MultiToken {
+public class MultiToken extends Token {
 
-	public static final String DELIM_TOKEN = " + ";
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4806700641614757112L;
 
-	public static MultiToken parse(String s) {
-		String[] two = s.split("\t");
-
-		String suface = two[0];
-		String[] parts = two[1].split(DELIM_TOKEN.replace(" + ", " \\+ "));
-		Token[] toks = new Token[parts.length];
-		for (int i = 0; i < parts.length; i++) {
-			toks[i] = Token.parse(parts[i]);
-		}
-		MultiToken ret = new MultiToken(0, suface, toks);
-		return ret;
-	}
+	public static final String DELIM_MULTI_TOKEN = " + ";
 
 	private Token[] toks = new Token[0];
-
-	private int start;
-
-	private String text = "";
 
 	public MultiToken() {
 
 	}
 
-	public MultiToken(int start, List<Token> toks) {
-		this.start = start;
-		this.toks = toks.toArray(new Token[toks.size()]);
-	}
-
-	public MultiToken(int start, String text, Token[] toks) {
-		this.start = start;
-		this.text = text;
-		this.toks = toks;
-	}
-
-	public MultiToken(int start, Token tok) {
-		this(start, new Token[] { tok });
-	}
-
-	public MultiToken(int start, Token[] toks) {
-		this.start = start;
-		this.toks = toks;
-	}
-
-	public int getStart() {
-		return start;
-	}
-
-	public String getText() {
-		return text;
+	public MultiToken(int start, String text) {
+		super(start, text);
 	}
 
 	public Token getToken(int i) {
@@ -67,33 +31,22 @@ public class MultiToken {
 		return toks;
 	}
 
-	public String[] getValue(int ordinal) {
-		String[] ret = new String[toks.length];
-		for (int i = 0; i < toks.length; i++) {
-			ret[i] = toks[i].getValue(ordinal);
+	@Override
+	public String[] getValues() {
+		return getValues(0, toks.length, TokenAttr.values());
+	}
+
+	public String[] getValues(int start, int end, TokenAttr[] attrs) {
+		String[] ret = new String[end - start];
+		for (int i = start; i < end; i++) {
+			ret[i] = toks[i].joinValues(DELIM_MULTI_TOKEN, attrs);
 		}
 		return ret;
 	}
 
-	public String[] getValue(TokenAttr attr) {
-		return getValue(attr.ordinal());
-	}
-
-	public String[][] getValues() {
-		return getValues(TokenAttr.values());
-	}
-
-	public String[][] getValues(TokenAttr[] attrs) {
-		String[][] ret = null;
-		ret = new String[attrs.length][];
-		for (int i = 0; i < attrs.length; i++) {
-			ret[i] = getValue(attrs[i].ordinal());
-		}
-		return ret;
-	}
-
+	@Override
 	public String joinValues() {
-		return joinValues(Token.DELIM_VALUE, DELIM_TOKEN, TokenAttr.values());
+		return joinValues(Token.DELIM_TOKEN, DELIM_MULTI_TOKEN, TokenAttr.values());
 	}
 
 	public String joinValues(String delimValue, String delimTok, TokenAttr[] attrs) {
@@ -107,16 +60,9 @@ public class MultiToken {
 		return sb.toString();
 	}
 
-	public int length() {
-		int ret = 0;
-		for (int i = 0; i < toks.length; i++) {
-			ret += toks[i].length();
-		}
-		return ret;
-	}
-
+	@Override
 	public void read(ObjectInputStream ois) throws Exception {
-		start = ois.readInt();
+		super.read(ois);
 		toks = new Token[ois.readInt()];
 		for (int i = 0; i < toks.length; i++) {
 			Token t = new Token();
@@ -125,12 +71,8 @@ public class MultiToken {
 		}
 	}
 
-	public void setStart(int start) {
-		this.start = start;
-	}
-
-	public void setText(String text) {
-		this.text = text;
+	public void setTokens(Token[] toks) {
+		this.toks = toks;
 	}
 
 	public void setValue(TokenAttr attr, String[] values) {
@@ -143,10 +85,12 @@ public class MultiToken {
 		return toks.length;
 	}
 
+	@Override
 	public String toString() {
 		return toString(true);
 	}
 
+	@Override
 	public String toString(boolean printAttrNames) {
 		StringBuffer sb = new StringBuffer();
 
@@ -178,8 +122,9 @@ public class MultiToken {
 		return sb.toString();
 	}
 
+	@Override
 	public void write(ObjectOutputStream oos) throws Exception {
-		oos.writeInt(start);
+		super.write(oos);
 		oos.writeInt(toks.length);
 		for (int i = 0; i < toks.length; i++) {
 			toks[i].write(oos);

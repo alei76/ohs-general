@@ -60,13 +60,13 @@ public class ResultsFormatter {
 					int queryId = Integer.parseInt(parts[0]);
 					String docId = parts[1];
 					String score = parts[2];
-					outputBuff.append(String.format("%d\t%s\t%s\t%d\t%s\t%s\n", queryId, "Q0", docId, ++rank, score, runId));
+					outputBuff.append(String.format("%d\t%text\t%text\t%d\t%text\t%text\n", queryId, "Q0", docId, ++rank, score, runId));
 				}
 			}
 			reader.close();
 
 			// String outputFileName = inputFile.getName().replace("search_", "trec_");
-			String outputFileName = String.format("%s.txt", runId);
+			String outputFileName = String.format("%text.txt", runId);
 			File outputFile = new File(inputFile.getParent(), outputFileName);
 
 			FileUtils.write(outputFile.getPath(), outputBuff.toString().trim());

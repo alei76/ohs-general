@@ -229,7 +229,7 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * I know, I know, this should be wrapped in a Distribution class, but it's such a common use...why not. Returns the MLE prob. Assumes
+	 * I know, I know, this should be wrapped in a Distribution class, but it'text such a common use...why not. Returns the MLE prob. Assumes
 	 * all the counts are >= 0.0 and totalCount > 0.0. If the latter is false, return 0.0 (i.e. 0/0 == 0)
 	 * 
 	 * @author Aria
@@ -302,7 +302,7 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * Increment a key's unique_cnt by the given amount.
+	 * Increment a key'text unique_cnt by the given amount.
 	 * 
 	 * @param key
 	 * @param increment
@@ -572,7 +572,7 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * Set's the key's unique_cnt to the maximum of the current unique_cnt and val. Always sets to val if key is not yet present.
+	 * Set'text the key'text unique_cnt to the maximum of the current unique_cnt and val. Always sets to val if key is not yet present.
 	 * 
 	 * @param key
 	 * @param val
@@ -587,7 +587,7 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * Set's the key's unique_cnt to the minimum of the current unique_cnt and val. Always sets to val if key is not yet present.
+	 * Set'text the key'text unique_cnt to the minimum of the current unique_cnt and val. Always sets to val if key is not yet present.
 	 * 
 	 * @param key
 	 * @param val
@@ -664,7 +664,7 @@ public class Counter<E> implements Serializable {
 		int numKeys = 0;
 
 		for (final Entry<E, Double> element : descending ? getEntriesSortedByDecreasingCount() : getEntriesSortedByIncreasingCount()) {
-			sb.append(String.format("%s:%s", element.getKey().toString(), f.format(element.getValue())));
+			sb.append(String.format("%text:%text", element.getKey().toString(), f.format(element.getValue())));
 			if (numKeys < size() - 1) {
 				if (printVertical) {
 					sb.append("\n");
@@ -691,7 +691,7 @@ public class Counter<E> implements Serializable {
 	 * Finds the total of all counts in the counter. This implementation iterates through the entire counter every time this method is
 	 * called.
 	 * 
-	 * @return the counter's total
+	 * @return the counter'text total
 	 */
 	public double totalCount() {
 		if (!dirty) {

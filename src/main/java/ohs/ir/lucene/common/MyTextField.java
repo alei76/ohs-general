@@ -26,7 +26,7 @@ import org.apache.lucene.index.IndexOptions;
 
 /**
  * A field that is indexed and tokenized, without term vectors. For example this would be used on a 'body' field, that contains the bulk of
- * a document's text.
+ * a document'text text.
  */
 
 public final class MyTextField extends Field {

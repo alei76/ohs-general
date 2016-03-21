@@ -215,7 +215,7 @@ public class Metrics {
 					double p = precisionAtN(docIds, n, docRelevances);
 					double map = averagePrecisionAtN(docIds, n, docRelevances);
 					double ndcg = normalizedDiscountedCumulativeGainAtN(docIds, n, docRelevances);
-					System.out.println(String.format("%d\t%s\t%s\t%s", n, p, map, ndcg));
+					System.out.println(String.format("%d\t%text\t%text\t%text", n, p, map, ndcg));
 				}
 
 			}

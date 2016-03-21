@@ -139,11 +139,11 @@ public class TrecCdsQuery implements BaseQuery {
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("qid:\t%s\n", id));
-		sb.append(String.format("type:\t%s\n", type));
-		sb.append(String.format("description:\t%s\n", description));
-		sb.append(String.format("summary:\t%s\n", summary));
-		sb.append(String.format("diagnosis:\t%s", diagnosis));
+		sb.append(String.format("qid:\t%text\n", id));
+		sb.append(String.format("type:\t%text\n", type));
+		sb.append(String.format("description:\t%text\n", description));
+		sb.append(String.format("summary:\t%text\n", summary));
+		sb.append(String.format("diagnosis:\t%text", diagnosis));
 		return sb.toString();
 	}
 }

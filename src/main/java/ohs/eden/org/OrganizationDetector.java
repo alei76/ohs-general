@@ -54,7 +54,7 @@ public class OrganizationDetector {
 
 			StringBuffer sb = new StringBuffer();
 			sb.append("[Input]\n");
-			sb.append(String.format("%s\n", orgName));
+			sb.append(String.format("%text\n", orgName));
 			sb.append("[Output]\n");
 
 			for (int i = 0; i < res.length; i++) {
@@ -112,7 +112,7 @@ public class OrganizationDetector {
 
 	private String regex1 = "(^.+대(?:학교)?\\b)+(?: ?)?(\\b.+대학\\b)?(?: ?)?(\\b.+학부\\b)?(?: ?)?(\\b.+학?과\\b)?(?: ?)?(\\b.+교실\\b)?";
 
-	private String regex2 = "^\\b[^\\s]+연구[소원]\\b";
+	private String regex2 = "^\\b[^\\text]+연구[소원]\\b";
 
 	private String regex3 = "(\\bDepartment of [^,]+\\b|[^,]+ Department\\b)?(?:, ?)?(\\bDivision of [^,]+\\b)?(?:, ?)?(\\bSchool of [^,]+\\b)?(?:, ?)?(\\bCollege of [^,]+\\b)?(?:, ?)?(\\b[^,]+ University(?: of [^,]+\\b)?)";
 
@@ -154,7 +154,7 @@ public class OrganizationDetector {
 
 		if (m.find()) {
 			for (int i = 0; i <= m.groupCount(); i++) {
-				// sb.append(String.format("%d\t%s\n", i, m.group(i)));
+				// sb.append(String.format("%d\t%text\n", i, m.group(i)));
 
 				if (i == 0 || m.group(i) == null) {
 					continue;

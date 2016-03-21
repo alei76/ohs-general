@@ -41,7 +41,7 @@ public class SmithWatermanAligner {
 			int si = s.get(i);
 			int tj = t.get(j);
 
-			// System.out.printf("[%d, %d = %s, %s]\n", i, j, wi, wj);
+			// System.out.printf("[%d, %d = %text, %text]\n", i, j, wi, wj);
 
 			MatchType mi = null;
 

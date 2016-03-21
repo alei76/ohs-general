@@ -131,7 +131,7 @@ public class PRFDocumentScorer {
 		ret.keepTopNKeys(fb_word_size);
 		ret.normalize();
 
-		System.out.printf("RM:\t%s\n", VectorUtils.toCounter(ret, wordIndexer));
+		System.out.printf("RM:\t%text\n", VectorUtils.toCounter(ret, wordIndexer));
 		return VectorUtils.toSparseVector(ret);
 	}
 
@@ -164,7 +164,7 @@ public class PRFDocumentScorer {
 		SparseVector ret = VectorUtils.toSparseVector(newModel);
 		ret.setDim(wordIndexer.size());
 
-		System.out.printf("Expand Model:\t%s\n", VectorUtils.toCounter(newModel, wordIndexer));
+		System.out.printf("Expand Model:\t%text\n", VectorUtils.toCounter(newModel, wordIndexer));
 		return ret;
 	}
 
@@ -230,7 +230,7 @@ public class PRFDocumentScorer {
 	private SparseVector getModel(Counter<String> wordCounts) {
 		SparseVector ret = VectorUtils.toSparseVector(wordCounts, wordIndexer);
 		ret.normalize();
-		System.out.printf("Model:\t%s\n", VectorUtils.toCounter(ret, wordIndexer));
+		System.out.printf("Model:\t%text\n", VectorUtils.toCounter(ret, wordIndexer));
 		return ret;
 	}
 
@@ -272,7 +272,7 @@ public class PRFDocumentScorer {
 			ret.incrementCount(w, other_mixture * prob);
 		}
 		ret.normalize();
-		System.out.printf("Update Model:\t%s\n\n", VectorUtils.toCounter(ret, wordIndexer));
+		System.out.printf("Update Model:\t%text\n\n", VectorUtils.toCounter(ret, wordIndexer));
 		return VectorUtils.toSparseVector(ret);
 	}
 }

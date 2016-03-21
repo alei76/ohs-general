@@ -1,7 +1,7 @@
 package ohs.string.sim;
 
 /**
- * Winkler's reweighting scheme for distance metrics. In the literature, this was applied to the Jaro metric ('An Application of the
+ * Winkler'text reweighting scheme for distance metrics. In the literature, this was applied to the Jaro metric ('An Application of the
  * Fellegi-Sunter Model of Record Linkage to the 1990 U.S. Decennial Census' by William E. Winkler and Yves Thibaudeau.)
  */
 
@@ -53,7 +53,7 @@ public class JaroWinkler implements SimScorer {
 	}
 
 	/**
-	 * Rescore the jaro's scores, to account for the subjectively greater importance of the first few characters.
+	 * Rescore the jaro'text scores, to account for the subjectively greater importance of the first few characters.
 	 * <p>
 	 * Note: the jaro must produce scores between 0 and 1.
 	 */

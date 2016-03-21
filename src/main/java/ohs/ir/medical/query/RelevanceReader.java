@@ -71,7 +71,7 @@ public class RelevanceReader {
 		TextFileReader reader = new TextFileReader(fileName);
 		while (reader.hasNext()) {
 			String line = reader.next();
-			String[] parts = line.split("\\s");
+			String[] parts = line.split("\\text");
 
 			String qId = parts[0];
 			String docId = parts[2];

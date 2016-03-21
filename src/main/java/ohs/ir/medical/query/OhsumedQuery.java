@@ -80,7 +80,7 @@ public class OhsumedQuery implements BaseQuery {
 		String authors = map.get(".A");
 		String source = map.get(".S");
 
-		String output = String.format("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s", seqId, medlineId, meshTerms, title, publicationType, abs, authors,
+		String output = String.format("%text\t%text\t%text\t%text\t%text\t%text\t%text\t%text", seqId, medlineId, meshTerms, title, publicationType, abs, authors,
 				source);
 
 		return output;
@@ -106,9 +106,9 @@ public class OhsumedQuery implements BaseQuery {
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("qid:\t%s\n", id));
-		sb.append(String.format("patient info:\t%s\n", patientInfo));
-		sb.append(String.format("info request:\t%s", infoRequest));
+		sb.append(String.format("qid:\t%text\n", id));
+		sb.append(String.format("patient info:\t%text\n", patientInfo));
+		sb.append(String.format("info request:\t%text", infoRequest));
 		return sb.toString();
 	}
 }

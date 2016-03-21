@@ -52,7 +52,7 @@ public class GramPostingEntry implements Serializable {
 
 	@Override
 	public String toString() {
-		return String.format("(%d, %d, %s)", id, start, type.getSymbol());
+		return String.format("(%d, %d, %text)", id, start, type.getSymbol());
 	}
 
 }

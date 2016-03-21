@@ -73,7 +73,7 @@ public class RelevanceCollector {
 			String[] labels = { "QLD", "CBEEM", "REL" };
 
 			for (BaseQuery bq : bqs) {
-				String outputFileName = dataDirName + String.format("rel_analysis/%s.txt", bq.getId());
+				String outputFileName = dataDirName + String.format("rel_analysis/%text.txt", bq.getId());
 
 				String qId = bq.getId();
 				Counter<String> docScores1 = qldResData.getCounter(qId);
@@ -113,7 +113,7 @@ public class RelevanceCollector {
 					String indexId = indexIds.get(j);
 
 					StringBuffer sb = new StringBuffer();
-					sb.append(String.format("%d\t%s", j + 1, indexId));
+					sb.append(String.format("%d\t%text", j + 1, indexId));
 
 					for (int k = 0; k < labels.length; k++) {
 						int val = (int) cm.getCount(indexId, labels[k]);
@@ -128,7 +128,7 @@ public class RelevanceCollector {
 						content = doc.get(CommonFieldNames.CONTENT);
 					}
 
-					sb.append(String.format("\t%s", content.replace("\n", "\\n")));
+					sb.append(String.format("\t%text", content.replace("\n", "\\n")));
 
 					writer.write("\n" + sb.toString());
 				}
@@ -226,8 +226,8 @@ public class RelevanceCollector {
 					computeTFIDFs(sv, docFreqs, wcb.getNumDocsInCollection());
 				}
 
-				writer.write(String.format("#Query\t%d\t%s\n", j + 1, bq.toString()));
-				writer.write(String.format("#Query Words\t%s\n", toString(VectorUtils.toCounter(q, wordIndexer))));
+				writer.write(String.format("#Query\t%d\t%text\n", j + 1, bq.toString()));
+				writer.write(String.format("#Query Words\t%text\n", toString(VectorUtils.toCounter(q, wordIndexer))));
 
 				docRels.sortByValue();
 
@@ -253,7 +253,7 @@ public class RelevanceCollector {
 						}
 
 						if (found) {
-							sb.append(String.format("%d\t%s\t%s\n", l + 1, wordIndexer.getObject(w), found ? 1 + "" : ""));
+							sb.append(String.format("%d\t%text\t%text\n", l + 1, wordIndexer.getObject(w), found ? 1 + "" : ""));
 						}
 					}
 
@@ -266,7 +266,7 @@ public class RelevanceCollector {
 					}
 
 					writer.write(String.format("DOC-ID\t%d\nRelevance\t%d\n", docId, (int) rel));
-					writer.write(String.format("Loc\tWord\tMark\n%s\n", sb.toString()));
+					writer.write(String.format("Loc\tWord\tMark\n%text\n", sb.toString()));
 
 				}
 				writer.write("\n");
@@ -346,7 +346,7 @@ public class RelevanceCollector {
 		for (int i = 0; i < keys.size(); i++) {
 			String key = keys.get(i);
 			double value = c.getCount(key);
-			sb.append(String.format("%s:%f", key, value));
+			sb.append(String.format("%text:%f", key, value));
 			if (i != keys.size() - 1) {
 				sb.append(" ");
 			}

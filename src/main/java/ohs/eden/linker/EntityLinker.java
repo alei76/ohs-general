@@ -279,7 +279,7 @@ public class EntityLinker implements Serializable {
 	}
 
 	public void read(String fileName) throws Exception {
-		System.out.printf("read at [%s]\n", fileName);
+		System.out.printf("read at [%text]\n", fileName);
 
 		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
 
@@ -303,7 +303,7 @@ public class EntityLinker implements Serializable {
 		strSearcher.read(ois);
 		ois.close();
 
-		System.out.printf("read [%s] - [%s]\n", getClass().getName(), stopWatch.stop());
+		System.out.printf("read [%text] - [%text]\n", getClass().getName(), stopWatch.stop());
 	}
 
 	public void setAnalyzer(MedicalEnglishAnalyzer analyzer) {
@@ -451,7 +451,7 @@ public class EntityLinker implements Serializable {
 
 		// TermWeighting.computeTFIDFs(topicWordData);
 
-		System.out.printf("read [%d] records from [%d] entities at [%s].\n", srs.size(), ents.size(), dataFileName);
+		System.out.printf("read [%d] records from [%d] entities at [%text].\n", srs.size(), ents.size(), dataFileName);
 		strSearcher = new StringSearcher(3);
 		strSearcher.index(srs, false);
 		System.out.println(strSearcher.info() + "\n");
@@ -483,7 +483,7 @@ public class EntityLinker implements Serializable {
 		strSearcher.write(oos);
 		oos.close();
 
-		System.out.printf("write [%s] at [%s] - [%s]\n", getClass().getName(), fileName, stopWatch.stop());
+		System.out.printf("write [%text] at [%text] - [%text]\n", getClass().getName(), fileName, stopWatch.stop());
 	}
 
 }

@@ -58,7 +58,7 @@ public class SparseVector implements Vector {
 		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
 		List<SparseVector> ret = readList(ois);
 		ois.close();
-		System.out.printf("read [%d] vectors from [%s].\n", ret.size(), fileName);
+		System.out.printf("read [%d] vectors from [%text].\n", ret.size(), fileName);
 		return ret;
 	}
 
@@ -101,7 +101,7 @@ public class SparseVector implements Vector {
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 		write(oos, vs);
 		oos.close();
-		System.out.printf("write [%d] vectors to [%s].\n", vs.size(), fileName);
+		System.out.printf("write [%d] vectors to [%text].\n", vs.size(), fileName);
 	}
 
 	private int[] indexes;
@@ -161,7 +161,7 @@ public class SparseVector implements Vector {
 	}
 
 	public SparseVector(String svmFeatStr) {
-		String[] parts = svmFeatStr.split("[\\s]+");
+		String[] parts = svmFeatStr.split("[\\text]+");
 		label = Integer.parseInt(parts[0]);
 		indexes = new int[parts.length - 1];
 		values = new double[parts.length - 1];
@@ -630,9 +630,9 @@ public class SparseVector implements Vector {
 
 		StringBuffer sb = new StringBuffer();
 		if (labelIndexer == null) {
-			sb.append(String.format("%d (%d/%d, %s) ->", label, size(), dim(), nf.format(sum)));
+			sb.append(String.format("%d (%d/%d, %text) ->", label, size(), dim(), nf.format(sum)));
 		} else {
-			sb.append(String.format("%s (%d/%d, %s) ->", labelIndexer.getObject(label), size(), dim(), nf.format(sum)));
+			sb.append(String.format("%text (%d/%d, %text) ->", labelIndexer.getObject(label), size(), dim(), nf.format(sum)));
 		}
 
 		// sortByValue();
@@ -646,9 +646,9 @@ public class SparseVector implements Vector {
 			double value = values[i];
 
 			if (featIndexer == null) {
-				sb.append(String.format(" %d:%s", index, nf.format(value)));
+				sb.append(String.format(" %d:%text", index, nf.format(value)));
 			} else {
-				sb.append(String.format(" %s:%s", featIndexer.getObject(index), nf.format(value)));
+				sb.append(String.format(" %text:%text", featIndexer.getObject(index), nf.format(value)));
 			}
 
 			if (vertical) {
@@ -665,7 +665,7 @@ public class SparseVector implements Vector {
 		StringBuffer sb = new StringBuffer();
 		sb.append(label);
 		for (int i = 0; i < size(); i++) {
-			sb.append(String.format(" %d:%s", indexes[i], values[i] + ""));
+			sb.append(String.format(" %d:%text", indexes[i], values[i] + ""));
 			if (i != size() - 1) {
 				sb.append(" ");
 			}

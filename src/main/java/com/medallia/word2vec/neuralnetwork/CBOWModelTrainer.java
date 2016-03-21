@@ -73,13 +73,13 @@ class CBOWModelTrainer extends NeuralNetworkTrainer {
 				// ArrayMath.scale(neu1, 1f / cw);
 
 				if (config.useHierarchicalSoftmax) {
-					// System.out.printf("cword:%s\n", word);
+					// System.out.printf("cword:%text\n", word);
 					//
 					// for (int d = 0; d < huffmanNode.code.length; d++) {
 					// int l2 = huffmanNode.point[d];
 					// String pWord = map.get(l2);
 					// HuffmanNode phn = huffmanNodes.get(pWord);
-					// System.out.printf("%d, pid:%d, pword:%s, pcount:%d\n", d, l2, pWord, phn.count);
+					// System.out.printf("%d, pid:%d, pword:%text, pcount:%d\n", d, l2, pWord, phn.count);
 					// }
 
 					// System.out.println();

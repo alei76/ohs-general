@@ -5,58 +5,27 @@ import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.tools.ant.taskdefs.SendEmail;
-
-import ohs.utils.Generics;
-
 public class KSentence {
 
-	public static final String START_SYMBOL = "<s>";
-
-	public static final String END_SYMBOL = "</s>";
-
-	private MultiToken[] toks;
+	private Token[] toks;
 
 	public KSentence() {
 
 	}
 
-	public KSentence(List<MultiToken> toks) {
-		this(toks.toArray(new MultiToken[toks.size()]));
+	public KSentence(List<Token> toks) {
+		this(toks.toArray(new Token[toks.size()]));
 	}
 
-	public static KSentence parse(String s) {
-		String[] lines = s.split("\n");
-		MultiToken[] mts = new MultiToken[lines.length];
-		for (int i = 0; i < lines.length; i++) {
-			mts[i] = MultiToken.parse(lines[i]);
-		}
-		return new KSentence(mts);
-	}
-
-	public KSentence(MultiToken[] toks) {
+	public KSentence(Token[] toks) {
 		this.toks = toks;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		KSentence other = (KSentence) obj;
-		if (!Arrays.equals(toks, other.toks))
-			return false;
-		return true;
-	}
-
-	public MultiToken getFirst() {
+	public Token getFirst() {
 		return toks[0];
 	}
 
-	public MultiToken getLast() {
+	public Token getLast() {
 		return toks[toks.length - 1];
 	}
 
@@ -64,16 +33,16 @@ public class KSentence {
 		return new KSentence(getTokens(start, end));
 	}
 
-	public MultiToken getToken(int i) {
+	public Token getToken(int i) {
 		return toks[i];
 	}
 
-	public MultiToken[] getTokens() {
+	public Token[] getTokens() {
 		return toks;
 	}
 
-	public MultiToken[] getTokens(int start, int end) {
-		MultiToken[] ret = new MultiToken[end - start];
+	public Token[] getTokens(int start, int end) {
+		Token[] ret = new Token[end - start];
 		for (int i = start, loc = 0; i < end; i++, loc++) {
 			ret[loc] = toks[i];
 		}
@@ -81,20 +50,26 @@ public class KSentence {
 	}
 
 	public String[] getValues() {
-		return getValues(Token.DELIM_VALUE, MultiToken.DELIM_TOKEN, TokenAttr.values(), 0, toks.length);
+		return getValues(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, TokenAttr.values(), 0, toks.length);
 	}
 
-	public String[] getValues(String delimValue, String delimTok, TokenAttr[] attrs, int start, int end) {
+	public String[] getValues(String delimTok, String delimMultiTok, TokenAttr[] attrs, int start, int end) {
 		String[] ret = new String[end - start];
 		for (int i = start, loc = 0; i < end; i++, loc++) {
-			MultiToken tok = toks[i];
-			ret[loc] = tok.joinValues(delimValue, delimTok, attrs);
+			Token tok = toks[i];
+
+			if (tok instanceof MultiToken) {
+				MultiToken mt = (MultiToken) tok;
+				ret[loc] = mt.joinValues(delimTok, delimMultiTok, attrs);
+			} else {
+				ret[loc] = tok.joinValues(delimMultiTok, attrs);
+			}
 		}
 		return ret;
 	}
 
 	public String[] getValues(TokenAttr attr) {
-		return getValues(Token.DELIM_VALUE, MultiToken.DELIM_TOKEN, new TokenAttr[] { attr }, 0, toks.length);
+		return getValues(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, new TokenAttr[] { attr }, 0, toks.length);
 	}
 
 	@Override
@@ -106,7 +81,7 @@ public class KSentence {
 	}
 
 	public String joinValues() {
-		return joinValues(Token.DELIM_VALUE, MultiToken.DELIM_TOKEN, TokenAttr.values(), 0, toks.length);
+		return joinValues(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, TokenAttr.values(), 0, toks.length);
 	}
 
 	public String joinValues(String delimValue, String delimTok, TokenAttr[] attrs, int start, int end) {
@@ -115,18 +90,25 @@ public class KSentence {
 
 	public int length() {
 		int ret = 0;
-		for (MultiToken t : toks) {
+		for (Token t : toks) {
 			ret += t.length();
 		}
 		return ret;
 	}
 
 	public void read(ObjectInputStream ois) throws Exception {
-		toks = new MultiToken[ois.readInt()];
+		boolean isMultiToken = ois.readBoolean();
+		toks = new Token[ois.readInt()];
 		for (int i = 0; i < toks.length; i++) {
-			MultiToken mt = new MultiToken();
-			mt.read(ois);
-			toks[i] = mt;
+			if (isMultiToken) {
+				MultiToken mt = new MultiToken();
+				mt.read(ois);
+				toks[i] = mt;
+			} else {
+				Token t = new Token();
+				t.read(ois);
+				toks[i] = t;
+			}
 		}
 	}
 
@@ -149,14 +131,14 @@ public class KSentence {
 		// if (printAttrNames) {
 		// sb.append("Loc");
 		// for (int i = 0; i < TokenAttr.values().length; i++) {
-		// sb.append(String.format("\t%s", TokenAttr.values()[i]));
+		// sb.append(String.format("\t%text", TokenAttr.values()[i]));
 		// }
 		// sb.append("\n");
 		// }
 		//
 		// for (int i = 0; i < toks.length; i++) {
 		// MultiToken tok = toks[i];
-		// sb.append(String.format("%d\t%s", i, tok.joinValues()));
+		// sb.append(String.format("%d\t%text", i, tok.joinValues()));
 		// if (i != toks.length - 1) {
 		// sb.append("\n");
 		// }
@@ -171,39 +153,12 @@ public class KSentence {
 		return sb.toString();
 	}
 
-	public KSentence toSymbolTaggedSentence() {
-		List<MultiToken> ret = Generics.newArrayList();
-
-		Token t = new Token();
-		for (TokenAttr attr : TokenAttr.values()) {
-			t.setValue(attr, START_SYMBOL);
-		}
-		ret.add(new MultiToken(-1, t));
-
-		for (MultiToken mt : toks) {
-			ret.add(mt);
-		}
-
-		t = new Token();
-		for (TokenAttr attr : TokenAttr.values()) {
-			t.setValue(attr, END_SYMBOL);
-		}
-		ret.add(new MultiToken(-1, t));
-
-		return new KSentence(ret);
-	}
-
-	public Token[] toTokens() {
-		List<Token> ret = Generics.newArrayList();
-		for (MultiToken mt : toks) {
-			for (Token t : mt.getTokens()) {
-				ret.add(t);
-			}
-		}
-		return ret.toArray(new Token[ret.size()]);
-	}
-
 	public void write(ObjectOutputStream oos) throws Exception {
+		boolean isMultiToken = false;
+		if (toks[0] instanceof MultiToken) {
+			isMultiToken = true;
+		}
+		oos.writeBoolean(isMultiToken);
 		oos.writeInt(toks.length);
 		for (int i = 0; i < toks.length; i++) {
 			toks[i].write(oos);

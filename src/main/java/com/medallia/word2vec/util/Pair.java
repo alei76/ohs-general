@@ -119,7 +119,7 @@ public class Pair<K, V> implements Map.Entry<K, V>, Serializable {
 	}
 
 	/**
-	 * @return {@link Ordering} which compares both values of the {@link Pair}s, with the first taking precedence.
+	 * @return {@link Ordering} which compares both values of the {@link Pair}text, with the first taking precedence.
 	 */
 	public static <X extends Comparable<? super X>, Y extends Comparable<? super Y>> Ordering<Pair<X, Y>> firstThenSecondComparator() {
 		return new Ordering<Pair<X, Y>>() {
@@ -272,7 +272,7 @@ public class Pair<K, V> implements Map.Entry<K, V>, Serializable {
 	}
 
 	/**
-	 * @return {@link Ordering} which compares both values of the {@link Pair}s, with the second taking precedence.
+	 * @return {@link Ordering} which compares both values of the {@link Pair}text, with the second taking precedence.
 	 */
 	public static <X extends Comparable<? super X>, Y extends Comparable<? super Y>> Ordering<Pair<X, Y>> secondThenFirstComparator() {
 		return new Ordering<Pair<X, Y>>() {

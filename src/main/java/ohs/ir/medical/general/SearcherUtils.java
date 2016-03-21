@@ -27,7 +27,7 @@ import ohs.types.Indexer;
 public class SearcherUtils {
 
 	public static IndexSearcher getIndexSearcher(String indexDirName) throws Exception {
-		System.out.printf("open an index at [%s]\n", indexDirName);
+		System.out.printf("open an index at [%text]\n", indexDirName);
 		IndexSearcher ret = new IndexSearcher(DirectoryReader.open(FSDirectory.open(Paths.get(indexDirName))));
 		ret.setSimilarity(new LMDirichletSimilarity());
 		// indexSearcher.setSimilarity(new BM25Similarity());

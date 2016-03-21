@@ -128,19 +128,19 @@ public class Paper implements Serializable {
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("SID = %s\n", sid));
-		sb.append(String.format("ID = %s\n", id));
-		sb.append(String.format("CN1 = %s\n", cn.getCn1()));
-		sb.append(String.format("CN2 = %s\n", cn.getCn2()));
+		sb.append(String.format("SID = %text\n", sid));
+		sb.append(String.format("ID = %text\n", id));
+		sb.append(String.format("CN1 = %text\n", cn.getCn1()));
+		sb.append(String.format("CN2 = %text\n", cn.getCn2()));
 
-		sb.append(String.format("Korean Source = %s\n", source.getName().getKorean()));
-		sb.append(String.format("English Source = %s\n", source.getName().getEnglish()));
-		sb.append(String.format("Year = %s\n", source.getYear()));
+		sb.append(String.format("Korean Source = %text\n", source.getName().getKorean()));
+		sb.append(String.format("English Source = %text\n", source.getName().getEnglish()));
+		sb.append(String.format("Year = %text\n", source.getYear()));
 
-		sb.append(String.format("Korean Title = %s\n", title.getKorean()));
-		sb.append(String.format("English Title = %s\n", title.getEnglish()));
-		sb.append(String.format("Korean Abstract = %s\n", abs.getKorean() == null ? null : "available"));
-		sb.append(String.format("English Abstarct = %s\n", abs.getEnglish() == null ? null : "available"));
+		sb.append(String.format("Korean Title = %text\n", title.getKorean()));
+		sb.append(String.format("English Title = %text\n", title.getEnglish()));
+		sb.append(String.format("Korean Abstract = %text\n", abs.getKorean() == null ? null : "available"));
+		sb.append(String.format("English Abstarct = %text\n", abs.getEnglish() == null ? null : "available"));
 		List<String> subs = new ArrayList<String>();
 
 		if (subjects != null) {
@@ -161,11 +161,11 @@ public class Paper implements Serializable {
 			Author author = authors[i];
 			Organization org = author.getOrganization();
 			sb.append(String.format("Author = %d\n", i + 1));
-			sb.append(String.format("Korean Name = %s\n", author.getName().getKorean()));
-			sb.append(String.format("English Name = %s\n", author.getName().getEnglish()));
-			sb.append(String.format("Korean ORG = %s\n", org.getName().getKorean()));
-			sb.append(String.format("English ORG = %s\n", org.getName().getEnglish()));
-			sb.append(String.format("E-mail = %s\n", author.getEmail()));
+			sb.append(String.format("Korean Name = %text\n", author.getName().getKorean()));
+			sb.append(String.format("English Name = %text\n", author.getName().getEnglish()));
+			sb.append(String.format("Korean ORG = %text\n", org.getName().getKorean()));
+			sb.append(String.format("English ORG = %text\n", org.getName().getEnglish()));
+			sb.append(String.format("E-mail = %text\n", author.getEmail()));
 			if (i != authors.length - 1) {
 				sb.append("\n");
 			}

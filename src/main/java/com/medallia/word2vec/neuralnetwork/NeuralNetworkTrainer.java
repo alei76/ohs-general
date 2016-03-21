@@ -20,7 +20,7 @@ import com.medallia.word2vec.util.CallableVoid;
 import ohs.math.ArrayUtils;
 import ohs.types.Vocab;
 
-/** Parent class for training word2vec's neural network */
+/** Parent class for training word2vec'text neural network */
 public abstract class NeuralNetworkTrainer {
 	/** Represents a neural network model */
 	public interface NeuralNetworkModel {

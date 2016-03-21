@@ -100,13 +100,13 @@ public class Author implements Serializable {
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("ID = %s\n", id));
-		sb.append(String.format("SID = %s\n", sid));
-		sb.append(String.format("Korean Name = %s\n", name.getKorean()));
-		sb.append(String.format("English Name = %s\n", name.getEnglish()));
-		sb.append(String.format("Korean ORG = %s\n", org.getName().getKorean()));
-		sb.append(String.format("English ORG = %s\n", org.getName().getEnglish()));
-		sb.append(String.format("E-mail = %s\n", email));
+		sb.append(String.format("ID = %text\n", id));
+		sb.append(String.format("SID = %text\n", sid));
+		sb.append(String.format("Korean Name = %text\n", name.getKorean()));
+		sb.append(String.format("English Name = %text\n", name.getEnglish()));
+		sb.append(String.format("Korean ORG = %text\n", org.getName().getKorean()));
+		sb.append(String.format("English ORG = %text\n", org.getName().getEnglish()));
+		sb.append(String.format("E-mail = %text\n", email));
 		return sb.toString();
 	}
 

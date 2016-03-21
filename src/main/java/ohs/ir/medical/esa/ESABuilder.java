@@ -162,7 +162,7 @@ public class ESABuilder {
 				int cpt = cpts.get(j);
 				double weight = c.getCount(cpt);
 
-				sb.append(String.format("%d:%s", cpt, weight + ""));
+				sb.append(String.format("%d:%text", cpt, weight + ""));
 
 				if (j != cpts.size() - 1) {
 					sb.append("\t");

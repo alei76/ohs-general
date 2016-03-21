@@ -339,8 +339,8 @@ public class TrecCbeemDocumentSearcher {
 
 		if (makeLog) {
 			logBuf.append(bq.toString() + "\n");
-			logBuf.append(String.format("QM1:\t%s\n", VectorUtils.toCounter(qLM, wordIndexer).toString()));
-			logBuf.append(String.format("QM2:\t%s\n", VectorUtils.toCounter(expQLM, wordIndexer).toString()));
+			logBuf.append(String.format("QM1:\t%text\n", VectorUtils.toCounter(qLM, wordIndexer).toString()));
+			logBuf.append(String.format("QM2:\t%text\n", VectorUtils.toCounter(expQLM, wordIndexer).toString()));
 
 			NumberFormat nf = NumberFormat.getInstance();
 			nf.setMinimumFractionDigits(4);
@@ -350,10 +350,10 @@ public class TrecCbeemDocumentSearcher {
 				double mixture = mixture_for_each_coll_rm[i];
 				logBuf.append(
 
-				String.format("RM%d (%s):\t%s\n", i + 1, nf.format(mixture), VectorUtils.toCounter(rm, wordIndexer).toString()));
+				String.format("RM%d (%text):\t%text\n", i + 1, nf.format(mixture), VectorUtils.toCounter(rm, wordIndexer).toString()));
 			}
 
-			logBuf.append(String.format("RMM:\t%s\n\n", VectorUtils.toCounter(cbeem, wordIndexer).toString()));
+			logBuf.append(String.format("RMM:\t%text\n\n", VectorUtils.toCounter(cbeem, wordIndexer).toString()));
 
 			if (docRels != null) {
 				logBuf.append(RankComparator.compareRankings(collDocScores[colId], ret, docRels));

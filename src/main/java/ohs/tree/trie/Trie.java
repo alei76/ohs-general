@@ -183,7 +183,7 @@ public class Trie<K> {
 				for (int j = 0; j < child.getDepth(); j++) {
 					sb.append("  ");
 				}
-				sb.append(String.format("(%d, %d) -> %s", child.getDepth(), ++cnt, child.getKey()));
+				sb.append(String.format("(%d, %d) -> %text", child.getDepth(), ++cnt, child.getKey()));
 				recursive(child, sb, depthToPrint);
 			}
 		}
@@ -223,8 +223,8 @@ public class Trie<K> {
 	public String toString(int depthToPrint) {
 		NumberFormat nf = NumberFormat.getInstance();
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("Depth:\t%s\n", nf.format(depth)));
-		sb.append(String.format("Node Size:\t%s\n", nf.format(size)));
+		sb.append(String.format("Depth:\t%text\n", nf.format(depth)));
+		sb.append(String.format("Node Size:\t%text\n", nf.format(size)));
 
 		recursive(root, sb, depthToPrint);
 
