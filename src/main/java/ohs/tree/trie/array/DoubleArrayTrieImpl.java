@@ -36,7 +36,7 @@ public class DoubleArrayTrieImpl extends AbstractDoubleArrayTrie {
 	private TreeSet<Integer> freePositions;
 
 	/**
-	 * Constructs a DoubleArrayTrie for the given alphabet length. Uses a default IntegerArrayList for storage.
+	 * Constructs a DoubleArrayTrie for the given alphabet length. Uses a default KIntegerArrayList for storage.
 	 * 
 	 * @param alphabetLength
 	 *            The size of the set of values that are to be stored.

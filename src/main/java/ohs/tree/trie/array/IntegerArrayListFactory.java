@@ -44,7 +44,7 @@ public class IntegerArrayListFactory implements IntegerListFactory {
 	}
 
 	/**
-	 * Creates and returns an <tt>IntegerListFactory</tt> that manufactures <tt>IntegerArrayList</tt>s
+	 * Creates and returns an <tt>IntegerListFactory</tt> that manufactures <tt>KIntegerArrayList</tt>s
 	 * with an initial capacity of <tt>initialCapacity</tt> and a growth factor of <p>
 	 * <tt>numerator/denominator + fixedInc</tt>
 	 * 
@@ -59,10 +59,10 @@ public class IntegerArrayListFactory implements IntegerListFactory {
 	}
 
 	/**
-	 * Creates and returns an <tt>IntegerListFactory</tt> that manufactures <tt>IntegerArrayList</tt>s
+	 * Creates and returns an <tt>IntegerListFactory</tt> that manufactures <tt>KIntegerArrayList</tt>s
 	 * with an initial capacity of 16 and a growth factor of 5/4 + 10.
 	 * 
-	 * @return An IntegerArrayList with sensible defaults.
+	 * @return An KIntegerArrayList with sensible defaults.
 	 */
 	public static IntegerArrayListFactory newInstance() {
 		return newInstance(16, 5, 4, 10);

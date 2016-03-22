@@ -92,5 +92,12 @@ public class Test {
 		IntegerList string3 = new IntegerArrayList();
 		string3.add(1);
 		string3.add(2);
+
+		KDATrie kdatrie = new KDATrie(4);
+		kdatrie.addToTrie(string1);
+		kdatrie.addToTrie(string2);
+		kdatrie.addToTrie(string3);
+
 	}
+
 }
