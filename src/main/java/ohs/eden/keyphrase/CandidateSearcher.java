@@ -4,13 +4,14 @@ import java.util.List;
 
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
-import ohs.ling.types.KDocument;
-import ohs.ling.types.MultiToken;
-import ohs.ling.types.Sentence;
-import ohs.ling.types.Token;
-import ohs.ling.types.TokenAttr;
-import ohs.tree.trie.Node;
-import ohs.tree.trie.Trie;
+import ohs.nlp.ling.types.KDocument;
+import ohs.nlp.ling.types.KSentence;
+import ohs.nlp.ling.types.MultiToken;
+import ohs.nlp.ling.types.Token;
+import ohs.nlp.ling.types.TokenAttr;
+import ohs.nlp.ling.types.TypeCaster;
+import ohs.tree.trie.hash.Node;
+import ohs.tree.trie.hash.Trie;
 import ohs.types.Counter;
 import ohs.utils.Generics;
 
@@ -120,7 +121,8 @@ public class CandidateSearcher {
 		List<KSentence> ret = Generics.newArrayList();
 
 		for (int i = 0; i < input.size(); i++) {
-			KSentence sent = input.getSentence(i);
+			KSentence sent = input.getSentence(i).linearizeMultiTokens();
+
 			String[] poss = sent.getValues(TokenAttr.POS);
 
 			for (int s = 0; s < poss.length;) {

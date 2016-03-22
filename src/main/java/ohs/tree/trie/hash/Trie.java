@@ -1,4 +1,4 @@
-package ohs.tree.trie;
+package ohs.tree.trie.hash;
 
 import java.io.File;
 import java.text.NumberFormat;
@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
 
-import ohs.tree.trie.Node.Type;
+import ohs.tree.trie.hash.Node.Type;
 import ohs.utils.Generics;
 
 public class Trie<K> {

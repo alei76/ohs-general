@@ -5,6 +5,8 @@ import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.List;
 
+import ohs.utils.Generics;
+
 public class KSentence {
 
 	private Token[] toks;
@@ -23,6 +25,27 @@ public class KSentence {
 
 	public Token getFirst() {
 		return toks[0];
+	}
+
+	public MultiToken[] toMultiTokens() {
+		MultiToken[] ret = new MultiToken[toks.length];
+		for (int i = 0; i < toks.length; i++) {
+			ret[i] = (MultiToken) toks[i];
+		}
+		return ret;
+	}
+
+	public KSentence linearizeMultiTokens() {
+		List<Token> ret = Generics.newArrayList();
+		for (Token tok : toks) {
+			if (tok instanceof MultiToken) {
+				MultiToken mt = (MultiToken) tok;
+				for (Token t : mt.getTokens()) {
+					ret.add(t);
+				}
+			}
+		}
+		return new KSentence(ret);
 	}
 
 	public Token getLast() {

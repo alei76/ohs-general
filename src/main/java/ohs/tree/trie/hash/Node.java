@@ -1,4 +1,4 @@
-package ohs.tree.trie;
+package ohs.tree.trie.hash;
 
 import java.io.Serializable;
 import java.util.ArrayList;

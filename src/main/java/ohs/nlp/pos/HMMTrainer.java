@@ -13,7 +13,6 @@ import ohs.nlp.ling.types.KSentence;
 import ohs.nlp.ling.types.MultiToken;
 import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
-import ohs.nlp.ling.types.TypeCaster;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.utils.Generics;
@@ -89,7 +88,7 @@ public class HMMTrainer {
 
 		for (KDocument doc : coll) {
 			for (KSentence sent : doc.getSentences()) {
-				for (MultiToken mt : TypeCaster.toMultiTokens(sent.getTokens())) {
+				for (MultiToken mt : sent.toMultiTokens()) {
 					String text = mt.getText();
 					String text2 = KoreanUtils.getDecomposedKoreanWord(text);
 
@@ -120,7 +119,7 @@ public class HMMTrainer {
 		for (int i = 0; i < sents.length; i++) {
 			KSentence sent = sents[i];
 
-			MultiToken[] toks = TypeCaster.toMultiTokens(sent.getTokens());
+			MultiToken[] toks = sent.toMultiTokens();
 			int[] ws = ArrayUtils.arrayInt(toks.length);
 			int[] poss = ArrayUtils.arrayInt(toks.length);
 

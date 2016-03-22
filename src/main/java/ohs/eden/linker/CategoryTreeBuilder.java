@@ -10,7 +10,7 @@ import org.apache.commons.math.stat.descriptive.SynchronizedMultivariateSummaryS
 
 import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
-import ohs.tree.trie.Trie;
+import ohs.tree.trie.hash.Trie;
 import ohs.types.BidMap;
 import ohs.types.Counter;
 import ohs.types.SetMap;

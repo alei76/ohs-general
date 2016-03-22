@@ -2,11 +2,11 @@ package ohs.eden.keyphrase;
 
 import java.util.List;
 
-import ohs.ling.types.KDocument;
-import ohs.ling.types.MultiToken;
-import ohs.ling.types.Sentence;
-import ohs.ling.types.Token;
-import ohs.ling.types.TokenAttr;
+import ohs.nlp.ling.types.KDocument;
+import ohs.nlp.ling.types.KSentence;
+import ohs.nlp.ling.types.MultiToken;
+import ohs.nlp.ling.types.Token;
+import ohs.nlp.ling.types.TokenAttr;
 import ohs.utils.Generics;
 
 public class TaggedTextParser {
@@ -34,13 +34,14 @@ public class TaggedTextParser {
 					String word = two[0];
 					String pos = two[1];
 
-					Token tok = new Token(0, word);
+					Token tok = new Token();
+					tok.setValue(TokenAttr.WORD, word);
 					tok.setValue(TokenAttr.POS, pos);
 					subToks[k] = tok;
-
 				}
 
-				MultiToken mt = new MultiToken(0, subToks);
+				MultiToken mt = new MultiToken();
+				mt.setTokens(subToks);
 				toks[j] = mt;
 
 			}
@@ -51,7 +52,7 @@ public class TaggedTextParser {
 		List<MultiToken> mts = Generics.newArrayList();
 
 		for (KSentence sent : doc.getSentences()) {
-			for (MultiToken mt : sent.getTokens()) {
+			for (MultiToken mt : sent.toMultiTokens()) {
 				mts.add(mt);
 			}
 		}

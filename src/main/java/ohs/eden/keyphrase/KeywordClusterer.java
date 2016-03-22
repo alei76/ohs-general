@@ -20,13 +20,14 @@ import ohs.types.Pair;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
 import ohs.utils.StopWatch;
+import ohs.utils.StrUtils;
 
 public class KeywordClusterer {
 
 	public static final String NONE = "<none>";
 
 	public static void main(String[] args) throws Exception {
-		System.out.printf("[%text] begins.\n", KeywordClusterer.class.getName());
+		System.out.printf("[%s] begins.\n", KeywordClusterer.class.getName());
 
 		KeywordData data = new KeywordData();
 
@@ -47,7 +48,7 @@ public class KeywordClusterer {
 	}
 
 	private static String normalize(String s) {
-		return s.replaceAll("[\\text\\p{Punct}&&[^<>]]+", "").toLowerCase();
+		return s.replaceAll("[\\p{Punct}&&[^<>]]+", "").toLowerCase();
 	}
 
 	private KeywordData kwdData;
@@ -134,15 +135,17 @@ public class KeywordClusterer {
 			keywordToCluster[i] = i;
 		}
 
-		clusterUsingExactMatch();
+		exactTwoLanguageMatch();
 
-		clusterUsingExactLanguageMatch(false);
+		exactLanguageMatch(false);
+
+		exactLanguageMatch(true);
 
 		// filter(3);
 
 		selectClusterLabels();
 
-		clusterUsingGramMatch();
+		hierarchicalAgglomerativeClustering();
 
 		selectClusterLabels();
 
@@ -156,8 +159,8 @@ public class KeywordClusterer {
 		kwdData.setClusters(t);
 	}
 
-	private void clusterUsingExactLanguageMatch(boolean isEnglish) {
-		System.out.println("cluster using exact language match");
+	private void exactLanguageMatch(boolean isEnglish) {
+		System.out.println("exact language match (English: " + isEnglish + ")");
 
 		SetMap<String, Integer> keyKeywordMap = Generics.newSetMap();
 
@@ -167,7 +170,8 @@ public class KeywordClusterer {
 
 			for (int kwid : kwids.keySet()) {
 				String keyword = kwdIndexer.getObject(kwid);
-				String key = isEnglish ? keyword.split("\t")[1] : keyword.split("\t")[0];
+				String key = StrUtils.value(isEnglish, keyword.split("\t")[1], keyword.split("\t")[0]);
+
 				key = normalize(key);
 
 				if (key.equals(NONE) || key.length() < 4) {
@@ -214,8 +218,8 @@ public class KeywordClusterer {
 		}
 	}
 
-	private void clusterUsingExactMatch() {
-		System.out.println("cluster using exact match");
+	private void exactTwoLanguageMatch() {
+		System.out.println("exact two languages match");
 		SetMap<String, Integer> tm = Generics.newSetMap();
 
 		for (int i = 0; i < kwdIndexer.size(); i++) {
@@ -254,8 +258,8 @@ public class KeywordClusterer {
 		// printClusters();
 	}
 
-	private void clusterUsingGramMatch() {
-		System.out.println("cluster using gram match");
+	private void hierarchicalAgglomerativeClustering() {
+		System.out.println("hierarchical agglomerative clustering");
 
 		Indexer<String> gramIndexer = buildGramIndexer();
 
@@ -285,7 +289,7 @@ public class KeywordClusterer {
 			for (int j = 0; j < cluster.size(); j++) {
 				if ((j + 1) % print_chunk_size_ == 0) {
 					int progess = (int) ((j + 1f) / cluster.size() * 100);
-					System.out.printf("\r[%dth, %d percent - %d/%d, %text]", i + 1, progess, j + 1, cluster.size(), stopWatch.stop());
+					System.out.printf("\r[%dth, %d percent - %d/%d, %s]", i + 1, progess, j + 1, cluster.size(), stopWatch.stop());
 				}
 
 				int qid = cluster.get(j);
@@ -323,7 +327,7 @@ public class KeywordClusterer {
 				}
 			}
 
-			System.out.printf("\r[%dth, %d percent - %d/%d, %text]\n", i + 1, 100, cluster.size(), cluster.size(), stopWatch.stop());
+			System.out.printf("\r[%dth, %d percent - %d/%d, %s]\n", i + 1, 100, cluster.size(), cluster.size(), stopWatch.stop());
 
 			CounterMap<Integer, Integer> queryResults = Generics.newCounterMap();
 			Set<Integer> used = Generics.newHashSet();
@@ -365,11 +369,11 @@ public class KeywordClusterer {
 				// System.out.println("###########################");
 				// for (int cid2 : cidSet) {
 				// String label = clusterLabel.get(cid2);
-				// System.out.printf("Label:\t%text\n", label);
+				// System.out.printf("Label:\t%s\n", label);
 				//
 				// for (int kwid : clusters.getCounter(cid2).keySet()) {
 				// String kwd = kwdIndexer.getObject(kwid);
-				// System.out.printf("Keyword:\t%d\t%text\n", kwid, kwd);
+				// System.out.printf("Keyword:\t%d\t%s\n", kwid, kwd);
 				// }
 				//
 				// System.out.println("-------------------------");
@@ -377,7 +381,7 @@ public class KeywordClusterer {
 				// System.out.println("");
 				// }
 				//
-				// System.out.printf("%d -> %d, %text\n", new_cid, qid,
+				// System.out.printf("%d -> %d, %s\n", new_cid, qid,
 				// queryOutputs.getCounter(qid).keySet());
 
 				Counter<Integer> newCent = Generics.newCounter();
@@ -633,7 +637,7 @@ public class KeywordClusterer {
 			StringBuffer sb = new StringBuffer();
 			sb.append(String.format("No:\t%d", n));
 			sb.append(String.format("\nID:\t%d", cid));
-			sb.append(String.format("\nLabel:\t%text", clusterLabel.get(cid)));
+			sb.append(String.format("\nLabel:\t%s", clusterLabel.get(cid)));
 			sb.append(String.format("\nKeywords:\t%d", clusters.getCounter(cid).size()));
 
 			Counter<Integer> c = Generics.newCounter();
@@ -648,13 +652,13 @@ public class KeywordClusterer {
 			for (int j = 0; j < kwids.size(); j++) {
 				int kwid = kwids.get(j);
 				int kw_freq = kwdData.getKeywordFreqs()[kwid];
-				sb.append(String.format("\n%d:\t%d\t%text\t%d", j + 1, kwid, kwdIndexer.getObject(kwid), kw_freq));
+				sb.append(String.format("\n%d:\t%d\t%s\t%d", j + 1, kwid, kwdIndexer.getObject(kwid), kw_freq));
 			}
 			writer.write("\n\n" + sb.toString());
 		}
 		writer.close();
 
-		System.out.printf("write [%d] clusters at [%text]\n", clusters.size(), fileName);
+		System.out.printf("write [%d] clusters at [%s]\n", clusters.size(), fileName);
 	}
 
 }

@@ -1,19 +1,15 @@
 package ohs.eden.keyphrase;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import kr.co.shineware.nlp.komoran.core.analyzer.Komoran;
 import kr.co.shineware.util.common.model.Pair;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.ling.types.Sentence;
-import ohs.ling.types.TokenAttr;
+import ohs.nlp.ling.types.KSentence;
+import ohs.nlp.ling.types.TokenAttr;
 import ohs.types.Counter;
-import ohs.types.Indexer;
-import ohs.types.ListMap;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
@@ -30,14 +26,7 @@ public class DataHandler {
 		// dh.buildKeywordData();
 		// dh.getKeywords();
 
-		delete();
 		System.out.println("process ends.");
-	}
-
-	public static void delete() {
-		String dirName = "F:/data/";
-
-		FileUtils.deleteFilesUnder(dirName);
 	}
 
 	public void getKeywords() throws Exception {
@@ -206,7 +195,8 @@ public class DataHandler {
 
 				for (int k = 0; k < l.size(); k++) {
 					Pair<String, String> pair = l.get(k);
-					sb.append(String.format("%text%text%text", pair.getFirst().replace(" ", "_"), TaggedTextParser.DELIM_TAG, pair.getSecond()));
+					sb.append(String.format("%text%text%text", pair.getFirst().replace(" ", "_"), TaggedTextParser.DELIM_TAG,
+							pair.getSecond()));
 					if (k != l.size() - 1) {
 						sb.append(TaggedTextParser.DELIM_SUBTOKEN);
 					}

@@ -1,6 +1,5 @@
 package ohs.eden.keyphrase;
 
-import java.sql.Struct;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -8,14 +7,14 @@ import java.util.Set;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.ling.types.KDocument;
-import ohs.ling.types.MultiToken;
-import ohs.ling.types.Sentence;
-import ohs.ling.types.TokenAttr;
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
-import ohs.tree.trie.Node;
-import ohs.tree.trie.Trie;
+import ohs.nlp.ling.types.KDocument;
+import ohs.nlp.ling.types.KSentence;
+import ohs.nlp.ling.types.MultiToken;
+import ohs.nlp.ling.types.TokenAttr;
+import ohs.tree.trie.hash.Node;
+import ohs.tree.trie.hash.Trie;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
@@ -27,7 +26,7 @@ import ohs.utils.TermWeighting;
 public class KeyphraseExtractor {
 
 	public static void main(String[] args) throws Exception {
-		System.out.printf("[%text] begins.\n", KeyphraseExtractor.class.getName());
+		System.out.printf("[%s] begins.\n", KeyphraseExtractor.class.getName());
 		// run1();
 		run2();
 		System.out.printf("ends.");
@@ -188,14 +187,14 @@ public class KeyphraseExtractor {
 				// for (int i = 0; i < labels.size(); i++) {
 				// String label = labels.get(i);
 				// String value = parts[i];
-				// sb.append(String.format("%text:\t%text\n", label, value));
+				// sb.append(String.format("%s:\t%s\n", label, value));
 				// }
 				//
-				// sb.append(String.format("KOW KWDS:\t%text\n", cs[0].toString(cs[0].size())));
-				// sb.append(String.format("ENG KWDS:\t%text", cs[1].toString(cs[1].size())));
+				// sb.append(String.format("KOW KWDS:\t%s\n", cs[0].toString(cs[0].size())));
+				// sb.append(String.format("ENG KWDS:\t%s", cs[1].toString(cs[1].size())));
 				// writer.write(sb.toString() + "\n\n");
 
-				writer.write(String.format("\"%text\"\t\"%text\"\n", cn, String.join(";", cs[0].keySet())));
+				writer.write(String.format("\"%s\"\t\"%s\"\n", cn, String.join(";", cs[0].keySet())));
 
 				// if (++num_docs > 1000) {
 				// break;
@@ -250,37 +249,39 @@ public class KeyphraseExtractor {
 				String korAbs = parts[6];
 				String engAbs = parts[7];
 
-				if (!type.equals("patent")) {
-					continue;
-				}
+//				if (!type.equals("patent")) {
+//					continue;
+//				}
 
 				String text = korTitle + "\n" + korAbs;
 				text = text.trim();
 
-//				if (korKwdStr.length() == 0) {
-//					continue;
-//				}
+				// if (korKwdStr.length() == 0) {
+				// continue;
+				// }
 
 				if (text.length() == 0) {
 					continue;
 				}
 				KDocument doc = TaggedTextParser.parse(text);
 
-				if (doc.sizeOfTokens() < 500) {
-					continue;
-				}
+//				if (doc.sizeOfTokens() < 500) {
+//					continue;
+//				}
 
 				Set<String> keywordSet = Generics.newHashSet();
 				String docText = doc.joinValues(TokenAttr.WORD);
 				int num_matches = 0;
 
 				for (String kwd : korKwdStr.split(";")) {
-					KSentence kwdSent = TaggedTextParser.parse(kwd).toSentence();
-					String s = kwdSent.joinValues("", MultiToken.DELIM_TOKEN, new TokenAttr[] { TokenAttr.WORD }, 0, kwdSent.size());
-					keywordSet.add(s);
+					if (kwd.length() > 0) {
+						KSentence kwdSent = TaggedTextParser.parse(kwd).toSentence();
+						String s = kwdSent.joinValues("", MultiToken.DELIM_MULTI_TOKEN, new TokenAttr[] { TokenAttr.WORD }, 0, kwdSent.size());
+						keywordSet.add(s);
 
-					if (docText.contains(s)) {
-						num_matches++;
+						if (docText.contains(s)) {
+							num_matches++;
+						}
 					}
 				}
 
@@ -444,8 +445,8 @@ public class KeyphraseExtractor {
 			phrCents.setCount(pIndexer.getObject(i), cents[i]);
 		}
 
-		System.out.printf("Weights:\t%text\n", ret);
-		System.out.printf("Cents:\t%text\n", phrCents);
+		System.out.printf("Weights:\t%s\n", ret.toString(5));
+		System.out.printf("Cents:\t%s\n", phrCents.toString(5));
 
 		return ret;
 	}

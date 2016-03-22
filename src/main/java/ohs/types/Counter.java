@@ -664,7 +664,7 @@ public class Counter<E> implements Serializable {
 		int numKeys = 0;
 
 		for (final Entry<E, Double> element : descending ? getEntriesSortedByDecreasingCount() : getEntriesSortedByIncreasingCount()) {
-			sb.append(String.format("%text:%text", element.getKey().toString(), f.format(element.getValue())));
+			sb.append(String.format("%s:%s", element.getKey().toString(), f.format(element.getValue())));
 			if (numKeys < size() - 1) {
 				if (printVertical) {
 					sb.append("\n");

@@ -1,13 +1,12 @@
 package ohs.eden.keyphrase;
 
 import java.util.List;
-import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
 import ohs.io.TextFileReader;
-import ohs.ling.types.KDocument;
-import ohs.ling.types.TokenAttr;
+import ohs.nlp.ling.types.KDocument;
+import ohs.nlp.ling.types.TokenAttr;
 import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.GramGenerator;
 import ohs.types.Counter;

@@ -742,6 +742,14 @@ public class ArrayUtils {
 		}
 	}
 
+	public static int[] enlarge(int[] a, int add_size) {
+		int[] ret = new int[a.length + add_size];
+		for (int i = 0; i < a.length; i++) {
+			ret[i] = a[i];
+		}
+		return ret;
+	}
+
 	public static void reverse(int[] a) {
 		int mid = a.length / 2;
 		for (int i = 0; i < mid; i++) {

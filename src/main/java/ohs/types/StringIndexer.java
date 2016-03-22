@@ -11,8 +11,8 @@ import java.util.List;
 
 import ohs.io.FileUtils;
 import ohs.math.ArrayMath;
-import ohs.tree.trie.TST;
-import ohs.tree.trie.TST.Node;
+import ohs.tree.trie.hash.TST;
+import ohs.tree.trie.hash.TST.Node;
 
 public class StringIndexer extends AbstractList<String> implements Serializable {
 

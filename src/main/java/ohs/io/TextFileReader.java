@@ -139,13 +139,13 @@ public class TextFileReader {
 		}
 
 		if (remain == 0) {
-			System.out.print(String.format("\r[%d nexts, %text lines, %text]", numNexts, numLines, stopWatch.stop()));
+			System.out.print(String.format("\r[%d nexts, %s lines, %s]", numNexts, numLines, stopWatch.stop()));
 		}
 	}
 
 	public void printLast() {
 		stopWatch.stop();
-		System.out.println(String.format("\r[%d nexts, %text lines, %text]", numNexts, numLines, stopWatch.toString()));
+		System.out.println(String.format("\r[%d nexts, %s lines, %s]", numNexts, numLines, stopWatch.toString()));
 	}
 
 	public void setMaxLines(int maxLines) {
