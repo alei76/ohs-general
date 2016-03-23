@@ -125,7 +125,7 @@ public class DoubleArrayList implements RandomAccess, Cloneable, Serializable {
 	 *             if the specified initial capacity ivs negative
 	 */
 	public DoubleArrayList(int initialCapacity) {
-		if (initialCapacity > 0) {
+		if ((size = initialCapacity) > 0) {
 			this.elementData = new double[initialCapacity];
 		} else if (initialCapacity == 0) {
 			this.elementData = EMPTY_ELEMENTDATA;

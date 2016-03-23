@@ -1,6 +1,7 @@
 package ohs.types;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
@@ -120,7 +121,8 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 *             if the specified initial capacity ivs negative
 	 */
 	public IntegerArrayList(int initialCapacity) {
-		if (initialCapacity > 0) {
+
+		if ((size = initialCapacity) > 0) {
 			this.elementData = new int[initialCapacity];
 		} else if (initialCapacity == 0) {
 			this.elementData = EMPTY_ELEMENTDATA;

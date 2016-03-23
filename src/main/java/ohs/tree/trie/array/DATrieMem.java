@@ -26,6 +26,12 @@ package ohs.tree.trie.array;
 import java.io.IOException;
 import java.util.TreeMap;
 
+import ohs.nlp.ling.types.KDocument;
+import ohs.nlp.ling.types.KSentence;
+import ohs.nlp.ling.types.MultiToken;
+import ohs.nlp.pos.NLPPath;
+import ohs.nlp.pos.SejongReader;
+
 /**
  * Pure memory implementation of Double-Array Trie. Stores array as -- well -- array and a tree structure to store address data.
  * 
@@ -124,19 +130,44 @@ public class DATrieMem extends DATrie {
 	}
 
 	// Just a simple example usage.
-	public static void main(String[] args) throws IOException {
-		DATrieMem test = new DATrieMem(1, 128);
+	public static void main(String[] args) throws Exception {
+		{
+			DATrieMem trie = new DATrieMem(1, 10000);
 
-		test.insert(new int[] { 1, 5, 6, 7 }, 14);
-		test.insert(new int[] { 2, 2 }, 19);
-		test.insert(new int[] { 1, 5, 2 }, 9);
-		test.insert(new int[] { 2, 5, 2 }, 3);
-		test.insert(new int[] { 1, 2, 5 }, 8);
-		test.insert(new int[] { 1, 2, 5 }, 8);
+			int cnt = 0;
+			SejongReader r = new SejongReader(NLPPath.POS_DATA_FILE, NLPPath.POS_TAG_SET_FILE);
+			while (r.hasNext()) {
+				KDocument doc = r.next();
 
-		System.out.println(test.find(new int[] { 1, 2, 5 }));
-		;
-		test.display();
+				for (int i = 0; i < doc.size(); i++) {
+					KSentence sent = doc.getSentence(i);
+					for (MultiToken mt : sent.toMultiTokens()) {
+						String text = mt.getText();
+						int[] ws = new int[text.length()];
+						for (int j = 0; j < ws.length; j++) {
+							ws[j] = text.charAt(j);
+						}
+						trie.insert(ws, cnt++);
+					}
+				}
+			}
+			r.close();
+		}
+
+		{
+			DATrieMem test = new DATrieMem(1, 128);
+
+			test.insert(new int[] { 1, 5, 6, 7 }, 14);
+			test.insert(new int[] { 2, 2 }, 19);
+			test.insert(new int[] { 1, 5, 2 }, 9);
+			test.insert(new int[] { 2, 5, 2 }, 3);
+			test.insert(new int[] { 1, 2, 5 }, 8);
+			test.insert(new int[] { 1, 2, 5 }, 8);
+
+			System.out.println(test.find(new int[] { 1, 2, 5 }));
+			;
+			test.display();
+		}
 		// test.disp();
 	}
 }

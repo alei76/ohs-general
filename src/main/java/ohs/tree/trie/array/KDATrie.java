@@ -6,6 +6,13 @@ import java.util.LinkedList;
 import java.util.Random;
 import java.util.TreeMap;
 
+import ohs.nlp.ling.types.KDocument;
+import ohs.nlp.ling.types.KSentence;
+import ohs.nlp.ling.types.MultiToken;
+import ohs.nlp.pos.NLPPath;
+import ohs.nlp.pos.SejongReader;
+import ohs.types.IntegerArrayList;
+
 /**
  * Double Array Trie
  * 
@@ -40,19 +47,38 @@ public class KDATrie {
 	public static final int HEAD = 1;
 
 	// Just a simple example usage.
-	public static void main(String[] args) throws IOException {
-		KDATrie test = new KDATrie(1, 128);
+	public static void main(String[] args) throws Exception {
 
-		test.insert(new int[] { 1, 5, 6, 7 }, 14);
-		test.insert(new int[] { 2, 2 }, 19);
-		test.insert(new int[] { 1, 5, 2 }, 9);
-		test.insert(new int[] { 2, 5, 2 }, 3);
-		test.insert(new int[] { 1, 2, 5 }, 8);
-		test.insert(new int[] { 1, 2, 5 }, 8);
+		KDATrie trie = new KDATrie(1, 100000);
 
-		System.out.println(test.find(new int[] { 1, 2, 5 }));
-		;
-		test.display();
+		int cnt = 0;
+		SejongReader r = new SejongReader(NLPPath.POS_DATA_FILE, NLPPath.POS_TAG_SET_FILE);
+		while (r.hasNext()) {
+			KDocument doc = r.next();
+
+			for (int i = 2; i < doc.size(); i++) {
+				KSentence sent = doc.getSentence(i);
+				for (MultiToken mt : sent.toMultiTokens()) {
+					String text = mt.getText();
+					char[] chs = text.toCharArray();
+					trie.insert(text, cnt++);
+				}
+			}
+		}
+		r.close();
+
+		// KDATrie test = new KDATrie(1, 128);
+		//
+		// test.insert(new int[] { 1, 5, 6, 7 }, 14);
+		// test.insert(new int[] { 2, 2 }, 19);
+		// test.insert(new int[] { 1, 5, 2 }, 9);
+		// test.insert(new int[] { 2, 5, 2 }, 3);
+		// test.insert(new int[] { 1, 2, 5 }, 8);
+		// test.insert(new int[] { 1, 2, 5 }, 8);
+		//
+		// System.out.println(test.find(new int[] { 1, 2, 5 }));
+		// ;
+		trie.display();
 		// test.disp();
 	}
 
@@ -75,13 +101,13 @@ public class KDATrie {
 
 	protected int maxChar;
 	protected int array_size;
-	protected int[] children;
+	protected IntegerArrayList children;
 	protected Random random;
 	protected byte[] empty_slots;// bit for each empty slot
 
 	private boolean use_empty_array;
-	protected int[] base;
-	protected int[] check;
+	protected IntegerArrayList base;
+	protected IntegerArrayList check;
 	private TreeMap<Integer, Integer> data_addresses;
 
 	private int head;
@@ -104,21 +130,22 @@ public class KDATrie {
 			throw new IllegalArgumentException("Minimum character value must be >= 1.");
 		this.minChar = minChar;
 		this.maxChar = maxChar;
-		children = new int[maxChar];
+		children = new IntegerArrayList(maxChar);
 		random = new Random();
 		empty_slots = new byte[100];
 		use_empty_array = false;
 
 		array_size = INITIAL_ARRAY_SIZE;
-		base = new int[(int) array_size];
-		check = new int[(int) array_size];
+		base = new IntegerArrayList(array_size);
+		check = new IntegerArrayList(array_size);
+
 		data_addresses = new TreeMap<Integer, Integer>();
 		head = 1;
-		base[head] = 1;
-		check[base[head]] = head;
-		children = new int[maxChar];
 
-		Init();
+		base.set(head, 1);
+		check.set(base.get(head), head);
+
+		ensureEmptySize();
 	}
 
 	/**
@@ -131,10 +158,13 @@ public class KDATrie {
 	 * @return
 	 */
 	protected int addChild(int state, int c) throws IOException {
-		int stateb = readBase(state);
+		int stateb = base.get(state);
 		int b = getEmptyBase(stateb);
 		int child = stateb + c;
-		writeBase(child, b);
+
+		String s1 = String.copyValueOf(Character.toChars(c));
+
+		base.set(child, b);
 		writeCheckW(child, state);
 		return child;
 	}
@@ -151,7 +181,7 @@ public class KDATrie {
 		// loop through children that aren't 0
 		boolean safe = true;
 		for (int c = minChar; c < maxChar; c++) {
-			if (children[c] > 0) {
+			if (children.get(c) > 0) {
 				// make sure we haven't gone out of bounds
 				if (base >= array_size || base + c >= array_size) {
 					safe = false;
@@ -172,7 +202,7 @@ public class KDATrie {
 
 	public void disp() {
 		for (int i = HEAD; i < 60; i++) {
-			System.out.printf("%d\t[%d %d]\t[%d]\n", i, this.readBase(i), this.readAddress(i), this.readCheck(i));
+			System.out.printf("%d\t[%d %d]\t[%d]\n", i, this.base.get(i), this.readAddress(i), this.check.get(i));
 		}
 	}
 
@@ -196,14 +226,16 @@ public class KDATrie {
 
 			while (!queue.isEmpty()) {
 				state = queue.poll();
-				final int[] children = getChildren(state);
-				for (int i = 0; i < children.length; i++) {
-					if (children[i] > 0) {
+				final IntegerArrayList children = getChildren(state);
+				for (int i = 0; i < children.size(); i++) {
+					if (children.get(i) > 0) {
 						if (count++ > max)
 							break;
-						digraph += "\"" + state + "," + readAddress(state) + "\" -> \"" + children[i] + "," + readAddress(children[i])
-								+ "\"[label=\"" + i + "\"]\n";
-						queue.add(children[i]);
+
+						int c = children.get(i);
+						digraph += "\"" + state + "," + readAddress(state) + "\" -> \"" + c + "," + readAddress(c) + "\"[label=\"" + i
+								+ "\"]\n";
+						queue.add(c);
 					}
 				}
 				if (count > max)
@@ -249,7 +281,7 @@ public class KDATrie {
 			byte mask = (byte) (1 << (b % 8));
 			return (empty_slots[b / 8] & mask) != 0;
 		} else {
-			return readCheck(b) == EMPTY;
+			return check.get(b) == EMPTY;
 		}
 	}
 
@@ -265,20 +297,9 @@ public class KDATrie {
 		}
 	}
 
-	/**
-	 * Ensure the arrays are long enough. The wrapper method ensureLengthW extends the empty_slots array if necessary
-	 * 
-	 * @param length
-	 */
-	protected void ensureLength(int length) {
-		while (array_size < length) {
-			lengthenArrays((int) (array_size * ARRAY_LENGTHEN_FACTOR));
-		}
-	}
-
 	private void ensureLengthW(int length) {
-		ensureLength(length);
-		ensureEmptySize();
+		// ensureLength(length);
+		// ensureEmptySize();
 	}
 
 	/**
@@ -313,12 +334,12 @@ public class KDATrie {
 	 */
 	protected int findSafeBase(int state, int required_child) throws IOException {
 		getChildren(state);// sets children variable
-		children[required_child] = 1;// just some number > 0
+		children.set(required_child, 1);// just some number > 0
 		int loops = 0;
 
 		int b;
 		if (this.RELOC_METHOD == RelocMethod.BRUTE_FORCE) {
-			b = readBase(state) - array_size / 5;// getBase();{
+			b = base.get(state) - array_size / 5;// getBase();{
 		} else {
 			b = getRandomBase();
 		}
@@ -377,11 +398,11 @@ public class KDATrie {
 	 */
 	protected int getChild(int state, int character) throws IOException {
 		ensureLengthW(state);
-		int t = readBase(state) + character;
-		int check = readCheck(t);
-		if (check == state)
+		int t = base.get(state) + character;
+		int chk = check.get(t);
+		if (chk == state)
 			return t;
-		else if (check == EMPTY)
+		else if (chk == EMPTY)
 			return EMPTY;
 		else
 			return FAIL;
@@ -394,19 +415,21 @@ public class KDATrie {
 	 * @return
 	 * @throws IOException
 	 */
-	protected final int[] getChildren(int state) throws IOException {
+	protected final IntegerArrayList getChildren(int state) throws IOException {
 		int child;
 		for (int i = minChar; i < maxChar; i++) {
-			child = readBase(state) + i;
+			child = base.get(state) + i;
 			if (child >= array_size) {
-				for (int j = i; j < maxChar; j++)
-					children[j] = EMPTY;
+				for (int j = i; j < maxChar; j++) {
+					children.set(j, EMPTY);
+				}
+
 				break;
 			}
-			if (readCheck(child) == state) {
-				children[i] = child;
+			if (check.get(child) == state) {
+				children.set(i, child);
 			} else {
-				children[i] = EMPTY;
+				children.set(i, EMPTY);
 			}
 		}
 		return children;
@@ -415,10 +438,10 @@ public class KDATrie {
 	protected int getEmptyBase(int start_base) throws IOException {
 		int b = start_base;
 		while (!empty(b)) {
-			if (b >= array_size - maxChar)
-				b = 1;
-			else
-				b++;
+			// if (b >= array_size - maxChar)
+			// b = 1;
+			// else
+			b++;
 		}
 		return b;
 	};
@@ -436,10 +459,6 @@ public class KDATrie {
 		int b;
 		b = random.nextInt((int) (array_size * RANDOM_BASE_MAX));
 		return getEmptyBase(b);
-	}
-
-	public void Init() {
-		this.ensureEmptySize();
 	}
 
 	/**
@@ -470,16 +489,13 @@ public class KDATrie {
 		writeAddress(state, address);
 	}
 
-	private void lengthenArrays(int new_size) {
-		int[] new_base = new int[(int) (new_size)];
-		int[] new_check = new int[(int) (new_size)];
-		for (int i = 0; i < array_size; i++) {
-			new_base[i] = base[i];
-			new_check[i] = check[i];
+	public void insert(String word, int addr) throws IOException {
+		int[] ar = new int[word.length()];
+		for (int i = 0; i < word.length(); i++) {
+			ar[i] = word.codePointAt(i);
+			// System.out.println(String.copyValueOf(Character.toChars(word.codePointAt(i))));
 		}
-		base = new_base;
-		check = new_check;
-		this.array_size = new_size;
+		insert(ar, addr);
 	}
 
 	/**
@@ -493,14 +509,14 @@ public class KDATrie {
 	 * @throws IOException
 	 */
 	protected boolean owned(int s, int c) throws IOException {
-		return readCheck(readBase(s) + c) == s;
+		return check.get(base.get(s) + c) == s;
 	}
 
 	public void printDensity() {
 		double free = 0;
 		int used = 0;
 		for (int i = 0; i < array_size; i++) {
-			if (check[i] == EMPTY)
+			if (check.get(i) == EMPTY)
 				free += 1;
 			else
 				used += 1;
@@ -519,14 +535,6 @@ public class KDATrie {
 		}
 	}
 
-	protected int readBase(int s) {
-		return base[s];
-	}
-
-	protected int readCheck(int s) {
-		return check[s];
-	}
-
 	/**
 	 * Move state to new base and resolve children. This function is part of resolveConflict which find a safe new base. NOTE: if the new
 	 * base is not safe then this function may mess up the tree.
@@ -536,9 +544,9 @@ public class KDATrie {
 	 */
 	protected void relocateState(int state, int new_base) throws IOException {
 		getChildren(state);
-		int statebase = readBase(state);
+		int statebase = base.get(state);
 		for (int c = minChar; c < maxChar; c++) {
-			if (children[c] == EMPTY)
+			if (children.get(c) == EMPTY)
 				continue;
 
 			// update children
@@ -548,11 +556,11 @@ public class KDATrie {
 			writeCheckW(new_base + c, state);
 
 			// copy the node
-			writeBase(new_child, readBase(old_child));
+			base.set(new_child, base.get(old_child));
 
 			for (int d = minChar; d < maxChar; d++) {
 				if (owned(old_child, d))
-					writeCheckW(readBase(old_child) + d, new_base + c);
+					writeCheckW(base.get(old_child) + d, new_base + c);
 			}
 			writeCheckW(old_child, EMPTY);
 
@@ -560,7 +568,7 @@ public class KDATrie {
 			writeAddress(new_child, readAddress(old_child));
 			writeAddress(old_child, EMPTY);
 		}
-		writeBase(state, new_base);
+		base.set(state, new_base);
 	}
 
 	protected void setEmpty(int b, boolean empty) {
@@ -573,21 +581,9 @@ public class KDATrie {
 		}
 	}
 
-	protected void setLength(int length) {
-		lengthenArrays(length);
-	}
-
 	protected void writeAddress(int s, int target) {
 		if (target != EMPTY)
 			data_addresses.put(s, target);
-	}
-
-	protected void writeBase(int s, int v) {
-		base[s] = v;
-	}
-
-	protected void writeCheck(int s, int v) {
-		check[s] = v;
 	}
 
 	/**
@@ -600,7 +596,7 @@ public class KDATrie {
 	 * @throws IOException
 	 */
 	private void writeCheckW(int s, int v) throws IOException {
-		this.writeCheck(s, v);
+		check.set(s, v);
 		setEmpty(s, v == EMPTY);
 	}
 }
