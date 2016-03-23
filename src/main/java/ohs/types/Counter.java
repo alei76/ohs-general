@@ -17,7 +17,8 @@ import java.util.TreeSet;
 
 /**
  * A map from objs to doubles. Includes convenience methods for getting, setting, and incrementing element counts. Objects not in the
- * counter will return a unique_cnt of zero. The counter is backed by a HashMap .(unless specified otherwise with the MapFactory constructor).
+ * counter will return a unique_cnt of zero. The counter is backed by a HashMap .(unless specified otherwise with the MapFactory
+ * constructor).
  * 
  * @author lots of people
  */
@@ -66,7 +67,7 @@ public class Counter<E> implements Serializable {
 		System.out.println("Total: " + counter.totalCount());
 	}
 
-	private final Map<E, Double> entries;
+	private Map<E, Double> entries;
 
 	private boolean dirty = true;
 
@@ -148,8 +149,8 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * Returns whether the counter contains the given key. Note that this is the way to distinguish keys which are in the counter with unique_cnt
-	 * zero, and those which are not in the counter (and will therefore return unique_cnt zero from getCount().
+	 * Returns whether the counter contains the given key. Note that this is the way to distinguish keys which are in the counter with
+	 * unique_cnt zero, and those which are not in the counter (and will therefore return unique_cnt zero from getCount().
 	 * 
 	 * @param key
 	 * @return whether the counter contains the key
@@ -229,8 +230,8 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * I know, I know, this should be wrapped in a Distribution class, but it'text such a common use...why not. Returns the MLE prob. Assumes
-	 * all the counts are >= 0.0 and totalCount > 0.0. If the latter is false, return 0.0 (i.e. 0/0 == 0)
+	 * I know, I know, this should be wrapped in a Distribution class, but it'text such a common use...why not. Returns the MLE prob.
+	 * Assumes all the counts are >= 0.0 and totalCount > 0.0. If the latter is false, return 0.0 (i.e. 0/0 == 0)
 	 * 
 	 * @author Aria
 	 * @param key
@@ -704,6 +705,14 @@ public class Counter<E> implements Serializable {
 		cacheTotal = total;
 		dirty = false;
 		return total;
+	}
+
+	public void trimToSize() {
+		Map<E, Double> m = new HashMap<E, Double>(entries.size());
+		m.putAll(entries);
+		entries.clear();
+		entries = null;
+		entries = m;
 	}
 
 	public Iterable<Double> values() {

@@ -42,6 +42,21 @@ public class CounterMap<K, V> implements java.io.Serializable {
 		counterMap = new HashMap<K, Counter<V>>();
 	}
 
+	public void trimToSize() {
+		Map<K, Counter<V>> cm = new HashMap<K, Counter<V>>();
+
+		for (Entry<K, Counter<V>> e : counterMap.entrySet()) {
+			K k = e.getKey();
+			Counter<V> v = e.getValue();
+			v.trimToSize();
+			cm.put(k, v);
+		}
+		counterMap.clear();
+		counterMap = null;
+		counterMap = cm;
+
+	}
+
 	public CounterMap(CounterMap<K, V> cm) {
 		this(cm.size());
 		incrementAll(cm);
