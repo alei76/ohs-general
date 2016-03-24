@@ -7,7 +7,7 @@ import java.util.Random;
 import java.util.TreeMap;
 
 import ohs.nlp.ling.types.KDocument;
-import ohs.nlp.ling.types.KDocumentCollection;
+import ohs.nlp.ling.types.KSentence;
 import ohs.nlp.ling.types.MultiToken;
 import ohs.nlp.pos.NLPPath;
 import ohs.nlp.pos.SejongReader;
@@ -33,7 +33,7 @@ import ohs.types.IntegerArrayList;
  * 
  * @author Jeshua Bratman
  */
-public class KDATrie {
+public class KDATrie2 {
 	/**
 	 * Relocation Strategy RANDOM is a heuristic monte carlo relocation method, BRUTE_FORCE scans until it finds a suitable location (not
 	 * recommended)
@@ -49,31 +49,23 @@ public class KDATrie {
 	// Just a simple example usage.
 	public static void main(String[] args) throws Exception {
 
-		{
-			KDATrie trie = new KDATrie(1, 100000);
+		KDATrie2 trie = new KDATrie2(1, 100000);
 
-			KDocumentCollection col = new KDocumentCollection();
-			int cnt = 0;
-			SejongReader r = new SejongReader(NLPPath.POS_DATA_FILE, NLPPath.POS_TAG_SET_FILE);
-			while (r.hasNext()) {
-				if (col.size() == 10) {
-					break;
+		int cnt = 0;
+		SejongReader r = new SejongReader(NLPPath.POS_DATA_FILE, NLPPath.POS_TAG_SET_FILE);
+		while (r.hasNext()) {
+			KDocument doc = r.next();
+
+			for (int i = 2; i < doc.size(); i++) {
+				KSentence sent = doc.getSentence(i);
+				for (MultiToken mt : sent.toMultiTokens()) {
+					String text = mt.getText();
+					char[] chs = text.toCharArray();
+					trie.insert(text, cnt++);
 				}
-				KDocument doc = r.next();
-				col.add(doc);
 			}
-			r.close();
-
-			MultiToken[] mts = MultiToken.toMultiTokens(col.getTokens());
-
-			for (int i = 2; i < mts.length; i++) {
-				MultiToken mt = mts[i];
-				String text = mt.getText();
-				char[] cs = text.toCharArray();
-				trie.insert(text, cnt++);
-			}
-
 		}
+		r.close();
 
 		// KDATrie test = new KDATrie(1, 128);
 		//
@@ -86,7 +78,7 @@ public class KDATrie {
 		//
 		// System.out.println(test.find(new int[] { 1, 2, 5 }));
 		// ;
-		// trie.display();
+		trie.display();
 		// test.disp();
 	}
 
@@ -108,6 +100,7 @@ public class KDATrie {
 	protected int minChar;
 
 	protected int maxChar;
+	protected int array_size;
 	protected IntegerArrayList children;
 	protected Random random;
 	protected byte[] empty_slots;// bit for each empty slot
@@ -122,7 +115,7 @@ public class KDATrie {
 	/**
 	 * Initialize DA trie with default min/max chars (sufficient if input is in ascii)
 	 */
-	public KDATrie() {
+	public KDATrie2() {
 		this(1, 128);
 	}
 
@@ -132,7 +125,7 @@ public class KDATrie {
 	 * @param maxChar
 	 *            maximum character value
 	 */
-	public KDATrie(int minChar, int maxChar) {
+	public KDATrie2(int minChar, int maxChar) {
 		if (minChar < 1)
 			throw new IllegalArgumentException("Minimum character value must be >= 1.");
 		this.minChar = minChar;
@@ -141,10 +134,11 @@ public class KDATrie {
 		random = new Random();
 		empty_slots = new byte[100];
 		use_empty_array = false;
+		array_size = INITIAL_ARRAY_SIZE;
 
-		base = new IntegerArrayList(INITIAL_ARRAY_SIZE);
-		check = new IntegerArrayList(INITIAL_ARRAY_SIZE);
-		children = new IntegerArrayList(INITIAL_ARRAY_SIZE);
+		base = new IntegerArrayList(array_size);
+		check = new IntegerArrayList(array_size);
+		children = new IntegerArrayList(maxChar);
 
 		base.setAutoGrowth(true);
 		check.setAutoGrowth(true);
@@ -188,18 +182,18 @@ public class KDATrie {
 	 * @return
 	 * @throws IOException
 	 */
-	private boolean checkSafeBase(int state, int b) throws IOException {
+	private boolean checkSafeBase(int state, int base) throws IOException {
 		// loop through children that aren't 0
 		boolean safe = true;
 		for (int c = minChar; c < maxChar; c++) {
 			if (children.get(c) > 0) {
 				// make sure we haven't gone out of bounds
-				if (b >= base.size() || b + c >= base.size()) {
+				if (base >= array_size || base + c >= array_size) {
 					safe = false;
 					break;
 				}
 				// check if this new base CAN'T fit this child
-				if (!empty(b + c)) {
+				if (!empty(base + c)) {
 					safe = false;
 					break;
 				}
@@ -299,9 +293,9 @@ public class KDATrie {
 	// ==================================================
 
 	protected void ensureEmptySize() {
-		if (use_empty_array && empty_slots.length < base.size() / 8) {
+		if (use_empty_array && empty_slots.length < array_size / 8) {
 			byte[] temp = empty_slots;
-			empty_slots = new byte[(int) Math.ceil(base.size() / 8.0)];
+			empty_slots = new byte[(int) Math.ceil(array_size / 8.0)];
 			for (int i = 0; i < temp.length; i++) {
 				empty_slots[i] = temp[i];
 			}
@@ -322,17 +316,17 @@ public class KDATrie {
 	 * @throws IOException
 	 */
 	public int find(int[] ar) throws IOException {
-		return find(ar, KDATrie.HEAD);
+		return find(ar, KDATrie2.HEAD);
 	}
 
-	private int find(int[] x, int r) throws IOException {
-		int length = x.length;
-		for (int h = 0; h < length; h++) {
-			r = getChild(r, x[h]);
-			if (r == FAIL || r == EMPTY)
+	public int find(int[] ar, int state) throws IOException {
+		int length = ar.length;
+		for (int i = 0; i < length; i++) {
+			state = getChild(state, ar[i]);
+			if (state == FAIL || state == EMPTY)
 				return EMPTY;
 		}
-		return r;
+		return state;
 	}
 
 	/**
@@ -350,7 +344,7 @@ public class KDATrie {
 
 		int b;
 		if (this.RELOC_METHOD == RelocMethod.BRUTE_FORCE) {
-			b = base.get(state) - base.size() / 5;// getBase();{
+			b = base.get(state) - array_size / 5;// getBase();{
 		} else {
 			b = getRandomBase();
 		}
@@ -364,19 +358,19 @@ public class KDATrie {
 				// bookeeping
 				loops++;
 				// choose next base
-				if (b + maxChar >= base.size())
+				if (b + maxChar >= array_size)
 					b = 1;
 				else
 					b++;
 				if (RELOC_METHOD == RelocMethod.RANDOM) {
-					if ((loops % (base.size() * RELOCATION_BOREDOM)) == 0)
+					if ((loops % (array_size * RELOCATION_BOREDOM)) == 0)
 						b = getRandomBase();
 				}
 				// lengthen arrays if we loop too long
-				if (loops > base.size() * RELOCATION_LENGTHEN_THRESH) {
+				if (loops > array_size * RELOCATION_LENGTHEN_THRESH) {
 					// System.out.println("I have looped "+loops+" times, resizing");
-					b = base.size();
-					ensureLengthW((int) (base.size() * this.ARRAY_LENGTHEN_FACTOR));
+					b = array_size;
+					ensureLengthW((int) (array_size * this.ARRAY_LENGTHEN_FACTOR));
 					return b;// just put this entry at the end of the old array
 					// size
 				}
@@ -396,22 +390,22 @@ public class KDATrie {
 	}
 
 	public int getArraySize() {
-		return base.size();
+		return array_size;
 	}
 
 	/**
 	 * Follow transition from state and retrieve the character. Returns EMPTY if the state at the end of the transition is unset Returns
 	 * FAIL if the state at the end of the transition is owned by another state
 	 * 
-	 * @param s
-	 * @param c
+	 * @param state
+	 * @param character
 	 * @return child node or FAIL or EMPTY
 	 */
-	protected int getChild(int s, int c) throws IOException {
-		int t = base.get(s) + c;
+	protected int getChild(int state, int character) throws IOException {
+		int t = base.get(state) + character;
 		int chk = check.get(t);
 
-		if (chk == s)
+		if (chk == state)
 			return t;
 		else if (chk == EMPTY)
 			return EMPTY;
@@ -430,7 +424,7 @@ public class KDATrie {
 		int child;
 		for (int i = minChar; i < maxChar; i++) {
 			child = base.get(state) + i;
-			if (child >= base.size()) {
+			if (child >= array_size) {
 				for (int j = i; j < maxChar; j++) {
 					children.set(j, EMPTY);
 				}
@@ -449,7 +443,7 @@ public class KDATrie {
 	protected int getEmptyBase(int start_base) throws IOException {
 		int b = start_base;
 		while (!empty(b)) {
-			// if (b >= base.size() - maxChar)
+			// if (b >= array_size - maxChar)
 			// b = 1;
 			// else
 			b++;
@@ -468,52 +462,49 @@ public class KDATrie {
 	 */
 	protected int getRandomBase() throws IOException {
 		int b;
-		b = random.nextInt((int) (base.size() * RANDOM_BASE_MAX));
+		b = random.nextInt((int) (array_size * RANDOM_BASE_MAX));
 		return getEmptyBase(b);
 	}
 
 	/**
 	 * Insert string into Trie
 	 * 
-	 * @param cs
+	 * @param ar
 	 *            string to insert (as array of integers)
 	 * @param address:
 	 *            address associated with this string that is, we store a single integer that represents the data associated with this
 	 *            string
 	 * @throws IOException
 	 */
-	public void insert(int[] cs, int data) throws IOException {
-		int s = HEAD;
-		int c = 0;
+	public void insert(int[] ar, int address) throws IOException {
+		int state = HEAD;
 		int last_state;
-
-		for (int i = 0; i < cs.length; i++) {
+		for (int i = 0; i < ar.length; i++) {
 			// System.out.println(ar[i]);
-			c = cs[i];
-			last_state = s;
-			s = getChild(s, c);
+			int c = ar[i];
 
-			String str = String.copyValueOf(Character.toChars(c));
-			System.out.printf("%d, %d, %s\n", s, c, str);
-
-			if (s == FAIL) {
+			String s = String.copyValueOf(Character.toChars(c));
+			System.out.println(s);
+			last_state = state;
+			state = getChild(state, c);
+			if (state == FAIL) {
 				int new_base = findSafeBase(last_state, c);
 				relocateState(last_state, new_base);
-				s = (int) addChild(last_state, c);
-			} else if (s == EMPTY) {
-				s = (int) addChild(last_state, c);
+				state = (int) addChild(last_state, c);
+			} else if (state == EMPTY) {
+				state = (int) addChild(last_state, c);
 			}
 		}
-
-		writeAddress(s, data);
+		writeAddress(state, address);
 	}
 
-	public void insert(String word, int data) throws IOException {
-		int[] cs = new int[word.length()];
+	public void insert(String word, int addr) throws IOException {
+		int[] ar = new int[word.length()];
 		for (int i = 0; i < word.length(); i++) {
-			cs[i] = word.codePointAt(i);
+			ar[i] = word.codePointAt(i);
+			// System.out.println(String.copyValueOf(Character.toChars(word.codePointAt(i))));
 		}
-		insert(cs, data);
+		insert(ar, addr);
 	}
 
 	/**
@@ -533,7 +524,7 @@ public class KDATrie {
 	public void printDensity() {
 		double free = 0;
 		int used = 0;
-		for (int i = 0; i < base.size(); i++) {
+		for (int i = 0; i < array_size; i++) {
 			if (check.get(i) == EMPTY)
 				free += 1;
 			else
@@ -541,8 +532,8 @@ public class KDATrie {
 		}
 		System.out.println("used: " + used);
 		System.out.println("free: " + (int) free);
-		System.out.println("total size: " + base.size());
-		System.out.println("Density: " + (1 - (free / base.size())));
+		System.out.println("total size: " + array_size);
+		System.out.println("Density: " + (1 - (free / array_size)));
 	}
 
 	protected int readAddress(int s) {

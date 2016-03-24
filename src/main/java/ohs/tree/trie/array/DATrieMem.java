@@ -131,28 +131,28 @@ public class DATrieMem extends DATrie {
 
 	// Just a simple example usage.
 	public static void main(String[] args) throws Exception {
-		{
-			DATrieMem trie = new DATrieMem(1, 10000);
-
-			int cnt = 0;
-			SejongReader r = new SejongReader(NLPPath.POS_DATA_FILE, NLPPath.POS_TAG_SET_FILE);
-			while (r.hasNext()) {
-				KDocument doc = r.next();
-
-				for (int i = 0; i < doc.size(); i++) {
-					KSentence sent = doc.getSentence(i);
-					for (MultiToken mt : sent.toMultiTokens()) {
-						String text = mt.getText();
-						int[] ws = new int[text.length()];
-						for (int j = 0; j < ws.length; j++) {
-							ws[j] = text.charAt(j);
-						}
-						trie.insert(ws, cnt++);
-					}
-				}
-			}
-			r.close();
-		}
+		// {
+		// DATrieMem trie = new DATrieMem(1, 10000);
+		//
+		// int cnt = 0;
+		// SejongReader r = new SejongReader(NLPPath.POS_DATA_FILE, NLPPath.POS_TAG_SET_FILE);
+		// while (r.hasNext()) {
+		// KDocument doc = r.next();
+		//
+		// for (int i = 0; i < doc.size(); i++) {
+		// KSentence sent = doc.getSentence(i);
+		// for (MultiToken mt : sent.toMultiTokens()) {
+		// String text = mt.getText();
+		// int[] ws = new int[text.length()];
+		// for (int j = 0; j < ws.length; j++) {
+		// ws[j] = text.charAt(j);
+		// }
+		// trie.insert(ws, cnt++);
+		// }
+		// }
+		// }
+		// r.close();
+		// }
 
 		{
 			DATrieMem test = new DATrieMem(1, 128);

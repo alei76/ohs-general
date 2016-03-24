@@ -1,10 +1,10 @@
 package ohs.types;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.RandomAccess;
 
@@ -86,6 +86,8 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 */
 	private int modCount = 0;
 
+	private boolean autoGrowth = false;
+
 	/**
 	 * Constructs an empty list with an initial capacity of ten.
 	 */
@@ -104,8 +106,12 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	public IntegerArrayList(Collection<Integer> c) {
 		elementData = new int[c.size()];
 		if ((size = elementData.length) != 0) {
-			// c.toArray might (incorrectly) not return Object[] (see 6260652)
-			elementData = Arrays.copyOf(elementData, size);
+			Iterator<Integer> iter = c.iterator();
+			int loc = 0;
+			while (iter.hasNext()) {
+				elementData[loc] = iter.next();
+				loc++;
+			}
 		} else {
 			// replace with empty array.
 			this.elementData = EMPTY_ELEMENTDATA;
@@ -121,19 +127,13 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 *             if the specified initial capacity ivs negative
 	 */
 	public IntegerArrayList(int initialCapacity) {
-
-		if ((size = initialCapacity) > 0) {
+		if ((initialCapacity) > 0) {
 			this.elementData = new int[initialCapacity];
 		} else if (initialCapacity == 0) {
 			this.elementData = EMPTY_ELEMENTDATA;
 		} else {
 			throw new IllegalArgumentException("Illegal Capacity: " + initialCapacity);
 		}
-	}
-
-	public IntegerArrayList(int[] vs) {
-		this.elementData = vs;
-		this.size = vs.length;
 	}
 
 	/**
@@ -267,7 +267,11 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 * @return a clone of this <tt>ArrayList</tt> instance
 	 */
 	public IntegerArrayList clone() {
-		return new IntegerArrayList(Arrays.copyOf(elementData, size));
+		IntegerArrayList ret = new IntegerArrayList(size());
+		for (int i : elementData) {
+			ret.add(i);
+		}
+		return ret;
 	}
 
 	/**
@@ -307,7 +311,10 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 		}
 	}
 
-	// Positional Access Operations
+	public void ensureCapacityPadding(int minCapacity) {
+		ensureCapacityInternal(minCapacity);
+		size = elementData.length;
+	}
 
 	private void ensureCapacityInternal(int minCapacity) {
 		if (elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA) {
@@ -316,6 +323,8 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 
 		ensureExplicitCapacity(minCapacity);
 	}
+
+	// Positional Access Operations
 
 	private void ensureExplicitCapacity(int minCapacity) {
 		modCount++;
@@ -346,8 +355,12 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 *             {@inheritDoc}
 	 */
 	public int get(int index) {
-		rangeCheck(index);
-
+		if (autoGrowth) {
+			ensureCapacityInternal(index + 1);
+			size = elementData.length;
+		} else {
+			rangeCheck(index);
+		}
 		return elementData(index);
 	}
 
@@ -574,10 +587,19 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 *             {@inheritDoc}
 	 */
 	public int set(int index, int element) {
-		rangeCheck(index);
+		if (autoGrowth) {
+			ensureCapacityInternal(index + 1);
+			size = elementData.length;
+		} else {
+			rangeCheck(index);
+		}
 		int oldValue = elementData(index);
 		elementData[index] = element;
 		return oldValue;
+	}
+
+	public void setAutoGrowth(boolean autoGrowth) {
+		this.autoGrowth = autoGrowth;
 	}
 
 	/**
@@ -599,18 +621,28 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	}
 
 	public String toString() {
+		return toString(true);
+	}
+
+	public String toString(boolean sparse) {
 		if (size == 0) {
 			return "[]";
 		} else {
-			StringBuffer sb = new StringBuffer("[");
+			StringBuffer sb = new StringBuffer();
 			for (int i = 0; i < size; i++) {
-				sb.append(elementData[i]);
-				if (i != size - 1) {
-					sb.append(", ");
+				int e = elementData(i);
+				if (sparse) {
+					if (e != 0) {
+						sb.append(String.format("%d:%d ", i, e));
+					}
+				} else {
+					sb.append(e);
+					if (i != size - 1) {
+						sb.append(", ");
+					}
 				}
 			}
-			sb.append("]");
-			return sb.toString();
+			return "[" + sb.toString().trim() + "]";
 		}
 	}
 

@@ -12,6 +12,14 @@ public class MultiToken extends Token {
 
 	public static final String DELIM_MULTI_TOKEN = " + ";
 
+	public static MultiToken[] toMultiTokens(Token[] ts) {
+		MultiToken[] ret = new MultiToken[ts.length];
+		for (int i = 0; i < ts.length; i++) {
+			ret[i] = (MultiToken) ts[i];
+		}
+		return ret;
+	}
+
 	private Token[] toks = new Token[0];
 
 	public MultiToken() {

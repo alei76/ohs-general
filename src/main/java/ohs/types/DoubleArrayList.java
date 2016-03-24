@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.RandomAccess;
 
@@ -103,17 +104,16 @@ public class DoubleArrayList implements RandomAccess, Cloneable, Serializable {
 	public DoubleArrayList(Collection<Double> c) {
 		elementData = new double[c.size()];
 		if ((size = elementData.length) != 0) {
-			// c.toArray might (incorrectly) not return Object[] (see 6260652)
-			elementData = Arrays.copyOf(elementData, size);
+			Iterator<Double> iter = c.iterator();
+			int loc = 0;
+			while (iter.hasNext()) {
+				elementData[loc] = iter.next();
+				loc++;
+			}
 		} else {
 			// replace with empty array.
 			this.elementData = EMPTY_ELEMENTDATA;
 		}
-	}
-
-	public DoubleArrayList(double[] elems) {
-		this.elementData = elems;
-		size = elems.length;
 	}
 
 	/**
@@ -141,10 +141,16 @@ public class DoubleArrayList implements RandomAccess, Cloneable, Serializable {
 	 *            element to be appended to this list
 	 * @return <tt>true</tt> (as specified by {@link Collection#add})
 	 */
-	public boolean add(int e) {
+	public boolean add(double e) {
 		ensureCapacityInternal(size + 1); // Increments modCount!!
 		elementData[size++] = e;
 		return true;
+	}
+
+	private boolean autoGrowth = false;
+
+	public void setAutoGrowth(boolean autoGrowth) {
+		this.autoGrowth = autoGrowth;
 	}
 
 	/**
@@ -158,7 +164,7 @@ public class DoubleArrayList implements RandomAccess, Cloneable, Serializable {
 	 * @throws IndexOutOfBoundsException
 	 *             {@inheritDoc}
 	 */
-	public void add(int index, int element) {
+	public void add(int index, double element) {
 		rangeCheckForAdd(index);
 
 		ensureCapacityInternal(size + 1); // Increments modCount!!
@@ -179,8 +185,8 @@ public class DoubleArrayList implements RandomAccess, Cloneable, Serializable {
 	 * @throws NullPointerException
 	 *             if the specified collection ivs null
 	 */
-	public boolean addAll(Collection<Integer> c) {
-		int[] a = new int[c.size()];
+	public boolean addAll(Collection<Double> c) {
+		double[] a = new double[c.size()];
 		int numNew = a.length;
 		ensureCapacityInternal(size + numNew); // Increments modCount
 		System.arraycopy(a, 0, elementData, size, numNew);
@@ -203,10 +209,10 @@ public class DoubleArrayList implements RandomAccess, Cloneable, Serializable {
 	 * @throws NullPointerException
 	 *             if the specified collection ivs null
 	 */
-	public boolean addAll(int index, Collection<Integer> c) {
+	public boolean addAll(int index, Collection<Double> c) {
 		rangeCheckForAdd(index);
 
-		int[] a = new int[c.size()];
+		double[] a = new double[c.size()];
 		int numNew = a.length;
 		ensureCapacityInternal(size + numNew); // Increments modCount
 
@@ -265,7 +271,11 @@ public class DoubleArrayList implements RandomAccess, Cloneable, Serializable {
 	 * @return a clone of this <tt>ArrayList</tt> instance
 	 */
 	public DoubleArrayList clone() {
-		return new DoubleArrayList(Arrays.copyOf(elementData, size));
+		DoubleArrayList ret = new DoubleArrayList(size());
+		for (double i : elementData) {
+			ret.add(i);
+		}
+		return ret;
 	}
 
 	/**
@@ -305,14 +315,19 @@ public class DoubleArrayList implements RandomAccess, Cloneable, Serializable {
 		}
 	}
 
-	// Positional Access Operations
-
 	private void ensureCapacityInternal(int minCapacity) {
 		if (elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA) {
 			minCapacity = Math.max(DEFAULT_CAPACITY, minCapacity);
 		}
 
 		ensureExplicitCapacity(minCapacity);
+	}
+
+	// Positional Access Operations
+
+	public void ensureCapacityWithPadding(int minCapacity) {
+		ensureCapacity(minCapacity);
+		size = elementData.length;
 	}
 
 	private void ensureExplicitCapacity(int minCapacity) {
@@ -344,7 +359,12 @@ public class DoubleArrayList implements RandomAccess, Cloneable, Serializable {
 	 *             {@inheritDoc}
 	 */
 	public double get(int index) {
-		rangeCheck(index);
+		if (autoGrowth) {
+			ensureCapacityInternal(index + 1); // Increments modCount!!
+			size = elementData.length;
+		} else {
+			rangeCheck(index);
+		}
 
 		return elementData(index);
 	}
@@ -572,7 +592,12 @@ public class DoubleArrayList implements RandomAccess, Cloneable, Serializable {
 	 *             {@inheritDoc}
 	 */
 	public double set(int index, double element) {
-		rangeCheck(index);
+		if (autoGrowth) {
+			ensureCapacityInternal(index + 1); // Increments modCount!!
+			size = elementData.length;
+		} else {
+			rangeCheck(index);
+		}
 		double oldValue = elementData(index);
 		elementData[index] = element;
 		return oldValue;
@@ -597,18 +622,31 @@ public class DoubleArrayList implements RandomAccess, Cloneable, Serializable {
 	}
 
 	public String toString() {
+		return toString(true);
+	}
+
+	public String toString(boolean sparse) {
 		if (size == 0) {
 			return "[]";
 		} else {
-			StringBuffer sb = new StringBuffer("[");
+			StringBuffer sb = new StringBuffer();
 			for (int i = 0; i < size; i++) {
-				sb.append(elementData[i]);
-				if (i != size - 1) {
-					sb.append(", ");
+				double e = elementData(i);
+				if (sparse) {
+					if (e != 0) {
+						sb.append(e);
+						if (i != size - 1) {
+							sb.append(String.format("%d:%f ", i, e));
+						}
+					}
+				} else {
+					sb.append(e);
+					if (i != size - 1) {
+						sb.append(", ");
+					}
 				}
-				sb.append("]");
 			}
-			return sb.toString();
+			return "[" + sb.toString().trim() + "]";
 		}
 	}
 

@@ -5,8 +5,6 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.tools.ant.taskdefs.SendEmail;
-
 import ohs.io.FileUtils;
 
 public class KDocumentCollection extends ArrayList<KDocument> {
@@ -26,12 +24,16 @@ public class KDocumentCollection extends ArrayList<KDocument> {
 		return ret.toArray(new KSentence[ret.size()]);
 	}
 
-	public int sizeOfTokens() {
-		int ret = 0;
-		for (int i = 0; i < size(); i++) {
-			ret += get(i).sizeOfTokens();
+	public Token[] getTokens() {
+		List<Token> ret = new ArrayList<>();
+		for (KDocument doc : this) {
+			for (KSentence sent : doc.getSentences()) {
+				for (Token t : sent.getTokens()) {
+					ret.add(t);
+				}
+			}
 		}
-		return ret;
+		return ret.toArray(new Token[ret.size()]);
 	}
 
 	public void read(ObjectInputStream ois) throws Exception {
@@ -48,6 +50,14 @@ public class KDocumentCollection extends ArrayList<KDocument> {
 		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
 		read(ois);
 		ois.close();
+	}
+
+	public int sizeOfTokens() {
+		int ret = 0;
+		for (int i = 0; i < size(); i++) {
+			ret += get(i).sizeOfTokens();
+		}
+		return ret;
 	}
 
 	public void write(ObjectOutputStream oos) throws Exception {

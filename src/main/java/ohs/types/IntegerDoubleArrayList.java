@@ -107,6 +107,10 @@ public class IntegerDoubleArrayList implements RandomAccess, Cloneable, Serializ
 	 */
 	private int modCount = 0;
 
+	private boolean authoGrowth = false;
+
+	private boolean autoGrowth = false;
+
 	/**
 	 * Constructs an empty list with an initial capacity of ten.
 	 */
@@ -374,6 +378,11 @@ public class IntegerDoubleArrayList implements RandomAccess, Cloneable, Serializ
 
 	// Positional Access Operations
 
+	public void ensureCapacityWithPadding(int minCapacity) {
+		ensureCapacity(minCapacity);
+		size = ivs.length;
+	}
+
 	private void ensureExplicitCapacity(int minCapacity) {
 		modCount++;
 
@@ -407,7 +416,12 @@ public class IntegerDoubleArrayList implements RandomAccess, Cloneable, Serializ
 	 *             {@inheritDoc}
 	 */
 	public double getDouble(int index) {
-		rangeCheck(index);
+		if (autoGrowth) {
+			ensureCapacityInternal(index + 1); // Increments modCount!!
+			size = ivs.length;
+		} else {
+			rangeCheck(index);
+		}
 		return doubleData(index);
 	}
 
@@ -416,7 +430,12 @@ public class IntegerDoubleArrayList implements RandomAccess, Cloneable, Serializ
 	}
 
 	public int getInteger(int index) {
-		rangeCheck(index);
+		if (autoGrowth) {
+			ensureCapacityInternal(index + 1); // Increments modCount!!
+			size = ivs.length;
+		} else {
+			rangeCheck(index);
+		}
 		return integerData(index);
 	}
 
@@ -656,12 +675,22 @@ public class IntegerDoubleArrayList implements RandomAccess, Cloneable, Serializ
 	 *             {@inheritDoc}
 	 */
 	public ValuePair set(int index, int i, double d) {
-		rangeCheck(index);
+		if (autoGrowth) {
+			ensureCapacityInternal(index + 1); // Increments modCount!!
+			size = ivs.length;
+		} else {
+			rangeCheck(index);
+		}
+
 		int oi = integerData(index);
 		double od = doubleData(index);
 		ivs[index] = i;
 		dvs[index] = d;
 		return new ValuePair(oi, od);
+	}
+
+	public void setAutoGrowth(boolean autoGrowth) {
+		this.autoGrowth = autoGrowth;
 	}
 
 	/**
@@ -687,16 +716,18 @@ public class IntegerDoubleArrayList implements RandomAccess, Cloneable, Serializ
 		if (size == 0) {
 			return "[]";
 		} else {
-			StringBuffer sb = new StringBuffer("[");
-			int len = Math.min(size, size);
-			for (int i = 0; i < len; i++) {
-				sb.append(String.format("%d:%f", ivs[i], dvs[i]));
-				if (i != len - 1) {
-					sb.append(", ");
+			StringBuffer sb = new StringBuffer();
+			for (int k = 0; k < size; k++) {
+				int i = ivs[k];
+				double e = dvs[k];
+				if (e != 0) {
+					sb.append(e);
+					if (k != size - 1) {
+						sb.append(String.format("%d:%f ", i, e));
+					}
 				}
 			}
-			sb.append("]");
-			return sb.toString();
+			return "[" + sb.toString().trim() + "]";
 		}
 	}
 
@@ -710,6 +741,16 @@ public class IntegerDoubleArrayList implements RandomAccess, Cloneable, Serializ
 			ivs = (size == 0) ? EMPTY_INTEGER_DATA : Arrays.copyOf(ivs, size);
 			dvs = (size == 0) ? EMPTY_DOUBLE_DATA : Arrays.copyOf(dvs, size);
 		}
+	}
+
+	public ValuePair ValuePair(int index) {
+		if (autoGrowth) {
+			ensureCapacityInternal(index + 1); // Increments modCount!!
+			size = ivs.length;
+		} else {
+			rangeCheck(index);
+		}
+		return new ValuePair(ivs[index], dvs[index]);
 	}
 
 	/**
