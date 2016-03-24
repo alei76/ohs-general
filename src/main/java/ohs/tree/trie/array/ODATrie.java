@@ -1,38 +1,11 @@
 package ohs.tree.trie.array;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.Random;
-import java.util.TreeMap;
+import java.util.ArrayList;
+import java.util.List;
 
-import ohs.nlp.ling.types.KDocument;
-import ohs.nlp.ling.types.KDocumentCollection;
-import ohs.nlp.ling.types.MultiToken;
-import ohs.nlp.pos.NLPPath;
-import ohs.nlp.pos.SejongReader;
+import edu.stanford.nlp.parser.lexparser.ChineseCharacterBasedLexicon;
 import ohs.types.IntegerArrayList;
 
-/**
- * Double Array Trie
- * 
- * Abstract Double Array Trie. Implements many of the DA Trie methods, but use DATrieMem for an in-memory trie or DATrieDisk for a
- * persistent version.
- * 
- * The input are strings of integers (with a minimum and maximum value for each integer) and an associated address (this is just an integer
- * as well) which should refer to the data associated with a string (i.e. the a unique index for the data).
- * 
- * Notice, this implementation does not provide a good relocation strategy for conflicting elements. Instead we use a heuristic monte carlo
- * approacah to find a suitable location. Preliminary experiments on a large corpus (> 1 million items) found that this implementation
- * wastes ~15% of the space it uses. Strategies described ins the original paper could improve this quite a bit
- * 
- * Following description:
- * 
- * Aoe, J. An Efficient Digital Search Algorithm by Using a Double-Array Structure. IEEE Transactions on Software Engineering. Vol. 15, 9
- * (Sep 1989). pp. 1066-1077.
- * 
- * @author Jeshua Bratman
- */
 public class ODATrie {
 	/**
 	 * Relocation Strategy RANDOM is a heuristic monte carlo relocation method, BRUTE_FORCE scans until it finds a suitable location (not
@@ -76,38 +49,11 @@ public class ODATrie {
 		// test.disp();
 	}
 
-	/*
-	 * Somewhat arbitrary parameters.
-	 */
-	public RelocMethod RELOC_METHOD = RelocMethod.BRUTE_FORCE;
-	// maximum percentage of array to consider when picking a random base
-	protected final double RANDOM_BASE_MAX = .9;
-
-	// by what factor to expand arrays
-	protected final double ARRAY_LENGTHEN_FACTOR = 2;
-	// proporition of array until choosing a new random base
-	protected final double RELOCATION_BOREDOM = .0001;
-	// proportion of array that must be search before expanding array
-	protected final double RELOCATION_LENGTHEN_THRESH = .5;
-
-	protected final int INITIAL_ARRAY_SIZE = 1000;
-	protected int minChar;
-
-	protected int maxChar;
-	protected IntegerArrayList children;
-	protected Random random;
-	protected byte[] empty_slots;// bit for each empty slot
-
-	private boolean use_empty_array;
-	protected IntegerArrayList base;
-	protected IntegerArrayList check;
-	protected IntegerArrayList tail;
-
-	private TreeMap<Integer, Integer> data_addresses;
-
-	private int head;
-
+	private IntegerArrayList base;
+	private IntegerArrayList check;
+	private IntegerArrayList tail;
 	private int DA_SIZE = 10;
+	private int pos = 1;
 
 	public ODATrie() {
 		base = new IntegerArrayList();
@@ -138,20 +84,17 @@ public class ODATrie {
 		return x;
 	}
 
-	public int search(String word) {
-		return search(getIntegers(word));
-	}
-
-	public void insert(String word) {
-		insert(getIntegers(word));
-	}
-
-	private int pos = 1;
-
 	public void insert(int[] x) {
+
+		base.setAutoGrowth(true);
+		check.setAutoGrowth(true);
+		tail.setAutoGrowth(true);
+
 		int s = ROOT;
-		for (int h = 0; h < x.length; h++) {
-			int c = x[h];
+		int h = x.length;
+		for (int i = 0; i < h; i++) {
+			int c = x[i];
+
 			int t = base.get(s) + c;
 
 			if (t < 0) {
@@ -166,13 +109,34 @@ public class ODATrie {
 				if (chk == 0) {
 					base.set(t, -pos);
 					check.set(t, s);
-					pos = x[h + 1];
+
+					for (int p = i + 1; p < h; p++) {
+						tail.set(pos, x[p]);
+						pos++;
+					}
+					break;
 				} else {
 
 				}
 			}
 			s = t;
 		}
+	}
+
+	private List<String> getCharList() {
+		List<String> ret = new ArrayList<String>();
+
+		for (int i = 1; i < pos; i++) {
+			int c = tail.get(i);
+			int a = Character.codePointAt(new char[] { 'a' }, 0) - 2;
+			ret.add(String.valueOf(Character.toChars(c + a)));
+		}
+
+		return ret;
+	}
+
+	public void insert(String word) {
+		insert(getIntegers(word));
 	}
 
 	public int search(int[] x) {
@@ -191,6 +155,10 @@ public class ODATrie {
 			}
 		}
 		return s;
+	}
+
+	public int search(String word) {
+		return search(getIntegers(word));
 	}
 
 }
