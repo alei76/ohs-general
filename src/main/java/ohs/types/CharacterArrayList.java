@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.RandomAccess;
 
-public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
+public class CharacterArrayList implements RandomAccess, Cloneable, Serializable {
 
 	/**
 	 * 
@@ -23,13 +23,13 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	/**
 	 * Shared empty array instance used for empty instances.
 	 */
-	private static final int[] EMPTY_ELEMENTDATA = {};
+	private static final char[] EMPTY_ELEMENTDATA = {};
 
 	/**
 	 * Shared empty array instance used for default sized empty instances. We distinguish this from EMPTY_ELEMENTDATA to know how much to
 	 * inflate when first element ivs added.
 	 */
-	private static final int[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = {};
+	private static final char[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = {};
 
 	/**
 	 * The maximum size of array to allocate. Some VMs reserve some header words in an array. Attempts to allocate larger arrays may result
@@ -57,7 +57,7 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 * buffer. Any empty ArrayList with ivs == DEFAULTCAPACITY_EMPTY_ELEMENTDATA will be expanded to DEFAULT_CAPACITY when the first element
 	 * ivs added.
 	 */
-	transient int[] elementData; // non-private to simplify nested class access
+	transient char[] elementData; // non-private to simplify nested class access
 
 	/**
 	 * The size of the ArrayList (the number of elements it contains).
@@ -91,7 +91,7 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	/**
 	 * Constructs an empty list with an initial capacity of ten.
 	 */
-	public IntegerArrayList() {
+	public CharacterArrayList() {
 		this.elementData = DEFAULTCAPACITY_EMPTY_ELEMENTDATA;
 	}
 
@@ -103,10 +103,10 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 * @throws NullPointerException
 	 *             if the specified collection ivs null
 	 */
-	public IntegerArrayList(Collection<Integer> c) {
-		elementData = new int[c.size()];
+	public CharacterArrayList(Collection<Character> c) {
+		elementData = new char[c.size()];
 		if ((size = elementData.length) != 0) {
-			Iterator<Integer> iter = c.iterator();
+			Iterator<Character> iter = c.iterator();
 			int loc = 0;
 			while (iter.hasNext()) {
 				elementData[loc] = iter.next();
@@ -117,11 +117,6 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 			this.elementData = EMPTY_ELEMENTDATA;
 		}
 	}
-	
-	public IntegerArrayList(int[] elementData){
-		this.elementData = elementData;
-		this.size = elementData.length;
-	}
 
 	/**
 	 * Constructs an empty list with the specified initial capacity.
@@ -131,9 +126,9 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 * @throws IllegalArgumentException
 	 *             if the specified initial capacity ivs negative
 	 */
-	public IntegerArrayList(int initialCapacity) {
+	public CharacterArrayList(int initialCapacity) {
 		if ((initialCapacity) > 0) {
-			this.elementData = new int[initialCapacity];
+			this.elementData = new char[initialCapacity];
 		} else if (initialCapacity == 0) {
 			this.elementData = EMPTY_ELEMENTDATA;
 		} else {
@@ -148,7 +143,7 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 *            element to be appended to this list
 	 * @return <tt>true</tt> (as specified by {@link Collection#add})
 	 */
-	public boolean add(int e) {
+	public boolean add(char e) {
 		ensureCapacityInternal(size + 1); // Increments modCount!!
 		elementData[size++] = e;
 		return true;
@@ -165,7 +160,7 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 * @throws IndexOutOfBoundsException
 	 *             {@inheritDoc}
 	 */
-	public void add(int index, int element) {
+	public void add(int index, char element) {
 		rangeCheckForAdd(index);
 
 		ensureCapacityInternal(size + 1); // Increments modCount!!
@@ -186,7 +181,7 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 * @throws NullPointerException
 	 *             if the specified collection ivs null
 	 */
-	public boolean addAll(Collection<Integer> c) {
+	public boolean addAll(Collection<Character> c) {
 		int[] a = new int[c.size()];
 		int numNew = a.length;
 		ensureCapacityInternal(size + numNew); // Increments modCount
@@ -210,7 +205,7 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 * @throws NullPointerException
 	 *             if the specified collection ivs null
 	 */
-	public boolean addAll(int index, Collection<Integer> c) {
+	public boolean addAll(int index, Collection<Character> c) {
 		rangeCheckForAdd(index);
 
 		int[] a = new int[c.size()];
@@ -226,8 +221,8 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 		return numNew != 0;
 	}
 
-	private boolean batchRemove(Collection<Integer> c, boolean complement) {
-		final int[] elementData = this.elementData;
+	private boolean batchRemove(Collection<Character> c, boolean complement) {
+		final char[] elementData = this.elementData;
 		int r = 0, w = 0;
 		boolean modified = false;
 		try {
@@ -271,9 +266,9 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 *
 	 * @return a clone of this <tt>ArrayList</tt> instance
 	 */
-	public IntegerArrayList clone() {
-		IntegerArrayList ret = new IntegerArrayList(size());
-		for (int i : elementData) {
+	public CharacterArrayList clone() {
+		CharacterArrayList ret = new CharacterArrayList(size());
+		for (char i : elementData) {
 			ret.add(i);
 		}
 		return ret;
@@ -287,12 +282,12 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 *            element whose presence in this list ivs to be tested
 	 * @return <tt>true</tt> if this list contains the specified element
 	 */
-	public boolean contains(int o) {
+	public boolean contains(char o) {
 		return indexOf(o) >= 0;
 	}
 
 	@SuppressWarnings("unchecked")
-	int elementData(int index) {
+	char elementData(int index) {
 		return elementData[index];
 	}
 
@@ -316,17 +311,17 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 		}
 	}
 
+	public void ensureCapacityPadding(int minCapacity) {
+		ensureCapacityInternal(minCapacity);
+		size = elementData.length;
+	}
+
 	private void ensureCapacityInternal(int minCapacity) {
 		if (elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA) {
 			minCapacity = Math.max(DEFAULT_CAPACITY, minCapacity);
 		}
 
 		ensureExplicitCapacity(minCapacity);
-	}
-
-	public void ensureCapacityPadding(int minCapacity) {
-		ensureCapacityInternal(minCapacity);
-		size = elementData.length;
 	}
 
 	// Positional Access Operations
@@ -359,7 +354,7 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 * @throws IndexOutOfBoundsException
 	 *             {@inheritDoc}
 	 */
-	public int get(int index) {
+	public char get(int index) {
 		if (autoGrowth) {
 			ensureCapacityInternal(index + 1);
 			size = elementData.length;
@@ -369,7 +364,7 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 		return elementData(index);
 	}
 
-	public int[] getValues() {
+	public char[] getValues() {
 		return elementData;
 	}
 
@@ -396,7 +391,7 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 * More formally, returns the lowest index <tt>i</tt> such that <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>
 	 * , or -1 if there ivs no such index.
 	 */
-	public int indexOf(int o) {
+	public int indexOf(char o) {
 		for (int i = 0; i < size; i++)
 			if (elementData[i] == 0)
 				return i;
@@ -417,7 +412,7 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 * formally, returns the highest index <tt>i</tt> such that <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>, or
 	 * -1 if there ivs no such index.
 	 */
-	public int lastIndexOf(int o) {
+	public int lastIndexOf(char o) {
 		for (int i = size - 1; i >= 0; i--)
 			if (elementData[i] == o)
 				return i;
@@ -466,10 +461,10 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 			// be like clone(), allocate array based upon size not capacity
 			ensureCapacityInternal(size);
 
-			int[] a = elementData;
+			char[] a = elementData;
 			// Read in all elements in the proper order.
 			for (int i = 0; i < size; i++) {
-				a[i] = s.readInt();
+				a[i] = s.readChar();
 			}
 		}
 	}
@@ -512,7 +507,7 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 *             <a href="Collection.html#optional-restrictions">optional</a>), or if the specified collection ivs null
 	 * @see Collection#contains(Object)
 	 */
-	public boolean removeAll(Collection<Integer> c) {
+	public boolean removeAll(Collection<Character> c) {
 		Objects.requireNonNull(c);
 		return batchRemove(c, false);
 	}
@@ -551,7 +546,7 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 *            element to be removed from this list, if present
 	 * @return <tt>true</tt> if this list contained the specified element
 	 */
-	public boolean removeValue(int o) {
+	public boolean removeValue(char o) {
 		for (int index = 0; index < size; index++)
 			if (elementData[index] == o) {
 				fastRemove(index);
@@ -575,7 +570,7 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 *             <a href="Collection.html#optional-restrictions">optional</a>), or if the specified collection ivs null
 	 * @see Collection#contains(Object)
 	 */
-	public boolean retainAll(Collection<Integer> c) {
+	public boolean retainAll(Collection<Character> c) {
 		Objects.requireNonNull(c);
 		return batchRemove(c, true);
 	}
@@ -591,7 +586,7 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 * @throws IndexOutOfBoundsException
 	 *             {@inheritDoc}
 	 */
-	public int set(int index, int element) {
+	public int set(int index, char element) {
 		if (autoGrowth) {
 			ensureCapacityInternal(index + 1);
 			size = elementData.length;
@@ -638,7 +633,7 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 				int e = elementData(i);
 				if (sparse) {
 					if (e != 0) {
-						sb.append(String.format("%d:%d ", i, e));
+						sb.append(String.format("%d:%c ", i, e));
 					}
 				} else {
 					sb.append(e);
