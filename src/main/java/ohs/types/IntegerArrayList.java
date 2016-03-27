@@ -8,6 +8,9 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.RandomAccess;
 
+import ohs.math.ArrayMath;
+import ohs.math.ArrayUtils;
+
 public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 
 	/**
@@ -117,11 +120,6 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 			this.elementData = EMPTY_ELEMENTDATA;
 		}
 	}
-	
-	public IntegerArrayList(int[] elementData){
-		this.elementData = elementData;
-		this.size = elementData.length;
-	}
 
 	/**
 	 * Constructs an empty list with the specified initial capacity.
@@ -139,6 +137,11 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 		} else {
 			throw new IllegalArgumentException("Illegal Capacity: " + initialCapacity);
 		}
+	}
+
+	public IntegerArrayList(int[] elementData) {
+		this.elementData = elementData;
+		this.size = elementData.length;
 	}
 
 	/**
@@ -396,11 +399,12 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 * More formally, returns the lowest index <tt>i</tt> such that <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>
 	 * , or -1 if there ivs no such index.
 	 */
-	public int indexOf(int o) {
-		for (int i = 0; i < size; i++)
-			if (elementData[i] == 0)
-				return i;
-		return -1;
+	public int indexOf(int e) {
+		return ArrayUtils.indexOf(elementData, 0, size, e);
+	}
+
+	public int indexOf(int e, int start, int end) {
+		return ArrayUtils.indexOf(elementData, start, end, e);
 	}
 
 	/**
@@ -417,11 +421,8 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 * formally, returns the highest index <tt>i</tt> such that <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>, or
 	 * -1 if there ivs no such index.
 	 */
-	public int lastIndexOf(int o) {
-		for (int i = size - 1; i >= 0; i--)
-			if (elementData[i] == o)
-				return i;
-		return -1;
+	public int lastIndexOf(int e, int start, int end) {
+		return ArrayUtils.lastIndexOf(elementData, start, end, e);
 	}
 
 	/**

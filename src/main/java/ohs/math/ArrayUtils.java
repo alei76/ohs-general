@@ -193,6 +193,38 @@ public class ArrayUtils {
 		return sum;
 	}
 
+	public static int indexOf(int[] a, int start, int end, int b) {
+		for (int i = start; i < end; i++) {
+			if (a[i] == b) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	public static int lastIndexOf(int[] a, int start, int end, int b) {
+		for (int i = a.length - 1; i >= 0; i--)
+			if (a[i] == b)
+				return i;
+		return -1;
+	}
+
+	public static int lastIndexOf(double[] a, int start, int end, double b) {
+		for (int i = a.length - 1; i >= 0; i--)
+			if (a[i] == b)
+				return i;
+		return -1;
+	}
+
+	public static int indexOf(double[] a, int start, int end, double b) {
+		for (int i = start; i < end; i++) {
+			if (a[i] == b) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
 	public static double copy(int[][] a, double[][] b) {
 		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
@@ -313,6 +345,14 @@ public class ArrayUtils {
 		int[] ret = new int[2];
 		ret[0] = a.length;
 		ret[1] = a[0].length;
+		return ret;
+	}
+
+	public static int[] enlarge(int[] a, int add_size) {
+		int[] ret = new int[a.length + add_size];
+		for (int i = 0; i < a.length; i++) {
+			ret[i] = a[i];
+		}
 		return ret;
 	}
 
@@ -624,10 +664,6 @@ public class ArrayUtils {
 		return sum;
 	}
 
-	public static int[] range(int size) {
-		return range(size, 0, 1);
-	}
-
 	// public static double random(double min, double max, double[] x) {
 	// Random random = new Random();
 	// double range = max - min;
@@ -675,6 +711,10 @@ public class ArrayUtils {
 	// }
 	// return sum;
 	// }
+
+	public static int[] range(int size) {
+		return range(size, 0, 1);
+	}
 
 	public static double[] range(int size, double start, double increment) {
 		double[] a = new double[size];
@@ -740,14 +780,6 @@ public class ArrayUtils {
 		for (int i = 0; i < mid; i++) {
 			swap(a, i, a.length - 1 - i);
 		}
-	}
-
-	public static int[] enlarge(int[] a, int add_size) {
-		int[] ret = new int[a.length + add_size];
-		for (int i = 0; i < a.length; i++) {
-			ret[i] = a[i];
-		}
-		return ret;
 	}
 
 	public static void reverse(int[] a) {

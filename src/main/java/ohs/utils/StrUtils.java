@@ -85,6 +85,28 @@ public class StrUtils {
 		return extract(text, tagNames, false);
 	}
 
+	public int[] encodeByCodePoints(char[] s, int offset) {
+		int[] ret = new int[s.length];
+		for (int i = 0; i < s.length; i++) {
+			ret[i] = Character.codePointAt(s, i);
+			ret[i] -= offset;
+		}
+		return ret;
+	}
+
+	public char[] decodeByCodePoints(int[] codepoints, int offset) {
+		char[] ret = new char[codepoints.length];
+		for (int i = 0; i < ret.length; i++) {
+			String s = String.valueOf(Character.toChars(codepoints[i] + offset));
+			ret[i] = s.charAt(0);
+		}
+		return ret;
+	}
+
+	public int[] encondeByCodePoints(String s, int offset) {
+		return encodeByCodePoints(s.toCharArray(), offset);
+	}
+
 	public static List<TextSpan> extract(String t, Set<String> tagNames, boolean get_start_at_plain) throws Exception {
 		List<TextSpan> ret = Generics.newArrayList();
 

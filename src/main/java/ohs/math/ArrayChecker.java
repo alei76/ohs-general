@@ -51,6 +51,50 @@ public class ArrayChecker {
 		return ret;
 	}
 
+	public static boolean isValidIndex(double[] a, int i) {
+		if (i >= 0 && i < a.length) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static boolean isValidIndex(int[] a, int i) {
+		if (i >= 0 && i < a.length) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static boolean isValidIndex(int[][] a, int i, int j) {
+		if (i >= 0 && i < a.length) {
+			for (int m = 0; m < a.length; m++) {
+				if (!isValidIndex(a[i], j)) {
+					return false;
+				}
+			}
+		} else {
+			return false;
+		}
+
+		return true;
+	}
+
+	public static boolean isValidIndex(double[][] a, int i, int j) {
+		if (i >= 0 && i < a.length) {
+			for (int m = 0; m < a.length; m++) {
+				if (!isValidIndex(a[i], j)) {
+					return false;
+				}
+			}
+		} else {
+			return false;
+		}
+
+		return true;
+	}
+
 	/**
 	 * 
 	 * A system of linear equations has either
