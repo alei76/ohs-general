@@ -29,6 +29,23 @@ public class StrUtils {
 
 	private static Pattern p = Pattern.compile("\\d+[\\d,\\.]*");
 
+	public static char decodeByCodePoints(int codepoint, int base) {
+		return String.valueOf(Character.toChars(codepoint + base)).charAt(0);
+	}
+
+	public static char[] decodeByCodePoints(int[] codepoints) {
+		return decodeByCodePoints(codepoints, 0);
+	}
+
+	public static char[] decodeByCodePoints(int[] codepoints, int base) {
+		char[] ret = new char[codepoints.length];
+		for (int i = 0; i < ret.length; i++) {
+			String s = String.valueOf(Character.toChars(codepoints[i] + base));
+			ret[i] = s.charAt(0);
+		}
+		return ret;
+	}
+
 	/**
 	 * Strings.java in mallet
 	 * 
@@ -80,31 +97,34 @@ public class StrUtils {
 		return ret;
 	}
 
-	public static List<TextSpan> extract(String text) throws Exception {
-		Set<String> tagNames = null;
-		return extract(text, tagNames, false);
+	public static int encodeByCodePoints(char s, int base) {
+		return Character.codePointAt(new char[] { s }, 0) - base;
 	}
 
-	public int[] encodeByCodePoints(char[] s, int offset) {
+	public static int[] encodeByCodePoints(char[] s) {
+		return encodeByCodePoints(s, 0);
+	}
+
+	public static int[] encodeByCodePoints(char[] s, int base) {
 		int[] ret = new int[s.length];
 		for (int i = 0; i < s.length; i++) {
 			ret[i] = Character.codePointAt(s, i);
-			ret[i] -= offset;
+			ret[i] -= base;
 		}
 		return ret;
 	}
 
-	public char[] decodeByCodePoints(int[] codepoints, int offset) {
-		char[] ret = new char[codepoints.length];
-		for (int i = 0; i < ret.length; i++) {
-			String s = String.valueOf(Character.toChars(codepoints[i] + offset));
-			ret[i] = s.charAt(0);
-		}
-		return ret;
+	public static int[] encondeByCodePoints(String s) {
+		return encodeByCodePoints(s.toCharArray());
 	}
 
-	public int[] encondeByCodePoints(String s, int offset) {
-		return encodeByCodePoints(s.toCharArray(), offset);
+	public static int[] encondeByCodePoints(String s, char base) {
+		return encodeByCodePoints(s.toCharArray(), Character.codePointAt(new char[] { base }, 0));
+	}
+
+	public static List<TextSpan> extract(String text) throws Exception {
+		Set<String> tagNames = null;
+		return extract(text, tagNames, false);
 	}
 
 	public static List<TextSpan> extract(String t, Set<String> tagNames, boolean get_start_at_plain) throws Exception {
@@ -609,6 +629,14 @@ public class StrUtils {
 		Character[] ret = new Character[s.length()];
 		for (int i = 0; i < s.length(); i++) {
 			ret[i] = new Character(s.charAt(i));
+		}
+		return ret;
+	}
+
+	public static Character[] toCharacters(char[] chs) {
+		Character[] ret = new Character[chs.length];
+		for (int i = 0; i < chs.length; i++) {
+			ret[i] = new Character(chs[i]);
 		}
 		return ret;
 	}

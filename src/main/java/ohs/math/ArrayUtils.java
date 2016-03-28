@@ -193,32 +193,34 @@ public class ArrayUtils {
 		return sum;
 	}
 
-	public static int indexOf(int[] a, int start, int end, int b) {
+	public static int indexOf(int[] a, int start, int end, int b, boolean complement) {
 		for (int i = start; i < end; i++) {
-			if (a[i] == b) {
+			if (complement ? a[i] != b : a[i] == b) {
 				return i;
 			}
 		}
 		return -1;
 	}
 
-	public static int lastIndexOf(int[] a, int start, int end, int b) {
+	public static int lastIndexOf(int[] a, int start, int end, int b, boolean complement) {
 		for (int i = a.length - 1; i >= 0; i--)
-			if (a[i] == b)
+			if (complement ? a[i] != b : a[i] == b) {
 				return i;
+			}
 		return -1;
 	}
 
-	public static int lastIndexOf(double[] a, int start, int end, double b) {
+	public static int lastIndexOf(double[] a, int start, int end, double b, boolean complement) {
 		for (int i = a.length - 1; i >= 0; i--)
-			if (a[i] == b)
+			if (complement ? a[i] != b : a[i] == b) {
 				return i;
+			}
 		return -1;
 	}
 
-	public static int indexOf(double[] a, int start, int end, double b) {
+	public static int indexOf(double[] a, int start, int end, double b, boolean complement) {
 		for (int i = start; i < end; i++) {
-			if (a[i] == b) {
+			if (complement ? a[i] != b : a[i] == b) {
 				return i;
 			}
 		}
@@ -1131,15 +1133,15 @@ public class ArrayUtils {
 		return ret;
 	}
 
-	public ByteSize byteSize(double[] a) {
+	public static ByteSize byteSize(double[] a) {
 		return new ByteSize(Double.BYTES * a.length);
 	}
 
-	public ByteSize byteSize(int[] a) {
+	public static ByteSize byteSize(int[] a) {
 		return new ByteSize(Integer.BYTES * a.length);
 	}
 
-	public List<Integer>[] splitInOrder(List<Integer> indexList, int[] counts) {
+	public static List<Integer>[] splitInOrder(List<Integer> indexList, int[] counts) {
 		List<Integer>[] ret = new List[counts.length];
 		int idx = 0;
 		for (int num = 0; num < counts.length; num++) {

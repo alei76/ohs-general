@@ -94,7 +94,6 @@ public class HMMTrainer {
 
 					System.out.println(text + "\t" + text2 + "\t" + String.valueOf(text2.getBytes()));
 					// char[][] phomenes = KoreanUtils.decomposeKoreanWordToPhonemes(word);
-
 				}
 			}
 		}
@@ -259,20 +258,55 @@ public class HMMTrainer {
 		return ArrayMath.sumColumn(alpha, alpha[0].length - 1);
 	}
 
-	public void trainUnsupervised(HMM hmm, int[][] obss, int iter) {
-		this.hmm = hmm;
+	public void train(int[] obs) {
 
-		this.N = hmm.getN();
-		this.V = hmm.getV();
+		double[][] alpha = forward(obs);
+		double[][] beta = backward(obs);
 
-		tmp_phi = ArrayUtils.array(N);
-		tmp_a = ArrayUtils.matrix(N, N);
-		tmp_b = ArrayUtils.matrix(N, V);
+		ArrayUtils.print("alpha", alpha);
+		ArrayUtils.print("beta", alpha);
 
-		for (int i = 0; i < iter; i++) {
-			for (int j = 0; j < obss.length; j++) {
-				train(obss[j]);
+		for (int i = 0; i < N; i++) {
+			tmp_phi[i] = gamma(0, i, alpha, beta);
+		}
+
+		int T = obs.length;
+
+		for (int i = 0; i < N; i++) {
+			for (int j = 0; j < N; j++) {
+				double value = 0;
+				double norm = 0;
+				for (int t = 0; t < T; t++) {
+					value += xi(t, i, j, obs, alpha, beta);
+					norm += gamma(t, i, alpha, beta);
+				}
+				tmp_a[i][j] = CommonFuncs.divide(value, norm);
 			}
+		}
+
+		for (int i = 0; i < N; i++) {
+			for (int k = 0; k < V; k++) {
+				double value = 0;
+				double norm = 0;
+				for (int t = 0; t < T; t++) {
+					double g = gamma(t, i, alpha, beta);
+					value += g * CommonFuncs.value(k == obs[t], 1, 0);
+					norm += g;
+				}
+				tmp_b[i][k] = CommonFuncs.divide(value, norm);
+			}
+		}
+
+		ArrayUtils.copy(tmp_phi, hmm.getPhi());
+		ArrayUtils.copy(tmp_a, hmm.getA());
+		ArrayUtils.copy(tmp_b, hmm.getB());
+
+		hmm.print();
+	}
+
+	public void train(int[] obs, int iter) {
+		for (int i = 0; i < iter; i++) {
+			train(obs);
 		}
 	}
 
@@ -327,55 +361,20 @@ public class HMMTrainer {
 		ArrayMath.addAfterScaleRows(b, wordPrs, 0.5, 0.5, b);
 	}
 
-	public void train(int[] obs) {
+	public void trainUnsupervised(HMM hmm, int[][] obss, int iter) {
+		this.hmm = hmm;
 
-		double[][] alpha = forward(obs);
-		double[][] beta = backward(obs);
+		this.N = hmm.getN();
+		this.V = hmm.getV();
 
-		ArrayUtils.print("alpha", alpha);
-		ArrayUtils.print("beta", alpha);
+		tmp_phi = ArrayUtils.array(N);
+		tmp_a = ArrayUtils.matrix(N, N);
+		tmp_b = ArrayUtils.matrix(N, V);
 
-		for (int i = 0; i < N; i++) {
-			tmp_phi[i] = gamma(0, i, alpha, beta);
-		}
-
-		int T = obs.length;
-
-		for (int i = 0; i < N; i++) {
-			for (int j = 0; j < N; j++) {
-				double value = 0;
-				double norm = 0;
-				for (int t = 0; t < T; t++) {
-					value += xi(t, i, j, obs, alpha, beta);
-					norm += gamma(t, i, alpha, beta);
-				}
-				tmp_a[i][j] = CommonFuncs.divide(value, norm);
-			}
-		}
-
-		for (int i = 0; i < N; i++) {
-			for (int k = 0; k < V; k++) {
-				double value = 0;
-				double norm = 0;
-				for (int t = 0; t < T; t++) {
-					double g = gamma(t, i, alpha, beta);
-					value += g * CommonFuncs.value(k == obs[t], 1, 0);
-					norm += g;
-				}
-				tmp_b[i][k] = CommonFuncs.divide(value, norm);
-			}
-		}
-
-		ArrayUtils.copy(tmp_phi, hmm.getPhi());
-		ArrayUtils.copy(tmp_a, hmm.getA());
-		ArrayUtils.copy(tmp_b, hmm.getB());
-
-		hmm.print();
-	}
-
-	public void train(int[] obs, int iter) {
 		for (int i = 0; i < iter; i++) {
-			train(obs);
+			for (int j = 0; j < obss.length; j++) {
+				train(obss[j]);
+			}
 		}
 	}
 

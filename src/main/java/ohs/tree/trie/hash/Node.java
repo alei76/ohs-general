@@ -7,8 +7,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import org.apache.commons.compress.archivers.sevenz.CLI;
+
 import java.util.Set;
 import java.util.Stack;
+
+import ohs.utils.Generics;
 
 public class Node<K> implements Serializable {
 
@@ -98,7 +104,18 @@ public class Node<K> implements Serializable {
 		if (ret == null) {
 			ret = new HashMap<K, Node<K>>();
 		}
+
 		return ret;
+	}
+
+	public void trimToSize() {
+		if (children != null) {
+			Map<K, Node<K>> temp = Generics.newHashMap(children.size());
+			for (Entry<K, Node<K>> e : children.entrySet()) {
+				temp.put(e.getKey(), e.getValue());
+			}
+			children = temp;
+		}
 	}
 
 	public Object getData() {

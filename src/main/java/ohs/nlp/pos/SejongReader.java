@@ -40,17 +40,36 @@ public class SejongReader implements Iterator<KDocument> {
 		readPosSet(posFileName);
 	}
 
-	private void readPosSet(String posFileName) throws Exception {
-		posSet = Generics.newHashSet();
-
-		for (String line : FileUtils.readLines(posFileName)) {
-			String[] parts = line.split("\t");
-			posSet.add(parts[0]);
-		}
-	}
-
 	public void close() {
 		reader.close();
+	}
+
+	private void filter(KDocument doc) {
+		List<KSentence> sents = Generics.newArrayList();
+
+		for (KSentence sent : doc.getSentences()) {
+			boolean isValid = true;
+			for (Token tok : sent.getTokens()) {
+				MultiToken mt = (MultiToken) tok;
+				for (Token t : mt.getTokens()) {
+					String pos = t.getValue(TokenAttr.POS);
+					if (!posSet.contains(pos)) {
+						isValid = false;
+						break;
+					}
+				}
+				if (!isValid) {
+					break;
+				}
+			}
+
+			if (isValid) {
+				sents.add(sent);
+			}
+		}
+		doc.setSentences(sents.toArray(new KSentence[sents.size()]));
+
+		SejongParser.enumerateStarts(doc);
 	}
 
 	@Override
@@ -87,37 +106,18 @@ public class SejongReader implements Iterator<KDocument> {
 		return hasNext;
 	}
 
-	private void filter(KDocument doc) {
-		List<KSentence> sents = Generics.newArrayList();
-
-		for (KSentence sent : doc.getSentences()) {
-			boolean isValid = true;
-			for (Token tok : sent.getTokens()) {
-				MultiToken mt = (MultiToken) tok;
-				for (Token t : mt.getTokens()) {
-					String pos = t.getValue(TokenAttr.POS);
-					if (!posSet.contains(pos)) {
-						isValid = false;
-						break;
-					}
-				}
-				if (!isValid) {
-					break;
-				}
-			}
-
-			if (isValid) {
-				sents.add(sent);
-			}
-		}
-		doc.setSentences(sents.toArray(new KSentence[sents.size()]));
-
-		SejongParser.enumerateStarts(doc);
-	}
-
 	@Override
 	public KDocument next() {
 		return doc;
+	}
+
+	private void readPosSet(String posFileName) throws Exception {
+		posSet = Generics.newHashSet();
+
+		for (String line : FileUtils.readLines(posFileName)) {
+			String[] parts = line.split("\t");
+			posSet.add(parts[0]);
+		}
 	}
 
 }

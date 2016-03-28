@@ -8,9 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Stack;
 import java.util.TreeSet;
 
 import ohs.tree.trie.hash.Node.Type;
@@ -132,26 +130,6 @@ public class Trie<K> {
 		return ret;
 	}
 
-	public void optimize() {
-		optimize(root);
-	}
-
-	private void optimize(Node<K> node) {
-
-		if (node.hasChildren()) {
-			Map<K, Node<K>> children = node.getChildren();
-			Map<K, Node<K>> newChildren = Generics.newHashMap(children.size());
-			newChildren.putAll(children);
-			node.setChildren(newChildren);
-			children = null;
-
-			for (Node<K> child : node.getChildren().values()) {
-				optimize(child);
-			}
-		}
-
-	}
-
 	public Set<K> keySetAtLevel(int level) {
 		Set<K> ret = new HashSet<K>();
 		for (Node<K> node : getNodes()) {
@@ -160,6 +138,24 @@ public class Trie<K> {
 			}
 		}
 		return ret;
+	}
+
+	public void read(File inputFile) {
+
+	}
+
+	private void recursive(Node<K> node, StringBuffer sb, int depthToPrint) {
+		if (node.hasChildren() && node.getDepth() < depthToPrint) {
+			int cnt = 0;
+			for (Node<K> child : node.getChildren().values()) {
+				sb.append("\n");
+				for (int j = 0; j < child.getDepth(); j++) {
+					sb.append("  ");
+				}
+				sb.append(String.format("(%d, %d) -> %s", child.getDepth(), ++cnt, child.getKey()));
+				recursive(child, sb, depthToPrint);
+			}
+		}
 	}
 
 	// public void SmithWatermanScorer(){
@@ -193,24 +189,6 @@ public class Trie<K> {
 	// }
 	// }
 	// }
-
-	public void read(File inputFile) {
-
-	}
-
-	private void recursive(Node<K> node, StringBuffer sb, int depthToPrint) {
-		if (node.hasChildren() && node.getDepth() < depthToPrint) {
-			int cnt = 0;
-			for (Node<K> child : node.getChildren().values()) {
-				sb.append("\n");
-				for (int j = 0; j < child.getDepth(); j++) {
-					sb.append("  ");
-				}
-				sb.append(String.format("(%d, %d) -> %text", child.getDepth(), ++cnt, child.getKey()));
-				recursive(child, sb, depthToPrint);
-			}
-		}
-	}
 
 	public Node<K> search(K[] keys) {
 		return search(keys, 0, keys.length);
@@ -246,12 +224,23 @@ public class Trie<K> {
 	public String toString(int depthToPrint) {
 		NumberFormat nf = NumberFormat.getInstance();
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("Depth:\t%text\n", nf.format(depth)));
-		sb.append(String.format("Node Size:\t%text\n", nf.format(size)));
+		sb.append(String.format("Depth:\t%s\n", nf.format(depth)));
+		sb.append(String.format("Node Size:\t%s\n", nf.format(size)));
 
 		recursive(root, sb, depthToPrint);
 
 		return sb.toString().trim();
+	}
+
+	public void trimToSize() {
+		trimToSize(root);
+	}
+
+	private void trimToSize(Node<K> node) {
+		for (Node<K> child : node.getChildren().values()) {
+			trimToSize(child);
+		}
+		node.trimToSize();
 	}
 
 	public void write(File outputFile) {

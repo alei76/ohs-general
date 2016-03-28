@@ -153,20 +153,35 @@ public class DATrieMem extends DATrie {
 		// }
 		// r.close();
 		// }
+		
+		{
+			DATrieMem trie = new DATrieMem(1, 128);
+
+			trie.insert(new int[] { 1, 5, 6, 7 }, 14);
+			trie.insert(new int[] { 2, 2 }, 19);
+			trie.insert(new int[] { 1, 5, 2 }, 9);
+			trie.insert(new int[] { 2, 5, 2 }, 3);
+			trie.insert(new int[] { 1, 2, 5 }, 8);
+			trie.insert(new int[] { 1, 2, 5 }, 8);
+
+			System.out.println(trie.find(new int[] { 1, 2, 5 }));
+			;
+			trie.display();
+		}
 
 		{
-			DATrieMem test = new DATrieMem(1, 128);
+			DATrieMem trie = new DATrieMem(1, 128);
 
-			test.insert(new int[] { 1, 5, 6, 7 }, 14);
-			test.insert(new int[] { 2, 2 }, 19);
-			test.insert(new int[] { 1, 5, 2 }, 9);
-			test.insert(new int[] { 2, 5, 2 }, 3);
-			test.insert(new int[] { 1, 2, 5 }, 8);
-			test.insert(new int[] { 1, 2, 5 }, 8);
+			trie.insert(new int[] { 1, 5, 6, 7 }, 14);
+			trie.insert(new int[] { 2, 2 }, 19);
+			trie.insert(new int[] { 1, 5, 2 }, 9);
+			trie.insert(new int[] { 2, 5, 2 }, 3);
+			trie.insert(new int[] { 1, 2, 5 }, 8);
+			trie.insert(new int[] { 1, 2, 5 }, 8);
 
-			System.out.println(test.find(new int[] { 1, 2, 5 }));
+			System.out.println(trie.find(new int[] { 1, 2, 5 }));
 			;
-			test.display();
+			trie.display();
 		}
 		// test.disp();
 	}

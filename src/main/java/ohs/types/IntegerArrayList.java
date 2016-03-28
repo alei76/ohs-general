@@ -198,6 +198,13 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 		return numNew != 0;
 	}
 
+	public void change(int index1, int index2) {
+		int v1 = get(index1);
+		int v2 = get(index2);
+		set(index1, v2);
+		set(index1, v1);
+	}
+
 	/**
 	 * Inserts all of the elements in the specified collection into this list, starting at the specified position. Shifts the element
 	 * currently at that position (if any) and any subsequent elements to the right (increases their indices). The new elements will appear
@@ -604,6 +611,10 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 		return oldValue;
 	}
 
+	public int increment(int index, int increment) {
+		return set(index, get(index) + increment);
+	}
+
 	public void setAutoGrowth(boolean autoGrowth) {
 		this.autoGrowth = autoGrowth;
 	}
@@ -635,6 +646,7 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 			return "[]";
 		} else {
 			StringBuffer sb = new StringBuffer();
+			sb.append(String.format("(%d/%d) ", size, elementData.length));
 			for (int i = 0; i < size; i++) {
 				int e = elementData(i);
 				if (sparse) {
