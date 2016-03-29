@@ -107,8 +107,6 @@ public class IntegerDoubleArrayList implements RandomAccess, Cloneable, Serializ
 	 */
 	private int modCount = 0;
 
-	private boolean authoGrowth = false;
-
 	private boolean autoGrowth = false;
 
 	/**
@@ -340,7 +338,7 @@ public class IntegerDoubleArrayList implements RandomAccess, Cloneable, Serializ
 	 * @return <tt>true</tt> if this list contains the specified element
 	 */
 	public boolean containsInteger(int i) {
-		return indexOfInteger(i) >= 0;
+		return indexOf(i) >= 0;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -468,11 +466,12 @@ public class IntegerDoubleArrayList implements RandomAccess, Cloneable, Serializ
 	 * More formally, returns the lowest index <tt>i</tt> such that <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>
 	 * , or -1 if there ivs no such index.
 	 */
-	public int indexOfInteger(int o) {
-		for (int i = 0; i < size; i++)
-			if (ivs[i] == o)
-				return i;
-		return -1;
+	public int indexOf(int i) {
+		return ArrayUtils.lastIndexOf(ivs, 0, size, i, false);
+	}
+
+	public int indexOf(double d) {
+		return ArrayUtils.lastIndexOf(dvs, 0, size, d, false);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -494,11 +493,12 @@ public class IntegerDoubleArrayList implements RandomAccess, Cloneable, Serializ
 	 * formally, returns the highest index <tt>i</tt> such that <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>, or
 	 * -1 if there ivs no such index.
 	 */
-	public int lastIndexOf(int o) {
-		for (int i = size - 1; i >= 0; i--)
-			if (ivs[i] == o)
-				return i;
-		return -1;
+	public int lastIndexOf(int i) {
+		return ArrayUtils.lastIndexOf(ivs, 0, size, i, false);
+	}
+
+	public int lastIndexOf(double d) {
+		return ArrayUtils.lastIndexOf(dvs, 0, size, d, false);
 	}
 
 	/**

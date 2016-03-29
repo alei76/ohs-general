@@ -42,7 +42,7 @@ public class OrganizationDetector {
 			BilingualText orgName = new BilingualText(korOrg, engOrg);
 			double cnt = Double.parseDouble(parts[2]);
 
-			// if (unique_cnt < 50 || unique_cnt > 100) {
+			// if (cnt < 50 || cnt > 100) {
 			// continue;
 			// }
 

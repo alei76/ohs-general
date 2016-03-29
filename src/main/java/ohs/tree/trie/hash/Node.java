@@ -28,8 +28,7 @@ public class Node<K> implements Serializable {
 	private static final long serialVersionUID = 6414918490989194051L;
 
 	protected Map<K, Node<K>> children;
-	protected int unique_cnt = 0;
-	protected int total_cnt = 0;
+	protected int cnt = 0;
 	protected int depth = 0;
 	protected K key;
 	protected Node<K> parent;
@@ -51,7 +50,7 @@ public class Node<K> implements Serializable {
 		this.depth = depth;
 		this.children = null;
 		this.data = data;
-		this.unique_cnt = 0;
+		this.cnt = 0;
 		this.id = id;
 	}
 
@@ -95,10 +94,6 @@ public class Node<K> implements Serializable {
 		return children.get(key);
 	}
 
-	public void setChildren(Map<K, Node<K>> children) {
-		this.children = children;
-	}
-
 	public Map<K, Node<K>> getChildren() {
 		Map<K, Node<K>> ret = children;
 		if (ret == null) {
@@ -108,14 +103,8 @@ public class Node<K> implements Serializable {
 		return ret;
 	}
 
-	public void trimToSize() {
-		if (children != null) {
-			Map<K, Node<K>> temp = Generics.newHashMap(children.size());
-			for (Entry<K, Node<K>> e : children.entrySet()) {
-				temp.put(e.getKey(), e.getValue());
-			}
-			children = temp;
-		}
+	public int getCount() {
+		return cnt;
 	}
 
 	public Object getData() {
@@ -236,14 +225,6 @@ public class Node<K> implements Serializable {
 		return ret;
 	}
 
-	public int getUniqueCount() {
-		return unique_cnt;
-	}
-
-	public int getTotalCount() {
-		return total_cnt;
-	}
-
 	public boolean hasChild(K key) {
 		return children == null || !children.containsKey(key) ? false : true;
 	}
@@ -265,12 +246,16 @@ public class Node<K> implements Serializable {
 		return parent == null ? false : true;
 	}
 
-	public void incrementUniqueCount() {
-		unique_cnt++;
+	public void incrementCount() {
+		cnt++;
 	}
 
-	public void incrementTotalCount() {
-		total_cnt++;
+	public boolean isLeaf() {
+		return getType() == Type.LEAF ? true : false;
+	}
+
+	public boolean isRoot() {
+		return getType() == Type.ROOT ? true : false;
 	}
 
 	// public boolean isLeaf() {
@@ -281,12 +266,8 @@ public class Node<K> implements Serializable {
 	// return depth == 1 ? true : false;
 	// }
 
-	public boolean isLeaf() {
-		return getType() == Type.LEAF ? true : false;
-	}
-
-	public boolean isRoot() {
-		return getType() == Type.ROOT ? true : false;
+	public void setChildren(Map<K, Node<K>> children) {
+		this.children = children;
 	}
 
 	public void setData(Object data) {
@@ -300,7 +281,7 @@ public class Node<K> implements Serializable {
 
 		sb.append(String.format("ID:\t%text\n", id));
 		sb.append(String.format("Type\t%text\n", type));
-		sb.append(String.format("Count:\t%d\n", unique_cnt));
+		sb.append(String.format("Count:\t%d\n", cnt));
 		sb.append(String.format("Depth:\t%d\n", depth));
 		sb.append(String.format("Key:\t%text\n", key == null ? "null" : key.toString()));
 
@@ -320,5 +301,15 @@ public class Node<K> implements Serializable {
 			sb.append(String.format("  %dth %text -> %d children\n", ++no, child.key, child.getChildren().size()));
 		}
 		return sb.toString().trim();
+	}
+
+	public void trimToSize() {
+		if (children != null) {
+			Map<K, Node<K>> temp = Generics.newHashMap(children.size());
+			for (Entry<K, Node<K>> e : children.entrySet()) {
+				temp.put(e.getKey(), e.getValue());
+			}
+			children = temp;
+		}
 	}
 }

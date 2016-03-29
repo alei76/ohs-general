@@ -131,7 +131,7 @@ public class CandidateSearcher {
 					Node<String> node = trie.search(poss, s, e);
 
 					if (node != null) {
-						if (node.getUniqueCount() > 0) {
+						if (node.getCount() > 0) {
 							found = e;
 						}
 					}

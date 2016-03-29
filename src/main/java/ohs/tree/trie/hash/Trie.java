@@ -1,6 +1,7 @@
 package ohs.tree.trie.hash;
 
 import java.io.File;
+import java.io.Serializable;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,9 +13,13 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import ohs.tree.trie.hash.Node.Type;
-import ohs.utils.Generics;
 
-public class Trie<K> {
+public class Trie<K> implements Serializable{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8031071859567911644L;
 
 	/**
 	 * @param args
@@ -100,7 +105,6 @@ public class Trie<K> {
 
 	public Node<K> insert(List<K> keys, int start, int end) {
 		Node<K> node = root;
-		node.incrementTotalCount();
 
 		for (int i = start; i < end; i++) {
 			K key = keys.get(i);
@@ -112,9 +116,9 @@ public class Trie<K> {
 				node.addChild(child);
 			}
 			node = child;
-			node.incrementTotalCount();
+			node.incrementCount();
 		}
-		node.incrementUniqueCount();
+		node.incrementCount();
 		depth = Math.max(depth, node.getDepth());
 
 		return node;

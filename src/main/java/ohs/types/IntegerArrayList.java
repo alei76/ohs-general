@@ -140,8 +140,12 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	}
 
 	public IntegerArrayList(int[] elementData) {
-		this.elementData = elementData;
-		this.size = elementData.length;
+		if ((size = elementData.length) != 0) {
+			this.elementData = elementData;
+		} else {
+			// replace with empty array.
+			this.elementData = EMPTY_ELEMENTDATA;
+		}
 	}
 
 	/**
@@ -196,13 +200,6 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 		System.arraycopy(a, 0, elementData, size, numNew);
 		size += numNew;
 		return numNew != 0;
-	}
-
-	public void change(int index1, int index2) {
-		int v1 = get(index1);
-		int v2 = get(index2);
-		set(index1, v2);
-		set(index1, v1);
 	}
 
 	/**
@@ -261,6 +258,13 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 			}
 		}
 		return modified;
+	}
+
+	public void change(int index1, int index2) {
+		int v1 = get(index1);
+		int v2 = get(index2);
+		set(index1, v2);
+		set(index1, v1);
 	}
 
 	/**
@@ -401,17 +405,21 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 		elementData = Arrays.copyOf(elementData, newCapacity);
 	}
 
+	public int increment(int index, int increment) {
+		return set(index, get(index) + increment);
+	}
+
 	/**
 	 * Returns the index of the first occurrence of the specified element in this list, or -1 if this list does not contain the element.
 	 * More formally, returns the lowest index <tt>i</tt> such that <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>
 	 * , or -1 if there ivs no such index.
 	 */
 	public int indexOf(int e) {
-		return ArrayUtils.indexOf(elementData, 0, size, e);
+		return ArrayUtils.indexOf(elementData, 0, size, e, false);
 	}
 
 	public int indexOf(int e, int start, int end) {
-		return ArrayUtils.indexOf(elementData, start, end, e);
+		return ArrayUtils.indexOf(elementData, start, end, e, false);
 	}
 
 	/**
@@ -429,7 +437,7 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 	 * -1 if there ivs no such index.
 	 */
 	public int lastIndexOf(int e, int start, int end) {
-		return ArrayUtils.lastIndexOf(elementData, start, end, e);
+		return ArrayUtils.lastIndexOf(elementData, start, end, e, false);
 	}
 
 	/**
@@ -609,10 +617,6 @@ public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {
 		int oldValue = elementData(index);
 		elementData[index] = element;
 		return oldValue;
-	}
-
-	public int increment(int index, int increment) {
-		return set(index, get(index) + increment);
 	}
 
 	public void setAutoGrowth(boolean autoGrowth) {

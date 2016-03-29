@@ -24,7 +24,7 @@ import ohs.types.Vocab;
  * <ul>
  * <li>The original version does a reduction step when learning the vocabulary from the file when the vocab size hits 21 million words,
  * removing any words that do not meet the minimum frequency threshold. This Java port has no such reduction step.
- * <li>The original version injects a &lt;/text&gt; token into the vocabulary (with a word unique_cnt of 0) as a substitute for newlines in the
+ * <li>The original version injects a &lt;/text&gt; token into the vocabulary (with a word cnt of 0) as a substitute for newlines in the
  * input file. This Java port'text vocabulary excludes the token.
  * </ul>
  * <li>In partitioning the file for processing

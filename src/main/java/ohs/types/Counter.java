@@ -1,5 +1,6 @@
 package ohs.types;
 
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -11,14 +12,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import ohs.io.FileUtils;
+import ohs.nlp.pos.NLPPath;
+
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
 /**
  * A map from objs to doubles. Includes convenience methods for getting, setting, and incrementing element counts. Objects not in the
- * counter will return a unique_cnt of zero. The counter is backed by a HashMap .(unless specified otherwise with the MapFactory
- * constructor).
+ * counter will return a cnt of zero. The counter is backed by a HashMap .(unless specified otherwise with the MapFactory constructor).
  * 
  * @author lots of people
  */
@@ -52,7 +56,7 @@ public class Counter<E> implements Serializable {
 		return res;
 	}
 
-	public static void main(final String[] args) {
+	public static void main(final String[] args) throws Exception {
 		final Counter<String> counter = new Counter<String>();
 		System.out.println(counter);
 		counter.incrementCount("planets", 7);
@@ -65,6 +69,8 @@ public class Counter<E> implements Serializable {
 		System.out.println(counter);
 		System.out.println(counter.toString());
 		System.out.println("Total: " + counter.totalCount());
+
+
 	}
 
 	private Map<E, Double> entries;
@@ -109,9 +115,9 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * Finds the key with maximum unique_cnt. This is a linear operation, and ties are broken arbitrarily.
+	 * Finds the key with maximum cnt. This is a linear operation, and ties are broken arbitrarily.
 	 * 
-	 * @return a key with minumum unique_cnt
+	 * @return a key with minumum cnt
 	 */
 	public E argMax() {
 		double maxCount = Double.NEGATIVE_INFINITY;
@@ -149,8 +155,8 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * Returns whether the counter contains the given key. Note that this is the way to distinguish keys which are in the counter with
-	 * unique_cnt zero, and those which are not in the counter (and will therefore return unique_cnt zero from getCount().
+	 * Returns whether the counter contains the given key. Note that this is the way to distinguish keys which are in the counter with cnt
+	 * zero, and those which are not in the counter (and will therefore return cnt zero from getCount().
 	 * 
 	 * @param key
 	 * @return whether the counter contains the key
@@ -197,7 +203,7 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * Get the unique_cnt of the element, or zero if the element is not in the counter.
+	 * Get the cnt of the element, or zero if the element is not in the counter.
 	 * 
 	 * @param key
 	 * @return
@@ -303,7 +309,7 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * Increment a key'text unique_cnt by the given amount.
+	 * Increment a key'text cnt by the given amount.
 	 * 
 	 * @param key
 	 * @param increment
@@ -427,10 +433,10 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * Set the unique_cnt for the given key if it is larger than the previous one;
+	 * Set the cnt for the given key if it is larger than the previous one;
 	 * 
 	 * @param key
-	 * @param unique_cnt
+	 * @param cnt
 	 */
 	public void put(final E key, final double count, final boolean keepHigher) {
 		if (keepHigher && entries.containsKey(key)) {
@@ -554,10 +560,10 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * Set the unique_cnt for the given key, clobbering any previous unique_cnt.
+	 * Set the cnt for the given key, clobbering any previous cnt.
 	 * 
 	 * @param key
-	 * @param unique_cnt
+	 * @param cnt
 	 */
 	public void setCount(final E key, final double count) {
 		entries.put(key, count);
@@ -573,7 +579,7 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * Set'text the key'text unique_cnt to the maximum of the current unique_cnt and val. Always sets to val if key is not yet present.
+	 * Set'text the key'text cnt to the maximum of the current cnt and val. Always sets to val if key is not yet present.
 	 * 
 	 * @param key
 	 * @param val
@@ -588,7 +594,7 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * Set'text the key'text unique_cnt to the minimum of the current unique_cnt and val. Always sets to val if key is not yet present.
+	 * Set'text the key'text cnt to the minimum of the current cnt and val. Always sets to val if key is not yet present.
 	 * 
 	 * @param key
 	 * @param val
@@ -603,7 +609,7 @@ public class Counter<E> implements Serializable {
 	}
 
 	/**
-	 * The number of entries in the counter (not the total unique_cnt -- use totalCount() instead).
+	 * The number of entries in the counter (not the total cnt -- use totalCount() instead).
 	 */
 	public int size() {
 		return entries.size();
@@ -741,7 +747,6 @@ public class Counter<E> implements Serializable {
 				};
 			}
 		};
-
 	}
 
 }

@@ -3,7 +3,10 @@ package ohs.nlp.pos;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -35,10 +38,11 @@ public class SejongDataHandler {
 		// sdh.buildSystemDict();
 		// sdh.buildAnalyzedDict();
 		sdh.buildTrie();
+		// sdh.test();
 
 		System.out.println("process ends.");
 	}
-
+	
 	public void buildTrie() throws Exception {
 		List<String> lines = FileUtils.readLines(NLPPath.DICT_ANALYZED_FILE);
 		Trie<Character> trie = new Trie<Character>();
@@ -48,6 +52,8 @@ public class SejongDataHandler {
 
 			char[] chs = KoreanUtils.decomposeKoreanWordToPhonemes(parts[0]);
 			String s = String.valueOf(chs);
+			
+			System.out.println(s);
 
 			Node<Character> node = trie.insert(StrUtils.toCharacters(chs));
 			node.setData("");
@@ -59,7 +65,59 @@ public class SejongDataHandler {
 
 		trie.trimToSize();
 
+//		{
+//			ObjectOutputStream oos = FileUtils.openObjectOutputStream(NLPPath.DATA_DIR + "test_1.ser");
+//			oos.writeObject(trie);
+//			oos.close();
+//		}
+
+		// {
+		// ObjectOutputStream oos = FileUtils.openObjectOutputStream(NLPPath.DATA_DIR + "test_2.ser");
+		//
+		// Node<Character> root = trie.getRoot();
+		// write(oos, root);
+		// oos.close();
+		//
+		// FileUtils.write(oos, s);
+		//
+		// }
+
 		System.out.println();
+	}
+
+	public static void write(ObjectOutputStream oos, Node<Character> node) throws Exception {
+
+		for (Node<Character> child : node.getChildren().values()) {
+			write(oos, child);
+
+			char key = child.getKey();
+			int cnt = child.getCount();
+			int depth = child.getDepth();
+			int id = child.getID();
+
+			oos.writeChar(key);
+			oos.writeInt(cnt);
+			oos.writeInt(depth);
+			oos.writeInt(id);
+		}
+
+	}
+
+	public void test() throws Exception {
+
+		List<String> lines = FileUtils.readLines(NLPPath.DICT_ANALYZED_FILE);
+
+		{
+			ObjectOutputStream oos = FileUtils.openObjectOutputStream(NLPPath.DATA_DIR + "test_1.ser");
+			oos.writeObject(lines);
+			oos.close();
+		}
+
+		{
+			ObjectOutputStream oos = FileUtils.openObjectOutputStream(NLPPath.DATA_DIR + "test_2.ser");
+			FileUtils.writeStrCollection(oos, lines);
+			oos.close();
+		}
 	}
 
 	public void buildAnalyzedDict() throws Exception {

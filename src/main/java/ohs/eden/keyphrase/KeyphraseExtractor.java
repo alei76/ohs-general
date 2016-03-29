@@ -140,7 +140,7 @@ public class KeyphraseExtractor {
 							for (int k = j + 1; k < j + max_kwd_len && k < chs.length; k++) {
 								Node<Character> node = korTrie.search(chs, j, k);
 								if (node != null) {
-									if (node.getUniqueCount() > 0) {
+									if (node.getCount() > 0) {
 										found = k;
 									}
 								}
@@ -168,7 +168,7 @@ public class KeyphraseExtractor {
 							for (int k = j + 1; k < j + max_kwd_len && k < words.size(); k++) {
 								Node<String> node = engTrie.search(words, j, k);
 								if (node != null) {
-									if (node.getUniqueCount() > 0) {
+									if (node.getCount() > 0) {
 										found = k;
 									}
 								}

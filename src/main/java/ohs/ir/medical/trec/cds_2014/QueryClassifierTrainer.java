@@ -242,7 +242,7 @@ public class QueryClassifierTrainer {
 
 				double docFreq = termDocFreqs.valueAlways(termId);
 				double numDocs = indexSearcher.getIndexReader().maxDoc();
-				// double tf = 1 + (unique_cnt == 0 ? 0 : Math.log(unique_cnt));
+				// double tf = 1 + (cnt == 0 ? 0 : Math.log(cnt));
 				double idf = docFreq == 0 ? 0 : Math.log((numDocs + 1) / docFreq);
 				double tfidf = tf * idf;
 				doc.setAtLoc(j, tfidf);
