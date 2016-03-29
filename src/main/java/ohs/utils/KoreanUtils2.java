@@ -234,19 +234,19 @@ public class KoreanUtils2 {
 		}
 		System.out.println();
 
-		// for (int i = JAEUM_RANGE[0], loc = 0; i <= JAEUM_RANGE[1]; i++) {
+		// for (int i = HANGUL_COMPATIBILITY_JAMO_JAEUM_RANGE[0], loc = 0; i <= HANGUL_COMPATIBILITY_JAMO_JAEUM_RANGE[1]; i++) {
 		// System.out.printf("%d\t%d\t%c\n", loc++, i, (char) i);
 		// }
 
-		// for (int i = JAEUM_RANGE[0], loc = 0; i <= JAEUM_RANGE[1]; i++) {
+		// for (int i = HANGUL_COMPATIBILITY_JAMO_JAEUM_RANGE[0], loc = 0; i <= HANGUL_COMPATIBILITY_JAMO_JAEUM_RANGE[1]; i++) {
 		// System.out.printf("%d\t%d\t%c\n", loc++, i, (char) i);
 		// }
 
-		// for (int i = MOEUM_RANGE[0], loc = 0; i <= MOEUM_RANGE[1]; i++) {
+		// for (int i = HANGUL_COMPATIBILITY_JAMO_MOEUM_RANGE[0], loc = 0; i <= HANGUL_COMPATIBILITY_JAMO_MOEUM_RANGE[1]; i++) {
 		// System.out.printf("%d\t%d\t%c\n", loc++, i, (char) i);
 		// }
 
-		// for (int i = MOEUM_RANGE[0], loc = 0; i <= MOEUM_RANGE[1]; i++) {
+		// for (int i = HANGUL_COMPATIBILITY_JAMO_MOEUM_RANGE[0], loc = 0; i <= HANGUL_COMPATIBILITY_JAMO_MOEUM_RANGE[1]; i++) {
 		// System.out.printf("%d\t%d\t%c\n", loc++, i, (char) i);
 		// if (loc == 1) {
 		// break;

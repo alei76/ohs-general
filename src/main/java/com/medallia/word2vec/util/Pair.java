@@ -216,7 +216,7 @@ public class Pair<K, V> implements Map.Entry<K, V>, Serializable {
 	}
 
 	/**
-	 * @return {@link Function} which maps the value of each pair through the given {@link Function}
+	 * @return {@link Function} which hjMaps the value of each pair through the given {@link Function}
 	 */
 	public static <K, V, V2> Function<Pair<K, V>, Pair<K, V2>> mapValues(final Function<? super V, V2> func) {
 		return new Function<Pair<K, V>, Pair<K, V2>>() {

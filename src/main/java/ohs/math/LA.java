@@ -759,7 +759,7 @@ public class LA {
 	 * 
 	 * h. The columns of A span R^n.
 	 * 
-	 * i. The linear transformation x-> Ax maps R^n onto R^n.
+	 * i. The linear transformation x-> Ax hjMaps R^n onto R^n.
 	 * 
 	 * j There is an n x n matrix C such that CA = I.
 	 * 

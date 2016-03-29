@@ -96,7 +96,7 @@ public class SearchLogAnalyzer {
 			}
 		}
 
-		// System.out.println(map1.toString());
+		// System.out.println(hcjMap.toString());
 		// System.out.println();
 		// System.out.println(map2.toString());
 
@@ -219,7 +219,7 @@ public class SearchLogAnalyzer {
 			}
 		}
 
-		// System.out.println(map1.toString());
+		// System.out.println(hcjMap.toString());
 		// System.out.println();
 		// System.out.println(map2.toString());
 

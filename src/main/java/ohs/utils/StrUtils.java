@@ -674,6 +674,17 @@ public class StrUtils {
 		return sb.toString();
 	}
 
+	public static String toString(char[] chs) {
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < chs.length; i++) {
+			sb.append(String.format("%d\t%c", i, chs[i]));
+			if (i != chs.length - 1) {
+				sb.append("\n");
+			}
+		}
+		return sb.toString();
+	}
+
 	public static String toString(String delim, Counter<String> counter, NumberFormat nf) {
 		if (nf == null) {
 			nf = NumberFormat.getInstance();
