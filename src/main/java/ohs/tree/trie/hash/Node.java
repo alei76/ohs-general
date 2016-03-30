@@ -26,7 +26,6 @@ public class Node<K> implements Serializable {
 
 	protected Map<K, Node<K>> children;
 	protected int cnt = 0;
-	protected int depth = 0;
 	protected K key;
 	protected Node<K> parent;
 	protected Object data;
@@ -41,10 +40,9 @@ public class Node<K> implements Serializable {
 
 	protected int id;
 
-	public Node(Node<K> parent, K key, int depth, Object data, int id) {
+	public Node(Node<K> parent, K key, Object data, int id) {
 		this.parent = parent;
 		this.key = key;
-		this.depth = depth;
 		this.children = null;
 		this.data = data;
 		this.cnt = 0;
@@ -109,7 +107,13 @@ public class Node<K> implements Serializable {
 	}
 
 	public int getDepth() {
-		return depth;
+		int ret = 1;
+		Node<K> node = this;
+		while (!node.isRoot()) {
+			node = node.getParent();
+			ret++;
+		}
+		return ret;
 	}
 
 	public int getID() {
@@ -214,7 +218,7 @@ public class Node<K> implements Serializable {
 
 	public Type getType() {
 		Type ret = Type.NON_LEAF;
-		if (depth == 1) {
+		if (parent == null) {
 			ret = Type.ROOT;
 		} else if (children == null) {
 			ret = Type.LEAF;
@@ -276,26 +280,19 @@ public class Node<K> implements Serializable {
 		StringBuffer sb = new StringBuffer();
 		Type type = getType();
 
-		sb.append(String.format("ID:\t%text\n", id));
-		sb.append(String.format("Type\t%text\n", type));
-		sb.append(String.format("Count:\t%d\n", cnt));
-		sb.append(String.format("Depth:\t%d\n", depth));
-		sb.append(String.format("Key:\t%text\n", key == null ? "null" : key.toString()));
+		sb.append(String.format("id:\t%s\n", id));
+		sb.append(String.format("type:\t%s\n", type));
+		sb.append(String.format("count:\t%d\n", cnt));
+		sb.append(String.format("depth:\t%d\n", getDepth()));
+		sb.append(String.format("key:\t%s\n", key == null ? "null" : key.toString()));
 
 		if (type != Type.ROOT) {
-			StringBuffer sb2 = new StringBuffer();
-			List<Node<K>> nodes = getNodePath();
-			for (int i = 0; i < nodes.size(); i++) {
-				Node<K> node = nodes.get(i);
-				sb2.append(i == nodes.size() - 1 ? node.getKey().toString() : node.getKey().toString() + "->");
-			}
-			sb.append(String.format("Key Path\t%text\n", sb2.toString()));
+			sb.append(String.format("key path:\t%s\n", "R->" + getKeyPath("->")));
 		}
-
-		sb.append(String.format("Children:\t%d\n", getChildren().size()));
+		sb.append(String.format("children:\t%d\n", getChildren().size()));
 		int no = 0;
 		for (Node<K> child : getChildren().values()) {
-			sb.append(String.format("  %dth %text -> %d children\n", ++no, child.key, child.getChildren().size()));
+			sb.append(String.format("  %dth %s -> %d children\n", ++no, child.key, child.getChildren().size()));
 		}
 		return sb.toString().trim();
 	}

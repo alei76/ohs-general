@@ -119,8 +119,10 @@ public class CandidateSearcher {
 
 		for (int i = 0; i < input.size(); i++) {
 			KSentence sent = input.getSentence(i);
+			
+			
 
-			String[] poss = sent.getValues(TokenAttr.POS);
+			String[] poss = sent.getSubValues(start, end, attrs)
 
 			for (int s = 0; s < poss.length;) {
 				int found = -1;

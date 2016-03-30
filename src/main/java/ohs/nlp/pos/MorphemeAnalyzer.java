@@ -12,6 +12,8 @@ import ohs.nlp.ling.types.TokenAttr;
 import ohs.tree.trie.hash.Trie;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
+import ohs.utils.KoreanUtils;
+import ohs.utils.StrUtils;
 
 public class MorphemeAnalyzer {
 
@@ -28,7 +30,17 @@ public class MorphemeAnalyzer {
 
 		for (String line : lines) {
 			String[] parts = line.split("\t");
+			String word = parts[0];
+			String pos = parts[1];
+
+			String word2 = KoreanUtils.decomposeToJamo(word);
+
+			sysDict.insert(StrUtils.toCharacters(word2.toCharArray()));
 		}
+
+		sysDict.trimToSize();
+
+		System.out.println();
 	}
 
 	private void readAnalyzedDict(String fileName) throws Exception {

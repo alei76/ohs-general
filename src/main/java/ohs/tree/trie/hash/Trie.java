@@ -14,7 +14,7 @@ import java.util.TreeSet;
 
 import ohs.tree.trie.hash.Node.Type;
 
-public class Trie<K> implements Serializable{
+public class Trie<K> implements Serializable {
 
 	/**
 	 * 
@@ -41,7 +41,7 @@ public class Trie<K> implements Serializable{
 	private Node<K> root;
 
 	public Trie() {
-		root = new Node<K>(null, null, depth, null, 0);
+		root = new Node<K>(null, null, null, 0);
 	}
 
 	public void delete(K[] keys) {
@@ -112,15 +112,16 @@ public class Trie<K> implements Serializable{
 			if (node.hasChild(key)) {
 				child = node.getChild(key);
 			} else {
-				child = new Node<K>(node, key, node.getDepth() + 1, null, size++);
+				child = new Node<K>(node, key, null, size++);
 				node.addChild(child);
 			}
 			node = child;
 			node.incrementCount();
 		}
 		node.incrementCount();
-		depth = Math.max(depth, node.getDepth());
 
+		int d = end - start + 1;
+		depth = Math.max(depth, d);
 		return node;
 	}
 
@@ -148,18 +149,8 @@ public class Trie<K> implements Serializable{
 
 	}
 
-	private void recursive(Node<K> node, StringBuffer sb, int depthToPrint) {
-		if (node.hasChildren() && node.getDepth() < depthToPrint) {
-			int cnt = 0;
-			for (Node<K> child : node.getChildren().values()) {
-				sb.append("\n");
-				for (int j = 0; j < child.getDepth(); j++) {
-					sb.append("  ");
-				}
-				sb.append(String.format("(%d, %d) -> %s", child.getDepth(), ++cnt, child.getKey()));
-				recursive(child, sb, depthToPrint);
-			}
-		}
+	public Node<K> search(K[] keys) {
+		return search(keys, 0, keys.length);
 	}
 
 	// public void SmithWatermanScorer(){
@@ -194,10 +185,6 @@ public class Trie<K> implements Serializable{
 	// }
 	// }
 
-	public Node<K> search(K[] keys) {
-		return search(keys, 0, keys.length);
-	}
-
 	public Node<K> search(K[] keys, int start, int end) {
 		return search(Arrays.asList(keys), start, end);
 	}
@@ -225,15 +212,27 @@ public class Trie<K> implements Serializable{
 		return toString(2);
 	}
 
-	public String toString(int depthToPrint) {
+	public String toString(int max_depth) {
 		NumberFormat nf = NumberFormat.getInstance();
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("Depth:\t%s\n", nf.format(depth)));
-		sb.append(String.format("Node Size:\t%s\n", nf.format(size)));
-
-		recursive(root, sb, depthToPrint);
-
+		sb.append(String.format("depth:\t%s\n", nf.format(depth)));
+		sb.append(String.format("node size:\t%s\n", nf.format(size)));
+		toString(root, sb, max_depth, 1);
 		return sb.toString().trim();
+	}
+
+	private void toString(Node<K> node, StringBuffer sb, int max_depth, int depth) {
+		if (node.hasChildren() && depth <= max_depth) {
+			int cnt = 0;
+			for (Node<K> child : node.getChildren().values()) {
+				sb.append("\n");
+				for (int j = 0; j < child.getDepth(); j++) {
+					sb.append("  ");
+				}
+				sb.append(String.format("(%d, %d) -> %s", child.getDepth(), cnt++, child.getKey()));
+				toString(child, sb, max_depth, depth + 1);
+			}
+		}
 	}
 
 	public void trimToSize() {

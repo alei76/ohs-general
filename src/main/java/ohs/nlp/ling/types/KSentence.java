@@ -44,6 +44,14 @@ public class KSentence {
 		return new KSentence(getTokens(start, end));
 	}
 
+	public String[][][] getSubValues(int start, int end, TokenAttr[] attrs) {
+		String[][][] ret = new String[end - start][][];
+		for (int i = start; i < end; i++) {
+			ret[i] = toks[i].getSubValues(0, toks[i].size(), attrs);
+		}
+		return ret;
+	}
+
 	public MultiToken getToken(int i) {
 		return toks[i];
 	}
@@ -68,12 +76,12 @@ public class KSentence {
 		return ret;
 	}
 
-	public String[][][] getSubValues(int start, int end, TokenAttr[] attrs) {
-		String[][][] ret = new String[end - start][][];
-		for (int i = start; i < end; i++) {
-			ret[i] = toks[i].getSubValues(0, toks[i].size(), attrs);
-		}
-		return ret;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(toks);
+		return result;
 	}
 
 	public String joinSubValues() {
@@ -89,14 +97,6 @@ public class KSentence {
 	public String joinValues(String delimValue, int start, int end, TokenAttr[] attrs) {
 		String[][] vals = getValues(start, end, attrs);
 		return StrUtils.join(delimValue, "/n", vals);
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + Arrays.hashCode(toks);
-		return result;
 	}
 
 	public int length() {
