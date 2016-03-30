@@ -6,10 +6,7 @@ import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.nlp.ling.types.KDocument;
 import ohs.nlp.ling.types.KSentence;
-import ohs.nlp.ling.types.MultiToken;
-import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
-import ohs.nlp.ling.types.TypeCaster;
 import ohs.tree.trie.hash.Node;
 import ohs.tree.trie.hash.Trie;
 import ohs.types.Counter;
@@ -121,7 +118,7 @@ public class CandidateSearcher {
 		List<KSentence> ret = Generics.newArrayList();
 
 		for (int i = 0; i < input.size(); i++) {
-			KSentence sent = input.getSentence(i).linearizeMultiTokens();
+			KSentence sent = input.getSentence(i);
 
 			String[] poss = sent.getValues(TokenAttr.POS);
 

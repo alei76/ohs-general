@@ -2,20 +2,23 @@ package ohs.nlp.ling.types;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.Arrays;
 
 import ohs.io.FileUtils;
 
-public class Token extends TextSpan {
+public class Token implements Serializable {
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 353783289264943298L;
+	private static final long serialVersionUID = 4675926604151002510L;
 
 	public static final String DELIM_TOKEN = " / ";
 
 	protected String[] values = new String[TokenAttr.values().length];
+
+	private int start = 0;
 
 	public Token() {
 		for (int i = 0; i < values.length; i++) {
@@ -23,8 +26,13 @@ public class Token extends TextSpan {
 		}
 	}
 
-	public Token(int start, String text) {
-		super(start, text);
+	public void setStart(int start) {
+		this.start = start;
+	}
+
+	public Token(int start, String word) {
+		this.start = start;
+		setValue(TokenAttr.WORD, word);
 	}
 
 	@Override
@@ -41,6 +49,10 @@ public class Token extends TextSpan {
 		return true;
 	}
 
+	public int getStart() {
+		return start;
+	}
+
 	public String getValue(int ordinal) {
 		return values[ordinal];
 	}
@@ -54,6 +66,7 @@ public class Token extends TextSpan {
 	}
 
 	public String[] getValues(TokenAttr[] attrs) {
+
 		String[] ret = new String[attrs.length];
 		for (int i = 0; i < attrs.length; i++) {
 			ret[i] = values[attrs[i].ordinal()];
@@ -77,8 +90,12 @@ public class Token extends TextSpan {
 		return String.join(delim, getValues(attrs));
 	}
 
+	public int length() {
+		return getValue(TokenAttr.WORD).length();
+	}
+
 	public void read(ObjectInputStream ois) throws Exception {
-		super.read(ois);
+		start = ois.readInt();
 		values = FileUtils.readStrArray(ois);
 	}
 
@@ -95,24 +112,24 @@ public class Token extends TextSpan {
 		StringBuffer sb = new StringBuffer();
 
 		if (printAttrNames) {
-			sb.append("Loc");
+			sb.append("Start");
 			for (int i = 0; i < TokenAttr.values().length; i++) {
 				TokenAttr ta = TokenAttr.values()[i];
 				sb.append("\t" + ta);
 			}
 			sb.append("\n");
 		}
-
 		sb.append(start);
 		for (int i = 0; i < TokenAttr.values().length; i++) {
 			TokenAttr ta = TokenAttr.values()[i];
-			sb.append("\t" + values[ta.ordinal()]);
+			String v = values[ta.ordinal()];
+			sb.append("\t" + (v == null ? "" : v));
 		}
 		return sb.toString();
 	}
 
 	public void write(ObjectOutputStream oos) throws Exception {
-		super.write(oos);
+		oos.writeInt(start);
 		FileUtils.writeStrArray(oos, values);
 	}
 

@@ -11,14 +11,15 @@ public class SejongParser {
 	public static MultiToken parseMultiToken(String s) {
 		String[] two = s.split("\t");
 
-		String suface = two[0];
-		String[] parts = two[1].split(MultiToken.DELIM_MULTI_TOKEN.replace(" + ", " \\+ "));
+		String surface = two[0];
+		String[] parts = two[1].split(MultiToken.DELIM_MULTI_TOKEN.replace("+", "\\+"));
 		Token[] toks = new Token[parts.length];
 		for (int i = 0; i < parts.length; i++) {
 			toks[i] = parseToken(parts[i]);
 		}
-		MultiToken ret = new MultiToken(0, suface);
-		ret.setTokens(toks);
+		MultiToken ret = new MultiToken(0, surface);
+		ret.setSubTokens(toks);
+
 		return ret;
 	}
 
@@ -41,6 +42,11 @@ public class SejongParser {
 		for (int i = 0, loc = 0; i < mts.length; i++) {
 			MultiToken mt = (MultiToken) mts[i];
 			mt.setStart(loc);
+
+			for (int j = 0; j < mt.size(); j++) {
+				mt.getToken(j).setStart(j);
+			}
+
 			loc += mt.length();
 			loc++;
 		}

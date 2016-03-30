@@ -3,12 +3,14 @@ package ohs.nlp.ling.types;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import ohs.utils.StrUtils;
+
 public class MultiToken extends Token {
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -4806700641614757112L;
+	private static final long serialVersionUID = 1548339270826089537L;
 
 	public static final String DELIM_MULTI_TOKEN = " + ";
 
@@ -26,8 +28,20 @@ public class MultiToken extends Token {
 
 	}
 
-	public MultiToken(int start, String text) {
-		super(start, text);
+	public MultiToken(int start, String word) {
+		super(start, word);
+	}
+
+	public String[][] getSubValues(int start, int end, TokenAttr[] attrs) {
+		String[][] ret = new String[end - start][];
+		for (int i = start; i < end; i++) {
+			ret[i] = toks[i].getValues(attrs);
+		}
+		return ret;
+	}
+
+	public String[][] getSubValues() {
+		return getSubValues(0, toks.length, TokenAttr.values());
 	}
 
 	public Token getToken(int i) {
@@ -38,33 +52,12 @@ public class MultiToken extends Token {
 		return toks;
 	}
 
-	@Override
-	public String[] getValues() {
-		return getValues(0, toks.length, TokenAttr.values());
+	public String joinSubValues(String delimValue, String delimTok, int start, int end, TokenAttr[] attrs) {
+		return StrUtils.join(delimValue, delimTok, getSubValues(start, end, attrs));
 	}
 
-	public String[] getValues(int start, int end, TokenAttr[] attrs) {
-		String[] ret = new String[end - start];
-		for (int i = start; i < end; i++) {
-			ret[i] = toks[i].joinValues(DELIM_MULTI_TOKEN, attrs);
-		}
-		return ret;
-	}
-
-	@Override
-	public String joinValues() {
-		return joinValues(Token.DELIM_TOKEN, DELIM_MULTI_TOKEN, TokenAttr.values());
-	}
-
-	public String joinValues(String delimValue, String delimTok, TokenAttr[] attrs) {
-		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < toks.length; i++) {
-			sb.append(String.join(delimValue, toks[i].getValues(attrs)));
-			if (i != toks.length - 1) {
-				sb.append(delimTok);
-			}
-		}
-		return sb.toString();
+	public String joinSubValues() {
+		return joinSubValues(Token.DELIM_TOKEN, DELIM_MULTI_TOKEN, 0, toks.length, TokenAttr.values());
 	}
 
 	@Override
@@ -78,11 +71,11 @@ public class MultiToken extends Token {
 		}
 	}
 
-	public void setTokens(Token[] toks) {
+	public void setSubTokens(Token[] toks) {
 		this.toks = toks;
 	}
 
-	public void setValue(TokenAttr attr, String[] values) {
+	public void setSubValue(TokenAttr attr, String[] values) {
 		for (int i = 0; i < toks.length; i++) {
 			toks[i].setValue(attr, values[i]);
 		}
@@ -100,31 +93,8 @@ public class MultiToken extends Token {
 	@Override
 	public String toString(boolean printAttrNames) {
 		StringBuffer sb = new StringBuffer();
-
-		sb.append(text);
-		sb.append("\t");
-		sb.append(joinValues());
-
-		// if (printAttrNames) {
-		// sb.append("Loc\tLoc");
-		// for (int i = 0; i < TokenAttr.values().length; i++) {
-		// TokenAttr ta = TokenAttr.values()[i];
-		// sb.append("\t" + ta);
-		// }
-		// sb.append("\n");
-		// }
-		//
-		// for (int i = 0; i < toks.length; i++) {
-		// Token tok = toks[i];
-		// sb.append(start + "\t" + tok.getStart());
-		// for (int j = 0; j < TokenAttr.values().length; j++) {
-		// TokenAttr attr = TokenAttr.values()[j];
-		// sb.append("\t" + tok.getValue(attr));
-		// }
-		// if (i != toks.length - 1) {
-		// sb.append("\n");
-		// }
-		// }
+		sb.append(super.toString(false));
+		sb.append(joinSubValues());
 
 		return sb.toString();
 	}

@@ -41,7 +41,7 @@ public class TaggedTextParser {
 				}
 
 				MultiToken mt = new MultiToken();
-				mt.setTokens(subToks);
+				mt.setSubTokens(subToks);
 				toks[j] = mt;
 
 			}

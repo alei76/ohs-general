@@ -239,34 +239,32 @@ public class StrUtils {
 		return p;
 	}
 
-	public static String join(String glue, Collection<String> list, int start, int end) {
+	public static String join(String glue, Collection<String> c, int start, int end) {
+		return join(glue, (Iterable<String>) c, start, end);
+	}
+
+	public static String join(String glue, Iterable<String> it, int start, int end) {
 		StringBuffer sb = new StringBuffer();
-		int cnt = 0;
 
-		if (start < -1) {
-			start = 0;
-		}
+		Iterator<String> iter = it.iterator();
+		int loc = 0;
 
-		if (end > list.size()) {
-			end = list.size();
-		}
-
-		list.size();
-
-		for (String item : list) {
-			if (cnt < start) {
-				continue;
-			}
-
-			if (cnt == end) {
+		while (iter.hasNext()) {
+			if (loc == end) {
 				break;
+			} else if (loc >= start && loc < end) {
+				sb.append(iter.next());
+				if (loc != end - 1) {
+					sb.append(glue);
+				}
 			}
-			sb.append(item);
-
-			if (cnt == end - 1) {
-				sb.append(glue);
-			}
+			loc++;
 		}
+
+		for (String s : it) {
+
+		}
+
 		return sb.toString();
 	}
 
@@ -278,43 +276,51 @@ public class StrUtils {
 		return join(glue, list, start, list.size());
 	}
 
-	public static String join(String glue, List<String> list, int start, int end) {
+	public static String join(String glue1, String glue2, String glue3, String[][][] ss) {
 		StringBuffer sb = new StringBuffer();
-
-		if (end > list.size()) {
-			end = list.size();
-		}
-
-		if (start < 0) {
-			start = 0;
-		}
-
-		for (int i = start; i < end; i++) {
-			sb.append(list.get(i).toString() + (i == end - 1 ? "" : glue));
+		for (int i = 0; i < ss.length; i++) {
+			sb.append(join(glue1, glue2, ss[i]));
+			if (i != ss.length - 1) {
+				sb.append(glue3);
+			}
 		}
 		return sb.toString();
 	}
 
-	public static String join(String glue, String[] ar) {
-		return join(glue, ar, 0, ar.length);
+	public static String join(String glue1, String glue2, String[][] ss) {
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < ss.length; i++) {
+			sb.append(join(glue1, ss[i]));
+			if (i != ss.length - 1) {
+				sb.append(glue2);
+			}
+		}
+		return sb.toString();
 	}
 
-	public static String join(String glue, String[] ar, int start) {
-		return join(glue, ar, start, ar.length);
+	public static String join(String glue, String[] ss) {
+		return join(glue, ss, 0, ss.length);
 	}
 
-	public static String join(String glue, String[] ar, int start, int end) {
+	public static String join(String glue, String[] ss, int start) {
+		return join(glue, ss, start, ss.length);
+	}
+
+	public static String join(String glue, String[] ss, int start, int end) {
 		StringBuffer sb = new StringBuffer();
 		if (start < 0) {
 			start = 0;
 		}
 
-		if (end > ar.length) {
-			end = ar.length;
+		if (end > ss.length) {
+			end = ss.length;
 		}
 
 		for (int i = start; i < end; i++) {
-			sb.append((ar[i] == null ? "null" : ar[i]) + (i == end - 1 ? "" : glue));
+			sb.append(ss[i]);
+			if (i != end - 1) {
+				sb.append(glue);
+			}
 		}
 		return sb.toString();
 	}
@@ -625,18 +631,18 @@ public class StrUtils {
 		return c.toArray(new String[c.size()]);
 	}
 
-	public static Character[] toCharacters(String s) {
-		Character[] ret = new Character[s.length()];
-		for (int i = 0; i < s.length(); i++) {
-			ret[i] = new Character(s.charAt(i));
-		}
-		return ret;
-	}
-
 	public static Character[] toCharacters(char[] chs) {
 		Character[] ret = new Character[chs.length];
 		for (int i = 0; i < chs.length; i++) {
 			ret[i] = new Character(chs[i]);
+		}
+		return ret;
+	}
+
+	public static Character[] toCharacters(String s) {
+		Character[] ret = new Character[s.length()];
+		for (int i = 0; i < s.length(); i++) {
+			ret[i] = new Character(s.charAt(i));
 		}
 		return ret;
 	}
@@ -665,15 +671,6 @@ public class StrUtils {
 		return ret;
 	}
 
-	public static String toString(Object[] array, String delimiter) {
-		StringBuffer sb = new StringBuffer();
-		String separator = delimiter == null ? "\n" : delimiter;
-		for (int i = 0; i < array.length; i++) {
-			sb.append(array[i].toString() + (i == array.length - 1 ? "" : separator));
-		}
-		return sb.toString();
-	}
-
 	public static String toString(char[] chs) {
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < chs.length; i++) {
@@ -681,6 +678,15 @@ public class StrUtils {
 			if (i != chs.length - 1) {
 				sb.append("\n");
 			}
+		}
+		return sb.toString();
+	}
+
+	public static String toString(Object[] array, String delimiter) {
+		StringBuffer sb = new StringBuffer();
+		String separator = delimiter == null ? "\n" : delimiter;
+		for (int i = 0; i < array.length; i++) {
+			sb.append(array[i].toString() + (i == array.length - 1 ? "" : separator));
 		}
 		return sb.toString();
 	}

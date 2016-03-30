@@ -4,11 +4,8 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -35,14 +32,14 @@ public class SejongDataHandler {
 		SejongDataHandler sdh = new SejongDataHandler();
 		// sdh.extractPosData();
 		// sdh.extractCounts();
-		// sdh.buildSystemDict();
+		sdh.buildSystemDict();
 		// sdh.buildAnalyzedDict();
-		sdh.buildTrie();
+		// sdh.buildTrie();
 		// sdh.test();
 
 		System.out.println("process ends.");
 	}
-	
+
 	public void buildTrie() throws Exception {
 		List<String> lines = FileUtils.readLines(NLPPath.DICT_ANALYZED_FILE);
 		Trie<Character> trie = new Trie<Character>();
@@ -50,12 +47,11 @@ public class SejongDataHandler {
 		for (int i = 0; i < lines.size(); i++) {
 			String[] parts = lines.get(i).split("\t");
 
-			char[] chs = KoreanUtils.decomposeKoreanWordToPhonemes(parts[0]);
-			String s = String.valueOf(chs);
-			
-			System.out.println(s);
+			String str = KoreanUtils.decomposeToJamo(parts[0]);
 
-			Node<Character> node = trie.insert(StrUtils.toCharacters(chs));
+			System.out.println(str);
+
+			Node<Character> node = trie.insert(StrUtils.toCharacters(str));
 			node.setData("");
 
 			// System.out.println(s);
@@ -65,11 +61,11 @@ public class SejongDataHandler {
 
 		trie.trimToSize();
 
-//		{
-//			ObjectOutputStream oos = FileUtils.openObjectOutputStream(NLPPath.DATA_DIR + "test_1.ser");
-//			oos.writeObject(trie);
-//			oos.close();
-//		}
+		// {
+		// ObjectOutputStream oos = FileUtils.openObjectOutputStream(NLPPath.DATA_DIR + "test_1.ser");
+		// oos.writeObject(trie);
+		// oos.close();
+		// }
 
 		// {
 		// ObjectOutputStream oos = FileUtils.openObjectOutputStream(NLPPath.DATA_DIR + "test_2.ser");
@@ -86,7 +82,6 @@ public class SejongDataHandler {
 	}
 
 	public static void write(ObjectOutputStream oos, Node<Character> node) throws Exception {
-
 		for (Node<Character> child : node.getChildren().values()) {
 			write(oos, child);
 
@@ -128,9 +123,8 @@ public class SejongDataHandler {
 			KDocument doc = reader.next();
 
 			for (KSentence sent : doc.getSentences()) {
-				for (Token tok : sent.getTokens()) {
-					MultiToken mt = (MultiToken) tok;
-					cm.incrementCount(mt.getText(), mt.joinValues(), 1);
+				for (MultiToken mt : sent.getTokens()) {
+					cm.incrementCount(mt.getValue(TokenAttr.WORD), mt.joinSubValues(), 1);
 				}
 			}
 		}
@@ -187,14 +181,6 @@ public class SejongDataHandler {
 	}
 
 	public void extractCounts() throws Exception {
-
-		Set<String> posSet = Generics.newHashSet();
-
-		for (String line : FileUtils.readLines(NLPPath.POS_TAG_SET_FILE)) {
-			String[] parts = line.split("\t");
-			posSet.add(parts[0]);
-		}
-
 		CounterMap<String, String> cm = Generics.newCounterMap();
 		CounterMap<String, String> cm2 = Generics.newCounterMap();
 
@@ -264,10 +250,10 @@ public class SejongDataHandler {
 								String[] two = StrUtils.split2Two("/", subparts[j]);
 								String word = two[0];
 								String pos = two[1];
-								subparts[j] = word + " / " + pos;
+								subparts[j] = word + Token.DELIM_TOKEN + pos;
 							}
 
-							parts[2] = StrUtils.join(" + ", subparts);
+							parts[2] = StrUtils.join(MultiToken.DELIM_MULTI_TOKEN, subparts);
 
 							String input = StrUtils.join("\t", parts, 1, 3);
 							inputs.add(input);

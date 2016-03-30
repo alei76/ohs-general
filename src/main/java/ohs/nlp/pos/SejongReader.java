@@ -22,6 +22,7 @@ public class SejongReader implements Iterator<KDocument> {
 		while (r.hasNext()) {
 			KDocument doc = r.next();
 		}
+		r.close();
 
 		System.out.println("process ends.");
 	}

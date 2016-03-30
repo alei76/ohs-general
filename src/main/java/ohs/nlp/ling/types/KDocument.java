@@ -15,6 +15,24 @@ public class KDocument {
 
 	}
 
+	public static KDocument newDocument(String[] lines) {
+		KSentence[] sents = new KSentence[lines.length];
+		for (int i = 0; i < lines.length; i++) {
+			sents[i] = KSentence.newSentence(lines[i].split(" "));
+		}
+		KDocument ret = new KDocument(sents);
+
+		Token[] mts = ret.getTokens();
+		for (int i = 0, loc = 0; i < mts.length; i++) {
+			MultiToken mt = (MultiToken) mts[i];
+			mt.setStart(loc);
+			loc += mt.length();
+			loc++;
+		}
+
+		return ret;
+	}
+
 	public KDocument(KSentence[] sents) {
 		this.sents = sents;
 	}
@@ -41,35 +59,14 @@ public class KDocument {
 		return sents;
 	}
 
-	public Token[] getTokens() {
+	public MultiToken[] getTokens() {
 		List<Token> ret = Generics.newArrayList();
 		for (KSentence sent : sents) {
-			for (Token mt : sent.getTokens()) {
+			for (MultiToken mt : sent.getTokens()) {
 				ret.add(mt);
 			}
 		}
 		return ret.toArray(new MultiToken[ret.size()]);
-	}
-
-	public String[][] getValues() {
-		return getValues(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, TokenAttr.values(), 0, sents.length);
-	}
-
-	public String[][] getValues(String delimValue, String delimSubtok, TokenAttr[] attrs, int start, int end) {
-		String[][] ret = new String[end - start][];
-		for (int i = start; i < end; i++) {
-			KSentence sent = sents[i];
-			ret[i] = sent.getValues(delimValue, delimSubtok, attrs, 0, sent.size());
-		}
-		return ret;
-	}
-
-	public String[][] getValues(TokenAttr attr) {
-		return getValues(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, new TokenAttr[] { attr }, 0, sents.length);
-	}
-
-	public String[][] getValues(TokenAttr[] attrs) {
-		return getValues(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, attrs, 0, sents.length);
 	}
 
 	@Override
@@ -78,26 +75,6 @@ public class KDocument {
 		int result = 1;
 		result = prime * result + Arrays.hashCode(sents);
 		return result;
-	}
-
-	public String joinValues() {
-		return joinValues(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, TokenAttr.values(), 0, sents.length);
-	}
-
-	public String joinValues(String delimValue, String delimSubtok, TokenAttr[] attrs, int start, int end) {
-		String[][] vals = getValues(delimValue, delimSubtok, attrs, start, end);
-		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < vals.length; i++) {
-			sb.append(String.join(" ", vals[i]));
-			if (i != vals.length - 1) {
-				sb.append("\n");
-			}
-		}
-		return sb.toString();
-	}
-
-	public String joinValues(TokenAttr attr) {
-		return joinValues(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, new TokenAttr[] { attr }, 0, sents.length);
 	}
 
 	public int length() {
@@ -134,7 +111,7 @@ public class KDocument {
 	}
 
 	public KSentence toSentence() {
-		Token[] toks = new Token[sizeOfTokens()];
+		MultiToken[] toks = new MultiToken[sizeOfTokens()];
 		for (int i = 0, loc = 0; i < sents.length; i++) {
 			KSentence sent = sents[i];
 			for (int j = 0; j < sent.size(); j++) {
@@ -148,7 +125,15 @@ public class KDocument {
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < sents.length; i++) {
-			sb.append(sents[i].toString());
+			KSentence sent = sents[i];
+
+			for (int j = 0; j < sent.size(); j++) {
+				MultiToken mt = sent.getToken(j);
+				sb.append(String.format("%d\t%d\t%s", i, j, mt.toString()));
+				if (j != sent.size() - 1) {
+					sb.append("\n");
+				}
+			}
 			if (i != sents.length - 1) {
 				sb.append("\n\n");
 			}
