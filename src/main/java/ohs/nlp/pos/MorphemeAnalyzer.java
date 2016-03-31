@@ -1,7 +1,6 @@
 package ohs.nlp.pos;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import ohs.io.FileUtils;
@@ -9,10 +8,11 @@ import ohs.nlp.ling.types.KDocument;
 import ohs.nlp.ling.types.KSentence;
 import ohs.nlp.ling.types.MultiToken;
 import ohs.nlp.ling.types.TokenAttr;
+import ohs.tree.trie.hash.Node;
 import ohs.tree.trie.hash.Trie;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
-import ohs.utils.KoreanUtils;
+import ohs.utils.KorUnicodeUtils;
 import ohs.utils.StrUtils;
 
 public class MorphemeAnalyzer {
@@ -33,14 +33,12 @@ public class MorphemeAnalyzer {
 			String word = parts[0];
 			String pos = parts[1];
 
-			String word2 = KoreanUtils.decomposeToJamo(word);
+			String word2 = KorUnicodeUtils.decomposeToJamo(word);
 
 			sysDict.insert(StrUtils.toCharacters(word2.toCharArray()));
 		}
 
 		sysDict.trimToSize();
-
-		System.out.println();
 	}
 
 	private void readAnalyzedDict(String fileName) throws Exception {
@@ -67,59 +65,73 @@ public class MorphemeAnalyzer {
 		TextTokenizer t = new TextTokenizer();
 		MorphemeAnalyzer a = new MorphemeAnalyzer();
 
-		SejongReader r = new SejongReader(NLPPath.POS_DATA_FILE, NLPPath.POS_TAG_SET_FILE);
-		while (r.hasNext()) {
-			KDocument doc = r.next();
+		{
+			String document = "프로젝트 대한전산 전체 회의.\n" + "회의 일정은 다음과 같습니다.\n";
 
-			StringBuffer sb = new StringBuffer();
-
-			for (int i = 0; i < doc.size(); i++) {
-				KSentence sent = doc.getSentence(i);
-				MultiToken[] mts = MultiToken.toMultiTokens(sent.getTokens());
-
-				for (int j = 0; j < mts.length; j++) {
-					sb.append(mts[j].getValue(TokenAttr.WORD));
-					if (j != mts.length - 1) {
-						sb.append(" ");
-					}
-				}
-				if (i != doc.size() - 1) {
-					sb.append("\n");
-				}
-			}
-
-			KDocument newDoc = t.tokenize(sb.toString());
-			a.analyze(newDoc);
-			;
-
+			KDocument doc = t.tokenize(document);
+			a.analyze(doc);
 		}
-		r.close();
+
+		// SejongReader r = new SejongReader(NLPPath.POS_DATA_FILE, NLPPath.POS_TAG_SET_FILE);
+		// while (r.hasNext()) {
+		// KDocument doc = r.next();
+		//
+		// StringBuffer sb = new StringBuffer();
+		//
+		// for (int i = 0; i < doc.size(); i++) {
+		// KSentence sent = doc.getSentence(i);
+		// MultiToken[] mts = MultiToken.toMultiTokens(sent.getTokens());
+		//
+		// for (int j = 0; j < mts.length; j++) {
+		// sb.append(mts[j].getValue(TokenAttr.WORD));
+		// if (j != mts.length - 1) {
+		// sb.append(" ");
+		// }
+		// }
+		// if (i != doc.size() - 1) {
+		// sb.append("\n");
+		// }
+		// }
+		//
+		// KDocument newDoc = t.tokenize(sb.toString());
+		// a.analyze(newDoc);
+		//
+		// }
+		// r.close();
 
 		System.out.println("proces ends.");
 	}
 
 	public void analyze(KDocument doc) {
-
 		for (int i = 0; i < doc.size(); i++) {
 			KSentence sent = doc.getSentence(i);
-			MultiToken[] mts = MultiToken.toMultiTokens(sent.getTokens());
+			MultiToken[] mts = sent.toMultiTokens();
 
 			for (int j = 0; j < mts.length; j++) {
 				MultiToken mt = mts[j];
-				String text = mt.getValue(TokenAttr.WORD);
-				Set<String> cands = analDict.get(text, false);
+				String eojeol = mt.getValue(TokenAttr.WORD);
+				Set<String> morphemes = analDict.get(eojeol, false);
 
-				if (cands == null) {
-
+				if (morphemes == null) {
+					morphemes = analyze(eojeol);
 				} else {
-					String s = String.join(" # ", cands);
+					String s = StrUtils.join(" # ", morphemes);
 					mt.setValue(TokenAttr.POS, s);
 				}
 			}
 		}
 
 		System.out.println();
+	}
 
+	public Set<String> analyze(String word) {
+		Set<String> ret = Generics.newHashSet();
+
+		String word2 = KorUnicodeUtils.decomposeToJamo(word);
+
+		Node<Character> node = sysDict.search(StrUtils.toCharacters(word2.toCharArray()));
+
+		return ret;
 	}
 
 	public void analyze(String[] words) {

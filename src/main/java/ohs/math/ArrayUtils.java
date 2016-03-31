@@ -294,29 +294,29 @@ public class ArrayUtils {
 		return copy(a[ai], b[bi]);
 	}
 
-	public static double copySubarray(double[] a, double[] b, int start, int end) {
+	public static int[] copySubarray(int[] a, int start, int end) {
 		int size = end - start;
-		if (size != a.length) {
-			throw new IllegalArgumentException();
-		}
-		double sum = 0;
-		for (int i = start, j = 0; i < end; i++, j++) {
-			b[i] = a[j];
-			sum += b[i];
-		}
-		return sum;
-	}
-
-	public static double[] copySubarray(double[] a, int start, int end) {
-		int size = end - start;
-		double[] ret = new double[size];
+		int[] ret = new int[size];
 		copySubarray(a, start, end, ret);
 		return ret;
 	}
 
+	public static int copySubarray(int[] a, int start, int end, int[] b) {
+		int size = end - start;
+		if (size > b.length) {
+			throw new IllegalArgumentException();
+		}
+		int sum = 0;
+		for (int i = start, j = 0; i < end; i++, j++) {
+			b[j] = a[i];
+			sum += b[j];
+		}
+		return sum;
+	}
+
 	public static double copySubarray(double[] a, int start, int end, double[] b) {
 		int size = end - start;
-		if (size != b.length) {
+		if (size > b.length) {
 			throw new IllegalArgumentException();
 		}
 		double sum = 0;

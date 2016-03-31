@@ -38,7 +38,7 @@ public class SejongParser {
 	}
 
 	public static void enumerateStarts(KDocument doc) {
-		Token[] mts = doc.getTokens();
+		Token[] mts = doc.toMultiTokens();
 		for (int i = 0, loc = 0; i < mts.length; i++) {
 			MultiToken mt = (MultiToken) mts[i];
 			mt.setStart(loc);

@@ -243,6 +243,10 @@ public class StrUtils {
 		return join(glue, (Iterable<String>) c, start, end);
 	}
 
+	public static String join(String glue, Iterable<String> it) {
+		return join(glue, it, 0, Integer.MAX_VALUE);
+	}
+
 	public static String join(String glue, Iterable<String> it, int start, int end) {
 		StringBuffer sb = new StringBuffer();
 
@@ -253,71 +257,78 @@ public class StrUtils {
 			if (loc == end) {
 				break;
 			} else if (loc >= start && loc < end) {
-				sb.append(iter.next());
-				if (loc != end - 1) {
+				if (loc > start) {
 					sb.append(glue);
 				}
+				sb.append(iter.next());
 			}
 			loc++;
 		}
 
-		for (String s : it) {
-
-		}
-
 		return sb.toString();
 	}
 
-	public static String join(String glue, List<String> list) {
-		return join(glue, list, 0, list.size());
-	}
+	// public static String join(String glue, List<String> list) {
+	// return join(glue, list, 0, list.size());
+	// }
+	//
+	// public static String join(String glue, List<String> list, int start) {
+	// return join(glue, list, start, list.size());
+	// }
 
-	public static String join(String glue, List<String> list, int start) {
-		return join(glue, list, start, list.size());
-	}
-
-	public static String join(String glue1, String glue2, String glue3, String[][][] ss) {
+	public static String join(String inGlue, String glue, String outGlue, String[][][] s) {
 		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < ss.length; i++) {
-			sb.append(join(glue1, glue2, ss[i]));
-			if (i != ss.length - 1) {
-				sb.append(glue3);
+		for (int i = 0; i < s.length; i++) {
+			sb.append(join(inGlue, glue, s[i]));
+			if (i != s.length - 1) {
+				sb.append(outGlue);
 			}
 		}
 		return sb.toString();
 	}
 
-	public static String join(String glue1, String glue2, String[][] ss) {
+	public static String join(String inGlue, String outGlue, String[] s, String[] t) {
 		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < ss.length; i++) {
-			sb.append(join(glue1, ss[i]));
-			if (i != ss.length - 1) {
-				sb.append(glue2);
+		for (int i = 0; i < s.length; i++) {
+			sb.append(String.format("%s%s%s", s[i], inGlue, t[i]));
+			if (i != s.length - 1) {
+				sb.append(outGlue);
 			}
 		}
 		return sb.toString();
 	}
 
-	public static String join(String glue, String[] ss) {
-		return join(glue, ss, 0, ss.length);
+	public static String join(String inGlue, String outGlue, String[][] s) {
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < s.length; i++) {
+			sb.append(join(inGlue, s[i]));
+			if (i != s.length - 1) {
+				sb.append(outGlue);
+			}
+		}
+		return sb.toString();
 	}
 
-	public static String join(String glue, String[] ss, int start) {
-		return join(glue, ss, start, ss.length);
+	public static String join(String glue, String[] s) {
+		return join(glue, s, 0, s.length);
 	}
 
-	public static String join(String glue, String[] ss, int start, int end) {
+	public static String join(String glue, String[] s, int start) {
+		return join(glue, s, start, s.length);
+	}
+
+	public static String join(String glue, String[] s, int start, int end) {
 		StringBuffer sb = new StringBuffer();
 		if (start < 0) {
 			start = 0;
 		}
 
-		if (end > ss.length) {
-			end = ss.length;
+		if (end > s.length) {
+			end = s.length;
 		}
 
 		for (int i = start; i < end; i++) {
-			sb.append(ss[i]);
+			sb.append(s[i]);
 			if (i != end - 1) {
 				sb.append(glue);
 			}
@@ -330,7 +341,7 @@ public class StrUtils {
 		for (int index : indexList) {
 			list.add(ar[index]);
 		}
-		return join(glue, list);
+		return join(glue, list, 0, list.size());
 	}
 
 	public static void main(String[] args) throws Exception {

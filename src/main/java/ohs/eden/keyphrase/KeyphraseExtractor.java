@@ -12,6 +12,7 @@ import ohs.math.ArrayUtils;
 import ohs.nlp.ling.types.KDocument;
 import ohs.nlp.ling.types.KSentence;
 import ohs.nlp.ling.types.MultiToken;
+import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
 import ohs.tree.trie.hash.Node;
 import ohs.tree.trie.hash.Trie;
@@ -249,9 +250,9 @@ public class KeyphraseExtractor {
 				String korAbs = parts[6];
 				String engAbs = parts[7];
 
-//				if (!type.equals("patent")) {
-//					continue;
-//				}
+				// if (!type.equals("patent")) {
+				// continue;
+				// }
 
 				String text = korTitle + "\n" + korAbs;
 				text = text.trim();
@@ -265,18 +266,20 @@ public class KeyphraseExtractor {
 				}
 				KDocument doc = TaggedTextParser.parse(text);
 
-//				if (doc.sizeOfTokens() < 500) {
-//					continue;
-//				}
+				// if (doc.sizeOfTokens() < 500) {
+				// continue;
+				// }
 
 				Set<String> keywordSet = Generics.newHashSet();
-				String docText = doc.joinValues(TokenAttr.WORD);
+				String docText = doc.j(TokenAttr.WORD);
+
 				int num_matches = 0;
 
 				for (String kwd : korKwdStr.split(";")) {
 					if (kwd.length() > 0) {
 						KSentence kwdSent = TaggedTextParser.parse(kwd).toSentence();
-						String s = kwdSent.joinValues("", MultiToken.DELIM_MULTI_TOKEN, new TokenAttr[] { TokenAttr.WORD }, 0, kwdSent.size());
+						String s = kwdSent.joinValues("", MultiToken.DELIM_MULTI_TOKEN, new TokenAttr[] { TokenAttr.WORD }, 0,
+								kwdSent.size());
 						keywordSet.add(s);
 
 						if (docText.contains(s)) {
@@ -341,11 +344,14 @@ public class KeyphraseExtractor {
 		// CounterMap<String, String> cm2 = Generics.newCounterMap();
 
 		int window_size = 2;
+		
+		String[][] sss = sent.getValues(start, end, attr)
 
 		for (int i = 0; i < cands.size(); i++) {
 			KSentence cand1 = cands.get(i);
-			String candStr1 = cand1.joinValues("", MultiToken.DELIM_TOKEN, new TokenAttr[] { TokenAttr.WORD }, 0, cand1.size());
-			String content = cand1.joinValues("", " ", new TokenAttr[] { TokenAttr.WORD }, 0, cand1.size());
+			String candStr1 = sent.joinSubValues("", MultiToken.DELIM_MULTI_TOKEN, " ", 0, sent.size(), new TokenAttr[] { TokenAttr.WORD });
+
+			String content = sent.joinSubValues("", " ", " ", 0, cand1.size(), new TokenAttr[] { TokenAttr.WORD });
 
 			for (String word : content.split(" ")) {
 				cm1.incrementCount(candStr1, word, 1);

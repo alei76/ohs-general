@@ -16,7 +16,7 @@ import ohs.nlp.ling.types.TokenAttr;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.utils.Generics;
-import ohs.utils.KoreanUtils;
+import ohs.utils.KorUnicodeUtils;
 
 public class HMMTrainer {
 
@@ -90,10 +90,10 @@ public class HMMTrainer {
 			for (KSentence sent : doc.getSentences()) {
 				for (MultiToken mt : sent.toMultiTokens()) {
 					String text = mt.getText();
-					String text2 = KoreanUtils.getDecomposedKoreanWord(text);
+					String text2 = KorUnicodeUtils.getDecomposedKoreanWord(text);
 
 					System.out.println(text + "\t" + text2 + "\t" + String.valueOf(text2.getBytes()));
-					// char[][] phomenes = KoreanUtils.decomposeKoreanWordToPhonemes(word);
+					// char[][] phomenes = KorUnicodeUtils.decomposeKoreanWordToPhonemes(word);
 				}
 			}
 		}

@@ -32,16 +32,16 @@ public class MultiToken extends Token {
 		super(start, word);
 	}
 
-	public String[][] getSubValues(int start, int end, TokenAttr[] attrs) {
-		String[][] ret = new String[end - start][];
+	public String[] getSubValues(int start, int end, TokenAttr attr) {
+		String[] ret = new String[end - start];
 		for (int i = start; i < end; i++) {
-			ret[i] = toks[i].getValues(attrs);
+			ret[i] = toks[i].getValue(attr);
 		}
 		return ret;
 	}
 
-	public String[][] getSubValues() {
-		return getSubValues(0, toks.length, TokenAttr.values());
+	public String[] getSubValues(TokenAttr attr) {
+		return getSubValues(0, toks.length, attr);
 	}
 
 	public Token getToken(int i) {
@@ -50,14 +50,6 @@ public class MultiToken extends Token {
 
 	public Token[] getTokens() {
 		return toks;
-	}
-
-	public String joinSubValues(String delimValue, String delimTok, int start, int end, TokenAttr[] attrs) {
-		return StrUtils.join(delimValue, delimTok, getSubValues(start, end, attrs));
-	}
-
-	public String joinSubValues() {
-		return joinSubValues(Token.DELIM_TOKEN, DELIM_MULTI_TOKEN, 0, toks.length, TokenAttr.values());
 	}
 
 	@Override
@@ -85,21 +77,33 @@ public class MultiToken extends Token {
 		return toks.length;
 	}
 
-	@Override
 	public String toString() {
 		return toString(true);
 	}
 
-	@Override
-	public String toString(boolean printAttrNames) {
+	public String toString(boolean print_attr_names) {
 		StringBuffer sb = new StringBuffer();
-		sb.append(super.toString(false));
-		sb.append(joinSubValues());
 
+		if (print_attr_names) {
+			sb.append("Loc\t");
+			for (TokenAttr attr : TokenAttr.values()) {
+				sb.append("\t" + attr);
+			}
+			sb.append("\n");
+		}
+
+		sb.append(0);
+		for (TokenAttr attr : TokenAttr.values()) {
+			sb.append(String.format("\t%s", values[attr.ordinal()]));
+		}
+
+		for (int i = 0; i < toks.length; i++) {
+			sb.append(String.format("\n%d\t%s", i, toks[i].toString(false)));
+		}
 		return sb.toString();
+
 	}
 
-	@Override
 	public void write(ObjectOutputStream oos) throws Exception {
 		super.write(oos);
 		oos.writeInt(toks.length);

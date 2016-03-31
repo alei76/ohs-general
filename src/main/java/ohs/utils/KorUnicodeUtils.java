@@ -3,13 +3,14 @@ package ohs.utils;
 import java.util.Map;
 
 import ohs.io.TextFileWriter;
+import ohs.math.ArrayUtils;
 import ohs.nlp.pos.NLPPath;
 
 /**
  * http://www.elex.pe.kr/entry/유니코드에서의-한글
  *
  */
-public class KoreanUtils {
+public class KorUnicodeUtils {
 
 	public static final int[] HANGUL_SYLLABLES_RANGE = { 0xAC00, 0xD7A3 + 1 };
 
@@ -211,32 +212,73 @@ public class KoreanUtils {
 		}
 	}
 
-	// public static int[] codepoints(char[] cs) {
-	// int[] ret = new int[cs.length];
-	// for (int i = 0; i < ret.length; i++) {
-	// ret[i] = Character.codePointAt(cs, i);
-	// }
-	// return ret;
-	// }
+	public static int[] getCodePoints(char[] cs) {
+		int[] ret = new int[cs.length];
+		for (int i = 0; i < ret.length; i++) {
+			ret[i] = Character.codePointAt(cs, i);
+		}
+		return ret;
+	}
 
 	public static String composeJamo(String word) {
 		StringBuffer sb = new StringBuffer();
 		int len = word.length();
 
+		int[] cps = getCodePoints(word.toCharArray());
+
 		for (int i = 0; i < word.length(); i++) {
 			char c = word.charAt(i);
-			int cp = word.codePointAt(i);
+			int cp = cps[i];
 
 			if (isInRange(HANGUL_SYLLABLES_RANGE, cp)) {
-				sb.append(c);
+				int end = i;
+				int offset = i + 1;
+
+				if (offset < len) {
+					if (isInRange(HANGUL_COMPATIBILITY_JAMO_JAEUM_RANGE, cps[offset])) {
+						end = offset;
+					}
+				}
+
+				int dist = end - i;
+
+				boolean success = false;
+
+				if (dist == 1) {
+					int[] tmp_cps = toJamo(cp);
+					if (tmp_cps[2] == 0) {
+						Integer cc = m.get(cps[end])[2];
+
+						if (cc != null) {
+							tmp_cps[2] = cc.intValue();
+
+							int rcp = fromAnalyzedJAMO(tmp_cps);
+
+							if (isInRange(HANGUL_SYLLABLES_RANGE, rcp)) {
+								char res = (char) rcp;
+								sb.append(res);
+								i = end;
+
+								success = true;
+							}
+						}
+					}
+				}
+
+				if (!success) {
+					sb.append(c);
+				}
 			} else if (isInRange(HANGUL_JAMO_CHOSUNG_RANGE, cp)) {
 				int end = i;
-				if (i + 1 < len) {
-					if (isInRange(HANGUL_JAMO_JUNGSUNG_RANGE, word.codePointAt(i + 1))) {
-						end = i + 1;
-						if (i + 2 < len) {
-							if (isInRange(HANGUL_JAMO_JONGSUNG_RANGE, word.codePointAt(i + 2))) {
-								end = i + 2;
+				int offset = i + 1;
+
+				if (offset < len) {
+					if (isInRange(HANGUL_JAMO_JUNGSUNG_RANGE, cps[offset])) {
+						end = offset;
+						offset++;
+						if (offset < len) {
+							if (isInRange(HANGUL_JAMO_JONGSUNG_RANGE, cps[offset])) {
+								end = offset;
 							}
 						}
 					}
@@ -244,44 +286,66 @@ public class KoreanUtils {
 
 				int dist = end - i;
 
+				boolean success = false;
+
 				if (dist > 1) {
 					int[] subcps = new int[3];
-					for (int j = i, loc = 0; j < end + 1; j++, loc++) {
-						subcps[loc] = word.codePointAt(j);
+
+					ArrayUtils.copySubarray(cps, i, end + 1, subcps);
+
+					int rcp = fromAnalyzedJAMO(subcps);
+
+					if (isInRange(HANGUL_SYLLABLES_RANGE, rcp)) {
+						char res = (char) rcp;
+						sb.append(res);
+						i = end;
+
+						success = true;
 					}
-					char res = fromAnalyzedJAMO(subcps);
-					sb.append(res);
-					i = end;
-				} else {
+
+				}
+
+				if (!success) {
 					sb.append(c);
 				}
 			} else if (isInRange(HANGUL_COMPATIBILITY_JAMO_JAEUM_RANGE, cp)) {
 				int end = i;
-				if (i + 1 < len) {
-					if (isInRange(HANGUL_COMPATIBILITY_JAMO_MOEUM_RANGE, word.codePointAt(i + 1))) {
-						end = i + 1;
-						if (i + 2 < len) {
-							if (isInRange(HANGUL_COMPATIBILITY_JAMO_JAEUM_RANGE, word.codePointAt(i + 2))) {
-								end = i + 2;
+				int offset = i + 1;
+
+				if (offset < len) {
+					if (isInRange(HANGUL_COMPATIBILITY_JAMO_MOEUM_RANGE, cps[offset])) {
+						end = offset;
+						offset++;
+						if (offset < len) {
+							if (isInRange(HANGUL_COMPATIBILITY_JAMO_JAEUM_RANGE, cps[offset])) {
+								end = offset;
 							}
 						}
 					}
-
 				}
 
 				int dist = end - i;
 
+				boolean success = false;
+
 				if (dist > 1) {
 					int[] subcps = new int[3];
-					for (int j = i, loc = 0; j < end + 1; j++, loc++) {
-						subcps[loc] = word.codePointAt(j);
-					}
+
+					ArrayUtils.copySubarray(cps, i, end + 1, subcps);
+
 					subcps = mapCJJCodes(subcps);
 
-					char res = fromAnalyzedJAMO(subcps);
-					sb.append(res);
-					i = end;
-				} else {
+					int rcp = fromAnalyzedJAMO(subcps);
+
+					if (isInRange(HANGUL_SYLLABLES_RANGE, rcp)) {
+						char res = (char) rcp;
+						sb.append(res);
+						i = end;
+						success = true;
+					}
+				}
+
+				if (!success) {
 					sb.append(c);
 				}
 			} else {
@@ -323,7 +387,7 @@ public class KoreanUtils {
 
 	}
 
-	public static final char fromAnalyzedJAMO(int[] cps) {
+	public static int fromAnalyzedJAMO(int[] cps) {
 		if (cps.length != 3) {
 			throw new IndexOutOfBoundsException();
 		}
@@ -339,8 +403,7 @@ public class KoreanUtils {
 		int cp = locs[0] * DENOM_CHOSUNG + locs[1] * DENOM_JONGSUNG + locs[2];
 		cp += HANGUL_SYLLABLES_RANGE[0];
 
-		char ret = (char) cp;
-		return ret;
+		return cp;
 	}
 
 	public static boolean isInRange(int[] range, int cp) {
@@ -357,16 +420,13 @@ public class KoreanUtils {
 		// }
 
 		{
-			String word = "가ㄱㅣㄷ각낙닫ㄱㄴㄷㄹㅁ";
+			String[] words = { "가ㄴ장ㄱㅏㄴ장" };
 
-			String word2 = decomposeToJamo(word);
-
-			System.out.println(word2);
-
-			String word3 = composeJamo(word2);
-
-			System.out.println(word3);
-
+			for (int i = 0; i < words.length; i++) {
+				String word = words[i];
+				String word2 = composeJamo(word);
+				System.out.println(word2);
+			}
 		}
 
 	}
@@ -393,7 +453,9 @@ public class KoreanUtils {
 		int[] cps = toJamo(Character.codePointAt(new char[] { c }, 0));
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < cps.length; i++) {
-			sb.append(Character.toChars(cps[i]));
+			if (cps[i] != 0) {
+				sb.append(Character.toChars(cps[i]));
+			}
 		}
 		return sb.toString().toCharArray();
 	}
@@ -401,19 +463,20 @@ public class KoreanUtils {
 	public static final int[] toJamo(int cp) {
 		cp = cp - HANGUL_SYLLABLES_RANGE[0]; // korean 0~11,171
 
-		int loc1 = cp / DENOM_CHOSUNG; // chosung 0~18
+		int[] locs = new int[3];
+
+		locs[0] = cp / DENOM_CHOSUNG; // chosung 0~18
 		cp = cp % DENOM_CHOSUNG;
-		int loc2 = cp / DENOM_JONGSUNG; // jungsung 0~20
-		int loc3 = cp % DENOM_CHOSUNG; // josung 0~27
+		locs[1] = cp / DENOM_JONGSUNG; // jungsung 0~20
+		locs[2] = cp % DENOM_JONGSUNG; // josung 0~27
 
-		int size = loc3 == 0 ? 2 : 3;
-		int[] locs = new int[size];
+		locs[0] += HANGUL_JAMO_CHOSUNG_RANGE[0]; // [4352, 4371]
+		locs[1] += HANGUL_JAMO_JUNGSUNG_RANGE[0]; // [4449, 4470]
 
-		locs[0] = HANGUL_JAMO_CHOSUNG_RANGE[0] + loc1; // [4352, 4371]
-		locs[1] = HANGUL_JAMO_JUNGSUNG_RANGE[0] + loc2; // [4449, 4470]
-		if (locs.length == 3) {
-			locs[2] = HANGUL_JAMO_JONGSUNG_RANGE[0] + loc3; // [4519, 4547]
+		if (locs[2] != 0) {
+			locs[2] += HANGUL_JAMO_JONGSUNG_RANGE[0]; // [4519, 4547]
 		}
+
 		return locs;
 	}
 

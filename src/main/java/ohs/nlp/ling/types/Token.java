@@ -18,7 +18,7 @@ public class Token implements Serializable {
 
 	protected String[] values = new String[TokenAttr.values().length];
 
-	private int start = 0;
+	protected int start = 0;
 
 	public Token() {
 		for (int i = 0; i < values.length; i++) {
@@ -26,11 +26,8 @@ public class Token implements Serializable {
 		}
 	}
 
-	public void setStart(int start) {
-		this.start = start;
-	}
-
 	public Token(int start, String word) {
+		this();
 		this.start = start;
 		setValue(TokenAttr.WORD, word);
 	}
@@ -66,7 +63,6 @@ public class Token implements Serializable {
 	}
 
 	public String[] getValues(TokenAttr[] attrs) {
-
 		String[] ret = new String[attrs.length];
 		for (int i = 0; i < attrs.length; i++) {
 			ret[i] = values[attrs[i].ordinal()];
@@ -82,14 +78,6 @@ public class Token implements Serializable {
 		return result;
 	}
 
-	public String joinValues() {
-		return joinValues(DELIM_TOKEN, TokenAttr.values());
-	}
-
-	public String joinValues(String delim, TokenAttr[] attrs) {
-		return String.join(delim, getValues(attrs));
-	}
-
 	public int length() {
 		return getValue(TokenAttr.WORD).length();
 	}
@@ -99,8 +87,20 @@ public class Token implements Serializable {
 		values = FileUtils.readStrArray(ois);
 	}
 
+	public void setStart(int start) {
+		this.start = start;
+	}
+
 	public void setValue(TokenAttr attr, String value) {
 		values[attr.ordinal()] = value;
+	}
+
+	public MultiToken toMultiToken() {
+		MultiToken ret = null;
+		if (this instanceof MultiToken) {
+			ret = (MultiToken) this;
+		}
+		return ret;
 	}
 
 	@Override
@@ -108,22 +108,18 @@ public class Token implements Serializable {
 		return toString(true);
 	}
 
-	public String toString(boolean printAttrNames) {
+	public String toString(boolean print_attr_names) {
 		StringBuffer sb = new StringBuffer();
-
-		if (printAttrNames) {
-			sb.append("Start");
+		if (print_attr_names) {
 			for (int i = 0; i < TokenAttr.values().length; i++) {
 				TokenAttr ta = TokenAttr.values()[i];
 				sb.append("\t" + ta);
 			}
 			sb.append("\n");
 		}
-		sb.append(start);
 		for (int i = 0; i < TokenAttr.values().length; i++) {
 			TokenAttr ta = TokenAttr.values()[i];
-			String v = values[ta.ordinal()];
-			sb.append("\t" + (v == null ? "" : v));
+			sb.append(String.format("\t%s", values[ta.ordinal()]));
 		}
 		return sb.toString();
 	}

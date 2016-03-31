@@ -9,12 +9,6 @@ import ohs.utils.Generics;
 
 public class KDocument {
 
-	private KSentence[] sents;
-
-	public KDocument() {
-
-	}
-
 	public static KDocument newDocument(String[] lines) {
 		KSentence[] sents = new KSentence[lines.length];
 		for (int i = 0; i < lines.length; i++) {
@@ -22,15 +16,20 @@ public class KDocument {
 		}
 		KDocument ret = new KDocument(sents);
 
-		Token[] mts = ret.getTokens();
+		MultiToken[] mts = ret.toMultiTokens();
 		for (int i = 0, loc = 0; i < mts.length; i++) {
-			MultiToken mt = (MultiToken) mts[i];
+			MultiToken mt = mts[i];
 			mt.setStart(loc);
 			loc += mt.length();
 			loc++;
 		}
-
 		return ret;
+	}
+
+	private KSentence[] sents;
+
+	public KDocument() {
+
 	}
 
 	public KDocument(KSentence[] sents) {
@@ -51,6 +50,36 @@ public class KDocument {
 		return true;
 	}
 
+	public MultiToken[] toMultiTokens() {
+		List<Token> ret = Generics.newArrayList();
+		for (KSentence sent : sents) {
+			for (MultiToken mt : sent.toMultiTokens()) {
+				ret.add(mt);
+			}
+		}
+		return ret.toArray(new MultiToken[ret.size()]);
+	}
+
+	public Token[] getTokens() {
+		List<Token> ret = Generics.newArrayList();
+		for (KSentence sent : sents) {
+			for (Token t : sent.getTokens()) {
+				ret.add(t);
+			}
+		}
+		return ret.toArray(new MultiToken[ret.size()]);
+	}
+
+	public Token[] getSubTokens() {
+		List<Token> ret = Generics.newArrayList();
+		for (MultiToken mt : toMultiTokens()) {
+			for (Token t : mt.getTokens()) {
+				ret.add(t);
+			}
+		}
+		return ret.toArray(new MultiToken[ret.size()]);
+	}
+
 	public KSentence getSentence(int i) {
 		return sents[i];
 	}
@@ -59,14 +88,37 @@ public class KDocument {
 		return sents;
 	}
 
-	public MultiToken[] getTokens() {
-		List<Token> ret = Generics.newArrayList();
-		for (KSentence sent : sents) {
-			for (MultiToken mt : sent.getTokens()) {
-				ret.add(mt);
+	public String[] getSubValues(int start, int end, TokenAttr attr) {
+		List<String> ret = Generics.newArrayList();
+		for (int i = start; i < end; i++) {
+			KSentence sent = sents[i];
+			for (Token t : sent.getTokens()) {
+				MultiToken mt = t.toMultiToken();
+				for (Token st : mt.getTokens()) {
+					ret.add(st.getValue(attr));
+				}
 			}
 		}
-		return ret.toArray(new MultiToken[ret.size()]);
+		return ret.toArray(new String[ret.size()]);
+	}
+
+	public String[] getSubValues(TokenAttr attr) {
+		return getSubValues(0, sents.length, attr);
+	}
+
+	public String[] getValue(int start, int end, TokenAttr attr) {
+		List<String> ret = Generics.newArrayList();
+		for (int i = start; i < end; i++) {
+			KSentence sent = sents[i];
+			for (Token t : sent.getTokens()) {
+				ret.add(t.getValue(attr));
+			}
+		}
+		return ret.toArray(new String[ret.size()]);
+	}
+
+	public String[] getValue(TokenAttr attr) {
+		return getValue(0, sents.length, attr);
 	}
 
 	@Override
@@ -111,7 +163,7 @@ public class KDocument {
 	}
 
 	public KSentence toSentence() {
-		MultiToken[] toks = new MultiToken[sizeOfTokens()];
+		Token[] toks = new Token[sizeOfTokens()];
 		for (int i = 0, loc = 0; i < sents.length; i++) {
 			KSentence sent = sents[i];
 			for (int j = 0; j < sent.size(); j++) {
@@ -127,16 +179,12 @@ public class KDocument {
 		for (int i = 0; i < sents.length; i++) {
 			KSentence sent = sents[i];
 
-			for (int j = 0; j < sent.size(); j++) {
-				MultiToken mt = sent.getToken(j);
-				sb.append(String.format("%d\t%d\t%s", i, j, mt.toString()));
-				if (j != sent.size() - 1) {
-					sb.append("\n");
-				}
-			}
+			sb.append(sent.toString());
+
 			if (i != sents.length - 1) {
 				sb.append("\n\n");
 			}
+
 		}
 		return sb.toString();
 	}

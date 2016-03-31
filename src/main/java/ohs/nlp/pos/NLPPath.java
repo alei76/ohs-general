@@ -20,6 +20,8 @@ public class NLPPath {
 
 	public static final String DICT_SYSTEM_FILE = DATA_DIR + "dic_sys.txt.gz";
 
+	public static final String DICT_SYSTEM_TRIE_FILE = DATA_DIR + "dic_sys_trie.ser.gz";
+
 	public static final String DICT_ANALYZED_FILE = DATA_DIR + "dic_anal.txt.gz";
 
 }

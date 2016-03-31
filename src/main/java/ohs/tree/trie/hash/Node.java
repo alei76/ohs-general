@@ -1,5 +1,9 @@
 package ohs.tree.trie.hash;
 
+import java.awt.geom.Area;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,11 +28,31 @@ public class Node<K> implements Serializable {
 	 */
 	private static final long serialVersionUID = 6414918490989194051L;
 
-	protected Map<K, Node<K>> children;
-	protected int cnt = 0;
+	protected int id;
 	protected K key;
+	protected int cnt = 0;
+	protected Map<K, Node<K>> children;
 	protected Node<K> parent;
 	protected Object data;
+
+	public void write(ObjectOutputStream oos) throws Exception {
+		oos.writeInt(id);
+		oos.writeObject(key);
+		oos.writeInt(cnt);
+		oos.writeObject(data);
+		oos.flush();
+	}
+
+	public void setParent(Node<K> parent) {
+		this.parent = parent;
+	}
+
+	public void read(ObjectInputStream ois) throws Exception {
+		id = ois.readInt();
+		key = (K) ois.readObject();
+		cnt = ois.readInt();
+		data = ois.readObject();
+	}
 
 	// public Node(Node<K> parent, K key, int depth, int id) {
 	// this(parent, key, depth, null, id);
@@ -38,7 +62,9 @@ public class Node<K> implements Serializable {
 	//
 	// }
 
-	protected int id;
+	public Node() {
+
+	}
 
 	public Node(Node<K> parent, K key, Object data, int id) {
 		this.parent = parent;
@@ -58,30 +84,20 @@ public class Node<K> implements Serializable {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
-		if (obj == null) {
+		if (obj == null)
 			return false;
-		}
-		if (!(obj instanceof Node)) {
+		if (getClass() != obj.getClass())
 			return false;
-		}
 		Node other = (Node) obj;
-		if (key == null) {
-			if (other.key != null) {
-				return false;
-			}
-		} else if (!key.equals(other.key)) {
+		if (id != other.id)
 			return false;
-		}
 		if (parent == null) {
-			if (other.parent != null) {
+			if (other.parent != null)
 				return false;
-			}
-		} else if (!parent.equals(other.parent)) {
+		} else if (!parent.equals(other.parent))
 			return false;
-		}
 		return true;
 	}
 
@@ -94,7 +110,6 @@ public class Node<K> implements Serializable {
 		if (ret == null) {
 			ret = new HashMap<K, Node<K>>();
 		}
-
 		return ret;
 	}
 
@@ -216,6 +231,10 @@ public class Node<K> implements Serializable {
 		return ret;
 	}
 
+	public int sizeOfChildren() {
+		return children == null ? 0 : children.size();
+	}
+
 	public Type getType() {
 		Type ret = Type.NON_LEAF;
 		if (parent == null) {
@@ -238,8 +257,8 @@ public class Node<K> implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (key == null ? 0 : key.hashCode());
-		result = prime * result + (parent == null ? 0 : parent.hashCode());
+		result = prime * result + id;
+		result = prime * result + ((parent == null) ? 0 : parent.hashCode());
 		return result;
 	}
 
@@ -306,4 +325,5 @@ public class Node<K> implements Serializable {
 			children = temp;
 		}
 	}
+
 }

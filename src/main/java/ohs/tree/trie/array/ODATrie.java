@@ -78,7 +78,7 @@ public class ODATrie {
 
 				KDocument doc = r.next();
 
-				MultiToken[] mts = MultiToken.toMultiTokens(doc.getTokens());
+				MultiToken[] mts = MultiToken.toMultiTokens(doc.toMultiTokens());
 
 				for (int i = 0; i < mts.length; i++) {
 					MultiToken mt = mts[i];

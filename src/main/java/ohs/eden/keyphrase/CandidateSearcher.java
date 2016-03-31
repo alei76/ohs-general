@@ -6,6 +6,8 @@ import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.nlp.ling.types.KDocument;
 import ohs.nlp.ling.types.KSentence;
+import ohs.nlp.ling.types.MultiToken;
+import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
 import ohs.tree.trie.hash.Node;
 import ohs.tree.trie.hash.Trie;
@@ -54,7 +56,21 @@ public class CandidateSearcher {
 				if (korAbs.length() > 0) {
 					KDocument doc = TaggedTextParser.parse(korAbs);
 
-					cs.search(doc);
+					for (int j = 0; j < doc.size(); j++) {
+						KSentence sent = doc.getSentence(j);
+
+						for (int k = 0; k < sent.size(); k++) {
+							MultiToken mt = (MultiToken) sent.getToken(k);
+
+							System.out.println();
+						}
+					}
+
+					KSentence ks = new KSentence(doc.getSubTokens());
+
+					KDocument input = new KSentence(doc.getSubTokens()).toDocument();
+
+					cs.search(input);
 
 					System.out.println();
 
@@ -119,10 +135,8 @@ public class CandidateSearcher {
 
 		for (int i = 0; i < input.size(); i++) {
 			KSentence sent = input.getSentence(i);
-			
-			
 
-			String[] poss = sent.getSubValues(start, end, attrs)
+			String[] poss = sent.getValues(TokenAttr.POS);
 
 			for (int s = 0; s < poss.length;) {
 				int found = -1;

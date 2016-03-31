@@ -21,7 +21,7 @@ import ohs.tree.trie.hash.Trie;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.utils.Generics;
-import ohs.utils.KoreanUtils;
+import ohs.utils.KorUnicodeUtils;
 import ohs.utils.StrUtils;
 
 public class SejongDataHandler {
@@ -33,7 +33,7 @@ public class SejongDataHandler {
 		// sdh.extractPosData();
 		// sdh.extractCounts();
 		sdh.buildSystemDict();
-		// sdh.buildAnalyzedDict();
+		sdh.buildAnalyzedDict();
 		// sdh.buildTrie();
 		// sdh.test();
 
@@ -47,7 +47,7 @@ public class SejongDataHandler {
 		for (int i = 0; i < lines.size(); i++) {
 			String[] parts = lines.get(i).split("\t");
 
-			String str = KoreanUtils.decomposeToJamo(parts[0]);
+			String str = KorUnicodeUtils.decomposeToJamo(parts[0]);
 
 			System.out.println(str);
 
@@ -123,7 +123,7 @@ public class SejongDataHandler {
 			KDocument doc = reader.next();
 
 			for (KSentence sent : doc.getSentences()) {
-				for (MultiToken mt : sent.getTokens()) {
+				for (MultiToken mt : sent.toMultiTokens()) {
 					cm.incrementCount(mt.getValue(TokenAttr.WORD), mt.joinSubValues(), 1);
 				}
 			}
