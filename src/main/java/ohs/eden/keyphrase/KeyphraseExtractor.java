@@ -11,11 +11,10 @@ import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 import ohs.nlp.ling.types.KDocument;
 import ohs.nlp.ling.types.KSentence;
-import ohs.nlp.ling.types.MultiToken;
-import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
-import ohs.tree.trie.hash.Node;
 import ohs.tree.trie.hash.Trie;
+import ohs.tree.trie.hash.Trie.SearchResult;
+import ohs.tree.trie.hash.Trie.SearchResult.MatchType;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
@@ -139,11 +138,9 @@ public class KeyphraseExtractor {
 						for (int j = 0; j < chs.length; j++) {
 							int found = -1;
 							for (int k = j + 1; k < j + max_kwd_len && k < chs.length; k++) {
-								Node<Character> node = korTrie.search(chs, j, k);
-								if (node != null) {
-									if (node.getCount() > 0) {
-										found = k;
-									}
+								SearchResult<Character> sr = korTrie.search(chs, j, k);
+								if (sr.getMatchType() != MatchType.FAIL && sr.getNode().getCount() > 0) {
+									found = k;
 								}
 							}
 
@@ -161,17 +158,15 @@ public class KeyphraseExtractor {
 						}
 						cs[i] = kwdCnts;
 					} else {
-						List<String> words = StrUtils.split(text);
+						List words = StrUtils.split(text);
 						int max_kwd_len = max_kwd_lens[i];
 
 						for (int j = 0; j < words.size(); j++) {
 							int found = -1;
 							for (int k = j + 1; k < j + max_kwd_len && k < words.size(); k++) {
-								Node<String> node = engTrie.search(words, j, k);
-								if (node != null) {
-									if (node.getCount() > 0) {
-										found = k;
-									}
+								SearchResult<String> sr = engTrie.search(words, j, k);
+								if (sr.getMatchType() != MatchType.FAIL && sr.getNode().getCount() > 0) {
+									found = k;
 								}
 							}
 
@@ -271,15 +266,15 @@ public class KeyphraseExtractor {
 				// }
 
 				Set<String> keywordSet = Generics.newHashSet();
-				String docText = doc.j(TokenAttr.WORD);
+				String docText = StrUtils.join("", " ", "\n", doc.getSubValues(TokenAttr.WORD));
 
 				int num_matches = 0;
 
 				for (String kwd : korKwdStr.split(";")) {
 					if (kwd.length() > 0) {
 						KSentence kwdSent = TaggedTextParser.parse(kwd).toSentence();
-						String s = kwdSent.joinValues("", MultiToken.DELIM_MULTI_TOKEN, new TokenAttr[] { TokenAttr.WORD }, 0,
-								kwdSent.size());
+						String s = StrUtils.join(" ", "", kwdSent.getSubValues(TokenAttr.WORD));
+
 						keywordSet.add(s);
 
 						if (docText.contains(s)) {
@@ -332,6 +327,13 @@ public class KeyphraseExtractor {
 	public Counter<String> extract(KDocument doc) {
 		Counter<String> ret = Generics.newCounter();
 
+		// KSentence[] sents = new KSentence[doc.size()];
+		//
+		// for (int i = 0; i < doc.size(); i++) {
+		// sents[i] = new KSentence(doc.getSentence(i).getSubTokens());
+		// }
+		// KDocument temp = new KDocument(sents);
+
 		List<KSentence> cands = candSearcher.search(doc);
 
 		if (cands.size() == 0) {
@@ -344,14 +346,12 @@ public class KeyphraseExtractor {
 		// CounterMap<String, String> cm2 = Generics.newCounterMap();
 
 		int window_size = 2;
-		
-		String[][] sss = sent.getValues(start, end, attr)
 
 		for (int i = 0; i < cands.size(); i++) {
 			KSentence cand1 = cands.get(i);
-			String candStr1 = sent.joinSubValues("", MultiToken.DELIM_MULTI_TOKEN, " ", 0, sent.size(), new TokenAttr[] { TokenAttr.WORD });
+			String candStr1 = "";
 
-			String content = sent.joinSubValues("", " ", " ", 0, cand1.size(), new TokenAttr[] { TokenAttr.WORD });
+			String content = "";
 
 			for (String word : content.split(" ")) {
 				cm1.incrementCount(candStr1, word, 1);
@@ -365,7 +365,8 @@ public class KeyphraseExtractor {
 				int end = left;
 
 				if (start >= 0) {
-					String context = sent.joinValues("", " ", new TokenAttr[] { TokenAttr.WORD }, start, end);
+					// String context = sent.joinValues("", " ", new TokenAttr[] { TokenAttr.WORD }, start, end);
+					String context = "";
 					for (String word : context.split(" ")) {
 						cm1.incrementCount(candStr1, word, 1);
 					}
@@ -377,7 +378,8 @@ public class KeyphraseExtractor {
 				int end = start + window_size;
 
 				if (end < sent.size()) {
-					String context = sent.joinValues("", " ", new TokenAttr[] { TokenAttr.WORD }, start, end);
+					// String context = sent.joinValues("", " ", new TokenAttr[] { TokenAttr.WORD }, start, end);
+					String context = "";
 					for (String word : context.split(" ")) {
 						cm1.incrementCount(candStr1, word, 1);
 					}

@@ -1,5 +1,7 @@
 package ohs.eden.keyphrase;
 
+import java.sql.Struct;
+import java.util.Arrays;
 import java.util.List;
 
 import ohs.io.FileUtils;
@@ -11,8 +13,11 @@ import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
 import ohs.tree.trie.hash.Node;
 import ohs.tree.trie.hash.Trie;
+import ohs.tree.trie.hash.Trie.SearchResult;
+import ohs.tree.trie.hash.Trie.SearchResult.MatchType;
 import ohs.types.Counter;
 import ohs.utils.Generics;
+import ohs.utils.StrUtils;
 
 public class CandidateSearcher {
 
@@ -56,21 +61,9 @@ public class CandidateSearcher {
 				if (korAbs.length() > 0) {
 					KDocument doc = TaggedTextParser.parse(korAbs);
 
-					for (int j = 0; j < doc.size(); j++) {
-						KSentence sent = doc.getSentence(j);
+					// KDocument input = new KSentence(doc.getSubTokens()).toDocument();
 
-						for (int k = 0; k < sent.size(); k++) {
-							MultiToken mt = (MultiToken) sent.getToken(k);
-
-							System.out.println();
-						}
-					}
-
-					KSentence ks = new KSentence(doc.getSubTokens());
-
-					KDocument input = new KSentence(doc.getSubTokens()).toDocument();
-
-					cs.search(input);
+					cs.search(doc);
 
 					System.out.println();
 
@@ -135,29 +128,41 @@ public class CandidateSearcher {
 
 		for (int i = 0; i < input.size(); i++) {
 			KSentence sent = input.getSentence(i);
-
-			String[] poss = sent.getValues(TokenAttr.POS);
+			Token[] subToks = sent.getSubTokens();
+			String[] poss = new KSentence(subToks).getValues(TokenAttr.POS);
 
 			for (int s = 0; s < poss.length;) {
 				int found = -1;
 				for (int e = s + 1; e < poss.length; e++) {
-					Node<String> node = trie.search(poss, s, e);
+					SearchResult<String> sr = trie.search(poss, s, e);
 
-					if (node != null) {
-						if (node.getCount() > 0) {
+					if (sr.getMatchType() == MatchType.FAIL) {
+						break;
+					} else {
+						if (sr.getMatchType() == MatchType.EXACT && sr.getNode().getCount() > 0) {
 							found = e;
 						}
 					}
 
-					if (node == null) {
-						break;
-					}
 				}
 
 				if (found == -1) {
 					s++;
 				} else {
-					KSentence cand = new KSentence(sent.getTokens(s, found));
+					Token[] ts = new Token[found - s];
+
+					for (int j = s, loc = 0; j < found; j++) {
+						if (j == s) {
+							subToks[j].setValue(TokenAttr.KWD, "KWD-B");
+						} else {
+							subToks[j].setValue(TokenAttr.KWD, "KWD-I");
+						}
+						ts[loc++] = subToks[j];
+					}
+
+					// System.out.println(sent.toString());
+
+					KSentence cand = new KSentence(ts);
 					ret.add(cand);
 					s = found;
 				}

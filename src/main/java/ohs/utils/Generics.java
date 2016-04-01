@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import ohs.types.BidMap;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
+import ohs.types.DeepCounterMap;
 import ohs.types.DeepMap;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
@@ -113,6 +114,10 @@ public class Generics {
 
 	public static <K, V> CounterMap<K, V> newCounterMap() {
 		return new CounterMap<K, V>();
+	}
+
+	public static <K, V, F> DeepCounterMap<K, V, F> newDeepCounterMap() {
+		return new DeepCounterMap<K, V, F>();
 	}
 
 	public static <K, V> CounterMap<K, V> newCounterMap(CounterMap<K, V> cm) {

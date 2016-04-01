@@ -32,53 +32,12 @@ public class SejongDataHandler {
 		SejongDataHandler sdh = new SejongDataHandler();
 		// sdh.extractPosData();
 		// sdh.extractCounts();
-		sdh.buildSystemDict();
+		// sdh.buildSystemDict();
 		sdh.buildAnalyzedDict();
 		// sdh.buildTrie();
 		// sdh.test();
 
 		System.out.println("process ends.");
-	}
-
-	public void buildTrie() throws Exception {
-		List<String> lines = FileUtils.readLines(NLPPath.DICT_ANALYZED_FILE);
-		Trie<Character> trie = new Trie<Character>();
-
-		for (int i = 0; i < lines.size(); i++) {
-			String[] parts = lines.get(i).split("\t");
-
-			String str = KorUnicodeUtils.decomposeToJamo(parts[0]);
-
-			System.out.println(str);
-
-			Node<Character> node = trie.insert(StrUtils.toCharacters(str));
-			node.setData("");
-
-			// System.out.println(s);
-		}
-
-		System.out.println(trie.toString());
-
-		trie.trimToSize();
-
-		// {
-		// ObjectOutputStream oos = FileUtils.openObjectOutputStream(NLPPath.DATA_DIR + "test_1.ser");
-		// oos.writeObject(trie);
-		// oos.close();
-		// }
-
-		// {
-		// ObjectOutputStream oos = FileUtils.openObjectOutputStream(NLPPath.DATA_DIR + "test_2.ser");
-		//
-		// Node<Character> root = trie.getRoot();
-		// write(oos, root);
-		// oos.close();
-		//
-		// FileUtils.write(oos, s);
-		//
-		// }
-
-		System.out.println();
 	}
 
 	public static void write(ObjectOutputStream oos, Node<Character> node) throws Exception {
@@ -98,23 +57,6 @@ public class SejongDataHandler {
 
 	}
 
-	public void test() throws Exception {
-
-		List<String> lines = FileUtils.readLines(NLPPath.DICT_ANALYZED_FILE);
-
-		{
-			ObjectOutputStream oos = FileUtils.openObjectOutputStream(NLPPath.DATA_DIR + "test_1.ser");
-			oos.writeObject(lines);
-			oos.close();
-		}
-
-		{
-			ObjectOutputStream oos = FileUtils.openObjectOutputStream(NLPPath.DATA_DIR + "test_2.ser");
-			FileUtils.writeStrCollection(oos, lines);
-			oos.close();
-		}
-	}
-
 	public void buildAnalyzedDict() throws Exception {
 		CounterMap<String, String> cm = Generics.newCounterMap();
 
@@ -124,7 +66,9 @@ public class SejongDataHandler {
 
 			for (KSentence sent : doc.getSentences()) {
 				for (MultiToken mt : sent.toMultiTokens()) {
-					cm.incrementCount(mt.getValue(TokenAttr.WORD), mt.joinSubValues(), 1);
+					String s = StrUtils.join(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, mt.getSubValues(TokenAttr.WORD),
+							mt.getSubValues(TokenAttr.POS));
+					cm.incrementCount(mt.getValue(TokenAttr.WORD), s, 1);
 				}
 			}
 		}
@@ -178,6 +122,47 @@ public class SejongDataHandler {
 		Collections.sort(dict);
 
 		FileUtils.writeStrCollection(NLPPath.DICT_SYSTEM_FILE, dict);
+	}
+
+	public void buildTrie() throws Exception {
+		List<String> lines = FileUtils.readLines(NLPPath.DICT_ANALYZED_FILE);
+		Trie<Character> trie = new Trie<Character>();
+
+		for (int i = 0; i < lines.size(); i++) {
+			String[] parts = lines.get(i).split("\t");
+
+			String str = KorUnicodeUtils.decomposeToJamo(parts[0]);
+
+			System.out.println(str);
+
+			Node<Character> node = trie.insert(StrUtils.toCharacters(str));
+			node.setData("");
+
+			// System.out.println(s);
+		}
+
+		System.out.println(trie.toString());
+
+		trie.trimToSize();
+
+		// {
+		// ObjectOutputStream oos = FileUtils.openObjectOutputStream(NLPPath.DATA_DIR + "test_1.ser");
+		// oos.writeObject(trie);
+		// oos.close();
+		// }
+
+		// {
+		// ObjectOutputStream oos = FileUtils.openObjectOutputStream(NLPPath.DATA_DIR + "test_2.ser");
+		//
+		// Node<Character> root = trie.getRoot();
+		// write(oos, root);
+		// oos.close();
+		//
+		// FileUtils.write(oos, s);
+		//
+		// }
+
+		System.out.println();
 	}
 
 	public void extractCounts() throws Exception {
@@ -280,6 +265,23 @@ public class SejongDataHandler {
 		}
 		br.close();
 		writer.close();
+	}
+
+	public void test() throws Exception {
+
+		List<String> lines = FileUtils.readLines(NLPPath.DICT_ANALYZED_FILE);
+
+		{
+			ObjectOutputStream oos = FileUtils.openObjectOutputStream(NLPPath.DATA_DIR + "test_1.ser");
+			oos.writeObject(lines);
+			oos.close();
+		}
+
+		{
+			ObjectOutputStream oos = FileUtils.openObjectOutputStream(NLPPath.DATA_DIR + "test_2.ser");
+			FileUtils.writeStrCollection(oos, lines);
+			oos.close();
+		}
 	}
 
 }

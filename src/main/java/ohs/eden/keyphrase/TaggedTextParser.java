@@ -19,6 +19,9 @@ public class TaggedTextParser {
 		String[] lines = s.split("\n");
 		KSentence[] sents = new KSentence[lines.length];
 
+		int num_mts = 0;
+		int num_ts = 0;
+
 		for (int i = 0; i < lines.length; i++) {
 			String[] parts = lines[i].split(" ");
 			MultiToken[] toks = new MultiToken[parts.length];
@@ -38,10 +41,12 @@ public class TaggedTextParser {
 					tok.setValue(TokenAttr.WORD, word);
 					tok.setValue(TokenAttr.POS, pos);
 					subToks[k] = tok;
+					tok.setStart(num_ts++);
 				}
 
 				MultiToken mt = new MultiToken();
 				mt.setSubTokens(subToks);
+				mt.setStart(num_mts++);
 				toks[j] = mt;
 
 			}
@@ -49,25 +54,6 @@ public class TaggedTextParser {
 		}
 
 		KDocument doc = new KDocument(sents);
-		List<MultiToken> mts = Generics.newArrayList();
-
-		for (KSentence sent : doc.getSentences()) {
-			for (MultiToken mt : sent.toMultiTokens()) {
-				mts.add(mt);
-			}
-		}
-
-		for (int i = 0, loc = 0; i < mts.size(); i++) {
-			MultiToken mt = mts.get(i);
-			mt.setStart(i);
-			for (int j = 0; j < mt.size(); j++) {
-				Token t = mt.getToken(j);
-				t.setStart(loc);
-				loc += t.length();
-			}
-			loc++;
-		}
-
 		return doc;
 	}
 

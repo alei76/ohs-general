@@ -1,6 +1,5 @@
 package ohs.tree.trie.hash;
 
-import java.io.File;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -17,10 +16,36 @@ import java.util.TreeSet;
 import ohs.io.FileUtils;
 import ohs.nlp.pos.NLPPath;
 import ohs.tree.trie.hash.Node.Type;
+import ohs.tree.trie.hash.Trie.SearchResult.MatchType;
 import ohs.utils.KorUnicodeUtils;
 import ohs.utils.StrUtils;
 
 public class Trie<K> implements Serializable {
+
+	public static class SearchResult<K> {
+
+		public enum MatchType {
+			EXACT, PARTIAL, FAIL
+		}
+
+		private Node<K> node;
+
+		private MatchType type;
+
+		public SearchResult(Node<K> node, MatchType type) {
+			this.node = node;
+			this.type = type;
+		}
+
+		public MatchType getMatchType() {
+			return type;
+		}
+
+		public Node<K> getNode() {
+			return node;
+		}
+
+	}
 
 	/**
 	 * 
@@ -67,57 +92,6 @@ public class Trie<K> implements Serializable {
 		System.out.println("Process ends.");
 	}
 
-	public void read(ObjectInputStream ois) throws Exception {
-		depth = ois.readInt();
-		size = ois.readInt();
-
-		read(ois, root);
-	}
-
-	private void read(ObjectInputStream ois, Node<K> node) throws Exception {
-		node.read(ois);
-		int size = ois.readInt();
-
-		for (int i = 0; i < size; i++) {
-			Node<K> child = new Node<K>();
-			child.setParent(node);
-
-			read(ois, child);
-			node.addChild(child);
-		}
-
-	}
-
-	public void write(String fileName) throws Exception {
-		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
-		write(oos);
-		oos.close();
-	}
-
-	public void read(String fileName) throws Exception {
-		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
-		read(ois);
-		ois.close();
-	}
-
-	public void write(ObjectOutputStream oos) throws Exception {
-		oos.writeInt(depth);
-		oos.writeInt(size);
-
-		write(oos, root);
-	}
-
-	private void write(ObjectOutputStream oos, Node<K> node) throws Exception {
-		if (node != null) {
-			node.write(oos);
-			oos.writeInt(node.sizeOfChildren());
-
-			for (Node<K> child : node.getChildren().values()) {
-				write(oos, child);
-			}
-		}
-	}
-
 	public static <K> Trie<K> newTrie() {
 		return new Trie<K>();
 	}
@@ -133,10 +107,11 @@ public class Trie<K> implements Serializable {
 	}
 
 	public void delete(K[] keys) {
-		Node<K> node = search(keys);
-		if (node.hasParent()) {
+		SearchResult<K> sr = search(keys);
+		if (sr.getMatchType() != MatchType.FAIL) {
+			Node<K> node = sr.getNode();
 			Node<K> parent = node.getParent();
-			parent.getChildren().remove(node.getKey());
+			parent.getChildren().remove(parent.getKey());
 		}
 	}
 
@@ -176,6 +151,10 @@ public class Trie<K> implements Serializable {
 
 	public Node<K> getRoot() {
 		return root;
+	}
+
+	public boolean hasKeys(List<K> keys, int start, int end) {
+		return null == search(keys, start, end);
 	}
 
 	public Node<K> insert(K[] keys) {
@@ -232,26 +211,64 @@ public class Trie<K> implements Serializable {
 		return ret;
 	}
 
-	public Node<K> search(K[] keys) {
+	public void read(ObjectInputStream ois) throws Exception {
+		depth = ois.readInt();
+		size = ois.readInt();
+
+		read(ois, root);
+	}
+
+	private void read(ObjectInputStream ois, Node<K> node) throws Exception {
+		node.read(ois);
+		int size = ois.readInt();
+
+		for (int i = 0; i < size; i++) {
+			Node<K> child = new Node<K>();
+			child.setParent(node);
+
+			read(ois, child);
+			node.addChild(child);
+		}
+	}
+
+	public void read(String fileName) throws Exception {
+		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
+		read(ois);
+		ois.close();
+	}
+
+	public SearchResult<K> search(K[] keys) {
 		return search(keys, 0, keys.length);
 	}
 
-	public Node<K> search(K[] keys, int start, int end) {
+	public SearchResult<K> search(K[] keys, int start, int end) {
 		return search(Arrays.asList(keys), start, end);
 	}
 
-	public Node<K> search(List<K> keys, int start, int end) {
+	public SearchResult<K> search(List<K> keys, int start, int end) {
 		Node<K> node = root;
+		int num_matches = 0;
+		int max_matches = end - start;
+
 		for (int i = start; i < end; i++) {
 			K key = keys.get(i);
 			if (node.hasChild(key)) {
 				node = node.getChild(key);
+				num_matches++;
 			} else {
-				node = null;
 				break;
 			}
 		}
-		return node;
+
+		MatchType type = MatchType.FAIL;
+
+		if (num_matches == max_matches) {
+			type = MatchType.EXACT;
+		} else if (num_matches > 0 && num_matches < max_matches) {
+			type = MatchType.PARTIAL;
+		}
+
+		return new SearchResult<K>(node, type);
 	}
 
 	public int size() {
@@ -295,6 +312,30 @@ public class Trie<K> implements Serializable {
 			trimToSize(child);
 		}
 		node.trimToSize();
+	}
+
+	public void write(ObjectOutputStream oos) throws Exception {
+		oos.writeInt(depth);
+		oos.writeInt(size);
+
+		write(oos, root);
+	}
+
+	private void write(ObjectOutputStream oos, Node<K> node) throws Exception {
+		if (node != null) {
+			node.write(oos);
+			oos.writeInt(node.sizeOfChildren());
+
+			for (Node<K> child : node.getChildren().values()) {
+				write(oos, child);
+			}
+		}
+	}
+
+	public void write(String fileName) throws Exception {
+		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
+		write(oos);
+		oos.close();
 	}
 
 }

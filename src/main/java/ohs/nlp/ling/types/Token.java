@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 import ohs.io.FileUtils;
+import ohs.utils.StrUtils;
 
 public class Token implements Serializable {
 
@@ -111,16 +112,10 @@ public class Token implements Serializable {
 	public String toString(boolean print_attr_names) {
 		StringBuffer sb = new StringBuffer();
 		if (print_attr_names) {
-			for (int i = 0; i < TokenAttr.values().length; i++) {
-				TokenAttr ta = TokenAttr.values()[i];
-				sb.append("\t" + ta);
-			}
+			sb.append(StrUtils.join("\t", TokenAttr.strValues()));
 			sb.append("\n");
 		}
-		for (int i = 0; i < TokenAttr.values().length; i++) {
-			TokenAttr ta = TokenAttr.values()[i];
-			sb.append(String.format("\t%s", values[ta.ordinal()]));
-		}
+		sb.append(StrUtils.join("\t", StrUtils.enclose(values)));
 		return sb.toString();
 	}
 

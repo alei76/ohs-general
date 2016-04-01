@@ -60,21 +60,19 @@ public class KSentence {
 				ret.add(t);
 			}
 		}
-		return ret.toArray(new MultiToken[ret.size()]);
+		return ret.toArray(new Token[ret.size()]);
 	}
 
-	public String[] getSubValues(int start, int end, TokenAttr attr) {
-		List<String> ret = Generics.newArrayList();
-		for (int i = 0; i < toks.length; i++) {
-			MultiToken mt = (MultiToken) toks[i];
-			for (int j = 0; j < mt.size(); j++) {
-				ret.add(mt.getValue(attr));
-			}
+	public String[][] getSubValues(int start, int end, TokenAttr attr) {
+		String[][] ret = new String[end - start][];
+		for (int i = start; i < end; i++) {
+			MultiToken mt = toks[i].toMultiToken();
+			ret[i] = mt.getSubValues(attr);
 		}
-		return ret.toArray(new String[ret.size()]);
+		return ret;
 	}
 
-	public String[] getSubValues(TokenAttr attr) {
+	public String[][] getSubValues(TokenAttr attr) {
 		return getSubValues(0, toks.length, attr);
 	}
 
@@ -94,22 +92,10 @@ public class KSentence {
 		return ret;
 	}
 
-	public String[][] getValues() {
-		return getValues(0, toks.length, TokenAttr.values());
-	}
-
 	public String[] getValues(int start, int end, TokenAttr attr) {
 		String[] ret = new String[end - start];
-		for (int i = start, loc = 0; i < end; i++, loc++) {
-			ret[loc] = toks[i].getValue(attr);
-		}
-		return ret;
-	}
-
-	public String[][] getValues(int start, int end, TokenAttr[] attrs) {
-		String[][] ret = new String[end - start][];
-		for (int i = start, loc = 0; i < end; i++, loc++) {
-			ret[loc] = toks[i].getValues(attrs);
+		for (int i = start; i < end; i++) {
+			ret[i] = toks[i].getValue(attr);
 		}
 		return ret;
 	}
@@ -124,6 +110,18 @@ public class KSentence {
 		int result = 1;
 		result = prime * result + Arrays.hashCode(toks);
 		return result;
+	}
+
+	public String joinSubValues(int start, int end, TokenAttr attr, String delim1, String delim2) {
+		return StrUtils.join(delim1, delim2, getSubValues(start, end, attr));
+	}
+
+	public String joinSubValues(TokenAttr attr) {
+		return StrUtils.join(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, getSubValues(0, toks.length, attr));
+	}
+
+	public String joinSubValues(TokenAttr attr, String delim1, String delim2) {
+		return StrUtils.join(delim1, delim2, getSubValues(0, toks.length, attr));
 	}
 
 	public int length() {
@@ -168,16 +166,16 @@ public class KSentence {
 
 	@Override
 	public String toString() {
-		return toString(true);
+		return toString(true, true);
 	}
 
-	public String toString(boolean print_attr_names) {
+	public String toString(boolean print_attr_names, boolean print_sub_values_only) {
 		StringBuffer sb = new StringBuffer();
 
 		if (print_attr_names) {
-			sb.append("Loc");
-			for (TokenAttr attr : TokenAttr.values()) {
-				sb.append(String.format("\t%s", attr));
+			sb.append("Loc\t");
+			if (!print_sub_values_only) {
+				sb.append(StrUtils.join("\t", TokenAttr.strValues()));
 			}
 			if (isMultiToken) {
 				sb.append("\tSubValues");
@@ -189,10 +187,7 @@ public class KSentence {
 			Token t = toks[i];
 			if (isMultiToken) {
 				MultiToken mt = t.toMultiToken();
-				String s1 = StrUtils.join("\t", mt.getValues());
-				String s2 = StrUtils.join(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, mt.getSubValues(TokenAttr.WORD),
-						mt.getSubValues(TokenAttr.POS));
-				sb.append(String.format("%d\t%s\t%s", i, s1, s2));
+				sb.append(String.format("%d\t%s", i, mt.toString(false, print_sub_values_only)));
 			} else {
 				sb.append(String.format("%d\t%s", i, t.toString(false)));
 			}

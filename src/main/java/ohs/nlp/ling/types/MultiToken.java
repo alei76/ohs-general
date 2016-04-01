@@ -52,6 +52,23 @@ public class MultiToken extends Token {
 		return toks;
 	}
 
+	public String joinSubValues(int start, int end, TokenAttr attr, String delim) {
+		return StrUtils.join(delim, getSubValues(start, end, attr));
+	}
+
+	public String joinSubValues(TokenAttr attr) {
+		return StrUtils.join(DELIM_MULTI_TOKEN, getSubValues(0, toks.length, attr));
+	}
+
+	public String joinSubValues() {
+		String[] s = getSubValues(TokenAttr.values()[0]);
+		for (int i = 1; i < TokenAttr.size(); i++) {
+			StrUtils.join(Token.DELIM_TOKEN, s, getSubValues(TokenAttr.values()[i]));
+		}
+		StrUtils.enclose(s);
+		return StrUtils.join(DELIM_MULTI_TOKEN, s);
+	}
+
 	@Override
 	public void read(ObjectInputStream ois) throws Exception {
 		super.read(ois);
@@ -81,27 +98,27 @@ public class MultiToken extends Token {
 		return toString(true);
 	}
 
-	public String toString(boolean print_attr_names) {
+	public String toString(boolean print_attr_names, boolean print_sub_values_only) {
 		StringBuffer sb = new StringBuffer();
 
 		if (print_attr_names) {
-			sb.append("Loc\t");
-			for (TokenAttr attr : TokenAttr.values()) {
-				sb.append("\t" + attr);
+			if (!print_sub_values_only) {
+				sb.append(StrUtils.join("\t", TokenAttr.strValues()));
 			}
+			sb.append("SubValues");
 			sb.append("\n");
 		}
 
-		sb.append(0);
-		for (TokenAttr attr : TokenAttr.values()) {
-			sb.append(String.format("\t%s", values[attr.ordinal()]));
+		if (!print_sub_values_only) {
+			sb.append(super.toString());
 		}
 
+		String[] s = new String[toks.length];
 		for (int i = 0; i < toks.length; i++) {
-			sb.append(String.format("\n%d\t%s", i, toks[i].toString(false)));
+			s[i] = StrUtils.join(Token.DELIM_TOKEN, StrUtils.replace(toks[i].getValues(), "", "X"));
 		}
+		sb.append(StrUtils.join(DELIM_MULTI_TOKEN, StrUtils.enclose(s)));
 		return sb.toString();
-
 	}
 
 	public void write(ObjectOutputStream oos) throws Exception {

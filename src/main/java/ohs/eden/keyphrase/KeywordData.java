@@ -22,7 +22,7 @@ public class KeywordData {
 
 	private Indexer<String> docIndxer;
 
-	private ListMap<Integer, Integer> keywordDocs;
+	private ListMap<Integer, Integer> keywordToDocs;
 
 	private List<Integer> kwdids;
 
@@ -30,10 +30,10 @@ public class KeywordData {
 
 	private SetMap<Integer, Integer> clusters;
 
-	private Map<Integer, String> clusterLabel;
+	private Map<Integer, String> clusterToLabel;
 
 	public ListMap<Integer, Integer> getDocIdsList() {
-		return keywordDocs;
+		return keywordToDocs;
 	}
 
 	public Indexer<String> getDocIndexer() {
@@ -45,7 +45,7 @@ public class KeywordData {
 	}
 
 	public ListMap<Integer, Integer> getKeywordDocs() {
-		return keywordDocs;
+		return keywordToDocs;
 	}
 
 	public int[] getKeywordFreqs() {
@@ -69,10 +69,10 @@ public class KeywordData {
 		kwd_freqs = FileUtils.readIntArray(ois);
 
 		docIndxer = FileUtils.readStrIndexer(ois);
-		keywordDocs = FileUtils.readIntListMap(ois);
+		keywordToDocs = FileUtils.readIntListMap(ois);
 
 		clusters = FileUtils.readIntSetMap(ois);
-		clusterLabel = FileUtils.readIntStrMap(ois);
+		clusterToLabel = FileUtils.readIntStrMap(ois);
 
 		ois.close();
 
@@ -86,10 +86,10 @@ public class KeywordData {
 		docIndxer = Generics.newIndexer();
 
 		kwdids = Generics.newArrayList();
-		keywordDocs = Generics.newListMap();
+		keywordToDocs = Generics.newListMap();
 
 		clusters = Generics.newSetMap();
-		clusterLabel = Generics.newHashMap();
+		clusterToLabel = Generics.newHashMap();
 
 		Counter<Integer> kwdFreqs = Generics.newCounter();
 
@@ -100,7 +100,7 @@ public class KeywordData {
 			if (line.startsWith(FileUtils.LINE_SIZE)) {
 				int size = Integer.parseInt(line.split("\t")[1]);
 				kwdids = Generics.newArrayList(size);
-				keywordDocs = Generics.newListMap(size);
+				keywordToDocs = Generics.newListMap(size);
 				continue;
 			}
 
@@ -122,7 +122,7 @@ public class KeywordData {
 				String cn = parts[i];
 				docids.add(docIndxer.getIndex(cn));
 			}
-			keywordDocs.put(kwdid, docids);
+			keywordToDocs.put(kwdid, docids);
 		}
 		reader.close();
 
@@ -135,8 +135,8 @@ public class KeywordData {
 		System.out.printf("read [%s] at [%s] - [%s]\n", getClass().getName(), fileName, stopWatch.stop());
 	}
 
-	public void setClusterLabel(Map<Integer, String> clusterLabel) {
-		this.clusterLabel = clusterLabel;
+	public void setClusterLabel(Map<Integer, String> clusterToLabel) {
+		this.clusterToLabel = clusterToLabel;
 	}
 
 	public void setClusters(SetMap<Integer, Integer> clusters) {
@@ -153,10 +153,10 @@ public class KeywordData {
 		FileUtils.writeIntArray(oos, kwd_freqs);
 
 		FileUtils.writeStrIndexer(oos, docIndxer);
-		FileUtils.writeIntListMap(oos, keywordDocs);
+		FileUtils.writeIntListMap(oos, keywordToDocs);
 
 		FileUtils.writeIntSetMap(oos, clusters);
-		FileUtils.writeIntStrMap(oos, clusterLabel);
+		FileUtils.writeIntStrMap(oos, clusterToLabel);
 
 		oos.close();
 	}

@@ -104,14 +104,14 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 		return objs;
 	}
 
-	public E[] getObjects(int[] idxs) {
+	public E[] getObjects(int[] ids) {
 		if (size() == 0)
 			throw new IllegalArgumentException("bad");
-		int n = idxs.length;
+		int n = ids.length;
 		Class c = objs.get(0).getClass();
 		E[] os = (E[]) Array.newInstance(c, n);
 		for (int i = 0; i < n; i++)
-			os[i] = idxs[i] == -1 ? null : getObject(idxs[i]);
+			os[i] = ids[i] == -1 ? null : getObject(ids[i]);
 		return os;
 	}
 

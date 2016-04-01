@@ -225,11 +225,12 @@ public class DeepCounterMap<K, V, F> implements Serializable {
 				if (++numKeys > num_key2) {
 					break;
 				}
-				sb.append(String.format("%text:%d\t%text:%d -> ", k1, (int) cm.totalCount(), k2, (int) c.totalCount()));
+				sb.append(String.format("%s:%d\t%s:%d -> ", k1, (int) cm.totalCount(), k2, (int) c.totalCount()));
 				sb.append(c.toStringSortedByValues(true, false, num_key3, " "));
 				sb.append("\n");
 			}
 		}
+		sb.append("]");
 		return sb.toString();
 	}
 

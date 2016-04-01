@@ -57,7 +57,7 @@ public class KeywordClusterer {
 
 	private CounterMap<Integer, Integer> clusters;
 
-	private int[] keywordToCluster;
+	private int[] kwdToCluster;
 
 	private int[] clusterToCluster;
 
@@ -126,20 +126,20 @@ public class KeywordClusterer {
 	public void cluster() throws Exception {
 		clusters = Generics.newCounterMap();
 
-		keywordToCluster = new int[kwdIndexer.size()];
+		kwdToCluster = new int[kwdIndexer.size()];
 
 		clusterToCluster = new int[kwdIndexer.size()];
 
 		for (int i = 0; i < kwdIndexer.size(); i++) {
 			clusters.setCount(i, i, 1);
-			keywordToCluster[i] = i;
+			kwdToCluster[i] = i;
 		}
 
 		exactTwoLanguageMatch();
 
 		exactLanguageMatch(false);
 
-		exactLanguageMatch(true);
+		// exactLanguageMatch(true);
 
 		// filter(3);
 
@@ -162,7 +162,7 @@ public class KeywordClusterer {
 	private void exactLanguageMatch(boolean isEnglish) {
 		System.out.println("exact language match (English: " + isEnglish + ")");
 
-		SetMap<String, Integer> keyKeywordMap = Generics.newSetMap();
+		SetMap<String, Integer> keyToKeywords = Generics.newSetMap();
 
 		for (Entry<Integer, Counter<Integer>> e : clusters.getEntrySet()) {
 
@@ -178,21 +178,21 @@ public class KeywordClusterer {
 					continue;
 				}
 				// key = key.replaceAll("[\\text\\p{Punct}]+", "").toLowerCase();
-				keyKeywordMap.put(key, kwid);
+				keyToKeywords.put(key, kwid);
 			}
 		}
 
-		CounterMap<String, Integer> keyClusters = Generics.newCounterMap();
+		CounterMap<String, Integer> keyToClusters = Generics.newCounterMap();
 
-		for (String key : keyKeywordMap.keySet()) {
-			for (int kwid : keyKeywordMap.get(key)) {
-				int cid = keywordToCluster[kwid];
-				keyClusters.incrementCount(key, cid, 1);
+		for (String key : keyToKeywords.keySet()) {
+			for (int kwid : keyToKeywords.get(key)) {
+				int cid = kwdToCluster[kwid];
+				keyToClusters.incrementCount(key, cid, 1);
 			}
 		}
 
-		for (String key : keyClusters.keySet()) {
-			Set<Integer> cids = keyClusters.getCounter(key).keySet();
+		for (String key : keyToClusters.keySet()) {
+			Set<Integer> cids = keyToClusters.getCounter(key).keySet();
 
 			if (cids.size() > 1) {
 				Counter<Integer> newCluster = Generics.newCounter();
@@ -208,7 +208,7 @@ public class KeywordClusterer {
 				clusters.setCounter(new_cid, newCluster);
 
 				for (int kwid : newCluster.keySet()) {
-					keywordToCluster[kwid] = new_cid;
+					kwdToCluster[kwid] = new_cid;
 				}
 
 				for (int cid : cids) {
@@ -236,7 +236,7 @@ public class KeywordClusterer {
 				Counter<Integer> newCluster = Generics.newCounter();
 
 				for (int kwid : kwids) {
-					int cid = keywordToCluster[kwid];
+					int cid = kwdToCluster[kwid];
 					cids.add(cid);
 					newCluster.incrementAll(clusters.removeKey(cid));
 				}
@@ -246,7 +246,7 @@ public class KeywordClusterer {
 				clusters.setCounter(new_cid, newCluster);
 
 				for (int kwid : kwids) {
-					keywordToCluster[kwid] = new_cid;
+					kwdToCluster[kwid] = new_cid;
 				}
 
 				for (int cid : cids) {
@@ -263,7 +263,7 @@ public class KeywordClusterer {
 
 		Indexer<String> gramIndexer = buildGramIndexer();
 
-		Map<Integer, SparseVector> cents = getCentroids(gramIndexer);
+		Map<Integer, SparseVector> cents = buildClusterCentroids(gramIndexer);
 
 		int prefix_size = 6;
 
@@ -284,7 +284,7 @@ public class KeywordClusterer {
 
 			int print_chunk_size_ = cluster.size() / 100;
 
-			Counter<Pair<Integer, Integer>> queryResultPairs = Generics.newCounter();
+			Counter<Pair<Integer, Integer>> queryRes = Generics.newCounter();
 
 			for (int j = 0; j < cluster.size(); j++) {
 				if ((j + 1) % print_chunk_size_ == 0) {
@@ -302,10 +302,10 @@ public class KeywordClusterer {
 				for (int k = 0; k < queryCent.size() && k < prefix_size; k++) {
 					int gid = queryCent.indexAtLoc(k);
 					double idf = Math.log((num_clusters + 1f) / gram_freqs[gid]);
-					for (int cluid : gramPostings[gid]) {
-						int new_cluid = clusterToCluster[cluid];
-						if (cents.containsKey(new_cluid)) {
-							candidates.incrementCount(new_cluid, idf);
+					for (int cid : gramPostings[gid]) {
+						int new_cid = clusterToCluster[cid];
+						if (cents.containsKey(new_cid)) {
+							candidates.incrementCount(new_cid, idf);
 						}
 					}
 				}
@@ -323,16 +323,16 @@ public class KeywordClusterer {
 					}
 
 					Pair<Integer, Integer> p1 = Generics.newPair(qid, cid);
-					queryResultPairs.incrementCount(p1, cosine);
+					queryRes.incrementCount(p1, cosine);
 				}
 			}
 
 			System.out.printf("\r[%dth, %d percent - %d/%d, %s]\n", i + 1, 100, cluster.size(), cluster.size(), stopWatch.stop());
 
-			CounterMap<Integer, Integer> queryResults = Generics.newCounterMap();
+			CounterMap<Integer, Integer> queryToClusters = Generics.newCounterMap();
 			Set<Integer> used = Generics.newHashSet();
 
-			for (Pair<Integer, Integer> p : queryResultPairs.getSortedKeys()) {
+			for (Pair<Integer, Integer> p : queryRes.getSortedKeys()) {
 				int qid = p.getFirst();
 				int cid = p.getSecond();
 
@@ -341,11 +341,11 @@ public class KeywordClusterer {
 				}
 				used.add(cid);
 
-				double cosine = queryResultPairs.getCount(p);
-				queryResults.setCount(qid, cid, cosine);
+				double cosine = queryRes.getCount(p);
+				queryToClusters.setCount(qid, cid, cosine);
 			}
 
-			Iterator<Integer> iter = queryResults.keySet().iterator();
+			Iterator<Integer> iter = queryToClusters.keySet().iterator();
 
 			while (iter.hasNext()) {
 				int qid = iter.next();
@@ -354,14 +354,14 @@ public class KeywordClusterer {
 				}
 			}
 
-			if (queryResults.size() == 0) {
+			if (queryToClusters.size() == 0) {
 				break;
 			}
 
-			for (int qid : queryResults.keySet()) {
+			for (int qid : queryToClusters.keySet()) {
 				Set<Integer> cidSet = Generics.newHashSet();
 				cidSet.add(qid);
-				cidSet.addAll(queryResults.getCounter(qid).keySet());
+				cidSet.addAll(queryToClusters.getCounter(qid).keySet());
 
 				int new_cid = min(cidSet);
 
@@ -399,7 +399,7 @@ public class KeywordClusterer {
 				clusters.setCounter(new_cid, newCluster);
 
 				for (int kwid : newCluster.keySet()) {
-					keywordToCluster[kwid] = new_cid;
+					kwdToCluster[kwid] = new_cid;
 				}
 
 				for (int cid : cidSet) {
@@ -529,7 +529,7 @@ public class KeywordClusterer {
 		System.out.printf("clusters [%d -> %d]\n", old_size, clusters.size());
 	}
 
-	public Map<Integer, SparseVector> getCentroids(Indexer<String> gramIndexer) {
+	public Map<Integer, SparseVector> buildClusterCentroids(Indexer<String> gramIndexer) {
 		Map<Integer, SparseVector> ret = Generics.newHashMap(clusters.size());
 		for (int cid : clusters.keySet()) {
 			Counter<Integer> gramCnts = Generics.newCounter();

@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.http.impl.auth.GGSSchemeBase;
+
 import ohs.math.ArrayMath;
 import ohs.nlp.ling.types.TextSpan;
 import ohs.types.Counter;
@@ -94,6 +96,18 @@ public class StrUtils {
 
 		int longer = (n > m) ? n : m;
 		double ret = normalize ? (double) d[n][m] / longer : (double) d[n][m];
+		return ret;
+	}
+
+	public static String[] enclose(Object[] s) {
+		return enclose(s, "\"", "\"");
+	}
+
+	public static String[] enclose(Object[] s, String open, String close) {
+		String[] ret = new String[s.length];
+		for (int i = 0; i < s.length; i++) {
+			ret[i] = String.format("%s%s%s", open, s[i], close);
+		}
 		return ret;
 	}
 
@@ -213,6 +227,12 @@ public class StrUtils {
 		return find(text, Pattern.compile(regex));
 	}
 
+	public static void copy(String[] a, String[] b) {
+		for (int i = 0; i < a.length; i++) {
+			b[i] = a[i];
+		}
+	}
+
 	public static Matcher getMatcher(String text, String regex) {
 		Pattern p = getPattern(regex);
 		Matcher m = p.matcher(text);
@@ -239,18 +259,24 @@ public class StrUtils {
 		return p;
 	}
 
+	public static void init(String[] s) {
+		for (int i = 0; i < s.length; i++) {
+			s[i] = "";
+		}
+	}
+
 	public static String join(String glue, Collection<String> c, int start, int end) {
-		return join(glue, (Iterable<String>) c, start, end);
+		return join(glue, c, start, end);
 	}
 
-	public static String join(String glue, Iterable<String> it) {
-		return join(glue, it, 0, Integer.MAX_VALUE);
+	public static String join(String glue, Iterable<String> a) {
+		return join(glue, a, 0, Integer.MAX_VALUE);
 	}
 
-	public static String join(String glue, Iterable<String> it, int start, int end) {
+	public static String join(String glue, Iterable<String> a, int start, int end) {
 		StringBuffer sb = new StringBuffer();
 
-		Iterator<String> iter = it.iterator();
+		Iterator<String> iter = a.iterator();
 		int loc = 0;
 
 		while (iter.hasNext()) {
@@ -268,67 +294,59 @@ public class StrUtils {
 		return sb.toString();
 	}
 
-	// public static String join(String glue, List<String> list) {
-	// return join(glue, list, 0, list.size());
-	// }
-	//
-	// public static String join(String glue, List<String> list, int start) {
-	// return join(glue, list, start, list.size());
-	// }
-
-	public static String join(String inGlue, String glue, String outGlue, String[][][] s) {
+	public static String join(String inGlue, String midGlue, String outGlue, String[][][] a) {
 		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < s.length; i++) {
-			sb.append(join(inGlue, glue, s[i]));
-			if (i != s.length - 1) {
+		for (int i = 0; i < a.length; i++) {
+			sb.append(join(inGlue, midGlue, a[i]));
+			if (i != a.length - 1) {
 				sb.append(outGlue);
 			}
 		}
 		return sb.toString();
 	}
 
-	public static String join(String inGlue, String outGlue, String[] s, String[] t) {
+	public static String join(String inGlue, String outGlue, String[] a, String[] b) {
 		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < s.length; i++) {
-			sb.append(String.format("%s%s%s", s[i], inGlue, t[i]));
-			if (i != s.length - 1) {
+		for (int i = 0; i < a.length; i++) {
+			sb.append(String.format("%s%s%s", a[i], inGlue, b[i]));
+			if (i != a.length - 1) {
 				sb.append(outGlue);
 			}
 		}
 		return sb.toString();
 	}
 
-	public static String join(String inGlue, String outGlue, String[][] s) {
+	public static String join(String inGlue, String outGlue, String[][] a) {
 		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < s.length; i++) {
-			sb.append(join(inGlue, s[i]));
-			if (i != s.length - 1) {
+		for (int i = 0; i < a.length; i++) {
+			sb.append(join(inGlue, a[i]));
+			if (i != a.length - 1) {
 				sb.append(outGlue);
 			}
 		}
 		return sb.toString();
 	}
 
-	public static String join(String glue, String[] s) {
-		return join(glue, s, 0, s.length);
+	public static String join(String glue, String[] a) {
+		return join(glue, a, 0, a.length);
 	}
 
-	public static String join(String glue, String[] s, int start) {
-		return join(glue, s, start, s.length);
+	public static String join(String glue, String[] a, int start) {
+		return join(glue, a, start, a.length);
 	}
 
-	public static String join(String glue, String[] s, int start, int end) {
+	public static String join(String glue, String[] a, int start, int end) {
 		StringBuffer sb = new StringBuffer();
 		if (start < 0) {
 			start = 0;
 		}
 
-		if (end > s.length) {
-			end = s.length;
+		if (end > a.length) {
+			end = a.length;
 		}
 
 		for (int i = start; i < end; i++) {
-			sb.append(s[i]);
+			sb.append(a[i]);
 			if (i != end - 1) {
 				sb.append(glue);
 			}
@@ -336,12 +354,24 @@ public class StrUtils {
 		return sb.toString();
 	}
 
-	public static String join(String glue, String[] ar, int[] indexList) {
-		List<String> list = new ArrayList<String>();
-		for (int index : indexList) {
-			list.add(ar[index]);
+	public static String join(String glue, String[] a, int[] is) {
+		List<String> b = Generics.newArrayList();
+		for (int i : is) {
+			b.add(a[i]);
 		}
-		return join(glue, list, 0, list.size());
+		return join(glue, b, 0, b.size());
+	}
+
+	public static String[] join(String glue, String[] a, String[] b) {
+		String[] c = new String[a.length];
+		join(glue, a, b, c);
+		return c;
+	}
+
+	public static void join(String glue, String[] a, String[] b, String[] c) {
+		for (int i = 0; i < a.length; i++) {
+			c[i] = a[i] + glue + b[i];
+		}
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -500,6 +530,18 @@ public class StrUtils {
 		return sb.toString();
 	}
 
+	public static String[] replace(Object[] s, String target, String replacement) {
+		String[] ret = new String[s.length];
+		for (int i = 0; i < s.length; i++) {
+			if (s[i] == null || s[i].toString().equals(target)) {
+				ret[i] = replacement;
+			} else {
+				ret[i] = s[i].toString();
+			}
+		}
+		return ret;
+	}
+
 	public static String separateBracket(String text) {
 		StringBuffer sb = new StringBuffer();
 		sb.append(text.charAt(0));
@@ -638,7 +680,27 @@ public class StrUtils {
 		return tag(text, targets, tagName);
 	}
 
-	public static String[] toArray(Collection<String> c) {
+	public static String[] to1DArray(String[][] s) {
+		List<String> ret = Generics.newArrayList();
+		for (String[] t : s) {
+			for (String m : t) {
+				ret.add(m);
+			}
+		}
+		return toStrArray(ret);
+	}
+
+	public static String[][] to2DArray(String[] s, int row_size, int col_size) {
+		String[][] ret = new String[row_size][col_size];
+		for (int i = 0, loc = 0; i < row_size; i++) {
+			for (int j = 0; j < col_size; j++) {
+				ret[i][j] = s[loc++];
+			}
+		}
+		return ret;
+	}
+
+	public static String[] toStrArray(Collection<String> c) {
 		return c.toArray(new String[c.size()]);
 	}
 
@@ -651,11 +713,7 @@ public class StrUtils {
 	}
 
 	public static Character[] toCharacters(String s) {
-		Character[] ret = new Character[s.length()];
-		for (int i = 0; i < s.length(); i++) {
-			ret[i] = new Character(s.charAt(i));
-		}
-		return ret;
+		return toCharacters(s.toCharArray());
 	}
 
 	public static char[] toChars(Character[] chs) {
@@ -674,10 +732,10 @@ public class StrUtils {
 		return ret;
 	}
 
-	public static List<String> toList(String[] ss) {
-		List<String> ret = Generics.newArrayList(ss.length);
-		for (String s : ss) {
-			ret.add(s);
+	public static List<String> toStrList(String[] s) {
+		List<String> ret = Generics.newArrayList(s.length);
+		for (String t : s) {
+			ret.add(t);
 		}
 		return ret;
 	}

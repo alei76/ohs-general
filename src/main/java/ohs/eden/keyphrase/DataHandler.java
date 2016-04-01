@@ -10,6 +10,8 @@ import ohs.io.TextFileWriter;
 import ohs.nlp.ling.types.KSentence;
 import ohs.nlp.ling.types.TokenAttr;
 import ohs.types.Counter;
+import ohs.types.CounterMap;
+import ohs.types.DeepCounterMap;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
@@ -23,13 +25,13 @@ public class DataHandler {
 		DataHandler dh = new DataHandler();
 		// dh.mergeDumps();
 		// dh.tagPOS();
-		// dh.buildKeywordData();
-		// dh.getKeywords();
+		// dh.makeKeywordData();
+		dh.extractKeywordAbbreviations();
 
 		System.out.println("process ends.");
 	}
 
-	public void getKeywords() throws Exception {
+	public void extractKeywordAbbreviations() throws Exception {
 		KeywordData data = new KeywordData();
 
 		if (FileUtils.exists(KPPath.KEYWORD_DATA_FILE.replace("txt", "ser"))) {
@@ -39,10 +41,38 @@ public class DataHandler {
 			data.write(KPPath.KEYWORD_DATA_FILE.replace("txt", "ser"));
 		}
 
-		FileUtils.writeStrCollection(KPPath.KEYPHRASE_DIR + "kwds.txt", data.getKeywordIndexer().getObjects());
+		AbbreviationExtractor ext = new AbbreviationExtractor();
+
+		CounterMap<String, String> cm = Generics.newCounterMap();
+
+		DeepCounterMap<String, String, String> dcm = Generics.newDeepCounterMap();
+
+		for (String kwdStr : data.getKeywordIndexer().getObjects()) {
+			String[] two = kwdStr.split("\t");
+			String korKwd = two[0];
+			String engKwd = two[1];
+
+			for (String kwd : two) {
+				if (kwd.equals(NONE)) {
+					continue;
+				}
+
+				List<ohs.types.Pair<String, String>> pairs = ext.extract(kwd);
+
+				for (ohs.types.Pair<String, String> pair : pairs) {
+					cm.incrementCount(pair.getFirst(), korKwd + "#" + pair.getSecond().toLowerCase(), 1);
+					dcm.incrementCount(pair.getFirst(), pair.getSecond().toLowerCase(), korKwd, 1);
+				}
+			}
+		}
+
+		FileUtils.writeStrCounterMap(KPPath.KEYWORD_ABBR_FILE, cm);
+
+		System.out.println(dcm);
+
 	}
 
-	public void buildKeywordData() throws Exception {
+	public void makeKeywordData() throws Exception {
 		SetMap<String, String> keywordDocs = Generics.newSetMap();
 
 		TextFileReader reader = new TextFileReader(KPPath.SINGLE_DUMP_FILE);
@@ -171,7 +201,6 @@ public class DataHandler {
 		reader.close();
 
 		FileUtils.writeStrCounter(KPPath.KEYWORD_POS_CNT_FILE, patCnts);
-
 	}
 
 	private List<String> getKeywords(String keywordStr) {

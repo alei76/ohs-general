@@ -1,10 +1,13 @@
 package ohs.nlp.pos;
 
+import org.apache.poi.ss.formula.functions.Vlookup;
+
 import ohs.nlp.ling.types.KDocument;
 import ohs.nlp.ling.types.KSentence;
 import ohs.nlp.ling.types.MultiToken;
 import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
+import ohs.utils.StrUtils;
 
 public class SejongParser {
 
@@ -62,7 +65,10 @@ public class SejongParser {
 	}
 
 	public static Token parseToken(String s) {
-		String[] values = s.split(Token.DELIM_TOKEN);
+		String[] values = new String[TokenAttr.size()];
+
+		StrUtils.copy(s.split(Token.DELIM_TOKEN), values);
+
 		Token ret = new Token();
 		for (TokenAttr attr : TokenAttr.values()) {
 			ret.setValue(attr, values[attr.ordinal()]);

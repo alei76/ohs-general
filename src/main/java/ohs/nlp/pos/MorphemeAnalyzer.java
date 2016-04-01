@@ -10,6 +10,7 @@ import ohs.nlp.ling.types.MultiToken;
 import ohs.nlp.ling.types.TokenAttr;
 import ohs.tree.trie.hash.Node;
 import ohs.tree.trie.hash.Trie;
+import ohs.tree.trie.hash.Trie.SearchResult;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
 import ohs.utils.KorUnicodeUtils;
@@ -129,7 +130,7 @@ public class MorphemeAnalyzer {
 
 		String word2 = KorUnicodeUtils.decomposeToJamo(word);
 
-		Node<Character> node = sysDict.search(StrUtils.toCharacters(word2.toCharArray()));
+		SearchResult<Character> sr = sysDict.search(StrUtils.toCharacters(word2.toCharArray()));
 
 		return ret;
 	}
