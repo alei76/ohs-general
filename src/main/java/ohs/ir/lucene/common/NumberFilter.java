@@ -53,7 +53,7 @@ public final class NumberFilter extends TokenFilter {
 
 			term = sb.toString();
 			termAtt.copyBuffer(term.toCharArray(), 0, term.length());
-			// System.out.printf("%text -> %text\n", temp, term);
+			// System.out.printf("%s -> %s\n", temp, term);
 		}
 
 		return true;

@@ -128,7 +128,7 @@ public class SearchResultEvaluator {
 					aps[i] = ap;
 					ndcgs[i] = ndcg;
 
-					sb.append(String.format("\t%text\t%text", nf.format(ap), nf.format(ndcg)));
+					sb.append(String.format("\t%s\t%s", nf.format(ap), nf.format(ndcg)));
 				}
 
 				if (aps[0] == 0) {
@@ -147,32 +147,32 @@ public class SearchResultEvaluator {
 		StringBuffer sb = new StringBuffer();
 		sb.append("KDocumentCollection\tQueries\tModel\tTop-K");
 
-		sb.append(String.format("\t%text", MetricType.RELEVANT));
-		sb.append(String.format("\t%text", MetricType.RETRIEVED));
-		sb.append(String.format("\t%text", MetricType.RELEVANT_IN_RET));
-		sb.append(String.format("\t%text", MetricType.RELEVANT_AT));
-		sb.append(String.format("\t%text", MetricType.P));
-		sb.append(String.format("\t%text", MetricType.MAP));
-		sb.append(String.format("\t%text", MetricType.NDCG));
+		sb.append(String.format("\t%s", MetricType.RELEVANT));
+		sb.append(String.format("\t%s", MetricType.RETRIEVED));
+		sb.append(String.format("\t%s", MetricType.RELEVANT_IN_RET));
+		sb.append(String.format("\t%s", MetricType.RELEVANT_AT));
+		sb.append(String.format("\t%s", MetricType.P));
+		sb.append(String.format("\t%s", MetricType.MAP));
+		sb.append(String.format("\t%s", MetricType.NDCG));
 
-		sb.append(String.format("\t%text-0.05", MetricType.P));
-		sb.append(String.format("\t%text-0.01", MetricType.P));
-		sb.append(String.format("\t%text-0.05", MetricType.MAP));
-		sb.append(String.format("\t%text-0.01", MetricType.MAP));
-		sb.append(String.format("\t%text-0.05", MetricType.NDCG));
-		sb.append(String.format("\t%text-0.01", MetricType.NDCG));
+		sb.append(String.format("\t%s-0.05", MetricType.P));
+		sb.append(String.format("\t%s-0.01", MetricType.P));
+		sb.append(String.format("\t%s-0.05", MetricType.MAP));
+		sb.append(String.format("\t%s-0.01", MetricType.MAP));
+		sb.append(String.format("\t%s-0.05", MetricType.NDCG));
+		sb.append(String.format("\t%s-0.01", MetricType.NDCG));
 
-		sb.append(String.format("\t%text-Gain", MetricType.P));
-		sb.append(String.format("\t%text-Reward", MetricType.P));
-		sb.append(String.format("\t%text-Risk", MetricType.P));
+		sb.append(String.format("\t%s-Gain", MetricType.P));
+		sb.append(String.format("\t%s-Reward", MetricType.P));
+		sb.append(String.format("\t%s-Risk", MetricType.P));
 
-		sb.append(String.format("\t%text-Gain", MetricType.MAP));
-		sb.append(String.format("\t%text-Reward", MetricType.MAP));
-		sb.append(String.format("\t%text-Risk", MetricType.MAP));
+		sb.append(String.format("\t%s-Gain", MetricType.MAP));
+		sb.append(String.format("\t%s-Reward", MetricType.MAP));
+		sb.append(String.format("\t%s-Risk", MetricType.MAP));
 
-		sb.append(String.format("\t%text-Gain", MetricType.NDCG));
-		sb.append(String.format("\t%text-Reward", MetricType.NDCG));
-		sb.append(String.format("\t%text-Risk", MetricType.NDCG));
+		sb.append(String.format("\t%s-Gain", MetricType.NDCG));
+		sb.append(String.format("\t%s-Reward", MetricType.NDCG));
+		sb.append(String.format("\t%s-Risk", MetricType.NDCG));
 
 		writer1.write(sb.toString());
 
@@ -241,8 +241,8 @@ public class SearchResultEvaluator {
 					baselines = targets;
 				}
 
-				writer2.write(String.format("KDocumentCollection:\t%text\n", collName));
-				writer2.write(String.format("FileName:\t%text\n", resFile.getName()));
+				writer2.write(String.format("KDocumentCollection:\t%s\n", collName));
+				writer2.write(String.format("FileName:\t%s\n", resFile.getName()));
 
 				NumberFormat nf = NumberFormat.getInstance();
 				nf.setMinimumFractionDigits(4);
@@ -253,15 +253,15 @@ public class SearchResultEvaluator {
 
 					{
 						StringBuffer sb2 = new StringBuffer();
-						sb2.append(String.format("%text\t%d\t%text\t%d", collName, resData.keySet().size(), modelName, target.getTopN()));
+						sb2.append(String.format("%s\t%d\t%s\t%d", collName, resData.keySet().size(), modelName, target.getTopN()));
 
 						sb2.append(String.format("\t%d", target.getTotalRelevant()));
 						sb2.append(String.format("\t%d", target.getTotalRetrieved()));
 						sb2.append(String.format("\t%d", target.getTotalCorrect()));
 						sb2.append(String.format("\t%d", target.getTotalCorrectAtN()));
-						sb2.append(String.format("\t%text", nf.format(target.getPrecisionAtN())));
-						sb2.append(String.format("\t%text", nf.format(target.getMAP())));
-						sb2.append(String.format("\t%text", nf.format((target.getNDCG()))));
+						sb2.append(String.format("\t%s", nf.format(target.getPrecisionAtN())));
+						sb2.append(String.format("\t%s", nf.format(target.getMAP())));
+						sb2.append(String.format("\t%s", nf.format((target.getNDCG()))));
 
 						{
 							MetricType[] mts = { MetricType.P, MetricType.AP, MetricType.NDCG };
@@ -286,7 +286,7 @@ public class SearchResultEvaluator {
 								TTestImpl tt = new TTestImpl();
 								boolean improved1 = tt.pairedTTest(scores1, scores2, 0.05);
 								boolean improved2 = tt.pairedTTest(scores1, scores2, 0.01);
-								sb2.append(String.format("\t%text\t%text", improved1, improved2));
+								sb2.append(String.format("\t%s\t%s", improved1, improved2));
 							}
 						}
 
@@ -324,7 +324,7 @@ public class SearchResultEvaluator {
 								double gain = reward - risk;
 								double ri = (num_pos - num_neg) / c1.size();
 
-								sb2.append(String.format("\t%text\t%text\t%text", nf2.format(gain), nf2.format(reward), nf2.format(risk)));
+								sb2.append(String.format("\t%s\t%s\t%s", nf2.format(gain), nf2.format(reward), nf2.format(risk)));
 							}
 						}
 
@@ -378,7 +378,7 @@ public class SearchResultEvaluator {
 								MetricType type = mts[m];
 								double score = metricValues.getCount(type);
 								if (type == MetricType.P || type == MetricType.AP || type == MetricType.NDCG) {
-									sb3.append(String.format("\t%text", nf.format(score)));
+									sb3.append(String.format("\t%s", nf.format(score)));
 								} else {
 									sb3.append(String.format("\t%d", (int) score));
 								}
@@ -395,7 +395,7 @@ public class SearchResultEvaluator {
 
 							if (type == MetricType.P || type == MetricType.AP || type == MetricType.NDCG) {
 								score /= qids.size();
-								sb3.append(String.format("\t%text", nf.format(score)));
+								sb3.append(String.format("\t%s", nf.format(score)));
 							} else {
 								sb3.append(String.format("\t%d", (int) score));
 							}
@@ -516,8 +516,8 @@ public class SearchResultEvaluator {
 				// continue;
 				// }
 
-				writer2.write(String.format("KDocumentCollection:\t%text\n", collName));
-				writer2.write(String.format("FileName:\t%text\n", resultFile.getName()));
+				writer2.write(String.format("KDocumentCollection:\t%s\n", collName));
+				writer2.write(String.format("FileName:\t%s\n", resultFile.getName()));
 
 				NumberFormat nf = NumberFormat.getInstance();
 				nf.setMinimumFractionDigits(4);
@@ -528,28 +528,28 @@ public class SearchResultEvaluator {
 
 					{
 						StringBuffer sb2 = new StringBuffer();
-						sb2.append(String.format("%text\t%d\t%text\t%d", collName, resultData.keySet().size(), modelName, target.getTopN()));
+						sb2.append(String.format("%s\t%d\t%s\t%d", collName, resultData.keySet().size(), modelName, target.getTopN()));
 
-						sb2.append(String.format("\t%text", hp.getTopK()));
-						sb2.append(String.format("\t%text", hp.getTopKInWiki()));
-						sb2.append(String.format("\t%text", hp.getNumFBDocs()));
-						sb2.append(String.format("\t%text", hp.getNumFBWords()));
-						sb2.append(String.format("\t%text", hp.getDirichletPrior()));
-						sb2.append(String.format("\t%text", hp.getMixtureForAllCollections()));
-						sb2.append(String.format("\t%text", hp.isUseDocPrior()));
-						sb2.append(String.format("\t%text", hp.isUseDoubleScoring()));
-						sb2.append(String.format("\t%text", hp.isUseWiki()));
-						sb2.append(String.format("\t%text", hp.getMixtureForFeedbackModel()));
-						sb2.append(String.format("\t%text", hp.isSmoothCollectionMixtures()));
-						sb2.append(String.format("\t%text", hp.isAdjustNumbers()));
+						sb2.append(String.format("\t%s", hp.getTopK()));
+						sb2.append(String.format("\t%s", hp.getTopKInWiki()));
+						sb2.append(String.format("\t%s", hp.getNumFBDocs()));
+						sb2.append(String.format("\t%s", hp.getNumFBWords()));
+						sb2.append(String.format("\t%s", hp.getDirichletPrior()));
+						sb2.append(String.format("\t%s", hp.getMixtureForAllCollections()));
+						sb2.append(String.format("\t%s", hp.isUseDocPrior()));
+						sb2.append(String.format("\t%s", hp.isUseDoubleScoring()));
+						sb2.append(String.format("\t%s", hp.isUseWiki()));
+						sb2.append(String.format("\t%s", hp.getMixtureForFeedbackModel()));
+						sb2.append(String.format("\t%s", hp.isSmoothCollectionMixtures()));
+						sb2.append(String.format("\t%s", hp.isAdjustNumbers()));
 
 						sb2.append(String.format("\t%d", target.getTotalRelevant()));
 						sb2.append(String.format("\t%d", target.getTotalRetrieved()));
 						sb2.append(String.format("\t%d", target.getTotalCorrect()));
 						sb2.append(String.format("\t%d", target.getTotalCorrectAtN()));
-						sb2.append(String.format("\t%text", nf.format(target.getPrecisionAtN())));
-						sb2.append(String.format("\t%text", nf.format(target.getMAP())));
-						sb2.append(String.format("\t%text", nf.format((target.getNDCG()))));
+						sb2.append(String.format("\t%s", nf.format(target.getPrecisionAtN())));
+						sb2.append(String.format("\t%s", nf.format(target.getMAP())));
+						sb2.append(String.format("\t%s", nf.format((target.getNDCG()))));
 
 						{
 							MetricType[] metricTypes = { MetricType.P, MetricType.AP, MetricType.NDCG };
@@ -574,7 +574,7 @@ public class SearchResultEvaluator {
 								TTestImpl tt = new TTestImpl();
 								boolean isSignificantlyImproved1 = tt.pairedTTest(scores1, scores2, 0.05);
 								boolean isSignificantlyImproved2 = tt.pairedTTest(scores1, scores2, 0.01);
-								sb2.append(String.format("\t%text\t%text", isSignificantlyImproved1, isSignificantlyImproved2));
+								sb2.append(String.format("\t%s\t%s", isSignificantlyImproved1, isSignificantlyImproved2));
 							}
 						}
 
@@ -612,7 +612,7 @@ public class SearchResultEvaluator {
 								double gain = reward - risk;
 								double ri = (num_pos - num_neg) / c1.size();
 
-								sb2.append(String.format("\t%text\t%text\t%text", nf2.format(gain), nf2.format(reward), nf2.format(risk)));
+								sb2.append(String.format("\t%s\t%s\t%s", nf2.format(gain), nf2.format(reward), nf2.format(risk)));
 							}
 						}
 
@@ -666,7 +666,7 @@ public class SearchResultEvaluator {
 								MetricType type = types[m];
 								double score = metricValues.getCount(type);
 								if (type == MetricType.P || type == MetricType.AP || type == MetricType.NDCG) {
-									sb3.append(String.format("\t%text", nf.format(score)));
+									sb3.append(String.format("\t%s", nf.format(score)));
 								} else {
 									sb3.append(String.format("\t%d", (int) score));
 								}
@@ -683,7 +683,7 @@ public class SearchResultEvaluator {
 
 							if (type == MetricType.P || type == MetricType.AP || type == MetricType.NDCG) {
 								score /= queryIds.size();
-								sb3.append(String.format("\t%text", nf.format(score)));
+								sb3.append(String.format("\t%s", nf.format(score)));
 							} else {
 								sb3.append(String.format("\t%d", (int) score));
 							}

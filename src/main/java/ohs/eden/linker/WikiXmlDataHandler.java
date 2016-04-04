@@ -295,7 +295,7 @@ public class WikiXmlDataHandler {
 				topic = StrUtils.join("|", words, 0, 3);
 			}
 
-			String output = String.format("%d\t%text\t%text\t%text\n", eid, name, topic,
+			String output = String.format("%d\t%s\t%s\t%s\n", eid, name, topic,
 					variants.size() == 0 ? "none" : StrUtils.join("|", variants));
 
 			writers[0].write(output);
@@ -414,7 +414,7 @@ public class WikiXmlDataHandler {
 
 					String title = values[0].trim();
 					String wikiText = values[1].replaceAll("\n", "<NL>").trim();
-					String output = String.format("%text\t%text", title, wikiText);
+					String output = String.format("%s\t%s", title, wikiText);
 					// writer.write(output + "\n");
 
 					System.out.println(title);

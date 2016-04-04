@@ -56,7 +56,7 @@ public class AbbreviationCollector {
 		String[] abbrFileNames = MIRPath.AbbrFileNames;
 
 		for (int i = 3; i < abbrFileNames.length; i++) {
-			System.out.printf("extract abbreviations from [%text].\n", indexDirs[i]);
+			System.out.printf("extract abbreviations from [%s].\n", indexDirs[i]);
 
 			IndexSearcher is = SearcherUtils.getIndexSearcher(indexDirs[i]);
 			IndexReader ir = is.getIndexReader();
@@ -72,7 +72,7 @@ public class AbbreviationCollector {
 
 			for (int j = 0; j < num_docs; j++) {
 				if ((j + 1) % 10000 == 0) {
-					System.out.printf("\r[%d / %d, %text]", j + 1, num_docs, stopWatch.stop());
+					System.out.printf("\r[%d / %d, %s]", j + 1, num_docs, stopWatch.stop());
 				}
 
 				Document doc = ir.document(j);
@@ -93,7 +93,7 @@ public class AbbreviationCollector {
 					for (Pair<String, String> pair : pairs) {
 						String shortForm = pair.getFirst();
 						String longForm = pair.getSecond();
-						String output = String.format("%text\t%text\t%d\t%d", shortForm, longForm, j, k);
+						String output = String.format("%s\t%s\t%d\t%d", shortForm, longForm, j, k);
 						sb.append(output + "\n");
 					}
 
@@ -104,7 +104,7 @@ public class AbbreviationCollector {
 					// for (TextSpan[] spans : spansList) {
 					// String shortForm = spans[0].getText();
 					// String longForm = spans[1].getText();
-					// String output = String.format("%text\t%text\t%d\t%d",
+					// String output = String.format("%s\t%s\t%d\t%d",
 					// shortForm, longForm, j, k);
 					// writer.write(output + "\n");
 					// }
@@ -116,7 +116,7 @@ public class AbbreviationCollector {
 					writer.write(output + "\n\n");
 				}
 			}
-			System.out.printf("\r[%d / %d, %text]\n", num_docs, num_docs, stopWatch.stop());
+			System.out.printf("\r[%d / %d, %s]\n", num_docs, num_docs, stopWatch.stop());
 			writer.close();
 		}
 
@@ -210,7 +210,7 @@ public class AbbreviationCollector {
 				Counter<String> longCounts = cm.getCounter(sf);
 				for (String lf : longCounts.getSortedKeys()) {
 					int cnt = (int) longCounts.getCount(lf);
-					sb.append(String.format("\n%text\t%d", lf, cnt));
+					sb.append(String.format("\n%s\t%d", lf, cnt));
 				}
 				writer.write(sb.toString() + "\n\n");
 			}
@@ -227,7 +227,7 @@ public class AbbreviationCollector {
 			String shortForm = pair.getFirst();
 			String longForm = pair.getSecond();
 
-			String regex = String.format("(%text)(\\text)?\\((\\text)?(%text)(\\text)?\\)", shortForm, longForm);
+			String regex = String.format("(%s)(\\text)?\\((\\text)?(%s)(\\text)?\\)", shortForm, longForm);
 			Pattern p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
 			Matcher m = p.matcher(content);
 
@@ -296,11 +296,11 @@ public class AbbreviationCollector {
 				Counter<String> longCounts = shortLongCounts.getCounter(shortForm);
 
 				StringBuffer sb = new StringBuffer();
-				sb.append(String.format("ShortForm:\t%text\t%d", shortForm, (int) longCounts.totalCount()));
+				sb.append(String.format("ShortForm:\t%s\t%d", shortForm, (int) longCounts.totalCount()));
 
 				for (String longForm : longCounts.getSortedKeys()) {
 					int count = (int) longCounts.getCount(longForm);
-					sb.append(String.format("\n%text\t%d", longForm, count));
+					sb.append(String.format("\n%s\t%d", longForm, count));
 				}
 				writer.write(sb.toString() + "\n\n");
 			}

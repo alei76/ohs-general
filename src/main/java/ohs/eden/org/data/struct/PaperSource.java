@@ -62,9 +62,9 @@ public class PaperSource {
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("Korean Name= %text\n", name.getKorean()));
-		sb.append(String.format("English Name= %text\n", name.getKorean()));
-		sb.append(String.format("Year = %text", year));
+		sb.append(String.format("Korean Name= %s\n", name.getKorean()));
+		sb.append(String.format("English Name= %s\n", name.getKorean()));
+		sb.append(String.format("Year = %s", year));
 		return sb.toString();
 	}
 

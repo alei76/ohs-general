@@ -123,9 +123,9 @@ public class HuffmanCoding {
 			parentNode[min2i] = newNodeIdx;
 			binary[min2i] = 1;
 
-			// System.out.printf("Min1:\tpos:%d, id:%d, word:%text, parent:%d, code:%d\n", pos1, min1i, map.get(min1i), parentNode[min1i],
+			// System.out.printf("Min1:\tpos:%d, id:%d, word:%s, parent:%d, code:%d\n", pos1, min1i, map.get(min1i), parentNode[min1i],
 			// (int) binary[min1i]);
-			// System.out.printf("Min2:\tpos:%d, id:%d, word:%text, parent:%d, cdoe:%d\n", pos2, min2i, map.get(min2i), parentNode[min2i],
+			// System.out.printf("Min2:\tpos:%d, id:%d, word:%s, parent:%d, cdoe:%d\n", pos2, min2i, map.get(min2i), parentNode[min2i],
 			// (int) binary[min2i]);
 			// System.out.println();
 

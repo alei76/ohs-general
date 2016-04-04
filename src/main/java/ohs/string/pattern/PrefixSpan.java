@@ -300,7 +300,7 @@ public class PrefixSpan {
 
 			StringBuffer sb = new StringBuffer();
 
-			sb.append(String.format("%text\t%d\t", pat, recordIds.size()));
+			sb.append(String.format("%s\t%d\t", pat, recordIds.size()));
 
 			for (int j = 0; j < recordIds.size(); j++) {
 				sb.append(recordIds.get(j));

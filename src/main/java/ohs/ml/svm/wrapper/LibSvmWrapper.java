@@ -21,7 +21,7 @@ public class LibSvmWrapper implements Serializable {
 	private static final long serialVersionUID = -3273222430839071709L;
 
 	public static LibSvmWrapper read(String fileName) throws Exception {
-		System.out.printf("read [%text]\n", fileName);
+		System.out.printf("read [%s]\n", fileName);
 
 		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
 		Indexer<String> labelIndexer = FileUtils.readStrIndexer(ois);
@@ -240,7 +240,7 @@ public class LibSvmWrapper implements Serializable {
 	}
 
 	public void write(String fileName) throws Exception {
-		System.out.printf("write to [%text].\n", fileName);
+		System.out.printf("write to [%s].\n", fileName);
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 
 		FileUtils.writeStrIndexer(oos, labelIndexer);

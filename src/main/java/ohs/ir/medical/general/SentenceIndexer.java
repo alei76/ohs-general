@@ -47,7 +47,7 @@ public class SentenceIndexer {
 	}
 
 	public void index() throws Exception {
-		System.out.printf("index sentences in [%text] to [%text]\n", sentFileName, indexDirName);
+		System.out.printf("index sentences in [%s] to [%s]\n", sentFileName, indexDirName);
 
 		IndexWriter iw = DocumentIndexer.getIndexWriter(indexDirName);
 

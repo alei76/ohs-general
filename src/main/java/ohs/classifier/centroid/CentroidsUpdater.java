@@ -100,7 +100,7 @@ public class CentroidsUpdater {
 				int docLoc = docLocs.get(i);
 
 				if (printLog && (i + 1) % 10 == 0) {
-					System.out.printf("\r[%dth, %d/%d, %text]", iter + 1, i + 1, trainData.size(), stopWatch.stop());
+					System.out.printf("\r[%dth, %d/%d, %s]", iter + 1, i + 1, trainData.size(), stopWatch.stop());
 				}
 
 				SparseVector query = trainData.get(docLoc);
@@ -182,8 +182,8 @@ public class CentroidsUpdater {
 			double accuracy = num_correct / trainData.size();
 
 			if (printLog) {
-				System.out.printf("\r[%dth, %d/%d, %text]\n", iter + 1, trainData.size(), trainData.size(), stopWatch.stop());
-				System.out.printf("[accuracy: %text (%d/%d)]\n", nf.format(accuracy), (int) num_correct, trainData.size());
+				System.out.printf("\r[%dth, %d/%d, %s]\n", iter + 1, trainData.size(), trainData.size(), stopWatch.stop());
+				System.out.printf("[accuracy: %s (%d/%d)]\n", nf.format(accuracy), (int) num_correct, trainData.size());
 
 				evaluateTestData();
 			}

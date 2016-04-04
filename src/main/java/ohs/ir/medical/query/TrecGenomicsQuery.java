@@ -111,8 +111,8 @@ public class TrecGenomicsQuery implements BaseQuery {
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("qid:\t%text\n", id));
-		sb.append(String.format("description:\t%text\n", description));
+		sb.append(String.format("qid:\t%s\n", id));
+		sb.append(String.format("description:\t%s\n", description));
 		return sb.toString();
 	}
 }

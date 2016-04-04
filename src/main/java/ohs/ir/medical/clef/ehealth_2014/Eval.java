@@ -51,11 +51,11 @@ public class Eval {
 			sb.append(String.format("RUN%d", i + 1));
 
 			for (int j = 0; j < resForP10.length; j++) {
-				sb.append(String.format("\t%text", resForP10[j]));
+				sb.append(String.format("\t%s", resForP10[j]));
 			}
 
 			for (int j = 0; j < resForNDCG10.length; j++) {
-				sb.append(String.format("\t%text", resForNDCG10[j]));
+				sb.append(String.format("\t%s", resForNDCG10[j]));
 			}
 
 			if (i != 7) {

@@ -25,8 +25,8 @@ public class DataHandler {
 		DataHandler dh = new DataHandler();
 		// dh.mergeDumps();
 		// dh.tagPOS();
-		// dh.makeKeywordData();
-		dh.extractKeywordAbbreviations();
+		dh.makeKeywordData();
+		// dh.extractKeywordAbbreviations();
 
 		System.out.println("process ends.");
 	}
@@ -73,7 +73,7 @@ public class DataHandler {
 	}
 
 	public void makeKeywordData() throws Exception {
-		SetMap<String, String> keywordDocs = Generics.newSetMap();
+		SetMap<String, String> kwdToDocs = Generics.newSetMap();
 
 		TextFileReader reader = new TextFileReader(KPPath.SINGLE_DUMP_FILE);
 		reader.setPrintNexts(false);
@@ -129,16 +129,16 @@ public class DataHandler {
 						for (int j = 0; j < korKwds.size(); j++) {
 							String kor = korKwds.get(j);
 							String eng = engKwds.get(j);
-							keywordDocs.put(kor + "\t" + eng, cn);
+							kwdToDocs.put(String.format("\"%s\"\t\"%s\"", kor, eng), cn);
 						}
 					}
 				} else {
 					for (String kwd : korKwds) {
-						keywordDocs.put(kwd + "\t" + NONE, cn);
+						kwdToDocs.put(String.format("\"%s\"\t\"%s\"", kwd, ""), cn);
 					}
 
 					for (String kwd : engKwds) {
-						keywordDocs.put(NONE + "\t" + kwd, cn);
+						kwdToDocs.put(String.format("\"%s\"\t\"%s\"", "", kwd), cn);
 					}
 				}
 
@@ -148,7 +148,7 @@ public class DataHandler {
 		reader.printLast();
 		reader.close();
 
-		FileUtils.writeStrSetMap(KPPath.KEYWORD_DATA_FILE, keywordDocs);
+		FileUtils.writeStrSetMap(KPPath.KEYWORD_DATA_FILE, kwdToDocs);
 	}
 
 	public void extractKeywordPatterns() throws Exception {
@@ -224,7 +224,7 @@ public class DataHandler {
 
 				for (int k = 0; k < l.size(); k++) {
 					Pair<String, String> pair = l.get(k);
-					sb.append(String.format("%text%text%text", pair.getFirst().replace(" ", "_"), TaggedTextParser.DELIM_TAG,
+					sb.append(String.format("%s%s%s", pair.getFirst().replace(" ", "_"), TaggedTextParser.DELIM_TAG,
 							pair.getSecond()));
 					if (k != l.size() - 1) {
 						sb.append(TaggedTextParser.DELIM_SUBTOKEN);
@@ -313,18 +313,18 @@ public class DataHandler {
 					engKwdStr = StrUtils.join(";", engKwds);
 
 					List<String> res = Generics.newArrayList();
-					res.add(String.format("\"%text\"", type));
-					res.add(String.format("\"%text\"", cn));
-					res.add(String.format("\"%text\"", korKwdStr));
-					res.add(String.format("\"%text\"", engKwdStr));
-					res.add(String.format("\"%text\"", korTitle));
-					res.add(String.format("\"%text\"", engTitle));
-					res.add(String.format("\"%text\"", korAbs));
-					res.add(String.format("\"%text\"", engAbs));
+					res.add(String.format("\"%s\"", type));
+					res.add(String.format("\"%s\"", cn));
+					res.add(String.format("\"%s\"", korKwdStr));
+					res.add(String.format("\"%s\"", engKwdStr));
+					res.add(String.format("\"%s\"", korTitle));
+					res.add(String.format("\"%s\"", engTitle));
+					res.add(String.format("\"%s\"", korAbs));
+					res.add(String.format("\"%s\"", engAbs));
 
 					String output = StrUtils.join("\t", res);
 
-					writer.write(String.format("\n%text", output));
+					writer.write(String.format("\n%s", output));
 				}
 			}
 			reader.close();
@@ -413,7 +413,7 @@ public class DataHandler {
 				parts[6] = getText(komoran.analyze(korAbs, 1));
 
 				for (int i = 0; i < parts.length; i++) {
-					parts[i] = String.format("\"%text\"", parts[i]);
+					parts[i] = String.format("\"%s\"", parts[i]);
 				}
 				writer.write("\n" + StrUtils.join("\t", parts));
 

@@ -54,7 +54,7 @@ public class OrganizationDetector {
 
 			StringBuffer sb = new StringBuffer();
 			sb.append("[Input]\n");
-			sb.append(String.format("%text\n", orgName));
+			sb.append(String.format("%s\n", orgName));
 			sb.append("[Output]\n");
 
 			for (int i = 0; i < res.length; i++) {
@@ -154,7 +154,7 @@ public class OrganizationDetector {
 
 		if (m.find()) {
 			for (int i = 0; i <= m.groupCount(); i++) {
-				// sb.append(String.format("%d\t%text\n", i, m.group(i)));
+				// sb.append(String.format("%d\t%s\n", i, m.group(i)));
 
 				if (i == 0 || m.group(i) == null) {
 					continue;

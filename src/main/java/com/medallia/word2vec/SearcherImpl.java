@@ -30,7 +30,7 @@ class SearcherImpl implements Searcher {
 
 		@Override
 		public String toString() {
-			return String.format("%text [%text]", first, second);
+			return String.format("%s [%s]", first, second);
 		}
 	}
 

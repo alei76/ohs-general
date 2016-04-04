@@ -122,7 +122,7 @@ public class ESADocumentScorer {
 	private SparseVector getModel(Counter<String> wordCounts) {
 		SparseVector ret = VectorUtils.toSparseVector(wordCounts, wordIndexer);
 		ret.normalize();
-		System.out.printf("Model:\t%text\n", VectorUtils.toCounter(ret, wordIndexer));
+		System.out.printf("Model:\t%s\n", VectorUtils.toCounter(ret, wordIndexer));
 		return ret;
 	}
 
@@ -138,9 +138,9 @@ public class ESADocumentScorer {
 		SparseVector categoryWeights4Query = esm.getCategoryWeights(conceptWeights4Query);
 
 		// System.out.println("[Query]");
-		// System.out.printf("Word Weights:\t%text\n", VectorUtils.toCounter(wordWeights4Query, esm.getWordIndexer()));
-		// System.out.printf("Concept Weights:\t%text\n", VectorUtils.toCounter(conceptWeights4Query, esm.getConceptIndexer()));
-		// System.out.printf("Category Weights:\t%text\n", VectorUtils.toCounter(categoryWeights4Query, esm.getCategoryIndexer()));
+		// System.out.printf("Word Weights:\t%s\n", VectorUtils.toCounter(wordWeights4Query, esm.getWordIndexer()));
+		// System.out.printf("Concept Weights:\t%s\n", VectorUtils.toCounter(conceptWeights4Query, esm.getConceptIndexer()));
+		// System.out.printf("Category Weights:\t%s\n", VectorUtils.toCounter(categoryWeights4Query, esm.getCategoryIndexer()));
 		// System.out.println();
 
 		SparseMatrix docWordCounts = getDocumentWordCounts(docScores);
@@ -155,9 +155,9 @@ public class ESADocumentScorer {
 			SparseVector categoryWeights4Document = esm.getCategoryWeights(conceptWeights4Document);
 
 			// System.out.printf("[KDocument %d]\n", i + 1);
-			// System.out.printf("Word Weights:\t%text\n", VectorUtils.toCounter(wordWeights4Document, esm.getWordIndexer()));
-			// System.out.printf("Concept Weights:\t%text\n", VectorUtils.toCounter(conceptWeights4Document, esm.getConceptIndexer()));
-			// System.out.printf("Category Weights:\t%text\n", VectorUtils.toCounter(categoryWeights4Document, esm.getCategoryIndexer()));
+			// System.out.printf("Word Weights:\t%s\n", VectorUtils.toCounter(wordWeights4Document, esm.getWordIndexer()));
+			// System.out.printf("Concept Weights:\t%s\n", VectorUtils.toCounter(conceptWeights4Document, esm.getConceptIndexer()));
+			// System.out.printf("Category Weights:\t%s\n", VectorUtils.toCounter(categoryWeights4Document, esm.getCategoryIndexer()));
 			// System.out.println();
 
 			double wordCosine = VectorMath.cosine(wordWeights4Query, wordWeights4Document, false);
@@ -193,7 +193,7 @@ public class ESADocumentScorer {
 		}
 		ret.normalize();
 
-		System.out.printf("Update Model:\t%text\n\n", VectorUtils.toCounter(ret, wordIndexer));
+		System.out.printf("Update Model:\t%s\n\n", VectorUtils.toCounter(ret, wordIndexer));
 		return VectorUtils.toSparseVector(ret);
 	}
 }

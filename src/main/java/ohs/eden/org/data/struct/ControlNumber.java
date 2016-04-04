@@ -62,8 +62,8 @@ public class ControlNumber implements Serializable {
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("CN1 = %text\n", cn1));
-		sb.append(String.format("CN2 = %text\n", cn2));
+		sb.append(String.format("CN1 = %s\n", cn1));
+		sb.append(String.format("CN2 = %s\n", cn2));
 		return sb.toString();
 	}
 

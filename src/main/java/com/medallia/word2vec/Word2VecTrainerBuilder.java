@@ -180,7 +180,7 @@ public class Word2VecTrainerBuilder {
 		this.listener = MoreObjects.firstNonNull(listener, new TrainingProgressListener() {
 			@Override
 			public void update(Stage stage, double progress) {
-				System.out.println(String.format("Stage %text, progress %text%%", stage, progress));
+				System.out.println(String.format("Stage %s, progress %s%%", stage, progress));
 			}
 		});
 

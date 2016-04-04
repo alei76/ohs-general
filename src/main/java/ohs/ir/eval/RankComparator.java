@@ -41,7 +41,7 @@ public class RankComparator {
 				}
 			}
 
-			sb.append(String.format("\n%d\t%d\t%d\t%d\t%d\t%text", docId, (int) relevance, rank1, rank2, change, effect));
+			sb.append(String.format("\n%d\t%d\t%d\t%d\t%d\t%s", docId, (int) relevance, rank1, rank2, change, effect));
 		}
 
 		sb.append(String.format("\nPOSs:\t%d", num_poss));

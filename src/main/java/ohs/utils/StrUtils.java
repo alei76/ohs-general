@@ -99,11 +99,11 @@ public class StrUtils {
 		return ret;
 	}
 
-	public static String[] enclose(Object[] s) {
+	public static String[] enclose(String[] s) {
 		return enclose(s, "\"", "\"");
 	}
 
-	public static String[] enclose(Object[] s, String open, String close) {
+	public static String[] enclose(String[] s, String open, String close) {
 		String[] ret = new String[s.length];
 		for (int i = 0; i < s.length; i++) {
 			ret[i] = String.format("%s%s%s", open, s[i], close);
@@ -393,7 +393,7 @@ public class StrUtils {
 		StringBuffer sb = new StringBuffer();
 		if (vertical) {
 			for (int k = 0; k < s.length(); k++) {
-				sb.append(String.format("%d:\t%c\t%text", k, s.charAt(k), i == k ? "#" : ""));
+				sb.append(String.format("%d:\t%c\t%s", k, s.charAt(k), i == k ? "#" : ""));
 				if (k != s.length() - 1) {
 					sb.append("\n");
 				}
@@ -521,7 +521,7 @@ public class StrUtils {
 			} else if (g.equals("&amp;")) {
 				r = "&";
 			} else {
-				// System.out.printf("[ %text ]\n", g);
+				// System.out.printf("[ %s ]\n", g);
 			}
 
 			m.appendReplacement(sb, r);
@@ -655,7 +655,7 @@ public class StrUtils {
 	public static String[] surround(String[] array, String prefix, String suffix) {
 		String[] ret = new String[array.length];
 		for (int i = 0; i < array.length; i++) {
-			ret[i] = String.format("%text%text%text", prefix, array[i], suffix);
+			ret[i] = String.format("%s%s%s", prefix, array[i], suffix);
 		}
 		return ret;
 	}
@@ -663,12 +663,12 @@ public class StrUtils {
 	public static String tag(String text, Collection<String> targets, String tagName) throws Exception {
 		StringBuffer sb = new StringBuffer();
 
-		Pattern p = Pattern.compile(String.format("(%text)", String.join("|", targets)), Pattern.CASE_INSENSITIVE);
+		Pattern p = Pattern.compile(String.format("(%s)", String.join("|", targets)), Pattern.CASE_INSENSITIVE);
 		Matcher m = p.matcher(text);
 
 		while (m.find()) {
 			String g = m.group();
-			m.appendReplacement(sb, String.format("<%text>%text</%text>", tagName, g, tagName));
+			m.appendReplacement(sb, String.format("<%s>%s</%s>", tagName, g, tagName));
 		}
 		m.appendTail(sb);
 		return sb.toString();
@@ -772,7 +772,7 @@ public class StrUtils {
 		for (int i = 0; i < keys.size(); i++) {
 			String key = keys.get(i);
 			double value = counter.getCount(key);
-			sb.append(String.format("%text:%text", key.toString(), nf.format(value)));
+			sb.append(String.format("%s:%s", key.toString(), nf.format(value)));
 
 			if (i != keys.size() - 1) {
 				sb.append(delim);

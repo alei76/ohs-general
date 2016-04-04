@@ -54,7 +54,7 @@ public class ClefEHealthDumper extends TextDumper {
 
 	@Override
 	public void dump() throws Exception {
-		System.out.printf("dump from [%text]\n", inputDirName);
+		System.out.printf("dump from [%s]\n", inputDirName);
 
 		TextFileWriter writer = new TextFileWriter(outputFileName);
 
@@ -127,7 +127,7 @@ public class ClefEHealthDumper extends TextDumper {
 
 						Document doc = Jsoup.parse(html);
 						String content = doc.text();
-						String output = String.format("%text\t%text\t%text\t%text", uid, date, url, content.replaceAll("\n", "\\n"));
+						String output = String.format("%s\t%s\t%s\t%s", uid, date, url, content.replaceAll("\n", "\\n"));
 
 						writer.write(output + "\n");
 
@@ -137,7 +137,7 @@ public class ClefEHealthDumper extends TextDumper {
 					}
 				}
 
-				System.out.printf("read [%d] docs from [%text]\n", num_docs_in_file, ze.getName());
+				System.out.printf("read [%d] docs from [%s]\n", num_docs_in_file, ze.getName());
 			}
 
 			br.close();
@@ -145,7 +145,7 @@ public class ClefEHealthDumper extends TextDumper {
 
 		writer.close();
 
-		System.out.printf("read [%d] docs from [%text]\n", num_docs_in_coll, inputDirName);
+		System.out.printf("read [%d] docs from [%s]\n", num_docs_in_coll, inputDirName);
 	}
 
 	public void readVisitedDocs(String fileName) {

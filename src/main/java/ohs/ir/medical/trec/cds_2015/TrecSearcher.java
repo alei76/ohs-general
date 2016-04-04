@@ -88,7 +88,7 @@ public class TrecSearcher {
 			double map = Double.parseDouble(lines.get(8).split("\t")[1]);
 			double ndcg = Double.parseDouble(lines.get(9).split("\t")[1]);
 
-			String output = String.format("%text\t%d\t%f\t%f\t%f\t%f\t%d\t%d\t%f\t%f\t%f",
+			String output = String.format("%s\t%d\t%f\t%f\t%f\t%f\t%d\t%d\t%f\t%f\t%f",
 
 					modelName, num_fb_iters, mixture_for_fb_model, mixtures_for_field_rms[0], mixtures_for_field_rms[1],
 					mixtures_for_field_rms[2],
@@ -190,12 +190,12 @@ public class TrecSearcher {
 					double score = docScores.getCount(docId);
 					int rank = j + 1;
 
-					sb.append(String.format("%text\t%text\t%text\t%d\t%text\t%text\n", qId, "Q0", docId, rank, score, runId));
+					sb.append(String.format("%s\t%s\t%s\t%d\t%s\t%s\n", qId, "Q0", docId, rank, score, runId));
 				}
 
 			}
 
-			String outputFileName = String.format("%text.txt", runId);
+			String outputFileName = String.format("%s.txt", runId);
 			File outputFile = new File(MIRPath.TREC_CDS_OUTPUT_DIR + "/result-2015-submit", outputFileName);
 			FileUtils.write(outputFile.getPath(), sb.toString().trim());
 
@@ -247,7 +247,7 @@ public class TrecSearcher {
 		{
 			StringBuffer sb = new StringBuffer("kld_fb");
 			sb.append(String.format("_%d", num_fb_iters));
-			sb.append(String.format("_%text", mixture_for_fb_model + ""));
+			sb.append(String.format("_%s", mixture_for_fb_model + ""));
 
 			for (int i = 0; i < mixtures_for_field_rms.length; i++) {
 				sb.append(String.format("_%d", (int) mixtures_for_field_rms[i]));
@@ -316,13 +316,13 @@ public class TrecSearcher {
 			docScores = kldScorer.score(wcb, expQueryModel);
 
 			// System.out.println(bq);
-			// System.out.printf("QM1:\t%text\n", VectorUtils.toCounter(queryModel, wordIndexer));
-			// System.out.printf("QM2:\t%text\n", VectorUtils.toCounter(expQueryModel, wordIndexer));
-			// System.out.printf("RM1:\t%text\n", VectorUtils.toCounter(rm1, wordIndexer));
-			// System.out.printf("RM2:\t%text\n", VectorUtils.toCounter(rm2, wordIndexer));
-			// System.out.printf("RM3:\t%text\n", VectorUtils.toCounter(rm3, wordIndexer));
-			// System.out.printf("RM4:\t%text\n", VectorUtils.toCounter(rm4, wordIndexer));
-			// System.out.printf("RM:\t%text\n", VectorUtils.toCounter(rm, wordIndexer));
+			// System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(queryModel, wordIndexer));
+			// System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(expQueryModel, wordIndexer));
+			// System.out.printf("RM1:\t%s\n", VectorUtils.toCounter(rm1, wordIndexer));
+			// System.out.printf("RM2:\t%s\n", VectorUtils.toCounter(rm2, wordIndexer));
+			// System.out.printf("RM3:\t%s\n", VectorUtils.toCounter(rm3, wordIndexer));
+			// System.out.printf("RM4:\t%s\n", VectorUtils.toCounter(rm4, wordIndexer));
+			// System.out.printf("RM:\t%s\n", VectorUtils.toCounter(rm, wordIndexer));
 			// System.out.println();
 
 			SearcherUtils.write(writer, bq.getId(), docScores);
@@ -373,9 +373,9 @@ public class TrecSearcher {
 
 		String resultFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + String.format("cbeem.txt");
 		// String logFileName = logDirName
-		// + String.format("cbeem_%text.txt", hyperParameter.toString(true));
+		// + String.format("cbeem_%s.txt", hyperParameter.toString(true));
 
-		System.out.printf("process for [%text].\n", resultFileName);
+		System.out.printf("process for [%s].\n", resultFileName);
 
 		TrecCbeemDocumentSearcher ds = new TrecCbeemDocumentSearcher(indexSearchers, docPriorData, hyperParameter, analyzer, false);
 		ds.search(0, bqs, null, resultFileName, null);
@@ -458,8 +458,8 @@ public class TrecSearcher {
 			docScores = kldScorer.score(wcb, expQLM);
 
 			System.out.println(bq);
-			System.out.printf("QM1:\t%text\n", VectorUtils.toCounter(qLM, wordIndexer));
-			System.out.printf("QM2:\t%text\n", VectorUtils.toCounter(expQLM, wordIndexer));
+			System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(qLM, wordIndexer));
+			System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(expQLM, wordIndexer));
 
 			SearcherUtils.write(writer, bq.getId(), docScores);
 		}
@@ -567,13 +567,13 @@ public class TrecSearcher {
 			docScores = kldScorer.score(wcb, expQueryModel);
 
 			System.out.println(bq);
-			System.out.printf("QM1:\t%text\n", VectorUtils.toCounter(queryModel, wordIndexer));
-			System.out.printf("QM2:\t%text\n", VectorUtils.toCounter(expQueryModel, wordIndexer));
-			// System.out.printf("RM1:\t%text\n", VectorUtils.toCounter(rm1, wordIndexer));
-			// System.out.printf("RM2:\t%text\n", VectorUtils.toCounter(rm2, wordIndexer));
-			// System.out.printf("RM3:\t%text\n", VectorUtils.toCounter(rm3, wordIndexer));
-			// System.out.printf("RM4:\t%text\n", VectorUtils.toCounter(rm4, wordIndexer));
-			// System.out.printf("RM:\t%text\n", VectorUtils.toCounter(rm, wordIndexer));
+			System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(queryModel, wordIndexer));
+			System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(expQueryModel, wordIndexer));
+			// System.out.printf("RM1:\t%s\n", VectorUtils.toCounter(rm1, wordIndexer));
+			// System.out.printf("RM2:\t%s\n", VectorUtils.toCounter(rm2, wordIndexer));
+			// System.out.printf("RM3:\t%s\n", VectorUtils.toCounter(rm3, wordIndexer));
+			// System.out.printf("RM4:\t%s\n", VectorUtils.toCounter(rm4, wordIndexer));
+			// System.out.printf("RM:\t%s\n", VectorUtils.toCounter(rm, wordIndexer));
 			// System.out.println();
 
 			SearcherUtils.write(writer, bq.getId(), docScores);
@@ -692,14 +692,14 @@ public class TrecSearcher {
 			docScores = kldScorer.score(wcb, expQueryModel);
 
 			System.out.println(bq);
-			System.out.printf("QM1:\t%text\n", VectorUtils.toCounter(queryModel, wordIndexer));
-			System.out.printf("QM2:\t%text\n", VectorUtils.toCounter(expQueryModel, wordIndexer));
+			System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(queryModel, wordIndexer));
+			System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(expQueryModel, wordIndexer));
 			// System.out.println(rmb.getLogBuffer().toString());
-			// System.out.printf("RM1:\t%text\n", VectorUtils.toCounter(rm1, wordIndexer));
-			// System.out.printf("RM2:\t%text\n", VectorUtils.toCounter(rm2, wordIndexer));
-			// System.out.printf("RM3:\t%text\n", VectorUtils.toCounter(rm3, wordIndexer));
-			// System.out.printf("RM4:\t%text\n", VectorUtils.toCounter(rm4, wordIndexer));
-			// System.out.printf("RM:\t%text\n", VectorUtils.toCounter(rm, wordIndexer));
+			// System.out.printf("RM1:\t%s\n", VectorUtils.toCounter(rm1, wordIndexer));
+			// System.out.printf("RM2:\t%s\n", VectorUtils.toCounter(rm2, wordIndexer));
+			// System.out.printf("RM3:\t%s\n", VectorUtils.toCounter(rm3, wordIndexer));
+			// System.out.printf("RM4:\t%s\n", VectorUtils.toCounter(rm4, wordIndexer));
+			// System.out.printf("RM:\t%s\n", VectorUtils.toCounter(rm, wordIndexer));
 			// System.out.println();
 
 			SearcherUtils.write(writer, bq.getId(), docScores);

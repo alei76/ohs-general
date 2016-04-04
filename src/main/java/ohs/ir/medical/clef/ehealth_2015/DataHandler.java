@@ -49,8 +49,8 @@ public class DataHandler {
 		for (int i = 0; i < indexSearchers.length; i++) {
 			IndexSearcher indexSearcher = indexSearchers[i];
 			String collName = collNames[i];
-			String dataFileName = MIRPath.CLEF_EHEALTH_OUTPUT_RESULT_2015_INIT_DIR + String.format("%text.txt", collName);
-			String outputFileName = MIRPath.CLEF_EHEALTH_OUTPUT_RESULT_2015_QUERY_DOC_DIR + String.format("%text.txt", collName);
+			String dataFileName = MIRPath.CLEF_EHEALTH_OUTPUT_RESULT_2015_INIT_DIR + String.format("%s.txt", collName);
+			String outputFileName = MIRPath.CLEF_EHEALTH_OUTPUT_RESULT_2015_QUERY_DOC_DIR + String.format("%s.txt", collName);
 
 			CounterMap<String, String> queryDocScores = new CounterMap<String, String>();
 
@@ -73,7 +73,7 @@ public class DataHandler {
 				List<String> docIds = docScores.getSortedKeys();
 
 				StringBuffer sb = new StringBuffer();
-				sb.append(String.format("Query-%d\n%text\n", j + 1, bq.toString()));
+				sb.append(String.format("Query-%d\n%s\n", j + 1, bq.toString()));
 
 				for (int k = 0; k < docIds.size() && k < 20; k++) {
 					String docId = docIds.get(k);
@@ -86,7 +86,7 @@ public class DataHandler {
 						content = "";
 					}
 
-					sb.append(String.format("KDocument-%d: %f\n%text\n%text\n", k + 1, docScores.getCount(docId), title, content));
+					sb.append(String.format("KDocument-%d: %f\n%s\n%s\n", k + 1, docScores.getCount(docId), title, content));
 				}
 
 				writer.write(sb.toString().trim() + "\n\n");
@@ -117,7 +117,7 @@ public class DataHandler {
 			List<String> docIds = docRelevances.getSortedKeys();
 
 			StringBuffer sb = new StringBuffer();
-			sb.append(String.format("Query-%d\n%text\n", j + 1, bq.toString()));
+			sb.append(String.format("Query-%d\n%s\n", j + 1, bq.toString()));
 
 			for (int k = 0; k < docIds.size() && k < 20; k++) {
 				String docId = docIds.get(k);
@@ -126,7 +126,7 @@ public class DataHandler {
 				String title = doc.get(CommonFieldNames.TITLE);
 				String content = doc.get(CommonFieldNames.CONTENT);
 				content = StrUtils.join("\n", NLPUtils.tokenize(content));
-				sb.append(String.format("KDocument-%d: %f\n%text\n%text\n", k + 1, docRelevances.getCount(docId), title, content));
+				sb.append(String.format("KDocument-%d: %f\n%s\n%s\n", k + 1, docRelevances.getCount(docId), title, content));
 			}
 
 			writer.write(sb.toString().trim() + "\n\n");

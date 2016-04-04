@@ -50,9 +50,9 @@ public class OrganizationNormalizer {
 			if (!orgName.equals(orgName2)) {
 				StringBuffer sb = new StringBuffer();
 				sb.append("[Input]\n");
-				sb.append(String.format("%text\n", orgName));
+				sb.append(String.format("%s\n", orgName));
 				sb.append("[Output]\n");
-				sb.append(String.format("%text\n", orgName2));
+				sb.append(String.format("%s\n", orgName2));
 				System.out.println(sb.toString());
 			}
 
@@ -143,7 +143,7 @@ public class OrganizationNormalizer {
 	}
 
 	public void read(String fileName) {
-		System.out.printf("read abbreviation patterns from [%text].\n", fileName);
+		System.out.printf("read abbreviation patterns from [%s].\n", fileName);
 
 		engAbbrs = new TreeMap<String, String>();
 

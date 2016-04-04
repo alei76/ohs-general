@@ -49,7 +49,7 @@ public class TestDataGenerater {
 				}
 
 				if (++num_orgs % 100 == 0) {
-					System.out.printf("\r[%d, %text]", num_orgs, stopWatch.stop());
+					System.out.printf("\r[%d, %s]", num_orgs, stopWatch.stop());
 				}
 
 				Counter<Organization> ret = oik.identify(orgName);
@@ -60,8 +60,8 @@ public class TestDataGenerater {
 				sb.append(++num_docs);
 				sb.append("\nPAPER");
 				sb.append("\nINPUT:");
-				sb.append(String.format("\nKorean\t%text", orgName.getKorean()));
-				sb.append(String.format("\nEnglish\t%text", orgName.getEnglish()));
+				sb.append(String.format("\nKorean\t%s", orgName.getKorean()));
+				sb.append(String.format("\nEnglish\t%s", orgName.getEnglish()));
 				sb.append("\nOUTPUT:");
 				sb.append("\nNo\tID\tKorean\tEnglish\tScore\tSystem\tHuman");
 
@@ -77,14 +77,14 @@ public class TestDataGenerater {
 					}
 
 					double score = ret.getCount(org);
-					String output = String.format("\n%d\t%d\t%text\t%text\t%text\t%text\t", i + 1, org.getId(), org.getName().getKorean(),
+					String output = String.format("\n%d\t%d\t%s\t%s\t%s\t%s\t", i + 1, org.getId(), org.getName().getKorean(),
 							org.getName().getEnglish(), nf.format(score), matched ? "1" : "");
 					sb.append(output);
 				}
 
 				writer.write(sb.toString() + "\n\n");
 			}
-			System.out.printf("\r[%d, %text]\n", num_orgs, stopWatch.stop());
+			System.out.printf("\r[%d, %s]\n", num_orgs, stopWatch.stop());
 		}
 
 		{
@@ -127,8 +127,8 @@ public class TestDataGenerater {
 				sb.append(++num_docs);
 				sb.append("\nPATENT");
 				sb.append("\nINPUT:");
-				sb.append(String.format("\nKorean\t%text", orgName.getKorean()));
-				sb.append(String.format("\nEnglish\t%text", orgName.getEnglish()));
+				sb.append(String.format("\nKorean\t%s", orgName.getKorean()));
+				sb.append(String.format("\nEnglish\t%s", orgName.getEnglish()));
 				sb.append("\nNo\tID\tKorean\tEnglish\tScore\tSystem\tHuman");
 
 				boolean hasMatch = false;
@@ -143,7 +143,7 @@ public class TestDataGenerater {
 						hasMatch = true;
 					}
 
-					String output = String.format("\n%d\t%d\t%text\t%text\t%text\t%text\t", i + 1, org.getId(), org.getName().getKorean(),
+					String output = String.format("\n%d\t%d\t%s\t%s\t%s\t%s\t", i + 1, org.getId(), org.getName().getKorean(),
 							org.getName().getEnglish(), nf.format(score), matched ? "1" : "");
 					sb.append(output);
 				}

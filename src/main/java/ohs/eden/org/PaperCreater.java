@@ -74,18 +74,18 @@ public class PaperCreater {
 
 		if (isValid) {
 			// System.out.printf("##Valid\n", num_kor_names, korNameStr);
-			// System.out.printf("KOR:\t%d\t%text\n", num_kor_names, korNameStr);
-			// System.out.printf("ENG:\t%d\t%text\n", num_eng_names, engNameStr);
-			// System.out.printf("KOR:\t%d\t%text\n", num_kor_orgs, korOrgStr);
-			// System.out.printf("ENG:\t%d\t%text\n", num_eng_orgs, engOrgStr);
-			// System.out.printf("EML:\t%d\t%text\n", num_emails, emailStr);
+			// System.out.printf("KOR:\t%d\t%s\n", num_kor_names, korNameStr);
+			// System.out.printf("ENG:\t%d\t%s\n", num_eng_names, engNameStr);
+			// System.out.printf("KOR:\t%d\t%s\n", num_kor_orgs, korOrgStr);
+			// System.out.printf("ENG:\t%d\t%s\n", num_eng_orgs, engOrgStr);
+			// System.out.printf("EML:\t%d\t%s\n", num_emails, emailStr);
 			// System.out.println();
 		} else {
 			// System.out.printf("@@Invalid\n", num_kor_names, korNameStr);
-			// System.out.printf("KOR:\t%d\t%text\n", num_kor_names, korNameStr);
-			// System.out.printf("ENG:\t%d\t%text\n", num_eng_names, engNameStr);
-			// System.out.printf("KOR:\t%d\t%text\n", num_kor_orgs, korOrgStr);
-			// System.out.printf("EML:\t%d\t%text\n", num_emails, emailStr);
+			// System.out.printf("KOR:\t%d\t%s\n", num_kor_names, korNameStr);
+			// System.out.printf("ENG:\t%d\t%s\n", num_eng_names, engNameStr);
+			// System.out.printf("KOR:\t%d\t%s\n", num_kor_orgs, korOrgStr);
+			// System.out.printf("EML:\t%d\t%s\n", num_emails, emailStr);
 			// System.out.println();
 		}
 

@@ -80,7 +80,7 @@ public class ProximityRelevanceModelBuilder {
 			// for (int j = 0; j < words.size(); j++) {
 			// int w = words.get(j);
 			// String word = wordIndexer.getObject(w);
-			// System.out.printf("%d, %text\n", j, word);
+			// System.out.printf("%d, %s\n", j, word);
 			// }
 
 			CounterMap<Integer, Integer> cm = new CounterMap<Integer, Integer>();
@@ -92,7 +92,7 @@ public class ProximityRelevanceModelBuilder {
 
 				if (makeLog) {
 					StringBuffer sb = new StringBuffer();
-					sb.append(String.format("QWord:\t%text\n", wordIndexer.getObject(qw)));
+					sb.append(String.format("QWord:\t%s\n", wordIndexer.getObject(qw)));
 				}
 
 				for (int k = 0; k < locs.size(); k++) {
@@ -119,9 +119,9 @@ public class ProximityRelevanceModelBuilder {
 						if (makeLog) {
 							String cWord = wordIndexer.getObject(cw);
 							if (context_loc == current_loc) {
-								logBuf.append(String.format("CWord at [%d, %d]:\t%text (#)\n", context_loc, current_loc, cWord));
+								logBuf.append(String.format("CWord at [%d, %d]:\t%s (#)\n", context_loc, current_loc, cWord));
 							} else {
-								logBuf.append(String.format("CWord at [%d, %d]:\t%text\n", context_loc, current_loc, cWord));
+								logBuf.append(String.format("CWord at [%d, %d]:\t%s\n", context_loc, current_loc, cWord));
 							}
 						}
 
@@ -226,9 +226,9 @@ public class ProximityRelevanceModelBuilder {
 				if (wordToWordProxes != null) {
 					SparseVector wordProxes = wordToWordProxes.rowAlways(w);
 					// SparseVector wordProxes = fbWordToWordProxes.rowAlways(w);
-					// System.out.printf("%d\t%text\t%f\t%text\n", docId, wordIndexer.getObject(w), wordProxes.sum(),
+					// System.out.printf("%d\t%s\t%f\t%s\n", docId, wordIndexer.getObject(w), wordProxes.sum(),
 					// VectorUtils.toCounter(wordProxes, wordIndexer));
-					// System.out.printf("%d\t%text\t%f\t%text\n", docId, wordIndexer.getObject(w), wordProxes2.sum(),
+					// System.out.printf("%d\t%s\t%f\t%s\n", docId, wordIndexer.getObject(w), wordProxes2.sum(),
 					// VectorUtils.toCounter(wordProxes2, wordIndexer));
 					// System.out.println();
 					if (wordProxes.size() > 0) {

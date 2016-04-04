@@ -106,7 +106,7 @@ public class QCDocumentScorer {
 	private SparseVector getModel(Counter<String> wordCounts) {
 		SparseVector ret = VectorUtils.toSparseVector(wordCounts, wordIndexer);
 		ret.normalize();
-		System.out.printf("Model:\t%text\n", VectorUtils.toCounter(ret, wordIndexer));
+		System.out.printf("Model:\t%s\n", VectorUtils.toCounter(ret, wordIndexer));
 		return ret;
 	}
 

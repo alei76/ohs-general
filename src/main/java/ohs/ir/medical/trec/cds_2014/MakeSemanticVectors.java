@@ -242,7 +242,7 @@ public class MakeSemanticVectors {
 
 				for (String doc : docWeights.getSortedKeys()) {
 					double weight = docWeights.getCount(doc);
-					sb.append(String.format("\t%text:%text", doc, nf.format(weight)));
+					sb.append(String.format("\t%s:%s", doc, nf.format(weight)));
 				}
 
 				writer.write(sb.toString() + "\n");

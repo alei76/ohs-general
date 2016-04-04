@@ -88,7 +88,7 @@ public class SentenceGenerator {
 				String sent = parts[2];
 				List<String> words = AnalyzerUtils.getWords(sent, analyzer);
 				sent = StrUtils.join(" ", words);
-				String output = String.format("%text\t%text\t%text", docId, no, sent);
+				String output = String.format("%s\t%s\t%s", docId, no, sent);
 				writer.write(output + "\n");
 			}
 			reader.close();
@@ -118,7 +118,7 @@ public class SentenceGenerator {
 			sents.addAll(NLPUtils.tokenize(content));
 
 			for (int i = 0; i < sents.size(); i++) {
-				String output = String.format("%text\t%d\t%text", uid, i, sents.get(i));
+				String output = String.format("%s\t%d\t%s", uid, i, sents.get(i));
 				writer.write(output + "\n");
 			}
 		}
@@ -164,7 +164,7 @@ public class SentenceGenerator {
 			List<String> sents = NLPUtils.tokenize(abs);
 
 			for (int i = 0; i < sents.size(); i++) {
-				String output = String.format("%text\t%d\t%text", medlineId, i, sents.get(i));
+				String output = String.format("%s\t%d\t%s", medlineId, i, sents.get(i));
 				writer.write(output + "\n");
 			}
 
@@ -210,7 +210,7 @@ public class SentenceGenerator {
 			sents.addAll(NLPUtils.tokenize(content.replace("<NL>", "\n")));
 
 			for (int i = 0; i < sents.size(); i++) {
-				String output = String.format("%text\t%d\t%text", pmcId, i, sents.get(i));
+				String output = String.format("%s\t%d\t%s", pmcId, i, sents.get(i));
 				writer.write(output + "\n");
 			}
 		}
@@ -243,7 +243,7 @@ public class SentenceGenerator {
 			sents.addAll(NLPUtils.tokenize(content));
 
 			for (int i = 0; i < sents.size(); i++) {
-				String output = String.format("%text\t%d\t%text", id, i, sents.get(i));
+				String output = String.format("%s\t%d\t%s", id, i, sents.get(i));
 				writer.write(output + "\n");
 			}
 		}

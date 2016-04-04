@@ -153,10 +153,10 @@ public class CDSQuery {
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("id:\t%text\n", id));
-		sb.append(String.format("type:\t%text\n", type));
-		sb.append(String.format("description:\t%text\n", description));
-		sb.append(String.format("summary:\t%text\n", summary));
+		sb.append(String.format("id:\t%s\n", id));
+		sb.append(String.format("type:\t%s\n", type));
+		sb.append(String.format("description:\t%s\n", description));
+		sb.append(String.format("summary:\t%s\n", summary));
 		return sb.toString();
 	}
 }

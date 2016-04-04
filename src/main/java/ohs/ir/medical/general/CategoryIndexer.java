@@ -72,7 +72,7 @@ public class CategoryIndexer {
 			String cat = cats.get(i);
 
 			if (i % 10 == 0) {
-				System.out.printf("\r[%d/%d, %text]", i, cats.size(), stopWatch.stop());
+				System.out.printf("\r[%d/%d, %s]", i, cats.size(), stopWatch.stop());
 			}
 
 			StringBuffer sb1 = new StringBuffer();
@@ -89,7 +89,7 @@ public class CategoryIndexer {
 				String title = doc.getField(CommonFieldNames.TITLE).stringValue();
 				String text = doc.getField(CommonFieldNames.CONTENT).stringValue();
 
-				sb1.append(String.format("%text\n%text\n\n", title, text));
+				sb1.append(String.format("%s\n%s\n\n", title, text));
 				sb2.append(indexId + " ");
 			}
 
@@ -100,7 +100,7 @@ public class CategoryIndexer {
 
 			indexWriter.addDocument(doc);
 		}
-		System.out.printf("\r[%d/%d, %text]\n", cats.size(), cats.size(), stopWatch.stop());
+		System.out.printf("\r[%d/%d, %s]\n", cats.size(), cats.size(), stopWatch.stop());
 		indexWriter.close();
 		indexReader.close();
 	}
@@ -115,7 +115,7 @@ public class CategoryIndexer {
 
 		for (int i = 0; i < indexReader.maxDoc(); i++) {
 			if (i % 100000 == 0) {
-				System.out.printf("\r[%d/%d, %text]", i, indexReader.maxDoc(), stopWatch.stop());
+				System.out.printf("\r[%d/%d, %s]", i, indexReader.maxDoc(), stopWatch.stop());
 			}
 			Document doc = indexReader.document(i);
 			String docId = doc.getField(CommonFieldNames.DOCUMENT_ID).stringValue();
@@ -126,11 +126,11 @@ public class CategoryIndexer {
 			for (String cat : catText.split("\n")) {
 				cat = cat.trim();
 				if (cat.length() > 0) {
-					writer.write(String.format("%text\t%d\n", cat, i));
+					writer.write(String.format("%s\t%d\n", cat, i));
 				}
 			}
 		}
-		System.out.printf("\r[%d/%d, %text]\n", indexReader.maxDoc(), indexReader.maxDoc(), stopWatch.stop());
+		System.out.printf("\r[%d/%d, %s]\n", indexReader.maxDoc(), indexReader.maxDoc(), stopWatch.stop());
 		writer.close();
 		indexReader.close();
 	}

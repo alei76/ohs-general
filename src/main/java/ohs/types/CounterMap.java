@@ -42,21 +42,6 @@ public class CounterMap<K, V> implements java.io.Serializable {
 		counterMap = new HashMap<K, Counter<V>>();
 	}
 
-	public void trimToSize() {
-		Map<K, Counter<V>> cm = new HashMap<K, Counter<V>>();
-
-		for (Entry<K, Counter<V>> e : counterMap.entrySet()) {
-			K k = e.getKey();
-			Counter<V> v = e.getValue();
-			v.trimToSize();
-			cm.put(k, v);
-		}
-		counterMap.clear();
-		counterMap = null;
-		counterMap = cm;
-
-	}
-
 	public CounterMap(CounterMap<K, V> cm) {
 		this(cm.size());
 		incrementAll(cm);
@@ -85,16 +70,16 @@ public class CounterMap<K, V> implements java.io.Serializable {
 		return maxKey;
 	}
 
-	// public void setCount(Pair<K,V> pair) {
-	//
-	// }
-
 	public void clear() {
 		for (Counter<V> c : counterMap.values()) {
 			c.clear();
 		}
 		counterMap.clear();
 	}
+
+	// public void setCount(Pair<K,V> pair) {
+	//
+	// }
 
 	public boolean containKey(K key, V value) {
 		Counter<V> c = counterMap.get(key);
@@ -115,6 +100,17 @@ public class CounterMap<K, V> implements java.io.Serializable {
 			counterMap.put(key, valueCounter);
 		}
 		return valueCounter;
+	}
+
+	public Counter<V> getColumnCountSums() {
+		Counter<V> ret = new Counter<V>();
+		for (K key : counterMap.keySet()) {
+			Counter<V> c = counterMap.get(key);
+			for (Entry<V, Double> e : c.entrySet()) {
+				ret.incrementCount(e.getKey(), e.getValue());
+			}
+		}
+		return ret;
 	}
 
 	/**
@@ -149,25 +145,6 @@ public class CounterMap<K, V> implements java.io.Serializable {
 	public Set<Map.Entry<K, Counter<V>>> getEntrySet() {
 		// TODO Auto-generated method stub
 		return counterMap.entrySet();
-	}
-
-	public Counter<K> getRowCountSums() {
-		Counter<K> ret = new Counter<K>();
-		for (K key : counterMap.keySet()) {
-			ret.setCount(key, counterMap.get(key).totalCount());
-		}
-		return ret;
-	}
-
-	public Counter<V> getColumnCountSums() {
-		Counter<V> ret = new Counter<V>();
-		for (K key : counterMap.keySet()) {
-			Counter<V> c = counterMap.get(key);
-			for (Entry<V, Double> e : c.entrySet()) {
-				ret.incrementCount(e.getKey(), e.getValue());
-			}
-		}
-		return ret;
 	}
 
 	public Iterator<Pair<K, V>> getPairIterator() {
@@ -214,6 +191,14 @@ public class CounterMap<K, V> implements java.io.Serializable {
 		}
 		;
 		return new PairIterator();
+	}
+
+	public Counter<K> getRowCountSums() {
+		Counter<K> ret = new Counter<K>();
+		for (K key : counterMap.keySet()) {
+			ret.setCount(key, counterMap.get(key).totalCount());
+		}
+		return ret;
 	}
 
 	public void incrementAll(CounterMap<K, V> cMap) {
@@ -318,6 +303,10 @@ public class CounterMap<K, V> implements java.io.Serializable {
 	 */
 	public Set<K> keySet() {
 		return counterMap.keySet();
+	}
+
+	public Set<V> keySetOfCounter(V key) {
+		return counterMap.get(key).keySet();
 	}
 
 	public void normalize() {
@@ -453,6 +442,21 @@ public class CounterMap<K, V> implements java.io.Serializable {
 			total += counter.size();
 		}
 		return total;
+	}
+
+	public void trimToSize() {
+		Map<K, Counter<V>> cm = new HashMap<K, Counter<V>>();
+
+		for (Entry<K, Counter<V>> e : counterMap.entrySet()) {
+			K k = e.getKey();
+			Counter<V> v = e.getValue();
+			v.trimToSize();
+			cm.put(k, v);
+		}
+		counterMap.clear();
+		counterMap = null;
+		counterMap = cm;
+
 	}
 
 }

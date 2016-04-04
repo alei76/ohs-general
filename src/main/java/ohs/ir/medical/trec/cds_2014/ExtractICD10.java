@@ -106,16 +106,16 @@ public class ExtractICD10 {
 
 			StringBuffer sb = new StringBuffer();
 			if (node.getTemplates().size() > 0) {
-				sb.append(String.format("\nCode:\t%text", StrUtils.join("-", node.getTemplates().get(0).getParameters())));
+				sb.append(String.format("\nCode:\t%s", StrUtils.join("-", node.getTemplates().get(0).getParameters())));
 			} else {
 				// sb.append("\n");
 			}
 
-			sb.append(String.format("\nTitle:\t%text", title));
+			sb.append(String.format("\nTitle:\t%s", title));
 
 			for (int i = 0; i < node.getLinks().size(); i++) {
 				Link link = node.getLinks().get(i);
-				sb.append(String.format("\n%text:\t%d\t%text\t%text", link.getType().toString(), i + 1, link.getText(), link.getTarget()));
+				sb.append(String.format("\n%s:\t%d\t%s\t%s", link.getType().toString(), i + 1, link.getText(), link.getTarget()));
 			}
 			items.add(sb.toString().trim());
 		}
@@ -201,7 +201,7 @@ public class ExtractICD10 {
 				}
 
 				if (doc == null) {
-					writer2.write(String.format("Fail to find [%text]\n", wikiKey));
+					writer2.write(String.format("Fail to find [%s]\n", wikiKey));
 					continue;
 				}
 
@@ -316,7 +316,7 @@ public class ExtractICD10 {
 				// }
 
 				List<String> items = new ArrayList<String>();
-				items.add(String.format("Section Name:\t%text", sectionTitle));
+				items.add(String.format("Section Name:\t%s", sectionTitle));
 
 				// System.out.printf(" level : %d\n", section.getLevel());
 				// System.out.printf(" formats : %d\n",
@@ -488,7 +488,7 @@ public class ExtractICD10 {
 				for (int k = 0; k < wikiKeys.size(); k++) {
 					String tempValue = wikiTitles.get(k) + "\t" + wikiKeys.get(k);
 
-					System.out.printf("%text\t%text\t%text\t%text\n", code, label, tempKey, tempValue);
+					System.out.printf("%s\t%s\t%s\t%s\n", code, label, tempKey, tempValue);
 					map.put(tempKey, tempValue);
 				}
 			}
@@ -508,7 +508,7 @@ public class ExtractICD10 {
 			sb.append("\n" + key);
 
 			for (int j = 0; j < internals.size(); j++) {
-				sb.append(String.format("\n%d\t%text", j + 1, internals.get(j)));
+				sb.append(String.format("\n%d\t%s", j + 1, internals.get(j)));
 			}
 
 			if (i != keys.size()) {

@@ -93,7 +93,7 @@ public class WikiDumper extends TextDumper {
 				if (isFilled) {
 					String title = values[0].trim();
 					String wikiText = values[1].replaceAll("\n", "\\n").trim();
-					String output = String.format("%text\t%text", title, wikiText);
+					String output = String.format("%s\t%s", title, wikiText);
 					writer.write(output + "\n");
 				}
 

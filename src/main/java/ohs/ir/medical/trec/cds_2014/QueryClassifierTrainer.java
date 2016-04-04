@@ -173,7 +173,7 @@ public class QueryClassifierTrainer {
 
 			for (String docId : docTypes.keySet()) {
 				String type = docTypes.get(docId);
-				sb.append(String.format("\n%text\t%text", docId, type));
+				sb.append(String.format("\n%s\t%s", docId, type));
 			}
 
 			FileUtils.write(CDSPath.OUTPUT_DOC_TYPE_FILE, sb.toString());

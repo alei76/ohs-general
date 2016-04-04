@@ -39,6 +39,15 @@ public class ArrayUtils {
 		}
 		return ret;
 	}
+	
+
+	public static ByteSize byteSize(double[] a) {
+		return new ByteSize(Double.BYTES * a.length);
+	}
+
+	public static ByteSize byteSize(int[] a) {
+		return new ByteSize(Integer.BYTES * a.length);
+	}
 
 	public static double copy(Collection<Double> a, double[] b) {
 		int loc = 0;
@@ -193,40 +202,6 @@ public class ArrayUtils {
 		return sum;
 	}
 
-	public static int indexOf(int[] a, int start, int end, int b, boolean complement) {
-		for (int i = start; i < end; i++) {
-			if (complement ? a[i] != b : a[i] == b) {
-				return i;
-			}
-		}
-		return -1;
-	}
-
-	public static int lastIndexOf(int[] a, int start, int end, int b, boolean complement) {
-		for (int i = a.length - 1; i >= 0; i--)
-			if (complement ? a[i] != b : a[i] == b) {
-				return i;
-			}
-		return -1;
-	}
-
-	public static int lastIndexOf(double[] a, int start, int end, double b, boolean complement) {
-		for (int i = a.length - 1; i >= 0; i--)
-			if (complement ? a[i] != b : a[i] == b) {
-				return i;
-			}
-		return -1;
-	}
-
-	public static int indexOf(double[] a, int start, int end, double b, boolean complement) {
-		for (int i = start; i < end; i++) {
-			if (complement ? a[i] != b : a[i] == b) {
-				return i;
-			}
-		}
-		return -1;
-	}
-
 	public static double copy(int[][] a, double[][] b) {
 		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
@@ -294,6 +269,19 @@ public class ArrayUtils {
 		return copy(a[ai], b[bi]);
 	}
 
+	public static double copySubarray(double[] a, int start, int end, double[] b) {
+		int size = end - start;
+		if (size > b.length) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		for (int i = start, j = 0; i < end; i++, j++) {
+			b[j] = a[i];
+			sum += b[j];
+		}
+		return sum;
+	}
+
 	public static int[] copySubarray(int[] a, int start, int end) {
 		int size = end - start;
 		int[] ret = new int[size];
@@ -307,19 +295,6 @@ public class ArrayUtils {
 			throw new IllegalArgumentException();
 		}
 		int sum = 0;
-		for (int i = start, j = 0; i < end; i++, j++) {
-			b[j] = a[i];
-			sum += b[j];
-		}
-		return sum;
-	}
-
-	public static double copySubarray(double[] a, int start, int end, double[] b) {
-		int size = end - start;
-		if (size > b.length) {
-			throw new IllegalArgumentException();
-		}
-		double sum = 0;
 		for (int i = start, j = 0; i < end; i++, j++) {
 			b[j] = a[i];
 			sum += b[j];
@@ -382,6 +357,40 @@ public class ArrayUtils {
 			ret[i][i] = init;
 		}
 		return ret;
+	}
+
+	public static int indexOf(double[] a, int start, int end, double b, boolean complement) {
+		for (int i = start; i < end; i++) {
+			if (complement ? a[i] != b : a[i] == b) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	public static int indexOf(int[] a, int start, int end, int b, boolean complement) {
+		for (int i = start; i < end; i++) {
+			if (complement ? a[i] != b : a[i] == b) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	public static int lastIndexOf(double[] a, int start, int end, double b, boolean complement) {
+		for (int i = a.length - 1; i >= 0; i--)
+			if (complement ? a[i] != b : a[i] == b) {
+				return i;
+			}
+		return -1;
+	}
+
+	public static int lastIndexOf(int[] a, int start, int end, int b, boolean complement) {
+		for (int i = a.length - 1; i >= 0; i--)
+			if (complement ? a[i] != b : a[i] == b) {
+				return i;
+			}
+		return -1;
 	}
 
 	public static void main(String[] args) {
@@ -601,6 +610,54 @@ public class ArrayUtils {
 		quickSortHere(indexes, values, p + 1, high, sortByIndex);
 	}
 
+	// public static double random(double min, double max, double[] x) {
+	// Random random = new Random();
+	// double range = max - min;
+	// double sum = 0;
+	// for (int i = 0; i < x.length; i++) {
+	// x[i] = range * random.nextDouble() + min;
+	// sum += x[i];
+	// }
+	// return sum;
+	// }
+	//
+	// public static double random(double min, double max, double[][] x) {
+	// double sum = 0;
+	// for (int i = 0; i < x.length; i++) {
+	// sum += random(min, max, x[i]);
+	// }
+	// return sum;
+	// }
+	//
+	// public static double[] random(double min, double max, int size) {
+	// double[] x = new double[size];
+	// random(min, max, x);
+	// return x;
+	// }
+	//
+	// public static double[][] random(double min, double max, int rows, int columns) {
+	// double[][] x = new double[rows][columns];
+	// random(min, max, x);
+	// return x;
+	// }
+	//
+	// public static int[] random(int min, int max, int size) {
+	// int[] x = new int[size];
+	// random(min, max, x);
+	// return x;
+	// }
+	//
+	// public static int random(int min, int max, int[] x) {
+	// Random random = new Random();
+	// double range = max - min + 1;
+	// int sum = 0;
+	// for (int i = 0; i < x.length; i++) {
+	// x[i] = (int) (range * random.nextDouble()) + min;
+	// sum += x[i];
+	// }
+	// return sum;
+	// }
+
 	private static int quickSortPartition(int[] indexes, double[] values, int low, int high, boolean sortByIndex) {
 		// First element
 		// int pivot = a[low];
@@ -665,54 +722,6 @@ public class ArrayUtils {
 		}
 		return sum;
 	}
-
-	// public static double random(double min, double max, double[] x) {
-	// Random random = new Random();
-	// double range = max - min;
-	// double sum = 0;
-	// for (int i = 0; i < x.length; i++) {
-	// x[i] = range * random.nextDouble() + min;
-	// sum += x[i];
-	// }
-	// return sum;
-	// }
-	//
-	// public static double random(double min, double max, double[][] x) {
-	// double sum = 0;
-	// for (int i = 0; i < x.length; i++) {
-	// sum += random(min, max, x[i]);
-	// }
-	// return sum;
-	// }
-	//
-	// public static double[] random(double min, double max, int size) {
-	// double[] x = new double[size];
-	// random(min, max, x);
-	// return x;
-	// }
-	//
-	// public static double[][] random(double min, double max, int rows, int columns) {
-	// double[][] x = new double[rows][columns];
-	// random(min, max, x);
-	// return x;
-	// }
-	//
-	// public static int[] random(int min, int max, int size) {
-	// int[] x = new int[size];
-	// random(min, max, x);
-	// return x;
-	// }
-	//
-	// public static int random(int min, int max, int[] x) {
-	// Random random = new Random();
-	// double range = max - min + 1;
-	// int sum = 0;
-	// for (int i = 0; i < x.length; i++) {
-	// x[i] = (int) (range * random.nextDouble()) + min;
-	// sum += x[i];
-	// }
-	// return sum;
-	// }
 
 	public static int[] range(int size) {
 		return range(size, 0, 1);
@@ -966,6 +975,19 @@ public class ArrayUtils {
 		return ret;
 	}
 
+	public static List<Integer>[] splitInOrder(List<Integer> indexList, int[] counts) {
+		List<Integer>[] ret = new List[counts.length];
+		int idx = 0;
+		for (int num = 0; num < counts.length; num++) {
+			ret[num] = new ArrayList<Integer>();
+			for (int i = 0; i < counts[num]; i++) {
+				ret[num].add(indexList.get(idx)); // Transfer weights?
+				idx++;
+			}
+		}
+		return ret;
+	}
+
 	public static void swap(double[] x, int i, int j) {
 		double v1 = x[i];
 		double v2 = x[j];
@@ -1018,12 +1040,12 @@ public class ArrayUtils {
 		if (sparse) {
 			for (int i = 0; i < x.length; i++) {
 				if (x[i] != 0) {
-					sb.append(String.format("%text%d:%text", delim, i, x[i]));
+					sb.append(String.format("%s%d:%s", delim, i, x[i]));
 				}
 			}
 		} else {
 			for (int i = 0; i < x.length; i++) {
-				sb.append(String.format("%text%text", delim, x[i]));
+				sb.append(String.format("%s%s", delim, x[i]));
 			}
 		}
 		return sb.toString().trim();
@@ -1038,15 +1060,15 @@ public class ArrayUtils {
 
 		String delim = StrUtils.value(vertical, "\t", "\n");
 
-		sb.append(String.format("(%text)", label));
+		sb.append(String.format("(%s)", label));
 
 		if (sparse) {
 			for (int i = 0; i < x.length && i < len; i++) {
-				sb.append(String.format("%text%d:%text", delim, i, nf.format(x[i])));
+				sb.append(String.format("%s%d:%s", delim, i, nf.format(x[i])));
 			}
 		} else {
 			for (int i = 0; i < x.length && i < len; i++) {
-				sb.append(String.format("%text%text", delim, nf.format(x[i])));
+				sb.append(String.format("%s%s", delim, nf.format(x[i])));
 			}
 		}
 		return sb.toString();
@@ -1058,7 +1080,7 @@ public class ArrayUtils {
 
 	public static String toString(String label, double[][] x, int rows, int cols, boolean sparse, NumberFormat nf) {
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("(%text)", label));
+		sb.append(String.format("(%s)", label));
 		sb.append(String.format("\ndim:\t(%d, %d)\n", x.length, x[0].length));
 
 		if (sparse) {
@@ -1072,10 +1094,10 @@ public class ArrayUtils {
 					Double v = new Double(x[i][j]);
 					if (v != 0) {
 						if (Double.isFinite(v) || Double.isInfinite(v) || Double.isNaN(v)) {
-							sb2.append(String.format("\t%d:%text", j, v.toString()));
+							sb2.append(String.format("\t%d:%s", j, v.toString()));
 							num_nonzero_cols++;
 						} else {
-							sb2.append(String.format("\t%d:%text", j, nf.format(v.doubleValue())));
+							sb2.append(String.format("\t%d:%s", j, nf.format(v.doubleValue())));
 							num_nonzero_cols++;
 						}
 					}
@@ -1098,9 +1120,9 @@ public class ArrayUtils {
 				for (int j = 0; j < x[i].length && j < cols; j++) {
 					Double v = new Double(x[i][j]);
 					if (!Double.isFinite(v)) {
-						sb.append(String.format("\t%text", v.toString()));
+						sb.append(String.format("\t%s", v.toString()));
 					} else {
-						sb.append(String.format("\t%text", nf.format(v.doubleValue())));
+						sb.append(String.format("\t%s", nf.format(v.doubleValue())));
 					}
 				}
 				sb.append("\n");
@@ -1112,7 +1134,7 @@ public class ArrayUtils {
 
 	public static String toString(String label, int[][] x) {
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("(%text)", label));
+		sb.append(String.format("(%s)", label));
 		sb.append(String.format("dim:\t(%d, %d)", x.length, x[0].length));
 		for (int i = 0; i < x.length; i++) {
 			sb.append("\n");
@@ -1130,27 +1152,6 @@ public class ArrayUtils {
 		}
 		int[] ret = new int[ids.size()];
 		copy(ids, ret);
-		return ret;
-	}
-
-	public static ByteSize byteSize(double[] a) {
-		return new ByteSize(Double.BYTES * a.length);
-	}
-
-	public static ByteSize byteSize(int[] a) {
-		return new ByteSize(Integer.BYTES * a.length);
-	}
-
-	public static List<Integer>[] splitInOrder(List<Integer> indexList, int[] counts) {
-		List<Integer>[] ret = new List[counts.length];
-		int idx = 0;
-		for (int num = 0; num < counts.length; num++) {
-			ret[num] = new ArrayList<Integer>();
-			for (int i = 0; i < counts[num]; i++) {
-				ret[num].add(indexList.get(idx)); // Transfer weights?
-				idx++;
-			}
-		}
 		return ret;
 	}
 }

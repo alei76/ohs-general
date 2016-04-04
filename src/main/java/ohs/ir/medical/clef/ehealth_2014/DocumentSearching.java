@@ -183,7 +183,7 @@ public class DocumentSearching {
 				EHealthQuery clefQuery = clefQueries.get(i);
 				String qId = clefQuery.getId();
 
-				System.out.printf("%dth query: %text\n", i + 1, clefQuery.getTitle());
+				System.out.printf("%dth query: %s\n", i + 1, clefQuery.getTitle());
 
 				StringBuffer qBuff = new StringBuffer();
 				qBuff.append(clefQuery.getTitle());
@@ -235,12 +235,12 @@ public class DocumentSearching {
 							String content = doc.getField(CommonFieldNames.CONTENT).stringValue();
 
 							StringBuffer sb = new StringBuffer();
-							sb.append(String.format("docId:\t%text\n", docId));
-							sb.append(String.format("date:\t%text\n", date));
-							sb.append(String.format("url:\t%text\n", url));
-							sb.append(String.format("content:\t%text\n", content));
+							sb.append(String.format("docId:\t%s\n", docId));
+							sb.append(String.format("date:\t%s\n", date));
+							sb.append(String.format("url:\t%s\n", url));
+							sb.append(String.format("content:\t%s\n", content));
 
-							// System.out.println(String.format("%d, %text, url:\t%text",
+							// System.out.println(String.format("%d, %s, url:\t%s",
 							// u + 1, docId, url));
 
 							docScores.setCount(docId, score);
@@ -367,7 +367,7 @@ public class DocumentSearching {
 				EHealthQuery clefQuery = clefQueries.get(j);
 				String qId = clefQuery.getId();
 
-				// System.out.printf("%dth query: %text\n", j + 1,
+				// System.out.printf("%dth query: %s\n", j + 1,
 				// clefQuery.getTitle());
 
 				StringBuffer qBuff = new StringBuffer();
@@ -405,12 +405,12 @@ public class DocumentSearching {
 						String content = doc.getField(CommonFieldNames.CONTENT).stringValue();
 
 						StringBuffer sb = new StringBuffer();
-						sb.append(String.format("docId:\t%text\n", docId));
-						sb.append(String.format("date:\t%text\n", date));
-						sb.append(String.format("url:\t%text\n", url));
-						sb.append(String.format("content:\t%text\n", content));
+						sb.append(String.format("docId:\t%s\n", docId));
+						sb.append(String.format("date:\t%s\n", date));
+						sb.append(String.format("url:\t%s\n", url));
+						sb.append(String.format("content:\t%s\n", content));
 
-						// System.out.println(String.format("%d, %text, url:\t%text",
+						// System.out.println(String.format("%d, %s, url:\t%s",
 						// u + 1, docId, url));
 
 						docScores.setCount(docId, score);
@@ -429,7 +429,7 @@ public class DocumentSearching {
 	}
 
 	private static void writeResults(File outputFile, CounterMap<String, String> resultData) {
-		System.out.printf("write to [%text]\n", outputFile.getPath());
+		System.out.printf("write to [%s]\n", outputFile.getPath());
 		TextFileWriter writer = new TextFileWriter(outputFile);
 
 		NumberFormat nf = NumberFormat.getInstance();
@@ -462,7 +462,7 @@ public class DocumentSearching {
 				int iter = 0;
 				int rank = 0;
 				int runId = 0;
-				String output = String.format("%text\tQ%d\t%text\t%d\t%text\t%d", qId, iter, docId, rank, nf.format(score), runId);
+				String output = String.format("%s\tQ%d\t%s\t%d\t%s\t%d", qId, iter, docId, rank, nf.format(score), runId);
 				writer.write(output + "\n");
 			}
 		}
@@ -470,7 +470,7 @@ public class DocumentSearching {
 	}
 
 	private static void writeResults(File outputFile, CounterMap<String, String> resultData, CounterMap<String, String> relevanceData) {
-		System.out.printf("write to [%text]\n", outputFile.getPath());
+		System.out.printf("write to [%s]\n", outputFile.getPath());
 		TextFileWriter writer = new TextFileWriter(outputFile);
 
 		NumberFormat nf = NumberFormat.getInstance();
@@ -484,7 +484,7 @@ public class DocumentSearching {
 			for (String docId : docScores.getSortedKeys()) {
 				double score = docScores.getCount(docId);
 				double relevance = docRelevances.getCount(docId);
-				String output = String.format("%text\t%text\t%text\t%d", qId, docId, nf.format(score), (int) relevance);
+				String output = String.format("%s\t%s\t%s\t%d", qId, docId, nf.format(score), (int) relevance);
 				writer.write(output + "\n");
 			}
 		}

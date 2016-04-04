@@ -38,7 +38,7 @@ public class DenseVector implements Vector {
 	}
 
 	public static List<DenseVector> readList(String fileName) throws Exception {
-		System.out.printf("read [%text].\n", fileName);
+		System.out.printf("read [%s].\n", fileName);
 		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
 		List<DenseVector> ret = readList(ois);
 		ois.close();
@@ -47,7 +47,7 @@ public class DenseVector implements Vector {
 	}
 
 	public static Map<Integer, List<DenseVector>> readMap(String fileName) throws Exception {
-		System.out.printf("read [%text].\n", fileName);
+		System.out.printf("read [%s].\n", fileName);
 		Map<Integer, List<DenseVector>> ret = new HashMap<Integer, List<DenseVector>>();
 		List<DenseVector> allVectors = readList(fileName);
 
@@ -67,7 +67,7 @@ public class DenseVector implements Vector {
 	}
 
 	public static Map<Integer, List<DenseVector>> readMappedList(String fileName) throws Exception {
-		System.out.printf("read [%text].\n", fileName);
+		System.out.printf("read [%s].\n", fileName);
 		Map<Integer, List<DenseVector>> ret = new HashMap<Integer, List<DenseVector>>();
 		List<DenseVector> allVectors = readList(fileName);
 
@@ -114,7 +114,7 @@ public class DenseVector implements Vector {
 	}
 
 	public static void write(String fileName, List<DenseVector> vectors) throws Exception {
-		System.out.printf("write to [%text].\n", fileName);
+		System.out.printf("write to [%s].\n", fileName);
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 		write(oos, vectors);
 		oos.close();
@@ -462,9 +462,9 @@ public class DenseVector implements Vector {
 		StringBuffer sb = new StringBuffer();
 
 		if (printLabel) {
-			sb.append(String.format("%d (%d/%d, %text) ->", label, sizeOfNonzero(), values.length, nf.format(sum)));
+			sb.append(String.format("%d (%d/%d, %s) ->", label, sizeOfNonzero(), values.length, nf.format(sum)));
 		} else {
-			sb.append(String.format("(%d/%d, %text) ->", sizeOfNonzero(), values.length, nf.format(sum)));
+			sb.append(String.format("(%d/%d, %s) ->", sizeOfNonzero(), values.length, nf.format(sum)));
 		}
 
 		// int numPrint = 0;
@@ -478,11 +478,11 @@ public class DenseVector implements Vector {
 
 			if (printSparsely) {
 				if (value != 0) {
-					sb.append(String.format(" %d:%text", i, nf.format(value)));
+					sb.append(String.format(" %d:%s", i, nf.format(value)));
 					numPrint++;
 				}
 			} else {
-				sb.append(String.format(" %d:%text", i, nf.format(value)));
+				sb.append(String.format(" %d:%s", i, nf.format(value)));
 				numPrint++;
 			}
 
@@ -533,7 +533,7 @@ public class DenseVector implements Vector {
 
 	@Override
 	public void write(String fileName) throws Exception {
-		System.out.printf("write to [%text].\n", fileName);
+		System.out.printf("write to [%s].\n", fileName);
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 		write(oos);
 		oos.close();

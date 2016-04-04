@@ -156,7 +156,7 @@ public class DataHandler {
 
 			if (duplicationSet.contains(filePath)) {
 				numDuplications++;
-				System.out.printf("%d Duplications\t[%text]\n", numDuplications, filePath);
+				System.out.printf("%d Duplications\t[%s]\n", numDuplications, filePath);
 				continue;
 			}
 
@@ -269,7 +269,7 @@ public class DataHandler {
 			}
 
 			if ((i + 1) % 1000 == 0) {
-				System.out.printf("\r[%d/%d/%d, %text][%d + %d + %d + %d = %d]",
+				System.out.printf("\r[%d/%d/%d, %s][%d + %d + %d + %d = %d]",
 
 						numValid, i + 1, docFiles.size(), stopWatch.stop(), numMissPmcId, numMissTitle, numMissAbs, numMissBody,
 						numTotalMiss);
@@ -282,6 +282,6 @@ public class DataHandler {
 		writer.close();
 		logWriter.close();
 
-		System.out.printf("\r[%d/%d/%d, %text]\n", numValid, docFiles.size(), docFiles.size(), stopWatch.stop());
+		System.out.printf("\r[%d/%d/%d, %s]\n", numValid, docFiles.size(), docFiles.size(), stopWatch.stop());
 	}
 }

@@ -32,7 +32,7 @@ public class SparseMatrix implements Matrix {
 	}
 
 	public static SparseMatrix read(String fileName) throws Exception {
-		System.out.printf("read [%text].\n", fileName);
+		System.out.printf("read [%s].\n", fileName);
 		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
 		SparseMatrix ret = readStream(ois);
 		ois.close();
@@ -40,7 +40,7 @@ public class SparseMatrix implements Matrix {
 	}
 
 	public static List<SparseMatrix> readList(String fileName) throws Exception {
-		System.out.printf("read [%text].\n", fileName);
+		System.out.printf("read [%s].\n", fileName);
 		List<SparseMatrix> ret = new ArrayList<SparseMatrix>();
 
 		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
@@ -74,7 +74,7 @@ public class SparseMatrix implements Matrix {
 	}
 
 	public static void write(String fileName, List<SparseMatrix> xs) throws Exception {
-		System.out.printf("write to [%text].\n", fileName);
+		System.out.printf("write to [%s].\n", fileName);
 
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 		oos.writeInt(xs.size());
@@ -438,7 +438,7 @@ public class SparseMatrix implements Matrix {
 		sb.append(String.format("[row dim:\t%d]\n", rowDim()));
 		sb.append(String.format("[col dim:\t%d]\n", colDim()));
 		for (int i = 0; i < rowIndexes.length && i < 15; i++) {
-			sb.append(String.format("%dth: %text\n", i + 1, rows[i]));
+			sb.append(String.format("%dth: %s\n", i + 1, rows[i]));
 		}
 		return sb.toString().trim();
 	}
@@ -527,7 +527,7 @@ public class SparseMatrix implements Matrix {
 
 	@Override
 	public void write(String fileName) throws Exception {
-		System.out.printf("write to [%text].\n", fileName);
+		System.out.printf("write to [%s].\n", fileName);
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 		write(oos);
 		oos.close();

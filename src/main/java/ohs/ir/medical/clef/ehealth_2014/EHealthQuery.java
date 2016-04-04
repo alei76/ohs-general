@@ -28,7 +28,7 @@ public class EHealthQuery {
 		tokenize(eHealthQueries);
 
 		for (int i = 0; i < eHealthQueries.size(); i++) {
-			System.out.printf("%dth query\n%text\n", i + 1, eHealthQueries.get(i));
+			System.out.printf("%dth query\n%s\n", i + 1, eHealthQueries.get(i));
 
 		}
 
@@ -218,12 +218,12 @@ public class EHealthQuery {
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("id:\t%text\n", id));
-		sb.append(String.format("title:\t%text\n", title));
-		sb.append(String.format("desc:\t%text\n", description));
-		sb.append(String.format("profile:\t%text\n", profile));
-		sb.append(String.format("narr:\t%text\n", narrative));
-		sb.append(String.format("discharge:\n%text\n", discharge));
+		sb.append(String.format("id:\t%s\n", id));
+		sb.append(String.format("title:\t%s\n", title));
+		sb.append(String.format("desc:\t%s\n", description));
+		sb.append(String.format("profile:\t%s\n", profile));
+		sb.append(String.format("narr:\t%s\n", narrative));
+		sb.append(String.format("discharge:\n%s\n", discharge));
 		return sb.toString();
 	}
 }

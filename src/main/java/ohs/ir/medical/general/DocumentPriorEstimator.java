@@ -86,7 +86,7 @@ public class DocumentPriorEstimator {
 
 			for (int j = 0; j < ir.maxDoc(); j++) {
 				if ((j + 1) % 10000 == 0) {
-					System.out.printf("\r%dth coll [%d/%d docs, %text]", i + 1, j + 1, (int) num_docs_in_each_coll[i], stopWatch.stop());
+					System.out.printf("\r%dth coll [%d/%d docs, %s]", i + 1, j + 1, (int) num_docs_in_each_coll[i], stopWatch.stop());
 				}
 				Document doc = ir.document(j);
 
@@ -179,7 +179,7 @@ public class DocumentPriorEstimator {
 				// writer.write(j + "\t" + doc_prior + "\n");
 			}
 
-			System.out.printf("\r%dth coll [%d/%d docs, %text]\n\n", i + 1, (int) num_docs_in_each_coll[i], (int) num_docs_in_each_coll[i],
+			System.out.printf("\r%dth coll [%d/%d docs, %s]\n\n", i + 1, (int) num_docs_in_each_coll[i], (int) num_docs_in_each_coll[i],
 					stopWatch.stop());
 			writer.close();
 

@@ -280,7 +280,7 @@ public class StringSims {
 			String b = "ABC";
 			//
 			// for (int i = 0; i < 10; i++) {
-			// System.out.printf("%d\t%text\t%text\n", i, CommonFuncs.sigmoid(-i), 1f
+			// System.out.printf("%d\t%s\t%s\n", i, CommonFuncs.sigmoid(-i), 1f
 			// / Math.log(1 + i + 1));
 			// }
 

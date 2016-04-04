@@ -15,6 +15,7 @@ import ohs.types.ListMap;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
 import ohs.utils.StopWatch;
+import ohs.utils.StrUtils;
 
 public class KeywordData {
 
@@ -110,9 +111,10 @@ public class KeywordData {
 			String eng = parts[1];
 			double kwd_freq = Double.parseDouble(parts[2]);
 
-			String keyword = kor + "\t" + eng;
-
-			int kwdid = kwdIndexer.getIndex(keyword);
+			// kor = kor.substring(1, kor.length() - 2);
+			// eng = eng.substring(1, eng.length() - 2);
+			String kwdStr = kor + "\t" + eng;
+			int kwdid = kwdIndexer.getIndex(kwdStr);
 			kwdids.add(kwdid);
 			kwdFreqs.setCount(kwdid, kwd_freq);
 

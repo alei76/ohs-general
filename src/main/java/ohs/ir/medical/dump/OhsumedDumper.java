@@ -27,7 +27,7 @@ public class OhsumedDumper extends TextDumper {
 
 	@Override
 	public void dump() throws Exception {
-		System.out.printf("dump from [%text]\n", inputDirName);
+		System.out.printf("dump from [%s]\n", inputDirName);
 
 		TextFileWriter writer = new TextFileWriter(outputFileName);
 
@@ -90,7 +90,7 @@ public class OhsumedDumper extends TextDumper {
 		}
 		writer.close();
 
-		System.out.printf("read [%d] docs from [%text]\n", numDocs, inputDirName);
+		System.out.printf("read [%d] docs from [%s]\n", numDocs, inputDirName);
 	}
 
 	private String makeOutput(Map<String, String> map) {
@@ -103,7 +103,7 @@ public class OhsumedDumper extends TextDumper {
 		String authors = map.get(".A");
 		String source = map.get(".S");
 
-		String output = String.format("%text\t%text\t%text\t%text\t%text\t%text\t%text\t%text", seqId, medlineId, meshTerms, title, publicationType, abs, authors,
+		String output = String.format("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s", seqId, medlineId, meshTerms, title, publicationType, abs, authors,
 				source);
 
 		return output;

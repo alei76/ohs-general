@@ -153,7 +153,7 @@ public class ConceptRelevanceCollector {
 		for (int i = 0; i < sv.size(); i++) {
 			int cid = sv.indexAtLoc(i);
 			double score = sv.valueAtLoc(i);
-			sb.append(String.format("%text:%f", cid, score));
+			sb.append(String.format("%s:%f", cid, score));
 
 			if (i != sv.size() - 1) {
 				sb.append(" ");

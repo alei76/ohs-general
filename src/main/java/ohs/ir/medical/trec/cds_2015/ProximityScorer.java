@@ -107,7 +107,7 @@ public class ProximityScorer {
 
 				if (makeLog) {
 					StringBuffer sb = new StringBuffer();
-					sb.append(String.format("QWord:\t%text\n", wordIndexer.getObject(qw1)));
+					sb.append(String.format("QWord:\t%s\n", wordIndexer.getObject(qw1)));
 				}
 
 				if (makeLog) {

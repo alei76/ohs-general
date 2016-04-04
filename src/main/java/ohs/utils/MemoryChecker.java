@@ -80,11 +80,11 @@ public class MemoryChecker {
 		nf.setMinimumFractionDigits(1);
 
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("Max:\t%text MB", nf.format(max.size(Type.MEGA))));
-		sb.append(String.format("\nTotal:\t%text MB", nf.format(total.size(Type.MEGA))));
-		sb.append(String.format("\nFree:\t%text MB", nf.format(free.size(Type.MEGA))));
-		sb.append(String.format("\nUsed:\t%text MB", nf.format(used.size(Type.MEGA))));
-		sb.append(String.format("\nUsed Heap:\t%text MB", nf.format(used_heap.size(Type.MEGA))));
+		sb.append(String.format("Max:\t%s MB", nf.format(max.size(Type.MEGA))));
+		sb.append(String.format("\nTotal:\t%s MB", nf.format(total.size(Type.MEGA))));
+		sb.append(String.format("\nFree:\t%s MB", nf.format(free.size(Type.MEGA))));
+		sb.append(String.format("\nUsed:\t%s MB", nf.format(used.size(Type.MEGA))));
+		sb.append(String.format("\nUsed Heap:\t%s MB", nf.format(used_heap.size(Type.MEGA))));
 		return sb.toString();
 	}
 }

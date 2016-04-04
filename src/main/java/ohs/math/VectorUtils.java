@@ -210,7 +210,7 @@ public class VectorUtils {
 		for (int i = 0; i < x.size(); i++) {
 			int index = x.indexAtLoc(i);
 			int rank = (int) x.valueAtLoc(i);
-			sb.append(String.format(" %text:%d", indexer.getObject(index), rank));
+			sb.append(String.format(" %s:%d", indexer.getObject(index), rank));
 		}
 		return sb.toString().trim();
 	}
@@ -368,7 +368,7 @@ public class VectorUtils {
 		StringBuffer sb = new StringBuffer();
 		sb.append(x.label());
 		for (int i = 0; i < x.size(); i++) {
-			sb.append(String.format(" %d:%text", x.indexAtLoc(i), nf.format(x.valueAtLoc(i))));
+			sb.append(String.format(" %d:%s", x.indexAtLoc(i), nf.format(x.valueAtLoc(i))));
 		}
 		return sb.toString();
 	}

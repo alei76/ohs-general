@@ -115,7 +115,7 @@ public class Common {
 		try (final Reader reader = asReaderUTF8Lenient(new FileInputStream(f))) {
 			return readToList(reader);
 		} catch (IOException ioe) {
-			throw new IllegalStateException(String.format("Failed to read %text: %text", f.getAbsolutePath(), ioe), ioe);
+			throw new IllegalStateException(String.format("Failed to read %s: %s", f.getAbsolutePath(), ioe), ioe);
 		}
 	}
 

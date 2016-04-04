@@ -320,7 +320,7 @@ public class DocumentIndexer {
 
 					if (idx > -1) {
 						redicrect = lines[1].substring(idx + prefix.length());
-						System.out.printf("%text -> %text\n", title, redicrect);
+						System.out.printf("%s -> %s\n", title, redicrect);
 						content = "";
 					}
 				}
@@ -357,7 +357,7 @@ public class DocumentIndexer {
 			String indexDirName = indexDirNames[i];
 			String docMapFileName = docMapFileNames[i];
 
-			System.out.printf("process [%text].\n", indexDirNames[i]);
+			System.out.printf("process [%s].\n", indexDirNames[i]);
 
 			File outputFile = new File(docMapFileName);
 

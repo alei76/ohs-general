@@ -156,7 +156,7 @@ public class QueryReader {
 			}
 		}
 
-		System.out.printf("read [%d] queries at [%text]\n", ret.size(), queryFileName);
+		System.out.printf("read [%d] queries at [%s]\n", ret.size(), queryFileName);
 
 		return ret;
 	}
@@ -208,7 +208,7 @@ public class QueryReader {
 
 		ret.add(new OhsumedQuery(id, patientInfo, infoRequest));
 
-		System.out.printf("read [%d] queries at [%text]\n", ret.size(), fileName);
+		System.out.printf("read [%d] queries at [%s]\n", ret.size(), fileName);
 
 		return ret;
 	}
@@ -268,7 +268,7 @@ public class QueryReader {
 			ret.add(query);
 		}
 
-		System.out.printf("read [%d] queries at [%text]\n", ret.size(), fileName);
+		System.out.printf("read [%d] queries at [%s]\n", ret.size(), fileName);
 		return ret;
 	}
 
@@ -284,7 +284,7 @@ public class QueryReader {
 			TrecGenomicsQuery q = new TrecGenomicsQuery(id, desc);
 			ret.add(q);
 		}
-		System.out.printf("read [%d] queries at [%text]\n", ret.size(), queryFileName);
+		System.out.printf("read [%d] queries at [%s]\n", ret.size(), queryFileName);
 		return ret;
 	}
 }

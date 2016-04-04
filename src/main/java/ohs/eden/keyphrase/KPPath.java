@@ -22,7 +22,7 @@ public class KPPath {
 
 	public static final String KEYWORD_ABBR_FILE = KEYPHRASE_DIR + "keyword_abbr.txt.gz";
 
-	public static final String KEYWORD_CLUSTER_FILE = KEYPHRASE_DIR + "keyword_cluster.txt.gz";
+	public static final String KEYWORD_CLUSTER_FILE = KEYPHRASE_DIR + "keyword_cluster.txt";
 
 	public static final String KEYWORD_POS_CNT_FILE = KEYPHRASE_DIR + "kwd_pos_seq_cnt.txt";
 

@@ -15,7 +15,7 @@ public class ClefEHealthQuery implements BaseQuery {
 		List<BaseQuery> queries = QueryReader.readClefEHealthQueries(MIRPath.CLEF_EHEALTH_QUERY_2014_FILE);
 
 		for (int i = 0; i < queries.size(); i++) {
-			System.out.printf("%dth query\n%text\n", i + 1, queries.get(i));
+			System.out.printf("%dth query\n%s\n", i + 1, queries.get(i));
 
 		}
 
@@ -149,12 +149,12 @@ public class ClefEHealthQuery implements BaseQuery {
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("QID:\t%text\n", id));
-		sb.append(String.format("Title:\t%text\n", title));
-		sb.append(String.format("Description:\t%text\n", description));
-		sb.append(String.format("Profile:\t%text\n", profile));
-		sb.append(String.format("Narrative:\t%text\n", narrative));
-		sb.append(String.format("Discharge:\n%text", discharge));
+		sb.append(String.format("QID:\t%s\n", id));
+		sb.append(String.format("Title:\t%s\n", title));
+		sb.append(String.format("Description:\t%s\n", description));
+		sb.append(String.format("Profile:\t%s\n", profile));
+		sb.append(String.format("Narrative:\t%s\n", narrative));
+		sb.append(String.format("Discharge:\n%s", discharge));
 		return sb.toString();
 	}
 }

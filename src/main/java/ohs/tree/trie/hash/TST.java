@@ -187,18 +187,18 @@ public class TST<V> {
 			Collections.reverse(chs);
 			Collections.reverse(levels);
 
-			sb.append(String.format("level:\t%text\n", StrUtils.join(" -> ", levels)));
-			sb.append(String.format("char:\t%text\n", StrUtils.join(" -> ", chs)));
+			sb.append(String.format("level:\t%s\n", StrUtils.join(" -> ", levels)));
+			sb.append(String.format("char:\t%s\n", StrUtils.join(" -> ", chs)));
 
-			// sb.append(String.format("value:\t%text\n", value.toString()));
-			// sb.append(String.format("parent char:\t%text", parent.c));
-			// sb.append(String.format("parent value:\t%text", parent.val.toString()));
-			// sb.append(String.format("left char:\t%text", left.c));
-			// sb.append(String.format("left value:\t%text", left.val.toString()));
-			// sb.append(String.format("middle char:\t%text", middle.c));
-			// sb.append(String.format("middle value:\t%text", middle.val.toString()));
-			// sb.append(String.format("right char:\t%text", right.c));
-			// sb.append(String.format("right value:\t%text", right.val.toString()));
+			// sb.append(String.format("value:\t%s\n", value.toString()));
+			// sb.append(String.format("parent char:\t%s", parent.c));
+			// sb.append(String.format("parent value:\t%s", parent.val.toString()));
+			// sb.append(String.format("left char:\t%s", left.c));
+			// sb.append(String.format("left value:\t%s", left.val.toString()));
+			// sb.append(String.format("middle char:\t%s", middle.c));
+			// sb.append(String.format("middle value:\t%s", middle.val.toString()));
+			// sb.append(String.format("right char:\t%s", right.c));
+			// sb.append(String.format("right value:\t%s", right.val.toString()));
 			return sb.toString();
 		}
 	}
@@ -413,7 +413,7 @@ public class TST<V> {
 			x.setLevel(d);
 		}
 
-		// System.out.printf("%text: %d, %c\n", key, d, c);
+		// System.out.printf("%s: %d, %c\n", key, d, c);
 
 		if (c < x.getCharacter()) {
 			x.setLeft(put(x, x.getLeft(), key, val, d));

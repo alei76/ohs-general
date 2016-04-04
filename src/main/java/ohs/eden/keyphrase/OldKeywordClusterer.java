@@ -26,10 +26,10 @@ import ohs.utils.StopWatch;
 import ohs.utils.StrUtils;
 import ohs.utils.TermWeighting;
 
-public class KeywordClusterer {
+public class OldKeywordClusterer {
 
 	public static void main(String[] args) throws Exception {
-		System.out.printf("[%s] begins.\n", KeywordClusterer.class.getName());
+		System.out.printf("[%s] begins.\n", OldKeywordClusterer.class.getName());
 
 		KeywordData data = new KeywordData();
 
@@ -40,7 +40,7 @@ public class KeywordClusterer {
 			data.write(KPPath.KEYWORD_DATA_FILE.replace("txt", "ser"));
 		}
 
-		KeywordClusterer kc = new KeywordClusterer(data);
+		OldKeywordClusterer kc = new OldKeywordClusterer(data);
 		kc.cluster();
 		kc.writeClusterText(KPPath.KEYWORD_CLUSTER_FILE);
 
@@ -65,7 +65,7 @@ public class KeywordClusterer {
 
 	private GramGenerator gg = new GramGenerator(2);
 
-	public KeywordClusterer(KeywordData kwdData) {
+	public OldKeywordClusterer(KeywordData kwdData) {
 		this.kwdData = kwdData;
 
 		kwdIndexer = kwdData.getKeywordIndexer();
@@ -131,7 +131,7 @@ public class KeywordClusterer {
 
 		// filter(3);
 
-//		hierarchicalAgglomerativeClustering();
+		hierarchicalAgglomerativeClustering();
 
 		selectClusterLabels();
 
@@ -405,7 +405,7 @@ public class KeywordClusterer {
 					double cosine2 = VectorMath.dotProduct(cents2.get(qid), cents2.get(cid));
 					double cosine3 = ArrayMath.addAfterScale(cosine1, mixture, cosine2);
 
-					if (cosine3 < cutoff_cosine) {
+					if (cosine1 < cutoff_cosine) {
 						break;
 					}
 
@@ -483,22 +483,17 @@ public class KeywordClusterer {
 				// System.out.printf("%d -> %d, %s\n", new_cid, qid,
 				// queryOutputs.getCounter(qid).keySet());
 
-				Counter<Integer> newCent1 = Generics.newCounter();
-				Counter<Integer> newCent2 = Generics.newCounter();
+				Counter<Integer> newCent = Generics.newCounter();
 				Counter<Integer> kwds = Generics.newCounter();
 
 				for (int cid : cids) {
-					VectorMath.add(cents1.remove(cid), newCent1);
-					VectorMath.add(cents2.remove(cid), newCent2);
-
+					VectorMath.add(cents1.remove(cid), newCent);
 					kwds.incrementAll(clusterToKwds.removeKey(cid));
 				}
 
-				newCent1.scale(1f / cids.size());
-				newCent2.scale(1f / cids.size());
+				newCent.scale(1f / cids.size());
 
-				cents1.put(new_cid, VectorUtils.toSparseVector(newCent1));
-				cents2.put(new_cid, VectorUtils.toSparseVector(newCent2));
+				cents1.put(new_cid, VectorUtils.toSparseVector(newCent));
 
 				clusterToKwds.setCounter(new_cid, kwds);
 

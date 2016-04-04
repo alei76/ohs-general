@@ -95,7 +95,14 @@ public class ArrayMath {
 			}
 		}
 		return ret;
+	}
 
+	public static double addAfterScale(double a, double b, double ac, double bc) {
+		return a * ac + b * bc;
+	}
+
+	public static double addAfterScale(double a, double ac, double b) {
+		return addAfterScale(a, b, ac, 1 - ac);
 	}
 
 	public static double addAfterScale(double[] a, double b, double ac, double bc, double[] c) {
@@ -685,8 +692,8 @@ public class ArrayMath {
 			ArrayUtils.setAll(cents, 1);
 			randomWalk(a, cents, 400, 0.0000000001, 1);
 
-			System.out.printf("answer:   \t%text\n", ArrayUtils.toString(answer));
-			System.out.printf("estimated:\t%text\n", ArrayUtils.toString(cents));
+			System.out.printf("answer:   \t%s\n", ArrayUtils.toString(answer));
+			System.out.printf("estimated:\t%s\n", ArrayUtils.toString(cents));
 			System.out.println();
 		}
 
@@ -711,8 +718,8 @@ public class ArrayMath {
 			ArrayUtils.setAll(cents, 1);
 			randomWalk(c, cents, 400, 0.0000000001, 1);
 
-			System.out.printf("answer:   \t%text\n", ArrayUtils.toString(answer));
-			System.out.printf("estimated:\t%text\n", ArrayUtils.toString(cents));
+			System.out.printf("answer:   \t%s\n", ArrayUtils.toString(answer));
+			System.out.printf("estimated:\t%s\n", ArrayUtils.toString(cents));
 		}
 
 		{
@@ -729,8 +736,8 @@ public class ArrayMath {
 			ArrayUtils.setAll(cents, 1);
 			randomWalk(a, cents, 400, 0.0000000001, 0.8);
 
-			System.out.printf("answer:   \t%text\n", ArrayUtils.toString(answer));
-			System.out.printf("estimated:\t%text\n", ArrayUtils.toString(cents));
+			System.out.printf("answer:   \t%s\n", ArrayUtils.toString(answer));
+			System.out.printf("estimated:\t%s\n", ArrayUtils.toString(cents));
 		}
 
 		{
@@ -752,19 +759,19 @@ public class ArrayMath {
 			double[] x1 = { 3, 4, 5, 6, 7 };
 			double[] x2 = { 3, 4, 5, 6, 7 };
 
-			System.out.printf("-> %text\n", correlationPearson(x1, x2));
+			System.out.printf("-> %s\n", correlationPearson(x1, x2));
 		}
 
 		{
 			double[] x1 = { 1, 2, 3, 4, 5 };
 			double[] x2 = { 5, 4, 3, 2, 1 };
-			System.out.printf("-> %text\n", correlationSpearman(x1, x2));
+			System.out.printf("-> %s\n", correlationSpearman(x1, x2));
 		}
 
 		{
 			double[] x1 = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 			double[] x2 = { 1, 6, 8, 7, 10, 9, 3, 5, 2, 4 };
-			System.out.printf("-> %text\n", correlationPearson(x1, x2));
+			System.out.printf("-> %s\n", correlationPearson(x1, x2));
 		}
 
 		{
@@ -1337,7 +1344,7 @@ public class ArrayMath {
 			double dist = euclideanDistance(old_cents, cents);
 
 			if (showLog) {
-				System.out.printf("%d: %text - %text = %text\n", m + 1, old_dist, dist, old_dist - dist);
+				System.out.printf("%d: %s - %s = %s\n", m + 1, old_dist, dist, old_dist - dist);
 			}
 
 			if (dist < min_dist) {

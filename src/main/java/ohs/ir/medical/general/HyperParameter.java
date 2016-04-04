@@ -171,31 +171,31 @@ public class HyperParameter {
 	public String toString(boolean onlyValues) {
 		StringBuffer sb = new StringBuffer();
 		if (onlyValues) {
-			sb.append(String.format("%text", top_k));
-			sb.append(String.format("_%text", top_k_in_wiki));
-			sb.append(String.format("_%text", num_fb_docs));
-			sb.append(String.format("_%text", num_fb_words));
-			sb.append(String.format("_%text", dirichlet_prior));
-			sb.append(String.format("_%text", mixture_for_all_colls));
-			sb.append(String.format("_%text", useDocPrior));
-			sb.append(String.format("_%text", useDoubleScoring));
-			sb.append(String.format("_%text", useWiki));
-			sb.append(String.format("_%text", mixture_for_fb_model));
-			sb.append(String.format("_%text", smoothCollectionMixtures));
-			sb.append(String.format("_%text", adjustNumbers));
+			sb.append(String.format("%s", top_k));
+			sb.append(String.format("_%s", top_k_in_wiki));
+			sb.append(String.format("_%s", num_fb_docs));
+			sb.append(String.format("_%s", num_fb_words));
+			sb.append(String.format("_%s", dirichlet_prior));
+			sb.append(String.format("_%s", mixture_for_all_colls));
+			sb.append(String.format("_%s", useDocPrior));
+			sb.append(String.format("_%s", useDoubleScoring));
+			sb.append(String.format("_%s", useWiki));
+			sb.append(String.format("_%s", mixture_for_fb_model));
+			sb.append(String.format("_%s", smoothCollectionMixtures));
+			sb.append(String.format("_%s", adjustNumbers));
 		} else {
-			sb.append(String.format("top_k\t%text\n", top_k));
-			sb.append(String.format("top_k_in_wiki\t%text\n", top_k_in_wiki));
-			sb.append(String.format("num_fb_docs\t%text\n", num_fb_docs));
-			sb.append(String.format("num_fb_words\t%text\n", num_fb_words));
-			sb.append(String.format("dirichlet_prior\t%text\n", dirichlet_prior));
-			sb.append(String.format("mixture_for_all_colls\t%text\n", mixture_for_all_colls));
-			sb.append(String.format("useDocPrior\t%text\n", useDocPrior));
-			sb.append(String.format("useDoubleScoring\t%text\n", useDoubleScoring));
-			sb.append(String.format("useWiki\t%text\n", useWiki));
-			sb.append(String.format("mixture_for_fb_model\t%text\n", mixture_for_fb_model));
-			sb.append(String.format("smoothCollectionMixtures\t%text\n", smoothCollectionMixtures));
-			sb.append(String.format("adjustNumbers\t%text\n", adjustNumbers));
+			sb.append(String.format("top_k\t%s\n", top_k));
+			sb.append(String.format("top_k_in_wiki\t%s\n", top_k_in_wiki));
+			sb.append(String.format("num_fb_docs\t%s\n", num_fb_docs));
+			sb.append(String.format("num_fb_words\t%s\n", num_fb_words));
+			sb.append(String.format("dirichlet_prior\t%s\n", dirichlet_prior));
+			sb.append(String.format("mixture_for_all_colls\t%s\n", mixture_for_all_colls));
+			sb.append(String.format("useDocPrior\t%s\n", useDocPrior));
+			sb.append(String.format("useDoubleScoring\t%s\n", useDoubleScoring));
+			sb.append(String.format("useWiki\t%s\n", useWiki));
+			sb.append(String.format("mixture_for_fb_model\t%s\n", mixture_for_fb_model));
+			sb.append(String.format("smoothCollectionMixtures\t%s\n", smoothCollectionMixtures));
+			sb.append(String.format("adjustNumbers\t%s\n", adjustNumbers));
 		}
 		return sb.toString();
 	}

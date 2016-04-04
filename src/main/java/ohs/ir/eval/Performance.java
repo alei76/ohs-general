@@ -135,12 +135,12 @@ public class Performance {
 		ret.append(String.format("Retrieved:\t%d\n", total_retrieved));
 		ret.append(String.format("Relevant in Retrieved:\t%d\n", total_relevant_in_ret));
 		ret.append(String.format("Relevant@%d:\t%d\n", top_n, total_relevant_at_n));
-		ret.append(String.format("P@%d:\t%text\n", top_n, nf.format(precision)));
-		ret.append(String.format("MAP@%d:\t%text\n", top_n, nf.format(map)));
-		ret.append(String.format("NDCG@%d:\t%text\n", top_n, nf.format(ndcg)));
-		ret.append(String.format("P_RRT@%d:\t%text\n", top_n, nf.format(precision_rrt)));
-		ret.append(String.format("MAP_RRT@%d:\t%text\n", top_n, nf.format(map_rrt)));
-		ret.append(String.format("NDCG_RRT@%d:\t%text\n", top_n, nf.format(ndcg_rrt)));
+		ret.append(String.format("P@%d:\t%s\n", top_n, nf.format(precision)));
+		ret.append(String.format("MAP@%d:\t%s\n", top_n, nf.format(map)));
+		ret.append(String.format("NDCG@%d:\t%s\n", top_n, nf.format(ndcg)));
+		ret.append(String.format("P_RRT@%d:\t%s\n", top_n, nf.format(precision_rrt)));
+		ret.append(String.format("MAP_RRT@%d:\t%s\n", top_n, nf.format(map_rrt)));
+		ret.append(String.format("NDCG_RRT@%d:\t%s\n", top_n, nf.format(ndcg_rrt)));
 
 		if (showEachQueryPerformance) {
 			MetricType[] mts = { MetricType.RETRIEVED, MetricType.RELEVANT, MetricType.RELEVANT_IN_RET, MetricType.RELEVANT_AT,
@@ -149,7 +149,7 @@ public class Performance {
 			ret.append("[Individual Performances]\n");
 			ret.append("Id");
 			for (MetricType mt : mts) {
-				ret.append(String.format("\t%text", mt));
+				ret.append(String.format("\t%s", mt));
 			}
 
 			if (baseline != null) {

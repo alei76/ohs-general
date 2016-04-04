@@ -37,8 +37,8 @@ public class PerformanceEvaluator {
 			PerformanceEvaluator eval = new PerformanceEvaluator();
 			eval.evalute(resultData, relevanceData);
 
-			System.out.printf("[%text]\n", retModel);
-			System.out.printf("%text\n\n", eval.toString(true));
+			System.out.printf("[%s]\n", retModel);
+			System.out.printf("%s\n\n", eval.toString(true));
 		}
 
 		System.out.println("process ends.");

@@ -33,7 +33,7 @@ import com.google.common.collect.Maps;
  * the activity from other threads.
  *
  * <pre>
- *  try (ProfilingTimer timer = ProfilingTimer.start(LOG, "processing file %text", file.getName())) {
+ *  try (ProfilingTimer timer = ProfilingTimer.start(LOG, "processing file %s", file.getName())) {
  *  	// manually starting and finishing of a task
  *  	timer.start("uncompressing file");
  *  	// ... unzipping code here ...
@@ -91,7 +91,7 @@ public class ProfilingTimer implements AC {
 
 		private void addChild(ProfilingTimerNode child) {
 			if (child.parent != null) {
-				throw new IllegalStateException(String.format("Child [%text] already belongs to parent [%text], can't be added to new parent [%text]",
+				throw new IllegalStateException(String.format("Child [%s] already belongs to parent [%s], can't be added to new parent [%s]",
 						child.taskName, child.parent.taskName, taskName));
 			}
 
@@ -112,8 +112,8 @@ public class ProfilingTimer implements AC {
 		}
 
 		private void merge(ProfilingTimerNode other) {
-			Preconditions.checkState(other.start == ProfilingTimerNode.CLOSED, "Can't merge non-closed node: %text", other.taskName);
-			Preconditions.checkState(start == ProfilingTimerNode.CLOSED, "Can't merge into non-closed nodes: %text", taskName);
+			Preconditions.checkState(other.start == ProfilingTimerNode.CLOSED, "Can't merge non-closed node: %s", other.taskName);
+			Preconditions.checkState(start == ProfilingTimerNode.CLOSED, "Can't merge into non-closed nodes: %s", taskName);
 
 			totalNanos += other.totalNanos;
 			count += other.count;
@@ -219,7 +219,7 @@ public class ProfilingTimer implements AC {
 
 	/** @return a human-readable formatted string for the given amount of nanos */
 	private static String formatElapsed(long nanos) {
-		return String.format("%text (%6.3g nanoseconds)",
+		return String.format("%s (%6.3g nanoseconds)",
 				PeriodFormat.getDefault().print(Period.millis((int)(nanos / 1000))),
 				(double) nanos);
 	}
@@ -234,14 +234,14 @@ public class ProfilingTimer implements AC {
 		for (int i = 0; i < level; i++) {
 			sb.append('\t');
 		}
-		String durationText = String.format("%text%text",
+		String durationText = String.format("%s%s",
 				formatElapsed(totalNanos),
 				count == 1 ?
 						"" :
-						String.format(" across %d invocations, average: %text", count, formatElapsed(totalNanos / count)));
+						String.format(" across %d invocations, average: %s", count, formatElapsed(totalNanos / count)));
 		String text = parent == null ?
-				String.format("total time %text", durationText) :
-				String.format("[%text] took %text", taskName, durationText);
+				String.format("total time %s", durationText) :
+				String.format("[%s] took %s", taskName, durationText);
 		sb.append(text);
 		sb.append(logAppendMessage);
 		log.info(sb.toString());

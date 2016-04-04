@@ -86,7 +86,7 @@ public class ResultsAnalyzer {
 			StringBuffer sb = new StringBuffer();
 			sb.append(j + 1);
 			for (int i = 0; i < correlationsMatrix.length; i++) {
-				sb.append(String.format("\t%text", correlationsMatrix[i][j]));
+				sb.append(String.format("\t%s", correlationsMatrix[i][j]));
 			}
 			writer.write(sb.toString() + "\n");
 		}
@@ -96,7 +96,7 @@ public class ResultsAnalyzer {
 
 		for (int i = 0; i < correlationsMatrix.length; i++) {
 			double avgCor = ArrayMath.mean(correlationsMatrix[i]);
-			sb.append(String.format("\t%text", avgCor));
+			sb.append(String.format("\t%s", avgCor));
 		}
 		writer.write(sb.toString() + "\n");
 		writer.close();

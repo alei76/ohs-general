@@ -44,7 +44,7 @@ public class AbbreviationExtracting {
 
 		for (int i = 0; i < maxDoc; i++) {
 			if ((i + 1) % 1000 == 0) {
-				System.out.printf("\r[%d / %d, %text]", i + 1, maxDoc, stopWatch.stop());
+				System.out.printf("\r[%d / %d, %s]", i + 1, maxDoc, stopWatch.stop());
 			}
 			Document doc = indexReader.document(i);
 			String docId = doc.getField(CommonFieldNames.DOCUMENT_ID).stringValue();
@@ -63,12 +63,12 @@ public class AbbreviationExtracting {
 				for (TextSpan[] spans : spansList) {
 					String shortForm = spans[0].getText();
 					String longForm = spans[1].getText();
-					String output = String.format("%text\t%text\t%d\t%d", shortForm, longForm, i, j);
+					String output = String.format("%s\t%s\t%d\t%d", shortForm, longForm, i, j);
 					writer.write(output + "\n");
 				}
 			}
 		}
-		System.out.printf("\r[%d / %d, %text]\n", maxDoc, maxDoc, stopWatch.stop());
+		System.out.printf("\r[%d / %d, %s]\n", maxDoc, maxDoc, stopWatch.stop());
 		writer.close();
 	}
 
@@ -157,7 +157,7 @@ public class AbbreviationExtracting {
 			Counter<String> long_count = short_long_count.getCounter(shortForm);
 			for (String longForm : long_count.getSortedKeys()) {
 				int count = (int) long_count.getCount(longForm);
-				sb.append(String.format("\n%text\t%d", longForm, count));
+				sb.append(String.format("\n%s\t%d", longForm, count));
 			}
 			writer.write(sb.toString() + "\n\n");
 		}
@@ -172,7 +172,7 @@ public class AbbreviationExtracting {
 			String shortForm = pair.getFirst();
 			String longForm = pair.getSecond();
 
-			String regex = String.format("(%text)(\\text)?\\((\\text)?(%text)(\\text)?\\)", shortForm, longForm);
+			String regex = String.format("(%s)(\\text)?\\((\\text)?(%s)(\\text)?\\)", shortForm, longForm);
 			Pattern p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
 			Matcher m = p.matcher(content);
 
@@ -220,7 +220,7 @@ public class AbbreviationExtracting {
 			Counter<String> long_count = short_long_count.getCounter(shortForm);
 			for (String longForm : long_count.getSortedKeys()) {
 				int count = (int) long_count.getCount(longForm);
-				sb.append(String.format("\n%text\t%d", longForm, count));
+				sb.append(String.format("\n%s\t%d", longForm, count));
 			}
 			writer.write(sb.toString() + "\n\n");
 		}

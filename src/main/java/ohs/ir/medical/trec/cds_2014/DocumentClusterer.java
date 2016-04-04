@@ -235,7 +235,7 @@ public class DocumentClusterer {
 			NumberFormat nf = NumberFormat.getInstance();
 			nf.setMinimumFractionDigits(5);
 
-			// System.out.printf("[%d] clusters, similarity [%text] between [%text] and [%text]\n",
+			// System.out.printf("[%d] clusters, similarity [%s] between [%s] and [%s]\n",
 			//
 			// tempClusterDocMap.size(), nf.format(best_sim), best_cId1,
 			// best_cId2);
@@ -267,7 +267,7 @@ public class DocumentClusterer {
 				clusterDocCounts.setCount(cId, tempClusterDocMap.get(cId).size());
 			}
 
-			System.out.printf("[%d]th iter\t[%d] clusters\t%text\n", i + 1, clusterDocCounts.size(), clusterDocCounts.toString());
+			System.out.printf("[%d]th iter\t[%d] clusters\t%s\n", i + 1, clusterDocCounts.size(), clusterDocCounts.toString());
 		}
 
 		clusterDocMap = new SetMap<Integer, Integer>();
@@ -289,7 +289,7 @@ public class DocumentClusterer {
 			clusterDocCounts.setCount(cId, clusterDocMap.get(cId).size());
 		}
 
-		System.out.printf("[%d] clusters\t%text\n", clusterDocCounts.size(), clusterDocCounts.toString());
+		System.out.printf("[%d] clusters\t%s\n", clusterDocCounts.size(), clusterDocCounts.toString());
 
 		clusterWordCountData = new ArrayList<SparseVector>(tempClusterWordCountData.values());
 	}

@@ -133,7 +133,7 @@ public class Experiments {
 				c.incrementCount(searcher.getWordIndexer().getObject(i), ArrayMath.dotProduct(v, vectors[i]));
 			}
 
-			System.out.printf("%text -> %text\n", word, c.toString());
+			System.out.printf("%s -> %s\n", word, c.toString());
 		}
 
 		ArrayMath.unitVector(qwv, qwv);
@@ -265,7 +265,7 @@ public class Experiments {
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
 
-			String outputFileName = String.format("%text/%d.txt", dirPath, i);
+			String outputFileName = String.format("%s/%d.txt", dirPath, i);
 
 			TextFileWriter writer = new TextFileWriter(outputFileName);
 
@@ -367,8 +367,8 @@ public class Experiments {
 				docScores = scorer.score(wcb, eqlm);
 
 				System.out.println(bq);
-				System.out.printf("QM1:\t%text\n", VectorUtils.toCounter(qlm, wordIndexer));
-				System.out.printf("QM2:\t%text\n", VectorUtils.toCounter(eqlm, wordIndexer));
+				System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(qlm, wordIndexer));
+				System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(eqlm, wordIndexer));
 
 				SearcherUtils.write(writer, bq.getId(), docScores);
 			}
@@ -422,8 +422,8 @@ public class Experiments {
 				docScores = scorer.score(wcb, eqlm);
 
 				System.out.println(bq);
-				System.out.printf("QM1:\t%text\n", VectorUtils.toCounter(qlm, wordIndexer));
-				System.out.printf("QM2:\t%text\n", VectorUtils.toCounter(eqlm, wordIndexer));
+				System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(qlm, wordIndexer));
+				System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(eqlm, wordIndexer));
 
 				SearcherUtils.write(writer, bq.getId(), docScores);
 			}
@@ -505,8 +505,8 @@ public class Experiments {
 				docScores = scorer.score(wcb, eqlm);
 
 				System.out.println(bq);
-				System.out.printf("QM1:\t%text\n", VectorUtils.toCounter(qlm, wordIndexer));
-				System.out.printf("QM2:\t%text\n", VectorUtils.toCounter(eqlm, wordIndexer));
+				System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(qlm, wordIndexer));
+				System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(eqlm, wordIndexer));
 
 				SearcherUtils.write(writer, bq.getId(), docScores);
 
@@ -569,9 +569,9 @@ public class Experiments {
 				docScores.normalizeAfterSummation();
 
 				System.out.println(bq);
-				System.out.printf("QM1:\t%text\n", VectorUtils.toCounter(qlm1, wordIndexer));
-				System.out.printf("QM2:\t%text\n", VectorUtils.toCounter(qlm2, wordIndexer));
-				System.out.printf("QM3:\t%text\n", VectorUtils.toCounter(qlm3, wordIndexer));
+				System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(qlm1, wordIndexer));
+				System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(qlm2, wordIndexer));
+				System.out.printf("QM3:\t%s\n", VectorUtils.toCounter(qlm3, wordIndexer));
 
 				SearcherUtils.write(writer, bq.getId(), docScores);
 			}
@@ -692,9 +692,9 @@ public class Experiments {
 				docScores.normalizeAfterSummation();
 
 				System.out.println(bq);
-				System.out.printf("QM1:\t%text\n", VectorUtils.toCounter(qlm1, wordIndexer));
-				System.out.printf("QM2:\t%text\n", VectorUtils.toCounter(qlm2, wordIndexer));
-				System.out.printf("QM3:\t%text\n", VectorUtils.toCounter(qlm3, wordIndexer));
+				System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(qlm1, wordIndexer));
+				System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(qlm2, wordIndexer));
+				System.out.printf("QM3:\t%s\n", VectorUtils.toCounter(qlm3, wordIndexer));
 
 				SearcherUtils.write(writer, bq.getId(), docScores);
 			}
@@ -794,8 +794,8 @@ public class Experiments {
 				docScores = scorer.score(wcb, eqlm);
 
 				System.out.println(bq);
-				System.out.printf("QM1:\t%text\n", VectorUtils.toCounter(qlm, wordIndexer));
-				System.out.printf("QM2:\t%text\n", VectorUtils.toCounter(eqlm, wordIndexer));
+				System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(qlm, wordIndexer));
+				System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(eqlm, wordIndexer));
 
 				SearcherUtils.write(writer, bq.getId(), docScores);
 			}
@@ -865,8 +865,8 @@ public class Experiments {
 				docScores.normalizeAfterSummation();
 
 				System.out.println(bq);
-				System.out.printf("QM1:\t%text\n", VectorUtils.toCounter(qlm, wordIndexer));
-				System.out.printf("QM2:\t%text\n", VectorUtils.toCounter(eqlm, wordIndexer));
+				System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(qlm, wordIndexer));
+				System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(eqlm, wordIndexer));
 
 				SearcherUtils.write(writer, bq.getId(), docScores);
 			}
@@ -932,7 +932,7 @@ public class Experiments {
 					Document doc = sis.doc(sentId);
 					String sent = doc.get(CommonFieldNames.CONTENT);
 					String docId = doc.get(CommonFieldNames.DOCUMENT_ID);
-					// logWriter.write(String.format("\n%d\t%text\t%text\t%text", k + 1,
+					// logWriter.write(String.format("\n%d\t%s\t%s\t%s", k + 1,
 					// did, score, sent));
 					cm.incrementCount(docId, sentId, score);
 				}
@@ -1016,7 +1016,7 @@ public class Experiments {
 					Document doc = sis.doc(sentId);
 					String sent = doc.get(CommonFieldNames.CONTENT);
 					String docId = doc.get(CommonFieldNames.DOCUMENT_ID);
-					logWriter.write(String.format("\n%d\t%text\t%text\t%text", k + 1, docId, score, sent));
+					logWriter.write(String.format("\n%d\t%s\t%s\t%s", k + 1, docId, score, sent));
 					cm.incrementCount(docId, sentId, score);
 				}
 				logWriter.write("\n\n");
@@ -1103,7 +1103,7 @@ public class Experiments {
 					int cnt1 = (int) qwcs.getCount(word);
 					int cnt2 = (int) wwcs.getCount(word);
 					if (cnt2 > 0) {
-						sb.append(String.format("\n%d\t%text\t%d\t%d", ++loc, word, cnt1, cnt2));
+						sb.append(String.format("\n%d\t%s\t%d\t%d", ++loc, word, cnt1, cnt2));
 					}
 				}
 				sb.append("\n\n");

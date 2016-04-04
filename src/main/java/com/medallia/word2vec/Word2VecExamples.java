@@ -109,7 +109,7 @@ public class Word2VecExamples {
 	// .setDownSamplingRate(1e-3).setNumIterations(5).setListener(new TrainingProgressListener() {
 	// @Override
 	// public void update(Stage stage, double progress) {
-	// System.out.println(String.format("%text is %.2f%% complete", Format.formatEnum(stage), progress * 100));
+	// System.out.println(String.format("%s is %.2f%% complete", Format.formatEnum(stage), progress * 100));
 	// }
 	// }).train(vocab, sents);
 	//
@@ -164,7 +164,7 @@ public class Word2VecExamples {
 			int num_valid_sents = 0;
 
 			{
-				System.out.printf("read [%text]\n", inFileName);
+				System.out.printf("read [%s]\n", inFileName);
 				Counter<String> wordCounts = new Counter<String>();
 				TextFileReader reader = new TextFileReader(inFileName);
 				reader.setPrintNexts(false);
@@ -267,7 +267,7 @@ public class Word2VecExamples {
 
 			@Override
 			public void update(Stage stage, double progress) {
-				System.out.println(String.format("%text is %.2f%% complete", Format.formatEnum(stage), progress * 100));
+				System.out.println(String.format("%s is %.2f%% complete", Format.formatEnum(stage), progress * 100));
 			}
 		});
 

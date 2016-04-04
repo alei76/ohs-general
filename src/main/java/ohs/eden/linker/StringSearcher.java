@@ -114,7 +114,7 @@ public class StringSearcher implements Serializable {
 
 			if ((i + 1) % chunk_size == 0) {
 				int progess = (int) ((i + 1f) / input.size() * 100);
-				System.out.printf("\r[%d percent, %text]", progess, stopWatch.stop());
+				System.out.printf("\r[%d percent, %s]", progess, stopWatch.stop());
 			}
 
 			StringRecord sr = input.get(i);
@@ -133,8 +133,8 @@ public class StringSearcher implements Serializable {
 				gramDFs.incrementCount(gid, 1);
 			}
 		}
-		System.out.printf("\r[%d percent, %text]\n", 100, stopWatch.stop());
-		System.out.printf("built gram indexer [%d, %text].\n", gramIndexer.size(), stopWatch.stop());
+		System.out.printf("\r[%d percent, %s]\n", 100, stopWatch.stop());
+		System.out.printf("built gram indexer [%d, %s].\n", gramIndexer.size(), stopWatch.stop());
 
 		gram_dfs = new int[gramIndexer.size()];
 		gram_cnts = new int[gramIndexer.size()];
@@ -183,7 +183,7 @@ public class StringSearcher implements Serializable {
 	}
 
 	public void index(List<StringRecord> input, boolean append) {
-		System.out.printf("index [%text] records.\n", input.size());
+		System.out.printf("index [%s] records.\n", input.size());
 
 		if (index == null && !append) {
 			gramIndexer = new Indexer<String>();
@@ -205,7 +205,7 @@ public class StringSearcher implements Serializable {
 
 			if ((i + 1) % chunk_size == 0) {
 				int progess = (int) ((i + 1f) / input.size() * 100);
-				System.out.printf("\r[%d percent, %text]", progess, stopWatch.stop());
+				System.out.printf("\r[%d percent, %s]", progess, stopWatch.stop());
 			}
 
 			StringRecord sr = input.get(i);
@@ -236,7 +236,7 @@ public class StringSearcher implements Serializable {
 			srs.put(sr.getId(), sr);
 		}
 
-		System.out.printf("\r[%d percent, %text]\n", 100, stopWatch.stop());
+		System.out.printf("\r[%d percent, %s]\n", 100, stopWatch.stop());
 
 		for (int gid : index.keySet()) {
 			Collections.sort(index.get(gid));
@@ -315,7 +315,7 @@ public class StringSearcher implements Serializable {
 			index.set(ois.readInt(), FileUtils.readIntList(ois));
 		}
 
-		System.out.printf("read [%text] - [%text]\n", this.getClass().getName(), stopWatch.stop());
+		System.out.printf("read [%s] - [%s]\n", this.getClass().getName(), stopWatch.stop());
 	}
 
 	public Counter<StringRecord> search(String s) {
@@ -355,7 +355,7 @@ public class StringSearcher implements Serializable {
 		logBuff = new StringBuffer();
 
 		if (makeLog) {
-			logBuff.append(String.format("Input:\t%text", s));
+			logBuff.append(String.format("Input:\t%s", s));
 		}
 
 		Counter<StringRecord> ret = Generics.newCounter();
@@ -442,7 +442,7 @@ public class StringSearcher implements Serializable {
 		}
 		oos.flush();
 
-		System.out.printf("write [%text] - [%text]\n", this.getClass().getName(), stopWatch.stop());
+		System.out.printf("write [%s] - [%s]\n", this.getClass().getName(), stopWatch.stop());
 	}
 
 	public void write(String fileName) throws Exception {

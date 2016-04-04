@@ -213,15 +213,15 @@ public class VectorMath {
 	}
 
 	public static double dotProduct(Vector a, Vector b, boolean normalizeBefore) {
-		if (a.dim() != b.dim()) {
-			new IllegalArgumentException("different dimension");
-		}
+//		if (a.dim() != b.dim()) {
+//			new IllegalArgumentException("different dimension");
+//		}
 		double ret = 0;
 		if (isSparse(a) && isSparse(b)) {
 			int i = 0, j = 0;
 			while (i < a.size() && j < b.size()) {
 				int index1 = a.indexAtLoc(i);
-				int index2 = a.indexAtLoc(j);
+				int index2 = b.indexAtLoc(j);
 				double value1 = normalizeBefore ? a.probAtLoc(i) : a.valueAtLoc(i);
 				double value2 = normalizeBefore ? b.probAtLoc(j) : b.valueAtLoc(j);
 				if (index1 == index2) {
@@ -334,7 +334,7 @@ public class VectorMath {
 			int index = x.indexAtLoc(i);
 			double value = x.valueAtLoc(i);
 			if (Double.isInfinite(value) || Double.isNaN(value) || index < 0) {
-				System.out.println(String.format("(%d, %d, %text)", i, index, value));
+				System.out.println(String.format("(%d, %d, %s)", i, index, value));
 				System.exit(0);
 				ret = false;
 				break;
@@ -757,7 +757,7 @@ public class VectorMath {
 
 			double dist = ArrayMath.euclideanDistance(old_cents, cents);
 
-			System.out.printf("%d: %text - %text = %text\n", m + 1, old_dist, dist, old_dist - dist);
+			System.out.printf("%d: %s - %s = %s\n", m + 1, old_dist, dist, old_dist - dist);
 
 			if (dist < min_dist) {
 				break;

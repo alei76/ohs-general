@@ -130,7 +130,7 @@ public class Gram implements Serializable {
 
 	@Override
 	public String toString() {
-		return String.format("(%text, %d, %text)", g, start, type);
+		return String.format("(%s, %d, %s)", g, start, type);
 	}
 
 }

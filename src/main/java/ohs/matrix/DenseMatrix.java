@@ -37,7 +37,7 @@ public class DenseMatrix implements Matrix {
 	}
 
 	public static DenseMatrix read(String fileName) throws Exception {
-		System.out.printf("read [%text].\n", fileName);
+		System.out.printf("read [%s].\n", fileName);
 		DenseMatrix ret = null;
 		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
 		ret = read(ois);
@@ -247,7 +247,7 @@ public class DenseMatrix implements Matrix {
 
 		for (int i = 0; i < 15 && i < rowDim(); i++) {
 			DenseVector vector = rows[i];
-			sb.append(String.format("%dth: %text\n", i, vector.toString(20, true, false, null)));
+			sb.append(String.format("%dth: %s\n", i, vector.toString(20, true, false, null)));
 		}
 
 		return sb.toString().trim();
@@ -295,7 +295,7 @@ public class DenseMatrix implements Matrix {
 
 	@Override
 	public void write(String fileName) throws Exception {
-		System.out.printf("write to [%text].\n", fileName);
+		System.out.printf("write to [%s].\n", fileName);
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 		write(oos);
 		oos.close();
