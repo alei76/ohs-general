@@ -115,7 +115,7 @@ public class Token implements Serializable {
 			sb.append(StrUtils.join("\t", TokenAttr.strValues()));
 			sb.append("\n");
 		}
-		sb.append(StrUtils.join("\t", StrUtils.enclose(values)));
+		sb.append(StrUtils.join("\t", StrUtils.wrap(values)));
 		return sb.toString();
 	}
 

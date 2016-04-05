@@ -42,7 +42,7 @@ public class KeywordClusterer {
 
 		KeywordClusterer kc = new KeywordClusterer(data);
 		kc.cluster();
-		kc.writeClusterText(KPPath.KEYWORD_CLUSTER_FILE);
+		kc.writeClusters(KPPath.KEYWORD_CLUSTER_FILE);
 
 		// data.write(KPPath.KEYWORD_DATA_FILE.replace("txt", "ser"));
 
@@ -116,12 +116,12 @@ public class KeywordClusterer {
 		exactTwoLanguageMatch();
 
 		// selectClusterLabels();
-		// writeClusterText(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-01.txt"));
+		// writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-01.txt"));
 
 		exactLanguageMatch(false);
 
-		// selectClusterLabels();
-		// writeClusterText(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-02.txt"));
+		selectClusterLabels();
+		writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-02.txt"));
 
 		// exactLanguageMatch(true);
 
@@ -131,7 +131,7 @@ public class KeywordClusterer {
 
 		// filter(3);
 
-//		hierarchicalAgglomerativeClustering();
+		// hierarchicalAgglomerativeClustering();
 
 		selectClusterLabels();
 
@@ -159,9 +159,9 @@ public class KeywordClusterer {
 				String[] two = kwdStr.split("\t");
 				String key = StrUtils.value(isEnglish, two[1], two[0]);
 				key = normalize(key);
-				if (key.length() < 4) {
-					continue;
-				}
+				// if (key.length() < 4) {
+				// continue;
+				// }
 				keyToKwds.put(key, kwdid);
 			}
 		}
@@ -549,10 +549,10 @@ public class KeywordClusterer {
 
 			for (int kwdid : c.keySet()) {
 				String kwdStr = kwdIndexer.getObject(kwdid);
-				String lang = kwdStr.split("\t")[i];
+				String kwd = kwdStr.split("\t")[i];
 				int kw_freq = (int) c.getCount(kwdid);
 
-				for (Gram g : gg.generateQGrams(lang.toLowerCase())) {
+				for (Gram g : gg.generateQGrams(kwd.toLowerCase())) {
 					gramProbs.incrementCount(g.getString().substring(0, 2), g.getString().charAt(2), kw_freq);
 				}
 			}
@@ -562,10 +562,10 @@ public class KeywordClusterer {
 			Counter<String> kwdScores = Generics.newCounter();
 
 			for (int kwid : c.keySet()) {
-				String keyword = kwdIndexer.getObject(kwid);
-				String lang = keyword.split("\t")[i];
-				double log_likelihood = computeLoglikelihood(gg.generateQGrams(normalize(lang)), gramProbs);
-				kwdScores.incrementCount(lang, log_likelihood);
+				String kwdStr = kwdIndexer.getObject(kwid);
+				String kwd = kwdStr.split("\t")[i];
+				double log_likelihood = computeLoglikelihood(gg.generateQGrams(normalize(kwd)), gramProbs);
+				kwdScores.incrementCount(kwd, log_likelihood);
 			}
 
 			if (kwdScores.size() == 0) {
@@ -718,7 +718,7 @@ public class KeywordClusterer {
 		System.out.println(sb.toString());
 	}
 
-	public void writeClusterText(String fileName) {
+	public void writeClusters(String fileName) {
 		TextFileWriter writer = new TextFileWriter(fileName);
 
 		writer.write(String.format("Clusters:\t%d", clusterToKwds.size()));

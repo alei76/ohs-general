@@ -10,7 +10,7 @@ import ohs.nlp.pos.NLPPath;
  * http://www.elex.pe.kr/entry/유니코드에서의-한글
  *
  */
-public class KorUnicodeUtils {
+public class UnicodeUtils {
 
 	public static final int[] HANGUL_SYLLABLES_RANGE = { 0xAC00, 0xD7A3 + 1 };
 
@@ -526,6 +526,39 @@ public class KorUnicodeUtils {
 		}
 
 		System.out.println();
+	}
+
+	public static final int[] ENGLISH_LOWER_RANGE = { 'a', 'z' + 1 };
+
+	public static final int[] ENGLISH_UPPER_RANGE = { 'A', 'Z' + 1 };
+
+	public static final int[] NUMBER_RANGE = { '0', '9' + 1 };
+
+	public static boolean isNumber(char c) {
+		return isInRange(NUMBER_RANGE, c);
+	}
+
+	public static boolean isEnglish(char c) {
+		int i = c;
+		return isInRange(ENGLISH_LOWER_RANGE, i) || isInRange(ENGLISH_UPPER_RANGE, i);
+	}
+
+	public static boolean isKorean(char c) {
+
+		return isInRange(HANGUL_SYLLABLES_RANGE, c)
+
+				|| isInRange(HANGUL_COMPATIBILITY_JAMO_JAEUM_RANGE, c)
+
+				|| isInRange(HANGUL_COMPATIBILITY_JAMO_MOEUM_RANGE, c)
+
+				|| isInRange(HANGUL_JAMO_CHOSUNG_RANGE, c)
+
+				|| isInRange(HANGUL_JAMO_JUNGSUNG_RANGE, c)
+
+				|| isInRange(HANGUL_JAMO_JONGSUNG_RANGE, c)
+
+		;
+
 	}
 
 }

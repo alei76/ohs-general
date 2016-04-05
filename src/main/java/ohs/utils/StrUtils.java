@@ -99,16 +99,29 @@ public class StrUtils {
 		return ret;
 	}
 
-	public static String[] enclose(String[] s) {
-		return enclose(s, "\"", "\"");
+	public static String[] wrap(String[] a) {
+		String[] b = new String[a.length];
+		wrap(a, "\"", "\"", b);
+		return b;
 	}
 
-	public static String[] enclose(String[] s, String open, String close) {
-		String[] ret = new String[s.length];
-		for (int i = 0; i < s.length; i++) {
-			ret[i] = String.format("%s%s%s", open, s[i], close);
+	public static String[] unwrap(String[] a) {
+		String[] b = new String[a.length];
+		unwrap(a, "\"", "\"", b);
+		return b;
+	}
+
+	public static String[] unwrap(String[] a, String open, String close, String[] b) {
+		for (int i = 0; i < a.length; i++) {
+			b[i] = a[i].substring(open.length(), a[i].length() - close.length());
 		}
-		return ret;
+		return b;
+	}
+
+	public static void wrap(String[] a, String open, String close, String[] b) {
+		for (int i = 0; i < a.length; i++) {
+			b[i] = String.format("%s%s%s", open, a[i], close);
+		}
 	}
 
 	public static int encodeByCodePoints(char s, int base) {
@@ -593,14 +606,15 @@ public class StrUtils {
 	}
 
 	public static List<String> split(String text) {
-		return split("[\\text]+", text);
+		return split("[\\s]+", text);
 	}
 
 	public static List<String> split(String delimiter, String text) {
-		List<String> ret = new ArrayList<String>();
+		ArrayList<String> ret = new ArrayList<String>();
 		for (String tok : text.split(delimiter)) {
 			ret.add(tok);
 		}
+		ret.trimToSize();
 		return ret;
 	}
 
@@ -781,8 +795,12 @@ public class StrUtils {
 		return sb.toString();
 	}
 
-	public static String value(boolean condition, String s1, String s2) {
-		return condition ? s1 : s2;
+	public static String value(boolean condition, String a, String b) {
+		return condition ? a : b;
+	}
+
+	public static char value(boolean condition, char a, char b) {
+		return condition ? a : b;
 	}
 
 };

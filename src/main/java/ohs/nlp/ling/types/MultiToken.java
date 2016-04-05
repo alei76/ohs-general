@@ -65,7 +65,7 @@ public class MultiToken extends Token {
 		for (int i = 1; i < TokenAttr.size(); i++) {
 			StrUtils.join(Token.DELIM_TOKEN, s, getSubValues(TokenAttr.values()[i]));
 		}
-		StrUtils.enclose(s);
+		StrUtils.wrap(s);
 		return StrUtils.join(DELIM_MULTI_TOKEN, s);
 	}
 
@@ -117,7 +117,7 @@ public class MultiToken extends Token {
 		for (int i = 0; i < toks.length; i++) {
 			s[i] = StrUtils.join(Token.DELIM_TOKEN, StrUtils.replace(toks[i].getValues(), "", "X"));
 		}
-		sb.append(StrUtils.join(DELIM_MULTI_TOKEN, StrUtils.enclose(s)));
+		sb.append(StrUtils.join(DELIM_MULTI_TOKEN, StrUtils.wrap(s)));
 		return sb.toString();
 	}
 

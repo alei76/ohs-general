@@ -17,7 +17,7 @@ import ohs.io.FileUtils;
 import ohs.nlp.pos.NLPPath;
 import ohs.tree.trie.hash.Node.Type;
 import ohs.tree.trie.hash.Trie.SearchResult.MatchType;
-import ohs.utils.KorUnicodeUtils;
+import ohs.utils.UnicodeUtils;
 import ohs.utils.StrUtils;
 
 public class Trie<K> implements Serializable {
@@ -71,7 +71,7 @@ public class Trie<K> implements Serializable {
 				String word = parts[0];
 				String pos = parts[1];
 
-				String word2 = KorUnicodeUtils.decomposeToJamo(word);
+				String word2 = UnicodeUtils.decomposeToJamo(word);
 
 				sysDict1.insert(StrUtils.toCharacters(word2.toCharArray()));
 			}

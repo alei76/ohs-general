@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 import ohs.nlp.ling.types.KDocument;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
+import ohs.utils.UnicodeUtils;
 
 public class TextTokenizer {
 
@@ -13,9 +14,11 @@ public class TextTokenizer {
 
 	}
 
-	private Pattern p1 = Pattern.compile("[\\p{Punct}]+");
+	private Pattern punctPat = Pattern.compile("[\\p{Punct}]+");
 
-	private Pattern p2 = Pattern.compile("[\\p{Digit}]+");
+	private Pattern digitPat = Pattern.compile("[\\p{Digit}]+");
+
+	private Pattern engPat = Pattern.compile("[\\p{Digit}]+");
 
 	public TextTokenizer() {
 
@@ -31,35 +34,148 @@ public class TextTokenizer {
 	}
 
 	public KDocument tokenize(String text) {
-		List<String> sents = splitSentences(text);
-
-		return KDocument.newDocument(sents.toArray(new String[sents.size()]));
-	}
-
-	private String tokenize01(String text) {
 		StringBuffer sb = new StringBuffer();
 
-		List<String> toks = StrUtils.split(text);
+		for (String line : text.split("[\n]+")) {
+			for (String word : line.split("[\\s]+")) {
+				word = tokenizeWord(word);
+				sb.append(word);
 
-		for (int i = 0; i < toks.size(); i++) {
-			String tok = toks.get(i);
+				if (word.endsWith("다 .") || word.endsWith("다.")) {
+					sb.append("\n");
+				} else {
+					sb.append(" ");
+				}
+			}
+			sb.append("\n");
 		}
 
-		for (int i = 0; i < text.length(); i++) {
-			String s = new String(new char[] { text.charAt(i) });
+		return KDocument.newDocument(sb.toString().trim().split("\n"));
+	}
 
-			if (p1.matcher(s).find()) {
+	private String tokenizeLine(String line) {
+		StringBuffer sb = new StringBuffer();
+		List<String> words = StrUtils.split(line);
 
-			} else if (p2.matcher(s).find()) {
+		for (int i = 0; i < words.size(); i++) {
+			String word = words.get(i);
+			word = tokenizeWord(word);
 
+			sb.append(word);
+
+			if (i != words.size() - 1) {
+				sb.append(" ");
 			}
 		}
-
-		return text;
+		return sb.toString();
 	}
 
-	private String tokenize02(String t) {
+	private String tokenizeWord(String word) {
 		StringBuffer sb = new StringBuffer();
+		int len = word.length();
+
+		for (int i = 0; i < len; i++) {
+			char c = word.charAt(i);
+
+			if (c == '.') {
+				int end = i + 1;
+				if (end == len) {
+					char pc = StrUtils.value(i - 1 >= 0, word.charAt(i - 1), '#');
+					if (pc == '다') {
+						sb.append(" ");
+					}
+				}
+				sb.append(word.substring(i, end));
+
+				i = end - 1;
+			} else if (c == '\"' || c == '\'' || c == '{' || c == '}' || c == '(' || c == ')') {
+				int end = i + 1;
+				while (end < len) {
+					char nc = word.charAt(end);
+					if (c == nc) {
+						end++;
+					} else {
+						break;
+					}
+				}
+
+				if (sb.length() > 0) {
+					sb.append(" ");
+				}
+
+				sb.append(word.substring(i, end));
+
+				i = end - 1;
+			} else if (UnicodeUtils.isEnglish(c)) {
+				int end = i + 1;
+				while (end < len) {
+					char nc = word.charAt(end);
+					if (UnicodeUtils.isEnglish(nc) || nc == '-') {
+						end++;
+					} else {
+						break;
+					}
+				}
+
+				if (sb.length() > 0) {
+					sb.append(" ");
+				}
+
+				sb.append(word.substring(i, end));
+
+				i = end - 1;
+			} else if (UnicodeUtils.isKorean(c)) {
+				int end = i + 1;
+				while (end < len) {
+					char nc = word.charAt(end);
+					if (UnicodeUtils.isKorean(nc)) {
+						end++;
+					} else if (nc == '-') {
+						if (end == len - 1) {
+							break;
+						} else {
+							end++;
+						}
+					}
+
+					else {
+						break;
+					}
+				}
+
+				if (sb.length() > 0) {
+					sb.append(" ");
+				}
+				sb.append(word.substring(i, end));
+				i = end - 1;
+			} else if (UnicodeUtils.isNumber(c)) {
+				int end = i + 1;
+				while (end < len) {
+					char nc = word.charAt(end);
+
+					if (UnicodeUtils.isNumber(nc)) {
+						end++;
+					} else if (nc == '-' || nc == ',' || nc == '/' || nc == '.') {
+						if (end == len - 1) {
+							break;
+						} else {
+							end++;
+						}
+					} else {
+						break;
+					}
+				}
+
+				if (sb.length() > 0) {
+					sb.append(" ");
+				}
+
+				sb.append(word.substring(i, end));
+				i = end - 1;
+			} else {
+				sb.append(c);
+			}
+		}
 
 		return sb.toString();
 	}

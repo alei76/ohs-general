@@ -13,7 +13,7 @@ import ohs.tree.trie.hash.Trie;
 import ohs.tree.trie.hash.Trie.SearchResult;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
-import ohs.utils.KorUnicodeUtils;
+import ohs.utils.UnicodeUtils;
 import ohs.utils.StrUtils;
 
 public class MorphemeAnalyzer {
@@ -34,7 +34,7 @@ public class MorphemeAnalyzer {
 			String word = parts[0];
 			String pos = parts[1];
 
-			String word2 = KorUnicodeUtils.decomposeToJamo(word);
+			String word2 = UnicodeUtils.decomposeToJamo(word);
 
 			sysDict.insert(StrUtils.toCharacters(word2.toCharArray()));
 		}
@@ -128,7 +128,7 @@ public class MorphemeAnalyzer {
 	public Set<String> analyze(String word) {
 		Set<String> ret = Generics.newHashSet();
 
-		String word2 = KorUnicodeUtils.decomposeToJamo(word);
+		String word2 = UnicodeUtils.decomposeToJamo(word);
 
 		SearchResult<Character> sr = sysDict.search(StrUtils.toCharacters(word2.toCharArray()));
 
