@@ -279,6 +279,7 @@ public class CounterMap<K, V> implements java.io.Serializable {
 				invertCounterMap.setCount(val, key, count);
 			}
 		}
+		invertCounterMap.trimToSize();
 		return invertCounterMap;
 	}
 
@@ -305,7 +306,7 @@ public class CounterMap<K, V> implements java.io.Serializable {
 		return counterMap.keySet();
 	}
 
-	public Set<V> keySetOfCounter(V key) {
+	public Set<V> keySetOfCounter(K key) {
 		return counterMap.get(key).keySet();
 	}
 

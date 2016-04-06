@@ -265,16 +265,8 @@ public class VectorUtils {
 		return ret;
 	}
 
-	public static SparseVector toSparseVector(Counter<Integer> x) {
-		List<Integer> indexList = new ArrayList<Integer>();
-		List<Double> valueList = new ArrayList<Double>();
-		for (Entry<Integer, Double> entry : x.entrySet()) {
-			int index = entry.getKey();
-			double value = entry.getValue();
-			indexList.add(index);
-			valueList.add(value);
-		}
-		return toSparseVector(indexList, valueList, 0);
+	public static SparseVector toSparseVector(Counter<Integer> a) {
+		return new SparseVector(a);
 	}
 
 	public static SparseVector toSparseVector(Counter<String> x, Indexer<String> indexer) {
@@ -326,7 +318,6 @@ public class VectorUtils {
 					continue;
 				}
 			}
-
 			ret.incrementCount(index, 1);
 		}
 		return toSparseVector(ret);

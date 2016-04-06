@@ -43,18 +43,6 @@ public class ArrayMath {
 		return sum;
 	}
 
-	public static double add(double[][] a, double b, double[][] c) {
-		if (!ArrayChecker.isSameDim(a, c)) {
-			throw new IllegalArgumentException();
-		}
-
-		double ret = 0;
-		for (int i = 0; i < a.length; i++) {
-			ret += add(a[i], b, c[i]);
-		}
-		return ret;
-	}
-
 	public static double add(double[] a, double[] b, double[] c) {
 		if (!ArrayChecker.isSameDim(a, b, c)) {
 			throw new IllegalArgumentException();
@@ -67,42 +55,24 @@ public class ArrayMath {
 		return sum;
 	}
 
-	public static double addAfterScaleRows(double[][] a, double[] b, double ac, double bc, double[][] c) {
-		if (ArrayChecker.isSameDim(a, c) && a[0].length == b.length) {
-
-		} else {
+	public static double add(double[][] a, double b, double[][] c) {
+		if (!ArrayChecker.isSameDim(a, c)) {
 			throw new IllegalArgumentException();
 		}
 
 		double ret = 0;
 		for (int i = 0; i < a.length; i++) {
-			ret += addAfterScale(a[i], b, ac, bc, c[i]);
+			ret += add(a[i], b, c[i]);
 		}
 		return ret;
-	}
-
-	public static double addAfterScaleColumns(double[][] a, double[] b, double ac, double bc, double[][] c) {
-		if (ArrayChecker.isSameDim(a, c) && a.length == b.length) {
-
-		} else {
-			throw new IllegalArgumentException();
-		}
-		double ret = 0;
-		for (int j = 0; j < a[0].length; j++) {
-			for (int i = 0; i < a.length; i++) {
-				c[i][j] = ac * a[i][j] + bc * b[i];
-				ret += c[i][j];
-			}
-		}
-		return ret;
-	}
-
-	public static double addAfterScale(double a, double b, double ac, double bc) {
-		return a * ac + b * bc;
 	}
 
 	public static double addAfterScale(double a, double ac, double b) {
 		return addAfterScale(a, b, ac, 1 - ac);
+	}
+
+	public static double addAfterScale(double a, double b, double ac, double bc) {
+		return a * ac + b * bc;
 	}
 
 	public static double addAfterScale(double[] a, double b, double ac, double bc, double[] c) {
@@ -141,6 +111,36 @@ public class ArrayMath {
 			sum += c[i];
 		}
 		return sum;
+	}
+
+	public static double addAfterScaleColumns(double[][] a, double[] b, double ac, double bc, double[][] c) {
+		if (ArrayChecker.isSameDim(a, c) && a.length == b.length) {
+
+		} else {
+			throw new IllegalArgumentException();
+		}
+		double ret = 0;
+		for (int j = 0; j < a[0].length; j++) {
+			for (int i = 0; i < a.length; i++) {
+				c[i][j] = ac * a[i][j] + bc * b[i];
+				ret += c[i][j];
+			}
+		}
+		return ret;
+	}
+
+	public static double addAfterScaleRows(double[][] a, double[] b, double ac, double bc, double[][] c) {
+		if (ArrayChecker.isSameDim(a, c) && a[0].length == b.length) {
+
+		} else {
+			throw new IllegalArgumentException();
+		}
+
+		double ret = 0;
+		for (int i = 0; i < a.length; i++) {
+			ret += addAfterScale(a[i], b, ac, bc, c[i]);
+		}
+		return ret;
 	}
 
 	public static int argMax(double[] a) {
@@ -357,10 +357,10 @@ public class ArrayMath {
 		return ret;
 	}
 
-	public static double cosine(double dotProduct, double norm1, double norm2) {
+	public static double cosine(double dot_product, double norm1, double norm2) {
 		double ret = 0;
 		if (norm1 > 0 && norm2 > 0) {
-			ret = dotProduct / (norm1 * norm2);
+			ret = dot_product / (norm1 * norm2);
 		}
 
 		if (ret > 1) {
@@ -375,18 +375,8 @@ public class ArrayMath {
 		if (!ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
-
-		double norm1 = 0;
-		double norm2 = 0;
-		double dotProduct = 0;
-		for (int i = 0; i < a.length; i++) {
-			dotProduct += (a[i] * b[i]);
-			norm1 += a[i] * a[i];
-			norm2 += b[i] * b[i];
-		}
-		norm1 = Math.sqrt(norm1);
-		norm2 = Math.sqrt(norm2);
-		return cosine(dotProduct, norm1, norm2);
+		double[] norms = new double[2];
+		return cosine(dotProduct(a, b, norms), norms[0], norms[1]);
 	}
 
 	public static double covariance(double[] a, double[] b) {
@@ -415,11 +405,11 @@ public class ArrayMath {
 	}
 
 	public static double cumulate(double[] a, double[] b) {
-		double sum = 0;
+		double sum1 = 0;
 		double sum2 = 0;
 		for (int i = 0; i < a.length; i++) {
-			sum += a[i];
-			b[i] = sum;
+			sum1 += a[i];
+			b[i] = sum1;
 			sum2 += b[i];
 		}
 		return sum2;
@@ -430,6 +420,32 @@ public class ArrayMath {
 		for (int i = 0; i < a.length; i++) {
 			b[i] = a[i] * sum;
 		}
+	}
+
+	public static double dotProduct(double[] a, double[] b) {
+		return dotProduct(a, b, new double[0]);
+	}
+
+	public static double dotProduct(double[] a, double[] b, double[] norms) {
+		if (!ArrayChecker.isSameDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			sum += a[i] * b[i];
+			if (norms.length == 2) {
+				norms[0] += (a[i] * a[i]);
+				norms[1] += (b[i] * b[i]);
+			}
+		}
+
+		if (norms.length == 2) {
+			for (int i = 0; i < norms.length; i++) {
+				norms[i] = Math.sqrt(norms[i]);
+			}
+		}
+		return sum;
 	}
 
 	public static double dotProductColumns(double[][] a, int j1, double[][] b, int j2) {
@@ -448,18 +464,6 @@ public class ArrayMath {
 			throw new IllegalArgumentException();
 		}
 		return dotProduct(a[i1], b[i2]);
-	}
-
-	public static double dotProduct(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
-			throw new IllegalArgumentException();
-		}
-
-		double sum = 0;
-		for (int i = 0; i < a.length; i++) {
-			sum += a[i] * b[i];
-		}
-		return sum;
 	}
 
 	public static double entropy(double[] a) {
@@ -1589,6 +1593,14 @@ public class ArrayMath {
 		return ret;
 	}
 
+	public static double sumColumn(double[][] a, int j) {
+		double ret = 0;
+		for (int i = 0; i < a.length; i++) {
+			ret += a[i][j];
+		}
+		return ret;
+	}
+
 	public static double[] sumColumns(double[][] a) {
 		double[] ret = new double[a[0].length];
 		sumColumns(a, ret);
@@ -1606,14 +1618,6 @@ public class ArrayMath {
 		}
 
 		return sum(b);
-	}
-
-	public static double sumColumn(double[][] a, int j) {
-		double ret = 0;
-		for (int i = 0; i < a.length; i++) {
-			ret += a[i][j];
-		}
-		return ret;
 	}
 
 	/**

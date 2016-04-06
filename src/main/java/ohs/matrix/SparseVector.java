@@ -118,12 +118,16 @@ public class SparseVector implements Vector {
 		this(0, 0);
 	}
 
+	public SparseVector(Counter<Integer> c) {
+		this(c, 0, 0);
+	}
+
 	public SparseVector(Counter<Integer> c, int label, int dim) {
 		indexes = new int[c.size()];
 		values = new double[c.size()];
+		sum = 0;
 		int loc = 0;
 		for (Entry<Integer, Double> e : c.entrySet()) {
-			setAtLoc(loc++, e.getKey(), e.getValue());
 			incrementAtLoc(loc++, e.getKey(), e.getValue());
 		}
 		this.label = label;

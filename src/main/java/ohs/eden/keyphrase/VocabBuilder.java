@@ -6,6 +6,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 
 import ohs.io.TextFileReader;
 import ohs.nlp.ling.types.KDocument;
+import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
 import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.GramGenerator;
@@ -178,16 +179,13 @@ public class VocabBuilder {
 
 				if (text.length() > 0) {
 					KDocument doc = TaggedTextParser.parse(text);
-					String[][] sents = doc.getValues(" ", " ", new TokenAttr[] { TokenAttr.WORD }, 0, doc.size());
+
+					doc.getSubValues(TokenAttr.WORD);
 
 					Counter<String> c = Generics.newCounter();
 
-					for (String[] sent : sents) {
-						for (String word : sent) {
-							for (String tok : word.split(" ")) {
-								c.incrementCount(tok.toLowerCase(), 1);
-							}
-						}
+					for (Token t : doc.getSubTokens()) {
+						c.incrementCount(t.getValue(TokenAttr.WORD).toLowerCase(), 1);
 					}
 
 					for (String word : c.keySet()) {

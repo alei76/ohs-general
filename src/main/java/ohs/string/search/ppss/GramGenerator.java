@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ohs.string.search.ppss.Gram.Type;
+import ohs.types.Counter;
+import ohs.types.Indexer;
+import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 
 /**
@@ -77,6 +80,18 @@ public class GramGenerator implements Serializable {
 			ret = new Gram[size];
 			for (int i = 0; i < len - q + 1; i++) {
 				ret[i] = new Gram(StrUtils.join(" ", words, i, i + q), i, Type.NONE);
+			}
+		}
+		return ret;
+	}
+
+	public Counter<Integer> generateQGrams(String s, Indexer<String> gramIndexer, boolean addIfUnseen) {
+		Counter<Integer> ret = Generics.newCounter();
+		for (Gram g : generateQGrams(s)) {
+			if (addIfUnseen) {
+				ret.incrementCount(gramIndexer.getIndex(g.getString()), 1);
+			} else {
+				ret.incrementCount(gramIndexer.indexOf(g.getString()), 1);
 			}
 		}
 		return ret;

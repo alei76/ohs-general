@@ -96,59 +96,9 @@ public class VectorMath {
 	}
 
 	public static double cosine(Vector a, Vector b, boolean normalizeBefore) {
-		// if (a.dim() != b.dim()) {
-		// new IllegalArgumentException("different dimension");
-		// }
-		double norm1 = 0;
-		double norm2 = 0;
-		double dotProduct = 0;
-
-		if (!isSparse(a) && !isSparse(b)) {
-			for (int i = 0; i < a.size(); i++) {
-				double value1 = normalizeBefore ? a.prob(i) : a.value(i);
-				double value2 = normalizeBefore ? b.prob(i) : b.value(i);
-				dotProduct += (value1 * value2);
-				norm1 += value1 * value1;
-				norm2 += value2 * value2;
-			}
-		} else {
-			int i = 0, j = 0;
-			while (i < a.size() && j < b.size()) {
-				int index1 = a.indexAtLoc(i);
-				int index2 = b.indexAtLoc(j);
-
-				double value1 = normalizeBefore ? a.probAtLoc(i) : a.valueAtLoc(i);
-				double value2 = normalizeBefore ? b.probAtLoc(j) : b.valueAtLoc(j);
-
-				if (index1 == index2) {
-					dotProduct += (value1 * value2);
-					norm1 += (value1 * value1);
-					norm2 += (value2 * value2);
-					i++;
-					j++;
-				} else if (index1 > index2) {
-					norm2 += (value2 * value2);
-					j++;
-				} else if (index1 < index2) {
-					norm1 += (value1 * value1);
-					i++;
-				}
-			}
-		}
-
-		norm1 = Math.sqrt(norm1);
-		norm2 = Math.sqrt(norm2);
-		double cosine = ArrayMath.cosine(dotProduct, norm1, norm2);
-		return cosine;
-	}
-
-	public static void cumulate(Vector x) {
-		double sum = 0;
-		for (int i = 0; i < x.size(); i++) {
-			sum += x.valueAtLoc(i);
-			x.setAtLoc(i, sum);
-		}
-		x.setSum(sum);
+		double[] norms = new double[2];
+		double dot_product = dotProduct(a, b, normalizeBefore, norms);
+		return ArrayMath.cosine(dot_product, norms[0], norms[1]);
 	}
 
 	public static void DFRee(List<SparseVector> xs) {
@@ -183,7 +133,7 @@ public class VectorMath {
 				double norm = tf * CommonFuncs.log2(posterior / prior);
 				double weight = norm * (tf * (-CommonFuncs.log2(prior * InvPriorCollection)) +
 
-				(tf + 1d) * (+CommonFuncs.log2(posterior * InvPriorCollection)) + 0.5 * CommonFuncs.log2(posterior / prior));
+						(tf + 1d) * (+CommonFuncs.log2(posterior * InvPriorCollection)) + 0.5 * CommonFuncs.log2(posterior / prior));
 				x.setAtLoc(j, weight);
 			}
 			unitVector(x);
@@ -209,55 +159,83 @@ public class VectorMath {
 	}
 
 	public static double dotProduct(Vector a, Vector b) {
-		return dotProduct(a, b, false);
+		return dotProduct(a, b, false, new double[0]);
 	}
 
 	public static double dotProduct(Vector a, Vector b, boolean normalizeBefore) {
-//		if (a.dim() != b.dim()) {
-//			new IllegalArgumentException("different dimension");
-//		}
+		return dotProduct(a, b, normalizeBefore, new double[0]);
+	}
+
+	public static double dotProduct(Vector a, Vector b, boolean normalizeBefore, double[] norms) {
+		// if (a.dim() != b.dim()) {
+		// new IllegalArgumentException("different dimension");
+		// }
+
 		double ret = 0;
 		if (isSparse(a) && isSparse(b)) {
 			int i = 0, j = 0;
 			while (i < a.size() && j < b.size()) {
-				int index1 = a.indexAtLoc(i);
-				int index2 = b.indexAtLoc(j);
-				double value1 = normalizeBefore ? a.probAtLoc(i) : a.valueAtLoc(i);
-				double value2 = normalizeBefore ? b.probAtLoc(j) : b.valueAtLoc(j);
-				if (index1 == index2) {
-					ret += (value1 * value2);
+				int id1 = a.indexAtLoc(i);
+				int id2 = b.indexAtLoc(j);
+				double v1 = normalizeBefore ? a.probAtLoc(i) : a.valueAtLoc(i);
+				double v2 = normalizeBefore ? b.probAtLoc(j) : b.valueAtLoc(j);
+
+				if (id1 == id2) {
+					ret += (v1 * v2);
+					if (norms.length == 2) {
+						norms[0] += (v1 * v1);
+						norms[1] += (v2 * v2);
+					}
 					i++;
 					j++;
-				} else if (index1 > index2) {
+				} else if (id1 > id2) {
+					if (norms.length == 2) {
+						norms[1] += (v2 * v2);
+					}
 					j++;
-				} else if (index1 < index2) {
+				} else if (id1 < id2) {
+					if (norms.length == 2) {
+						norms[0] += (v1 * v1);
+					}
 					i++;
 				}
 			}
 		} else if (!isSparse(a) && !isSparse(b)) {
-			for (int i = 0; i < a.dim(); i++) {
-				double value1 = normalizeBefore ? a.probAtLoc(i) : a.valueAtLoc(i);
-				double value2 = normalizeBefore ? b.probAtLoc(i) : b.valueAtLoc(i);
-				ret += value1 * value2;
-			}
+			ret = ArrayMath.dotProduct(a.values(), b.values(), norms);
 		} else {
-			SparseVector sv = null;
-			DenseVector dv = null;
+			SparseVector s = null;
+			DenseVector d = null;
 
 			if (isSparse(a)) {
-				dv = (DenseVector) b;
-				sv = (SparseVector) a;
+				d = (DenseVector) b;
+				s = (SparseVector) a;
 			} else {
-				dv = (DenseVector) a;
-				sv = (SparseVector) b;
+				d = (DenseVector) a;
+				s = (SparseVector) b;
 			}
 
-			for (int i = 0; i < sv.size(); i++) {
-				int index = sv.indexAtLoc(i);
-				double value2 = normalizeBefore ? sv.probAtLoc(i) : sv.valueAtLoc(i);
-				double value1 = normalizeBefore ? dv.prob(index) : dv.value(index);
-				ret += value1 * value2;
+			if (norms.length == 2) {
+				for (int i = 0; i < s.size(); i++) {
+					int id = s.indexAtLoc(i);
+					double v1 = normalizeBefore ? s.probAtLoc(i) : s.valueAtLoc(i);
+					double v2 = normalizeBefore ? d.prob(id) : d.value(id);
+					ret += v1 * v2;
+					norms[0] += (v1 * v1);
+				}
+				norms[1] = ArrayMath.normL2(d.values());
+
+				if (isSparse(d)) {
+					ArrayUtils.swap(norms, 0, 1);
+				}
+			} else {
+				for (int i = 0; i < s.size(); i++) {
+					int id = s.indexAtLoc(i);
+					double v2 = normalizeBefore ? s.probAtLoc(i) : s.valueAtLoc(i);
+					double v1 = normalizeBefore ? d.prob(id) : d.value(id);
+					ret += v1 * v2;
+				}
 			}
+
 		}
 		return ret;
 	}
@@ -429,7 +407,7 @@ public class VectorMath {
 	}
 
 	public static double mean(Vector x) {
-		return x.sum() / x.size();
+		return ArrayMath.mean(x.values());
 	}
 
 	public static void normalizeAfterExp(Vector x) {
@@ -868,13 +846,7 @@ public class VectorMath {
 	}
 
 	public static double variance(Vector x, double mean) {
-		double ret = 0;
-		for (int i = 0; i < x.size(); i++) {
-			double diff = x.valueAtLoc(i) - mean;
-			ret += diff * diff;
-		}
-		ret /= x.size();
-		return ret;
+		return ArrayMath.variance(x.values(), mean);
 	}
 
 }
