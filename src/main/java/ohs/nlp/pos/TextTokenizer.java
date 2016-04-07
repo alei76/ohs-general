@@ -49,7 +49,6 @@ public class TextTokenizer {
 			}
 			sb.append("\n");
 		}
-
 		return KDocument.newDocument(sb.toString().trim().split("\n"));
 	}
 
@@ -80,7 +79,12 @@ public class TextTokenizer {
 			if (c == '.') {
 				int end = i + 1;
 				if (end == len) {
-					char pc = StrUtils.value(i - 1 >= 0, word.charAt(i - 1), '#');
+					// char pc = StrUtils.value(i - 1 >= 0, word.charAt(i - 1), '#');
+					char pc = '#';
+					if (i - 1 >= 0) {
+						pc = word.charAt(i - 1);
+					}
+
 					if (pc == '다') {
 						sb.append(" ");
 					}

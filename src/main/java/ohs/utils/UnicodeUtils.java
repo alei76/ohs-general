@@ -407,11 +407,7 @@ public class UnicodeUtils {
 	}
 
 	public static boolean isInRange(int[] range, int cp) {
-		if (cp >= range[0] && cp < range[1]) {
-			return true;
-		} else {
-			return false;
-		}
+		return Conditions.isInArrayRange(range[0], range[1], cp);
 	}
 
 	public static void main(String args[]) {

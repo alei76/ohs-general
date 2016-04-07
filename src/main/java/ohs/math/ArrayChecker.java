@@ -51,50 +51,6 @@ public class ArrayChecker {
 		return ret;
 	}
 
-	public static boolean isValidIndex(double[] a, int i) {
-		if (i >= 0 && i < a.length) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public static boolean isValidIndex(int[] a, int i) {
-		if (i >= 0 && i < a.length) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public static boolean isValidIndex(int[][] a, int i, int j) {
-		if (i >= 0 && i < a.length) {
-			for (int m = 0; m < a.length; m++) {
-				if (!isValidIndex(a[i], j)) {
-					return false;
-				}
-			}
-		} else {
-			return false;
-		}
-
-		return true;
-	}
-
-	public static boolean isValidIndex(double[][] a, int i, int j) {
-		if (i >= 0 && i < a.length) {
-			for (int m = 0; m < a.length; m++) {
-				if (!isValidIndex(a[i], j)) {
-					return false;
-				}
-			}
-		} else {
-			return false;
-		}
-
-		return true;
-	}
-
 	/**
 	 * 
 	 * A system of linear equations has either
@@ -176,7 +132,7 @@ public class ArrayChecker {
 	}
 
 	public static boolean isEqual(double[] a, double[] b) {
-		if (!isSameDim(a, b)) {
+		if (!isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -672,11 +628,7 @@ public class ArrayChecker {
 		return true;
 	}
 
-	public static boolean isSame(int a, int b) {
-		return a == b ? true : false;
-	}
-
-	public static boolean isSameColumnDim(double[][] a, double[] b) {
+	public static boolean isEqualColumnDim(double[][] a, double[] b) {
 		int aRowDim = a.length;
 		int aColDim = a[0].length;
 		int bDim = b.length;
@@ -688,15 +640,15 @@ public class ArrayChecker {
 		}
 	}
 
-	public static boolean isSameDim(double[] a, double[] b) {
+	public static boolean isEqualDim(double[] a, double[] b) {
 		return a.length == b.length ? true : false;
 	}
 
-	public static boolean isSameDim(double[] a, double[] b, double[] c) {
-		return isSameDim(a, b) && isSameDim(b, c) ? true : false;
+	public static boolean isEqualDim(double[] a, double[] b, double[] c) {
+		return isEqualDim(a, b) && isEqualDim(b, c) ? true : false;
 	}
 
-	public static boolean isSameDim(double[][] a, double[][] b) {
+	public static boolean isEqualDim(double[][] a, double[][] b) {
 		int aRowDim = a.length;
 		int aColDim = a[0].length;
 		int bRowDim = b.length;
@@ -709,19 +661,19 @@ public class ArrayChecker {
 		}
 	}
 
-	public static boolean isSameDim(double[][] a, double[][] b, double[][] c) {
-		return isSameDim(a, b) && isSameDim(b, c) ? true : false;
+	public static boolean isEqualDim(double[][] a, double[][] b, double[][] c) {
+		return isEqualDim(a, b) && isEqualDim(b, c) ? true : false;
 	}
 
-	public static boolean isSameDim(int[] a, double[] b) {
+	public static boolean isEqualDim(int[] a, double[] b) {
 		return a.length == b.length ? true : false;
 	}
 
-	public static boolean isSameDim(int[] a, int[] b) {
+	public static boolean isEqualDim(int[] a, int[] b) {
 		return a.length == b.length ? true : false;
 	}
 
-	public static boolean isSameRowDim(double[][] a, double[] b) {
+	public static boolean isEqualRowDim(double[][] a, double[] b) {
 		int aRowDim = a.length;
 		int aColDim = a[0].length;
 		int bDim = b.length;
@@ -733,7 +685,7 @@ public class ArrayChecker {
 		}
 	}
 
-	public static boolean isSameRowDim(double[][] a, double[][] b) {
+	public static boolean isEqualRowDim(double[][] a, double[][] b) {
 		int aRowDim = a.length;
 		int bRowDim = b.length;
 
@@ -753,19 +705,6 @@ public class ArrayChecker {
 	public static boolean isSingular(double[][] a) {
 		return (!isInvertible(a) ? true : false);
 	}
-
-	// public boolean isDiagonalizable() {
-	// if (isTriangular()) {
-	// Vector eigenValues = eigenValues().diagonalVector();
-	// Set<Double> eigenValueSet = new HashSet<Double>();
-	// for (int i = 0; i < eigenValues.size(); i++) {
-	// eigenValueSet.add(eigenValues.get(i));
-	// }
-	// return (eigenValues.dim() == eigenValueSet.size() ? true : false);
-	// } else {
-	// return isLinearlyIndependent();
-	// }
-	// }
 
 	/**
 	 * In mathematics, and in particular linear algebra, a skew-symmetric (or antisymmetric or antimetric[1]) matrix is a square matrix A
@@ -796,33 +735,6 @@ public class ArrayChecker {
 		return true;
 
 	}
-
-	// public boolean isInNullSpace(Vector B) {
-	// if (colDim() != B.dim()) {
-	// throw new IllegalArgumentException("Invalid Matrix isNullSpace");
-	// }
-	// return product(B).isZeroVector();
-	// }
-
-	// public boolean isLinearlyIndependent() {
-	// if (colDim() > rowDim()) {
-	// return false;
-	// }
-	//
-	// for (int j = 0; j < colDim(); j++) {
-	// if (colVector(j).isZeroVector()) {
-	// return false;
-	// }
-	// }
-	//
-	// Vector B = new SparseVector(rowDim(), 0);
-	// Vector X = solve(B);
-	// return X.isZeroVector();
-	// }
-
-	// public boolean isOneToOneMapping() {
-	// return isLinearlyIndependent();
-	// }
 
 	public static boolean isSquare(double[][] a) {
 		return (a.length == a[0].length ? true : false);
@@ -878,9 +790,49 @@ public class ArrayChecker {
 		}
 	}
 
+	// public boolean isDiagonalizable() {
+	// if (isTriangular()) {
+	// Vector eigenValues = eigenValues().diagonalVector();
+	// Set<Double> eigenValueSet = new HashSet<Double>();
+	// for (int i = 0; i < eigenValues.size(); i++) {
+	// eigenValueSet.add(eigenValues.get(i));
+	// }
+	// return (eigenValues.dim() == eigenValueSet.size() ? true : false);
+	// } else {
+	// return isLinearlyIndependent();
+	// }
+	// }
+
 	public static boolean isTriangular(double[][] a) {
 		return (isUpperTriangular(a) || isLowerTriangular(a) ? true : false);
 	}
+
+	// public boolean isInNullSpace(Vector B) {
+	// if (colDim() != B.dim()) {
+	// throw new IllegalArgumentException("Invalid Matrix isNullSpace");
+	// }
+	// return product(B).isZeroVector();
+	// }
+
+	// public boolean isLinearlyIndependent() {
+	// if (colDim() > rowDim()) {
+	// return false;
+	// }
+	//
+	// for (int j = 0; j < colDim(); j++) {
+	// if (colVector(j).isZeroVector()) {
+	// return false;
+	// }
+	// }
+	//
+	// Vector B = new SparseVector(rowDim(), 0);
+	// Vector X = solve(B);
+	// return X.isZeroVector();
+	// }
+
+	// public boolean isOneToOneMapping() {
+	// return isLinearlyIndependent();
+	// }
 
 	public static boolean isUpperTriangular(double[][] a) {
 		if (isSquare(a)) {
@@ -892,6 +844,50 @@ public class ArrayChecker {
 					if (a[i][j] != 0) {
 						return false;
 					}
+				}
+			}
+		} else {
+			return false;
+		}
+
+		return true;
+	}
+
+	public static boolean isValidIndex(double[] a, int i) {
+		if (i >= 0 && i < a.length) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static boolean isValidIndex(double[][] a, int i, int j) {
+		if (i >= 0 && i < a.length) {
+			for (int m = 0; m < a.length; m++) {
+				if (!isValidIndex(a[i], j)) {
+					return false;
+				}
+			}
+		} else {
+			return false;
+		}
+
+		return true;
+	}
+
+	public static boolean isValidIndex(int[] a, int i) {
+		if (i >= 0 && i < a.length) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static boolean isValidIndex(int[][] a, int i, int j) {
+		if (i >= 0 && i < a.length) {
+			for (int m = 0; m < a.length; m++) {
+				if (!isValidIndex(a[i], j)) {
+					return false;
 				}
 			}
 		} else {

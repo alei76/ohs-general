@@ -20,7 +20,7 @@ public class ArrayMath {
 	public static boolean showLog = false;
 
 	public static double abs(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 		double sum = 0;
@@ -32,7 +32,7 @@ public class ArrayMath {
 	}
 
 	public static double add(double[] a, double b, double[] c) {
-		if (!ArrayChecker.isSameDim(a, c)) {
+		if (!ArrayChecker.isEqualDim(a, c)) {
 			throw new IllegalArgumentException();
 		}
 		double sum = 0;
@@ -44,7 +44,7 @@ public class ArrayMath {
 	}
 
 	public static double add(double[] a, double[] b, double[] c) {
-		if (!ArrayChecker.isSameDim(a, b, c)) {
+		if (!ArrayChecker.isEqualDim(a, b, c)) {
 			throw new IllegalArgumentException();
 		}
 		double sum = 0;
@@ -56,7 +56,7 @@ public class ArrayMath {
 	}
 
 	public static double add(double[][] a, double b, double[][] c) {
-		if (!ArrayChecker.isSameDim(a, c)) {
+		if (!ArrayChecker.isEqualDim(a, c)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -76,7 +76,7 @@ public class ArrayMath {
 	}
 
 	public static double addAfterScale(double[] a, double b, double ac, double bc, double[] c) {
-		if (!ArrayChecker.isSameDim(a, c)) {
+		if (!ArrayChecker.isEqualDim(a, c)) {
 			throw new IllegalArgumentException();
 		}
 		double sum = 0;
@@ -88,7 +88,7 @@ public class ArrayMath {
 	}
 
 	public static double addAfterScale(double[] a, double[] b, double ac, double bc, double[] c) {
-		if (!ArrayChecker.isSameDim(a, b, c)) {
+		if (!ArrayChecker.isEqualDim(a, b, c)) {
 			throw new IllegalArgumentException();
 		}
 		double sum = 0;
@@ -100,7 +100,7 @@ public class ArrayMath {
 	}
 
 	public static double addAfterScale(double[] a, double[] b, double[] ac, double[] bc, double[] c) {
-		if (ArrayChecker.isSameDim(a, b, c) && ArrayChecker.isSameDim(c, ac, bc)) {
+		if (ArrayChecker.isEqualDim(a, b, c) && ArrayChecker.isEqualDim(c, ac, bc)) {
 
 		} else {
 			throw new IllegalArgumentException();
@@ -114,7 +114,7 @@ public class ArrayMath {
 	}
 
 	public static double addAfterScaleColumns(double[][] a, double[] b, double ac, double bc, double[][] c) {
-		if (ArrayChecker.isSameDim(a, c) && a.length == b.length) {
+		if (ArrayChecker.isEqualDim(a, c) && a.length == b.length) {
 
 		} else {
 			throw new IllegalArgumentException();
@@ -130,7 +130,7 @@ public class ArrayMath {
 	}
 
 	public static double addAfterScaleRows(double[][] a, double[] b, double ac, double bc, double[][] c) {
-		if (ArrayChecker.isSameDim(a, c) && a[0].length == b.length) {
+		if (ArrayChecker.isEqualDim(a, c) && a[0].length == b.length) {
 
 		} else {
 			throw new IllegalArgumentException();
@@ -372,7 +372,7 @@ public class ArrayMath {
 	}
 
 	public static double cosine(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 		double[] norms = new double[2];
@@ -394,7 +394,7 @@ public class ArrayMath {
 	}
 
 	public static double crossEntropy(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 		double ret = 0;
@@ -405,14 +405,12 @@ public class ArrayMath {
 	}
 
 	public static double cumulate(double[] a, double[] b) {
-		double sum1 = 0;
-		double sum2 = 0;
+		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
-			sum1 += a[i];
-			b[i] = sum1;
-			sum2 += b[i];
+			sum += a[i];
+			b[i] = sum;
 		}
-		return sum2;
+		return b[b.length - 1];
 	}
 
 	public static void distribute(double[] a, double sum, double[] b) {
@@ -427,7 +425,7 @@ public class ArrayMath {
 	}
 
 	public static double dotProduct(double[] a, double[] b, double[] norms) {
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -449,7 +447,7 @@ public class ArrayMath {
 	}
 
 	public static double dotProductColumns(double[][] a, int j1, double[][] b, int j2) {
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 		double ret = 0;
@@ -460,7 +458,7 @@ public class ArrayMath {
 	}
 
 	public static double dotProductRows(double[][] a, int i1, double[][] b, int i2) {
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 		return dotProduct(a[i1], b[i2]);
@@ -496,7 +494,7 @@ public class ArrayMath {
 	}
 
 	public static double jensenShannonDivergence(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 		double[] c = new double[a.length];
@@ -559,7 +557,7 @@ public class ArrayMath {
 	 * @return
 	 */
 	public static double klDivergence(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 		double ret = 0;
@@ -653,7 +651,7 @@ public class ArrayMath {
 	 * @return
 	 */
 	public static double log(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 		double sum = 0;
@@ -975,7 +973,7 @@ public class ArrayMath {
 	}
 
 	public static double multiply(double[] a, double[] b, double[] c) {
-		if (!ArrayChecker.isSameDim(a, b, c)) {
+		if (!ArrayChecker.isEqualDim(a, b, c)) {
 			throw new IllegalArgumentException();
 		}
 		double sum = 0;
@@ -987,7 +985,7 @@ public class ArrayMath {
 	}
 
 	public static void multiply(double[][] a, double[][] b, double[][] c) {
-		if (!ArrayChecker.isSameDim(a, b, c)) {
+		if (!ArrayChecker.isEqualDim(a, b, c)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -1365,7 +1363,7 @@ public class ArrayMath {
 	}
 
 	public static double round(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 		double sum = 0;
@@ -1398,7 +1396,7 @@ public class ArrayMath {
 	}
 
 	public static void sample(int[] indexes, double[] values, int[] samples, boolean cumulate) {
-		if (!ArrayChecker.isSameDim(indexes, values) || !ArrayChecker.isSameDim(indexes, samples)) {
+		if (!ArrayChecker.isEqualDim(indexes, values) || !ArrayChecker.isEqualDim(indexes, samples)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -1430,7 +1428,7 @@ public class ArrayMath {
 	}
 
 	public static double scale(double[] a, double ac, double[] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 		double sum = 0;
@@ -1442,7 +1440,7 @@ public class ArrayMath {
 	}
 
 	public static double sigmoid(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 		double sum = 0;
@@ -1510,7 +1508,7 @@ public class ArrayMath {
 	}
 
 	public static double softmax(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 		double max = max(a);
@@ -1523,7 +1521,7 @@ public class ArrayMath {
 	}
 
 	public static double substract(double[] a, double b, double[] c) {
-		if (!ArrayChecker.isSameDim(a, c)) {
+		if (!ArrayChecker.isEqualDim(a, c)) {
 			throw new IllegalArgumentException();
 		}
 		double sum = 0;
@@ -1535,7 +1533,7 @@ public class ArrayMath {
 	}
 
 	public static double substract(double[] a, double[] b, double[] c) {
-		if (!ArrayChecker.isSameDim(a, b, c)) {
+		if (!ArrayChecker.isEqualDim(a, b, c)) {
 			throw new IllegalArgumentException();
 		}
 		double sum = 0;
@@ -1608,7 +1606,7 @@ public class ArrayMath {
 	}
 
 	public static double sumColumns(double[][] a, double[] b) {
-		if (!ArrayChecker.isSameColumnDim(a, b)) {
+		if (!ArrayChecker.isEqualColumnDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 		for (int i = 0; i < a.length; i++) {
@@ -1746,7 +1744,7 @@ public class ArrayMath {
 	}
 
 	public static double sumSquaredDifferences(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 		double sum = 0;
@@ -1759,7 +1757,7 @@ public class ArrayMath {
 	}
 
 	public static double tfidf(double[] word_cnts, double[] doc_freqs, double max_docs, double[] tfidfs) {
-		if (!ArrayChecker.isSameDim(word_cnts, doc_freqs, tfidfs)) {
+		if (!ArrayChecker.isEqualDim(word_cnts, doc_freqs, tfidfs)) {
 			throw new IllegalArgumentException();
 		}
 		double sum = 0;

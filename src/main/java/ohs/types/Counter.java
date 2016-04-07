@@ -1,6 +1,5 @@
 package ohs.types;
 
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -12,10 +11,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import ohs.io.FileUtils;
-import ohs.nlp.pos.NLPPath;
-
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
@@ -69,7 +64,6 @@ public class Counter<E> implements Serializable {
 		System.out.println(counter);
 		System.out.println(counter.toString());
 		System.out.println("Total: " + counter.totalCount());
-
 
 	}
 

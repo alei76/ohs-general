@@ -18,7 +18,13 @@ public class KPPath {
 
 	public static final String KEYPHRASE_DIR = DATA_DIR + "keyphrase/";
 
+	public static final String POS_DATA_FILE = KEYPHRASE_DIR + "2p_abs.txt.gz";
+
+	public static final String TITLE_DATA_FILE = KEYPHRASE_DIR + "title_data.txt.gz";
+
 	public static final String KEYWORD_DATA_FILE = KEYPHRASE_DIR + "keyword_data.txt.gz";
+
+	public static final String KEYWORD_DATA_SER_FILE = KEYPHRASE_DIR + "keyword_data.ser.gz";
 
 	public static final String KEYWORD_ABBR_FILE = KEYPHRASE_DIR + "keyword_abbr.txt.gz";
 

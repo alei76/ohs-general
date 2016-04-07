@@ -15,9 +15,6 @@ import ohs.nlp.ling.types.KSentence;
 import ohs.nlp.ling.types.MultiToken;
 import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
-import ohs.nlp.pos.TextTokenizer;
-import ohs.string.search.ppss.Gram;
-import ohs.string.search.ppss.GramGenerator;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.DeepCounterMap;
@@ -35,7 +32,7 @@ public class DataHandler {
 		// dh.mergeDumps();
 		dh.tagPOS();
 		// dh.makeKeywordData();
-		// dh.makeAbsData();
+		// dh.makeTitleData();
 		// dh.extractKeywordAbbreviations();
 
 		System.out.println("process ends.");
@@ -80,143 +77,6 @@ public class DataHandler {
 
 		System.out.println(dcm);
 
-	}
-
-	public void makeAbsData() throws Exception {
-
-		List<String> labels = Generics.newArrayList();
-
-		TextFileReader reader = new TextFileReader(KPPath.SINGLE_DUMP_POS_FILE);
-		while (reader.hasNext()) {
-			String line = reader.next();
-			String[] parts = line.split("\t");
-
-			if (reader.getNumLines() == 1) {
-				for (String p : parts) {
-					labels.add(p);
-				}
-			} else {
-				if (parts.length != labels.size()) {
-					continue;
-				}
-
-				for (int j = 0; j < parts.length; j++) {
-					if (parts[j].length() > 1) {
-						parts[j] = parts[j].substring(1, parts[j].length() - 1);
-					}
-				}
-
-				String type = parts[0];
-				String cn = parts[1];
-				String korKwdStr = parts[2];
-				String engKwdStr = parts[3];
-				String korTitle = parts[4];
-				String engTitle = parts[5];
-				String korAbs = parts[6];
-				String engAbs = parts[7];
-
-				if (korAbs.length() > 0) {
-
-					for (String kwd : korKwdStr.split(";")) {
-						KSentence kw = TaggedTextParser.parse(kwd).toSentence();
-
-						for (String word : kw.getValues(TokenAttr.WORD)) {
-
-						}
-
-						System.out.println(kw);
-					}
-
-					KDocument abs = TaggedTextParser.parse(korAbs);
-
-					// KDocument input = new KSentence(doc.getSubTokens()).toDocument();
-
-					System.out.println();
-
-				}
-			}
-		}
-		reader.close();
-
-	}
-
-	public void makeKeywordData() throws Exception {
-		SetMap<String, String> kwdToDocs = Generics.newSetMap();
-
-		TextFileReader reader = new TextFileReader(KPPath.SINGLE_DUMP_FILE);
-		reader.setPrintNexts(false);
-
-		List<String> labels = Generics.newArrayList();
-		int num_docs = 0;
-
-		while (reader.hasNext()) {
-			reader.print(100000);
-
-			// if (num_docs > 10000) {
-			// break;
-			// }
-
-			String line = reader.next();
-			String[] parts = line.split("\t");
-
-			if (reader.getNumLines() == 1) {
-				for (String p : parts) {
-					labels.add(p);
-				}
-			} else {
-				if (parts.length != labels.size()) {
-					continue;
-				}
-
-				for (int j = 0; j < parts.length; j++) {
-					if (parts[j].length() > 1) {
-						parts[j] = parts[j].substring(1, parts[j].length() - 1);
-					}
-				}
-
-				String type = parts[0];
-				String cn = parts[1];
-				String korKwdStr = parts[2];
-				String engKwdStr = parts[3];
-				String korTitle = parts[4];
-				String engTitle = parts[5];
-				String korAbs = parts[6];
-				String engAbs = parts[7];
-
-				if (type.equals("patent")) {
-					break;
-				}
-
-				List<String> korKwds = getKeywords(korKwdStr);
-				List<String> engKwds = getKeywords(engKwdStr);
-
-				if (korKwds.size() == 0 && engKwds.size() == 0) {
-
-				} else if (korKwds.size() == engKwds.size()) {
-					if (korKwds.size() > 0) {
-						for (int j = 0; j < korKwds.size(); j++) {
-							String kor = korKwds.get(j);
-							String eng = engKwds.get(j);
-							kwdToDocs.put(String.format("\"%s\"\t\"%s\"", kor, eng), cn);
-						}
-					}
-				} else {
-					for (String kwd : korKwds) {
-						kwdToDocs.put(String.format("\"%s\"\t\"%s\"", kwd, ""), cn);
-					}
-
-					for (String kwd : engKwds) {
-						kwdToDocs.put(String.format("\"%s\"\t\"%s\"", "", kwd), cn);
-					}
-				}
-
-				num_docs++;
-			}
-		}
-		reader.printLast();
-		reader.close();
-
-		FileUtils.writeStrSetMap(KPPath.KEYWORD_DATA_FILE, kwdToDocs);
 	}
 
 	public void extractKeywordPatterns() throws Exception {
@@ -292,7 +152,15 @@ public class DataHandler {
 
 				for (int k = 0; k < l.size(); k++) {
 					Pair<String, String> pair = l.get(k);
-					sb.append(String.format("%s%s%s", pair.getFirst().replace(" ", "_"), Token.DELIM_TOKEN, pair.getSecond()));
+					String f = pair.getFirst().replace(" ", "_");
+					String s = pair.getSecond();
+
+					if (s.length() == 0) {
+						continue;
+					}
+
+					sb.append(String.format("%s%s%s", f, Token.DELIM_TOKEN, s));
+
 					if (k != l.size() - 1) {
 						sb.append(MultiToken.DELIM_MULTI_TOKEN);
 					}
@@ -308,6 +176,157 @@ public class DataHandler {
 		}
 
 		return sb.toString().trim();
+	}
+
+	public void makeKeywordData() throws Exception {
+		SetMap<String, String> kwdToDocs = Generics.newSetMap();
+
+		TextFileReader reader = new TextFileReader(KPPath.SINGLE_DUMP_POS_FILE);
+		reader.setPrintNexts(false);
+
+		List<String> labels = Generics.newArrayList();
+
+		while (reader.hasNext()) {
+			reader.print(100000);
+
+			// if (reader.getNumLines() < 135400) {
+			// continue;
+			// }
+
+			String line = reader.next();
+
+			// System.out.println(line);
+
+			String[] parts = line.split("\t");
+
+			if (reader.getNumLines() == 1) {
+				for (String p : parts) {
+					labels.add(p);
+				}
+			} else {
+				if (parts.length != labels.size()) {
+					continue;
+				}
+
+				parts = StrUtils.unwrap(parts);
+
+				String type = parts[0];
+				String cn = parts[1];
+				String korKwdStr = parts[2].split(" => ")[0];
+				String korKwdStrPos = parts[2].split(" => ")[1];
+				String engKwdStr = parts[3];
+				String korTitle = parts[4];
+				String engTitle = parts[5];
+				String korAbs = parts[6];
+				String engAbs = parts[7];
+
+				if (type.equals("patent")) {
+					break;
+				}
+
+				korKwdStr = StrUtils.unwrap(korKwdStr);
+				korKwdStrPos = StrUtils.unwrap(korKwdStrPos);
+
+				List<String> korKwds = getKeywords(korKwdStr);
+				List<String> engKwds = getKeywords(engKwdStr);
+
+				if (korKwds.size() == 0 && engKwds.size() == 0) {
+
+				} else if (korKwds.size() == engKwds.size()) {
+					if (korKwds.size() > 0) {
+						for (int j = 0; j < korKwds.size(); j++) {
+							String kor = korKwds.get(j);
+							String eng = engKwds.get(j);
+							String[] p = StrUtils.wrap(new String[] { kor, eng });
+							kwdToDocs.put(StrUtils.join("\t", p), cn);
+						}
+					}
+				} else {
+					for (String kwd : korKwds) {
+						String[] p = StrUtils.wrap(new String[] { kwd, "" });
+						kwdToDocs.put(StrUtils.join("\t", p), cn);
+					}
+
+					for (String kwd : engKwds) {
+						String[] p = StrUtils.wrap(new String[] { "", kwd });
+						kwdToDocs.put(StrUtils.join("\t", p), cn);
+					}
+				}
+			}
+		}
+		reader.printLast();
+		reader.close();
+
+		FileUtils.writeStrSetMap(KPPath.KEYWORD_DATA_FILE, kwdToDocs);
+	}
+
+	public void makeTitleData() throws Exception {
+
+		List<String> labels = Generics.newArrayList();
+
+		EnglishAnalyzer analyzer = new EnglishAnalyzer();
+
+		CounterMap<String, String> cm = Generics.newCounterMap();
+
+		TextFileReader reader = new TextFileReader(KPPath.SINGLE_DUMP_POS_FILE);
+		reader.setPrintNexts(false);
+
+		while (reader.hasNext()) {
+			reader.print(10000);
+			String line = reader.next();
+			String[] parts = line.split("\t");
+
+			if (reader.getNumLines() == 1) {
+				for (String p : parts) {
+					labels.add(p);
+				}
+			} else {
+				if (parts.length != labels.size()) {
+					continue;
+				}
+
+				parts = StrUtils.unwrap(parts);
+
+				String type = parts[0];
+				String cn = parts[1];
+				String korKwdStr = parts[2].split(" => ")[0];
+				String korKwdStrPos = parts[2].split(" => ")[1];
+				String engKwdStr = parts[3];
+				String korTitle = parts[4];
+				String engTitle = parts[5];
+				String korAbs = parts[6];
+				String engAbs = parts[7];
+
+				if (type.equals("patent")) {
+					break;
+				}
+
+				Counter<String> c = Generics.newCounter();
+
+				KDocument doc = TaggedTextParser.parse(korTitle + "\\n" + korAbs);
+				//
+				for (Token t : doc.getSubTokens()) {
+					String word = t.getValue(TokenAttr.WORD);
+					String pos = t.getValue(TokenAttr.POS);
+					if (pos.contains("NN")) {
+						c.incrementCount(word.toLowerCase(), 1);
+					}
+				}
+
+				c.incrementAll(AnalyzerUtils.getWordCounts(engTitle, analyzer));
+
+				cm.setCounter(cn, c);
+
+				// writer.write(cn + "\t" + c.toString(c.size()) + "\n");
+
+			}
+		}
+		reader.printLast();
+		reader.close();
+		// writer.close();
+
+		FileUtils.writeStrCounterMap(KPPath.TITLE_DATA_FILE, cm);
+
 	}
 
 	public void mergeDumps() {
@@ -326,7 +345,7 @@ public class DataHandler {
 				String line = reader.next();
 				String[] parts = line.split("\t");
 
-				removeSurroundings(parts);
+				parts = StrUtils.unwrap(parts);
 
 				if (reader.getNumLines() == 1) {
 					for (String p : parts) {
@@ -376,20 +395,9 @@ public class DataHandler {
 					List<String> korKwds = getKeywords(korKwdStr);
 					List<String> engKwds = getKeywords(engKwdStr);
 
-					korKwdStr = StrUtils.join(";", korKwds);
-					engKwdStr = StrUtils.join(";", engKwds);
-
-					List<String> res = Generics.newArrayList();
-					res.add(String.format("\"%s\"", type));
-					res.add(String.format("\"%s\"", cn));
-					res.add(String.format("\"%s\"", korKwdStr));
-					res.add(String.format("\"%s\"", engKwdStr));
-					res.add(String.format("\"%s\"", korTitle));
-					res.add(String.format("\"%s\"", engTitle));
-					res.add(String.format("\"%s\"", korAbs));
-					res.add(String.format("\"%s\"", engAbs));
-
-					String output = StrUtils.join("\t", res);
+					String[] res = new String[] { type, cn, StrUtils.join(";", korKwds), StrUtils.join(";", engKwds), korTitle, engTitle,
+							korAbs, engAbs };
+					String output = StrUtils.join("\t", StrUtils.wrap(res));
 
 					writer.write(String.format("\n%s", output));
 				}
@@ -397,14 +405,6 @@ public class DataHandler {
 			reader.close();
 		}
 		writer.close();
-	}
-
-	private void removeSurroundings(String[] parts) {
-		for (int j = 0; j < parts.length; j++) {
-			if (parts[j].length() > 1) {
-				parts[j] = parts[j].substring(1, parts[j].length() - 1);
-			}
-		}
 	}
 
 	public void tagPOS() {
@@ -437,7 +437,7 @@ public class DataHandler {
 					continue;
 				}
 
-				StrUtils.unwrap(parts, "\"", "\"", parts);
+				parts = StrUtils.unwrap(parts);
 
 				String type = parts[0];
 				String cn = parts[1];
@@ -450,16 +450,18 @@ public class DataHandler {
 
 				List<String> korKwds1 = getKeywords(korKwdStr);
 				List<String> korKwds2 = Generics.newArrayList(korKwds1.size());
+				List<String> engKwds = getKeywords(engKwdStr);
 
-				// if (type.equals("patent")) {
-				// break;
-				// }
+				if (type.equals("patent")) {
+					break;
+				}
 
 				if (!type.equals("patent")) {
 					if (korTitle.length() == 0 || korAbs.length() == 0) {
 						continue;
 					}
-					if (korKwds1.size() == 0) {
+
+					if (korKwds1.size() == 0 || engKwds.size() == 0) {
 						continue;
 					}
 				}
@@ -470,13 +472,11 @@ public class DataHandler {
 					korKwds2.add(kwd);
 				}
 
-				korKwdStr = StrUtils.join(";", korKwds1);
-
-				parts[2] = korKwdStr + " => " + StrUtils.join(";", korKwds2);
+				parts[2] = String.format("\"%s\" => \"%s\"", StrUtils.join(";", korKwds1), StrUtils.join(";", korKwds2));
 				parts[4] = getText(komoran.analyze(korTitle, 1));
 				parts[6] = getText(komoran.analyze(korAbs, 1));
 
-				StrUtils.wrap(parts, "\"", "\"", parts);
+				parts = StrUtils.wrap(parts);
 
 				writer.write("\n" + StrUtils.join("\t", parts));
 

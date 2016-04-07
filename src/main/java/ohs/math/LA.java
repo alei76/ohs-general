@@ -151,7 +151,7 @@ public class LA {
 	 */
 	public static void colOrthonormalBasis(double[][] a, double[][] b) {
 
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -411,7 +411,7 @@ public class LA {
 	 * @return
 	 */
 	public static double distance(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 		double ret = 0;
@@ -424,7 +424,7 @@ public class LA {
 	}
 
 	public static double dotProduct(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -482,7 +482,7 @@ public class LA {
 	 * @return
 	 */
 	public static double FrobeniusNorm(double[][] a, double[][] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -650,7 +650,7 @@ public class LA {
 	 */
 	public static void GramSchmidtProcess(double[][] a, double[][] b) {
 
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -806,7 +806,7 @@ public class LA {
 	}
 
 	public static double[][] joinColumns(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -827,7 +827,7 @@ public class LA {
 	}
 
 	public static double[][] joinColumns(double[][] a, double[] b) {
-		if (!ArrayChecker.isSameRowDim(a, b)) {
+		if (!ArrayChecker.isEqualRowDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -853,7 +853,7 @@ public class LA {
 	 * @return
 	 */
 	public static double[][] joinColumns(double[][] a, double[][] b) {
-		if (!ArrayChecker.isSameRowDim(a, b)) {
+		if (!ArrayChecker.isEqualRowDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -1365,7 +1365,7 @@ public class LA {
 	 *            output
 	 */
 	public static void power(double[][] a, int k, double[][] b) {
-		if (!ArrayChecker.isSquare(a) || !ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isSquare(a) || !ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException("Invalid matrix power");
 		}
 
@@ -1565,7 +1565,7 @@ public class LA {
 	 * 
 	 */
 	public static void projectionAonB(double[] a, double[] b, double[] c) {
-		if (ArrayChecker.isSameDim(a, b) && ArrayChecker.isSameDim(b, c)) {
+		if (ArrayChecker.isEqualDim(a, b) && ArrayChecker.isEqualDim(b, c)) {
 
 		} else {
 			throw new IllegalArgumentException();
@@ -1611,7 +1611,7 @@ public class LA {
 	 * @return
 	 */
 	public static void QRalgorithm(double[][] a, double[][] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -1946,7 +1946,7 @@ public class LA {
 	 *            output
 	 */
 	public static void unitColumnVectors(double[][] a, double[][] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -2032,7 +2032,7 @@ public class LA {
 	 */
 	public void eigenValues(double[][] a, double[][] b) {
 
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 

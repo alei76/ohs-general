@@ -244,7 +244,7 @@ public class ArrayUtils {
 	}
 
 	public static double copyColumn(double[][] a, int aj, double[][] b, int bj) {
-		if (!ArrayChecker.isSameDim(a, b)) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 		int rowDim = a.length;
@@ -515,7 +515,7 @@ public class ArrayUtils {
 	}
 
 	public static void multipleIndexes(int singleIndex, int[] dims, int[] indexes) {
-		if (!ArrayChecker.isSameDim(dims, indexes)) {
+		if (!ArrayChecker.isEqualDim(dims, indexes)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -840,7 +840,7 @@ public class ArrayUtils {
 	}
 
 	public static int singleIndex(int[] dims, int[] indexes) {
-		if (!ArrayChecker.isSameDim(dims, indexes)) {
+		if (!ArrayChecker.isEqualDim(dims, indexes)) {
 			throw new IllegalArgumentException();
 		}
 

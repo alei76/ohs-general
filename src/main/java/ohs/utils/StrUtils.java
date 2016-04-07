@@ -31,21 +31,16 @@ public class StrUtils {
 
 	private static Pattern p = Pattern.compile("\\d+[\\d,\\.]*");
 
-	public static char decodeByCodePoints(int codepoint, int base) {
-		return String.valueOf(Character.toChars(codepoint + base)).charAt(0);
+	public static String[] copy(String[] a) {
+		String[] b = new String[a.length];
+		copy(a, b);
+		return b;
 	}
 
-	public static char[] decodeByCodePoints(int[] codepoints) {
-		return decodeByCodePoints(codepoints, 0);
-	}
-
-	public static char[] decodeByCodePoints(int[] codepoints, int base) {
-		char[] ret = new char[codepoints.length];
-		for (int i = 0; i < ret.length; i++) {
-			String s = String.valueOf(Character.toChars(codepoints[i] + base));
-			ret[i] = s.charAt(0);
+	public static void copy(String[] a, String[] b) {
+		for (int i = 0; i < a.length; i++) {
+			b[i] = a[i];
 		}
-		return ret;
 	}
 
 	/**
@@ -97,56 +92,6 @@ public class StrUtils {
 		int longer = (n > m) ? n : m;
 		double ret = normalize ? (double) d[n][m] / longer : (double) d[n][m];
 		return ret;
-	}
-
-	public static String[] wrap(String[] a) {
-		String[] b = new String[a.length];
-		wrap(a, "\"", "\"", b);
-		return b;
-	}
-
-	public static String[] unwrap(String[] a) {
-		String[] b = new String[a.length];
-		unwrap(a, "\"", "\"", b);
-		return b;
-	}
-
-	public static String[] unwrap(String[] a, String open, String close, String[] b) {
-		for (int i = 0; i < a.length; i++) {
-			b[i] = a[i].substring(open.length(), a[i].length() - close.length());
-		}
-		return b;
-	}
-
-	public static void wrap(String[] a, String open, String close, String[] b) {
-		for (int i = 0; i < a.length; i++) {
-			b[i] = String.format("%s%s%s", open, a[i], close);
-		}
-	}
-
-	public static int encodeByCodePoints(char s, int base) {
-		return Character.codePointAt(new char[] { s }, 0) - base;
-	}
-
-	public static int[] encodeByCodePoints(char[] s) {
-		return encodeByCodePoints(s, 0);
-	}
-
-	public static int[] encodeByCodePoints(char[] s, int base) {
-		int[] ret = new int[s.length];
-		for (int i = 0; i < s.length; i++) {
-			ret[i] = Character.codePointAt(s, i);
-			ret[i] -= base;
-		}
-		return ret;
-	}
-
-	public static int[] encondeByCodePoints(String s) {
-		return encodeByCodePoints(s.toCharArray());
-	}
-
-	public static int[] encondeByCodePoints(String s, char base) {
-		return encodeByCodePoints(s.toCharArray(), Character.codePointAt(new char[] { base }, 0));
 	}
 
 	public static List<TextSpan> extract(String text) throws Exception {
@@ -238,12 +183,6 @@ public class StrUtils {
 
 	public static boolean find(String text, String regex) {
 		return find(text, Pattern.compile(regex));
-	}
-
-	public static void copy(String[] a, String[] b) {
-		for (int i = 0; i < a.length; i++) {
-			b[i] = a[i];
-		}
 	}
 
 	public static Matcher getMatcher(String text, String regex) {
@@ -504,19 +443,19 @@ public class StrUtils {
 		return normalizeSpaces(s.replaceAll("\\p{Punct}+", " "));
 	}
 
-	public static String normalizeSpaces(String text) {
-		return text.replaceAll("[\\text]+", " ").trim();
+	public static String normalizeSpaces(String s) {
+		return s.replaceAll("[\\s]+", " ").trim();
 	}
 
-	public static String[] normalizeSpaces(String[] toks) {
-		for (int i = 0; i < toks.length; i++) {
-			toks[i] = normalizeSpaces(toks[i]);
+	public static String[] normalizeSpaces(String[] s) {
+		for (int i = 0; i < s.length; i++) {
+			s[i] = normalizeSpaces(s[i]);
 		}
-		return toks;
+		return s;
 	}
 
 	public static String normalizeSpecialCharacters(String text) {
-		Pattern p = Pattern.compile("\\&[^\\&\\text;]+;");
+		Pattern p = Pattern.compile("\\&[^\\&\\s;]+;");
 		Matcher m = p.matcher(text);
 
 		StringBuffer sb = new StringBuffer();
@@ -543,7 +482,7 @@ public class StrUtils {
 		return sb.toString();
 	}
 
-	public static String[] replace(Object[] s, String target, String replacement) {
+	public static String[] replace(String[] s, String target, String replacement) {
 		String[] ret = new String[s.length];
 		for (int i = 0; i < s.length; i++) {
 			if (s[i] == null || s[i].toString().equals(target)) {
@@ -555,13 +494,13 @@ public class StrUtils {
 		return ret;
 	}
 
-	public static String separateBracket(String text) {
+	public static String separateBrackets(String s) {
 		StringBuffer sb = new StringBuffer();
-		sb.append(text.charAt(0));
+		sb.append(s.charAt(0));
 
-		for (int i = 1; i < text.length(); i++) {
-			char prevCh = text.charAt(i - 1);
-			char currCh = text.charAt(i);
+		for (int i = 1; i < s.length(); i++) {
+			char prevCh = s.charAt(i - 1);
+			char currCh = s.charAt(i);
 			if (prevCh == '(' || prevCh == ')' || prevCh == '[' || prevCh == ']' || prevCh == '{' || prevCh == '}' || prevCh == '<'
 					|| prevCh == '>') {
 				sb.append(currCh);
@@ -605,13 +544,13 @@ public class StrUtils {
 		return sb.toString();
 	}
 
-	public static List<String> split(String text) {
-		return split("[\\s]+", text);
+	public static List<String> split(String s) {
+		return split("[\\s]+", s);
 	}
 
-	public static List<String> split(String delimiter, String text) {
+	public static List<String> split(String delim, String s) {
 		ArrayList<String> ret = new ArrayList<String>();
-		for (String tok : text.split(delimiter)) {
+		for (String tok : s.split(delim)) {
 			ret.add(tok);
 		}
 		ret.trimToSize();
@@ -640,16 +579,20 @@ public class StrUtils {
 		return ret;
 	}
 
-	public static String[] split2Two(String delimiter, String text) {
+	public static String[] split2Two(String delim, String s) {
 		String[] ret = null;
-		int idx = text.lastIndexOf(delimiter);
+		int idx = s.lastIndexOf(delim);
 
 		if (idx > -1) {
 			ret = new String[2];
-			ret[0] = text.substring(0, idx);
-			ret[1] = text.substring(idx + 1);
+			ret[0] = s.substring(0, idx);
+			ret[1] = s.substring(idx + 1);
 		}
 		return ret;
+	}
+
+	public static List<String> splitPunctuations(String s) {
+		return split("[\\s\\p{Punct}]+", s);
 	}
 
 	public static String substring(String text, String startText, String endText) {
@@ -666,19 +609,11 @@ public class StrUtils {
 		return ret;
 	}
 
-	public static String[] surround(String[] array, String prefix, String suffix) {
-		String[] ret = new String[array.length];
-		for (int i = 0; i < array.length; i++) {
-			ret[i] = String.format("%s%s%s", prefix, array[i], suffix);
-		}
-		return ret;
-	}
-
-	public static String tag(String text, Collection<String> targets, String tagName) throws Exception {
+	public static String tag(String t, Collection<String> targets, String tagName) throws Exception {
 		StringBuffer sb = new StringBuffer();
 
 		Pattern p = Pattern.compile(String.format("(%s)", String.join("|", targets)), Pattern.CASE_INSENSITIVE);
-		Matcher m = p.matcher(text);
+		Matcher m = p.matcher(t);
 
 		while (m.find()) {
 			String g = m.group();
@@ -688,34 +623,10 @@ public class StrUtils {
 		return sb.toString();
 	}
 
-	public static String tag(String text, String taget, String tagName) throws Exception {
+	public static String tag(String t, String taget, String tagName) throws Exception {
 		List<String> targets = Generics.newArrayList();
 		targets.add(taget);
-		return tag(text, targets, tagName);
-	}
-
-	public static String[] to1DArray(String[][] s) {
-		List<String> ret = Generics.newArrayList();
-		for (String[] t : s) {
-			for (String m : t) {
-				ret.add(m);
-			}
-		}
-		return toStrArray(ret);
-	}
-
-	public static String[][] to2DArray(String[] s, int row_size, int col_size) {
-		String[][] ret = new String[row_size][col_size];
-		for (int i = 0, loc = 0; i < row_size; i++) {
-			for (int j = 0; j < col_size; j++) {
-				ret[i][j] = s[loc++];
-			}
-		}
-		return ret;
-	}
-
-	public static String[] toStrArray(Collection<String> c) {
-		return c.toArray(new String[c.size()]);
+		return tag(t, targets, tagName);
 	}
 
 	public static Character[] toCharacters(char[] chs) {
@@ -746,12 +657,8 @@ public class StrUtils {
 		return ret;
 	}
 
-	public static List<String> toStrList(String[] s) {
-		List<String> ret = Generics.newArrayList(s.length);
-		for (String t : s) {
-			ret.add(t);
-		}
-		return ret;
+	public static String[] toStrArray(Collection<String> c) {
+		return c.toArray(new String[c.size()]);
 	}
 
 	public static String toString(char[] chs) {
@@ -765,9 +672,9 @@ public class StrUtils {
 		return sb.toString();
 	}
 
-	public static String toString(Object[] array, String delimiter) {
+	public static String toString(Object[] array, String delim) {
 		StringBuffer sb = new StringBuffer();
-		String separator = delimiter == null ? "\n" : delimiter;
+		String separator = delim == null ? "\n" : delim;
 		for (int i = 0; i < array.length; i++) {
 			sb.append(array[i].toString() + (i == array.length - 1 ? "" : separator));
 		}
@@ -795,12 +702,61 @@ public class StrUtils {
 		return sb.toString();
 	}
 
-	public static String value(boolean condition, String a, String b) {
-		return condition ? a : b;
+	public static List<String> toStrList(String[] s) {
+		List<String> ret = Generics.newArrayList(s.length);
+		for (String t : s) {
+			ret.add(t);
+		}
+		return ret;
+	}
+
+	public static String unwrap(String a) {
+		return unwrap(a, "\"", "\"");
+	}
+
+	public static String unwrap(String a, String open, String close) {
+		return a.substring(open.length(), a.length() - close.length());
+	}
+
+	public static String[] unwrap(String[] a) {
+		String[] b = new String[a.length];
+		unwrap(a, "\"", "\"", b);
+		return b;
+	}
+
+	public static String[] unwrap(String[] a, String open, String close, String[] b) {
+		for (int i = 0; i < a.length; i++) {
+			b[i] = unwrap(a[i], open, close);
+		}
+		return b;
 	}
 
 	public static char value(boolean condition, char a, char b) {
 		return condition ? a : b;
+	}
+
+	public static String value(boolean condition, String a, String b) {
+		return condition ? a : b;
+	}
+
+	public static String wrap(String a) {
+		return wrap(a, "\"", "\"");
+	}
+
+	public static String wrap(String a, String open, String close) {
+		return String.format("%s%s%s", open, a, close);
+	}
+
+	public static String[] wrap(String[] a) {
+		String[] b = new String[a.length];
+		wrap(a, "\"", "\"", b);
+		return b;
+	}
+
+	public static void wrap(String[] a, String open, String close, String[] b) {
+		for (int i = 0; i < a.length; i++) {
+			b[i] = wrap(a[i], open, close);
+		}
 	}
 
 };

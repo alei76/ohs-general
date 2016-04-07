@@ -1,6 +1,7 @@
 package ohs.utils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,14 +22,13 @@ import ohs.types.ListMap;
  */
 public class TermWeighting {
 
-	public static void computeTFIDFs(List<SparseVector> docs) {
+	public static void computeTFIDFs(Collection<SparseVector> docs) {
 		computeTFIDFs(docs, docFreq(docs, maxTermIndex(docs) + 1));
 	}
 
-	public static void computeTFIDFs(List<SparseVector> docs, DenseVector docFreqs) {
+	public static void computeTFIDFs(Collection<SparseVector> docs, DenseVector docFreqs) {
 		System.out.println("compute tfidfs.");
-		for (int i = 0; i < docs.size(); i++) {
-			SparseVector doc = docs.get(i);
+		for (SparseVector doc : docs) {
 			for (int j = 0; j < doc.size(); j++) {
 				int w = doc.indexAtLoc(j);
 				double cnt = doc.valueAtLoc(j);
@@ -37,12 +37,11 @@ public class TermWeighting {
 				double tfidf = tfidf(cnt, num_docs, doc_freq);
 				doc.setAtLoc(j, tfidf);
 			}
-			double sum = ArrayMath.normalizeByL2Norm(doc.values(), doc.values());
-			doc.setSum(sum);
+			VectorMath.unitVector(doc);
 		}
 	}
 
-	public static DenseVector docFreq(List<SparseVector> docs, int num_terms) {
+	public static DenseVector docFreq(Collection<SparseVector> docs, int num_terms) {
 		DenseVector ret = new DenseVector(num_terms);
 		for (SparseVector doc : docs) {
 			for (int j = 0; j < doc.size(); j++) {
@@ -138,7 +137,7 @@ public class TermWeighting {
 		return ret;
 	}
 
-	public static int maxTermIndex(List<SparseVector> docs) {
+	public static int maxTermIndex(Collection<SparseVector> docs) {
 		int ret = 0;
 		for (SparseVector x : docs) {
 			if (x.size() == 0) {

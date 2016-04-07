@@ -112,17 +112,17 @@ public class KSentence {
 		return result;
 	}
 
-	public String joinSubValues(int start, int end, TokenAttr attr, String delim1, String delim2) {
-		return StrUtils.join(delim1, delim2, getSubValues(start, end, attr));
-	}
-
-	public String joinSubValues(TokenAttr attr) {
-		return StrUtils.join(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, getSubValues(0, toks.length, attr));
-	}
-
-	public String joinSubValues(TokenAttr attr, String delim1, String delim2) {
-		return StrUtils.join(delim1, delim2, getSubValues(0, toks.length, attr));
-	}
+	// public String joinSubValues(int start, int end, TokenAttr attr, String delim1, String delim2) {
+	// return StrUtils.join(delim1, delim2, getSubValues(start, end, attr));
+	// }
+	//
+	// public String joinSubValues(TokenAttr attr) {
+	// return StrUtils.join(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, getSubValues(0, toks.length, attr));
+	// }
+	//
+	// public String joinSubValues(TokenAttr attr, String delim1, String delim2) {
+	// return StrUtils.join(delim1, delim2, getSubValues(0, toks.length, attr));
+	// }
 
 	public int length() {
 		int ret = 0;

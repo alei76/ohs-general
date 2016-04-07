@@ -51,6 +51,7 @@ import ohs.utils.ByteSize;
 import ohs.utils.ByteSize.Type;
 import ohs.utils.Generics;
 import ohs.utils.StopWatch;
+import ohs.utils.StrUtils;
 
 /**
  * @author Heung-Seon Oh
@@ -771,7 +772,7 @@ public class FileUtils {
 			String[] parts = line.split("\t");
 			String outKey = parts[0];
 			for (int i = 2; i < parts.length; i++) {
-				String[] two = parts[i].split(":");
+				String[] two = StrUtils.split2Two(":", parts[i]);
 				String inKey = two[0];
 				double cnt = Double.parseDouble(two[1]);
 				ret.setCount(outKey, inKey, cnt);

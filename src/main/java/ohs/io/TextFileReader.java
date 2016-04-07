@@ -19,15 +19,15 @@ public class TextFileReader {
 
 	private String currentLine;
 
-	private int maxLines;
+	private int max_lines;
 
-	private int maxNexts;
+	private int max_nexts;
 
-	private int numLines;
+	private int num_lines;
 
-	private int numNexts;
+	private int num_nexts;
 
-	boolean printNexts;
+	boolean print_nexts;
 
 	private BufferedReader reader;
 
@@ -49,13 +49,13 @@ public class TextFileReader {
 		}
 
 		currentLine = null;
-		numLines = 0;
-		numNexts = 0;
+		num_lines = 0;
+		num_nexts = 0;
 		stopWatch = new StopWatch();
-		printNexts = true;
+		print_nexts = true;
 
-		maxNexts = Integer.MAX_VALUE;
-		maxLines = Integer.MAX_VALUE;
+		max_nexts = Integer.MAX_VALUE;
+		max_lines = Integer.MAX_VALUE;
 	}
 
 	public void close() {
@@ -86,23 +86,23 @@ public class TextFileReader {
 			}
 		} while (hasNext());
 
-		numNexts++;
+		num_nexts++;
 
 		return ret;
 	}
 
 	public int getNumLines() {
-		return numLines;
+		return num_lines;
 	}
 
 	public int getNumNexts() {
-		return numNexts;
+		return num_nexts;
 	}
 
 	public boolean hasNext() {
 		boolean ret = true;
 
-		if (numNexts > maxNexts || numLines > maxLines) {
+		if (num_nexts > max_nexts || num_lines > max_lines) {
 			ret = false;
 		} else {
 			currentLine = null;
@@ -115,7 +115,7 @@ public class TextFileReader {
 			if (currentLine == null) {
 				ret = false;
 			} else {
-				numLines++;
+				num_lines++;
 			}
 		}
 		return ret;
@@ -132,32 +132,32 @@ public class TextFileReader {
 
 		int remain = 0;
 
-		if (printNexts) {
-			remain = numNexts % amount;
+		if (print_nexts) {
+			remain = num_nexts % amount;
 		} else {
-			remain = numLines % amount;
+			remain = num_lines % amount;
 		}
 
 		if (remain == 0) {
-			System.out.print(String.format("\r[%d nexts, %s lines, %s]", numNexts, numLines, stopWatch.stop()));
+			System.out.print(String.format("\r[%d nexts, %s lines, %s]", num_nexts, num_lines, stopWatch.stop()));
 		}
 	}
 
 	public void printLast() {
 		stopWatch.stop();
-		System.out.println(String.format("\r[%d nexts, %s lines, %s]", numNexts, numLines, stopWatch.toString()));
+		System.out.println(String.format("\r[%d nexts, %s lines, %s]", num_nexts, num_lines, stopWatch.toString()));
 	}
 
 	public void setMaxLines(int maxLines) {
-		this.maxLines = maxLines;
+		this.max_lines = maxLines;
 	}
 
 	public void setMaxNexts(int maxNumNexts) {
-		this.maxNexts = maxNumNexts;
+		this.max_nexts = maxNumNexts;
 	}
 
 	public void setPrintNexts(boolean printNexts) {
-		this.printNexts = printNexts;
+		this.print_nexts = printNexts;
 	}
 
 	public StopWatch stopWatch() {
