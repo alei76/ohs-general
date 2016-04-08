@@ -16,9 +16,9 @@ public class Jaccard implements SimScorer {
 		{
 
 			Jaccard ed = new Jaccard();
-			// MemoMatrix m = sw.compute(new CharacterSequence(strs[0]), new CharacterSequence(strs[1]));
-			// MemoMatrix m = ed.compute(new StringSequence(strs[0]), new StringSequence(strs[1]));
-			System.out.println(ed.getSimilarity(new CharacterSequence(strs[0]), new CharacterSequence(strs[1])));
+			// MemoMatrix m = sw.compute(new CharSequence(strs[0]), new CharSequence(strs[1]));
+			// MemoMatrix m = ed.compute(new StrSequence(strs[0]), new StrSequence(strs[1]));
+			System.out.println(ed.getSimilarity(new CharSequence(strs[0]), new CharSequence(strs[1])));
 
 		}
 
@@ -50,5 +50,10 @@ public class Jaccard implements SimScorer {
 		}
 		double ret = num_commons / (c1.size() + c2.size() - num_commons);
 		return ret;
+	}
+
+	public double getDistance(Sequence s, Sequence t) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

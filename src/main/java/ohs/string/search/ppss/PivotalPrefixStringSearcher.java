@@ -17,7 +17,7 @@ import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.string.search.ppss.Gram.Type;
-import ohs.string.sim.CharacterSequence;
+import ohs.string.sim.CharSequence;
 import ohs.string.sim.SmithWaterman;
 import ohs.types.Counter;
 import ohs.types.DeepMap;
@@ -701,7 +701,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 			// continue;
 			// }
 
-			double swScore = sw.getSimilarity(new CharacterSequence(s), new CharacterSequence(r));
+			double swScore = sw.getSimilarity(new CharSequence(s), new CharSequence(r));
 
 			// double long_len = Math.max(text.length(), r.length());
 			// double sim = 1 - (ed / long_len);

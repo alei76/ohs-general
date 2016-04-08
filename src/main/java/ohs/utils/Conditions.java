@@ -138,28 +138,28 @@ public class Conditions {
 		return a < b ? true : false;
 	}
 
-	public static char value(boolean condition, char a, char b) {
-		return condition ? a : b;
+	public static char value(boolean a, char b, char c) {
+		return a ? b : c;
 	}
 
-	public static double value(boolean condition, double a, double b) {
-		return condition ? a : b;
+	public static double value(boolean a, double b, double c) {
+		return a ? b : c;
 	}
 
-	public static <E> E value(boolean condition, E a, E b) {
-		return condition ? a : b;
+	public static <E> E value(boolean a, E b, E c) {
+		return a ? b : c;
 	}
 
-	public static float value(boolean condition, float a, float b) {
-		return condition ? a : b;
+	public static float value(boolean a, float b, float c) {
+		return a ? b : c;
 	}
 
-	public static int value(boolean condition, int a, int b) {
-		return condition ? a : b;
+	public static int value(boolean a, int b, int c) {
+		return a ? b : c;
 	}
 
-	public static String value(boolean condition, String a, String b) {
-		return condition ? a : b;
+	public static String value(boolean a, String b, String c) {
+		return a ? b : c;
 	}
 
 }

@@ -1,12 +1,9 @@
 package ohs.nlp.pos;
 
-import java.lang.reflect.Array;
-
-import org.apache.xerces.impl.dv.dtd.NMTOKENDatatypeValidator;
-
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 import ohs.math.CommonFuncs;
+import ohs.utils.Conditions;
 
 public class SimpleHMM {
 
@@ -215,7 +212,7 @@ public class SimpleHMM {
 				double norm = 0;
 				for (int t = 0; t < T; t++) {
 					double g = gamma(t, i, alpha, beta);
-					value += g * CommonFuncs.value(k == obs[t], 1, 0);
+					value += g * Conditions.value(k == obs[t], 1, 0);
 					norm += g;
 				}
 				tmp_b[i][k] = CommonFuncs.divide(value, norm);

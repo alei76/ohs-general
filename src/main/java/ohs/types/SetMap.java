@@ -78,14 +78,17 @@ public class SetMap<K, V> implements Serializable {
 		return createIfAbsent ? ensure(key) : entries.get(key);
 	}
 
+	public Set<Map.Entry<K, Set<V>>> getEntrySet() {
+		// TODO Auto-generated method stub
+		return entries.entrySet();
+	}
+
 	public Set<K> keySet() {
 		return entries.keySet();
 	}
 
 	public void put(K key, Set<V> values) {
-		for (V value : values) {
-			put(key, value);
-		}
+		entries.put(key, values);
 	}
 
 	public void put(K key, V value) {
@@ -115,6 +118,14 @@ public class SetMap<K, V> implements Serializable {
 
 	public int size() {
 		return entries.size();
+	}
+
+	public int sizeOfItems() {
+		int ret = 0;
+		for (Set<V> s : entries.values()) {
+			ret += s.size();
+		}
+		return ret;
 	}
 
 	@Override

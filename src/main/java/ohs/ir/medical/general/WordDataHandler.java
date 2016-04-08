@@ -121,7 +121,7 @@ public class WordDataHandler {
 				continue;
 			}
 
-			List<String> ws1 = cm.getRowCountSums().getSortedKeys();
+			List<String> ws1 = cm.getOutKeyCountSums().getSortedKeys();
 			StringBuffer sb = new StringBuffer();
 			sb.append(String.format("DocID:\t%d\n", i));
 
@@ -285,7 +285,7 @@ public class WordDataHandler {
 
 		ccm = ccm.invert();
 
-		List<Integer> ws1 = ccm.getRowCountSums().getSortedKeys();
+		List<Integer> ws1 = ccm.getOutKeyCountSums().getSortedKeys();
 
 		for (int i = 0; i < ws1.size(); i++) {
 			int w1 = ws1.get(i);

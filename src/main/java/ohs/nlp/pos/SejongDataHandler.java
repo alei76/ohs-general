@@ -135,7 +135,7 @@ public class SejongDataHandler {
 
 			System.out.println(str);
 
-			Node<Character> node = trie.insert(StrUtils.toCharacters(str));
+			Node<Character> node = trie.insert(StrUtils.asCharacters(str));
 			node.setData("");
 
 			// System.out.println(s);

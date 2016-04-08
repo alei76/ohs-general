@@ -15,7 +15,7 @@ import ohs.io.FileUtils;
 import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.GramGenerator;
 import ohs.string.search.ppss.StringRecord;
-import ohs.string.sim.CharacterSequence;
+import ohs.string.sim.CharSequence;
 import ohs.string.sim.EditDistance;
 import ohs.string.sim.Jaccard;
 import ohs.string.sim.Jaro;
@@ -361,7 +361,7 @@ public class StringSearcher implements Serializable {
 		Counter<StringRecord> ret = Generics.newCounter();
 		simScores = Generics.newHashMap(top_k);
 
-		Sequence ss = new CharacterSequence(s.toLowerCase());
+		Sequence ss = new CharSequence(s.toLowerCase());
 
 		List<Integer> rids = candidates.getSortedKeys();
 
@@ -370,7 +370,7 @@ public class StringSearcher implements Serializable {
 			StringRecord sr = srs.get(rid);
 			double idf_sum = candidates.getCount(rid);
 
-			Sequence tt = new CharacterSequence(sr.getString().toLowerCase());
+			Sequence tt = new CharSequence(sr.getString().toLowerCase());
 
 			Double[] scores = cache.get(s, sr.getId(), false);
 

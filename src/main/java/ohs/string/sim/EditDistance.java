@@ -16,10 +16,18 @@ public class EditDistance implements SimScorer {
 			if (j == 0)
 				return i;
 
-			String si = getSource().get(i - 1);
-			String tj = getTarget().get(j - 1);
+			double cost = 0;
 
-			double cost = si.equals(tj) ? 0 : 1;
+			if (s instanceof CharSequence) {
+				Character si = (Character) getSource().get(i - 1);
+				Character sj = (Character) getTarget().get(j - 1);
+				cost = si.equals(sj) ? 0 : 1;
+			} else {
+				String si = (String) getSource().get(i - 1);
+				String tj = (String) getTarget().get(j - 1);
+				cost = si.equals(tj) ? 0 : 1;
+			}
+
 			double replace_score = get(i - 1, j - 1) + cost;
 			double delete_score = get(i - 1, j) + 1;
 			double insert_score = get(i, j - 1) + 1;
@@ -42,9 +50,9 @@ public class EditDistance implements SimScorer {
 		// String[] strs = { "I love New York !!!", "I hate New Mexico !!!" };
 
 		EditDistance ed = new EditDistance();
-		// MemoMatrix m = sw.compute(new CharacterSequence(strs[0]), new CharacterSequence(strs[1]));
-		// MemoMatrix m = ed.compute(new StringSequence(strs[0]), new StringSequence(strs[1]));
-		System.out.println(ed.getSimilarity(new StringSequence(strs[0]), new StringSequence(strs[1])));
+		// MemoMatrix m = sw.compute(new CharSequence(strs[0]), new CharSequence(strs[1]));
+		// MemoMatrix m = ed.compute(new StrSequence(strs[0]), new StrSequence(strs[1]));
+		System.out.println(ed.getSimilarity(new StrSequence(strs[0]), new StrSequence(strs[1])));
 
 		// System.out.println(m.getBestScore());
 

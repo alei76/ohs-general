@@ -146,7 +146,7 @@ public class AbbreviationExtracting {
 			}
 		}
 
-		Counter<String> short_count = short_long_count.getRowCountSums();
+		Counter<String> short_count = short_long_count.getOutKeyCountSums();
 
 		TextFileWriter writer = new TextFileWriter(EHPath.ABBREVIATION_FILTERED_FILE);
 
@@ -209,7 +209,7 @@ public class AbbreviationExtracting {
 			// long_count.pruneKeysBelowThreshold(5);
 		}
 
-		Counter<String> short_count = short_long_count.getRowCountSums();
+		Counter<String> short_count = short_long_count.getOutKeyCountSums();
 
 		TextFileWriter writer = new TextFileWriter(new File(EHPath.ABBREVIATION_GROUPED_FILE));
 

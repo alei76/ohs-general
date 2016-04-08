@@ -73,7 +73,7 @@ public class PaperDataHandler {
 
 		TextFileWriter writer = new TextFileWriter(ENTPath.AUTHOR_NAME_FILE);
 
-		List<String> aids = cm.getRowCountSums().getSortedKeys();
+		List<String> aids = cm.getOutKeyCountSums().getSortedKeys();
 
 		for (int i = 0; i < aids.size(); i++) {
 			String aid = aids.get(i);
@@ -208,7 +208,7 @@ public class PaperDataHandler {
 
 		TextFileWriter writer = new TextFileWriter(ENTPath.AUTHOR_SUBSET_FILE);
 
-		List<String> aids = cm.getRowCountSums().getSortedKeys();
+		List<String> aids = cm.getOutKeyCountSums().getSortedKeys();
 
 		for (int i = 0; i < aids.size() && i < 500; i++) {
 			String aid = aids.get(i);

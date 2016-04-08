@@ -1,6 +1,6 @@
 package ohs.string.sim;
 
-public class CharacterSequence implements Sequence {
+public class CharSequence implements Sequence<Character> {
 
 	/**
 	 * 
@@ -9,13 +9,13 @@ public class CharacterSequence implements Sequence {
 
 	private String s;
 
-	public CharacterSequence(String s) {
+	public CharSequence(String s) {
 		this.s = s;
 	}
 
 	@Override
-	public String get(int i) {
-		return s.charAt(i) + "";
+	public Character get(int i) {
+		return s.charAt(i);
 	}
 
 	@Override

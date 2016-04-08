@@ -67,6 +67,11 @@ public class Generics {
 		HASH_SET, TREE_SET, WEAK_HASH_SET, IDENTITY_HASH_SET;
 	}
 
+	@SuppressWarnings("unchecked")
+	public static <T> T cast(Object o) {
+		return (T) o;
+	}
+
 	/* Collections */
 	public static <E> ArrayList<E> newArrayList() {
 		return new ArrayList<E>();
@@ -116,16 +121,16 @@ public class Generics {
 		return new CounterMap<K, V>();
 	}
 
-	public static <K, V, F> DeepCounterMap<K, V, F> newDeepCounterMap() {
-		return new DeepCounterMap<K, V, F>();
-	}
-
 	public static <K, V> CounterMap<K, V> newCounterMap(CounterMap<K, V> cm) {
 		return new CounterMap<K, V>(cm);
 	}
 
 	public static <K, V> CounterMap<K, V> newCounterMap(int size) {
 		return new CounterMap<K, V>(size);
+	}
+
+	public static <K, V, F> DeepCounterMap<K, V, F> newDeepCounterMap() {
+		return new DeepCounterMap<K, V, F>();
 	}
 
 	public static <K, E, V> DeepMap<K, E, V> newDeepMap() {
@@ -151,6 +156,30 @@ public class Generics {
 
 	public static <E> Set<E> newHashSet() {
 		return new HashSet<E>();
+	}
+
+	public static <E> Set<E> ensureHashSet(Set<E> a) {
+		return a == null ? newHashSet() : a;
+	}
+
+	public static <E> Counter<E> ensureCounter(Counter<E> a) {
+		return a == null ? newCounter() : a;
+	}
+
+	public static <E> List<E> ensureArrayList(ArrayList<E> a) {
+		return a == null ? newArrayList() : a;
+	}
+
+	public static <K, V> Map<K, V> ensureHashMap(Map<K, V> a) {
+		return a == null ? newHashMap() : a;
+	}
+
+	public static <K, V> Map<K, V> ensureTreeMap(Map<K, V> a) {
+		return a == null ? newTreeMap() : a;
+	}
+
+	public static <K, V> BidMap<K, V> ensureBidMap(BidMap<K, V> a) {
+		return a == null ? newBidMap() : a;
 	}
 
 	public static <E> Set<E> newHashSet(Collection<? extends E> c) {

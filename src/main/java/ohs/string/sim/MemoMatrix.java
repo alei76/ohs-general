@@ -57,8 +57,8 @@ public abstract class MemoMatrix {
 	public double getMaxScore() {
 		return get(indexAtMax.getFirst(), indexAtMax.getSecond());
 	}
-	
-	public double getMinScore(){
+
+	public double getMinScore() {
 		return get(indexAtMin.getFirst(), indexAtMin.getSecond());
 	}
 

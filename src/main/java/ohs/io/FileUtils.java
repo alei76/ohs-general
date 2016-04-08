@@ -1137,7 +1137,7 @@ public class FileUtils {
 			keys.addAll(cm.keySet());
 			Collections.sort(keys);
 		} else {
-			keys = cm.getRowCountSums().getSortedKeys();
+			keys = cm.getOutKeyCountSums().getSortedKeys();
 		}
 
 		bw.write(String.format("%s\t%d", LINE_SIZE, keys.size()));

@@ -45,8 +45,8 @@ public class SmithWaterman implements SimScorer {
 
 		SmithWaterman sw = new SmithWaterman();
 
-		// System.out.println(sw.compute(new StringSequence(strs[0]), new StringSequence(strs[1])));
-		System.out.println(sw.getSimilarity(new StringSequence(strs[0]), new StringSequence(strs[1])));
+		// System.out.println(sw.compute(new StrSequence(strs[0]), new StrSequence(strs[1])));
+		System.out.println(sw.getSimilarity(new StrSequence(strs[0]), new StrSequence(strs[1])));
 
 	}
 
@@ -90,6 +90,11 @@ public class SmithWaterman implements SimScorer {
 		} else {
 			return (score / max_score);
 		}
+	}
+
+	@Override
+	public double getDistance(Sequence s, Sequence t) {
+		return 0;
 	}
 
 }

@@ -32,6 +32,14 @@ public class ArrayUtils {
 		return arrayInt(size, 0);
 	}
 
+	public static double[] array(double... a) {
+		double[] b = array(a.length);
+		for (int i = 0; i < b.length; i++) {
+			b[i] = a[i];
+		}
+		return b;
+	}
+
 	public static int[] arrayInt(int size, int init) {
 		int[] ret = new int[size];
 		for (int i = 0; i < size; i++) {
@@ -39,7 +47,14 @@ public class ArrayUtils {
 		}
 		return ret;
 	}
-	
+
+	public static int[] arrayInt(int... a) {
+		int[] b = arrayInt(a.length);
+		for (int i = 0; i < b.length; i++) {
+			b[i] = a[i];
+		}
+		return b;
+	}
 
 	public static ByteSize byteSize(double[] a) {
 		return new ByteSize(Double.BYTES * a.length);

@@ -554,7 +554,15 @@ public class UnicodeUtils {
 				|| isInRange(HANGUL_JAMO_JONGSUNG_RANGE, c)
 
 		;
+	}
 
+	public static boolean isKorean(String s) {
+		for (int i = 0; i < s.length(); i++) {
+			if (!isKorean(s.charAt(i))) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 }

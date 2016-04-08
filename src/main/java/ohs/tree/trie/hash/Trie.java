@@ -73,7 +73,7 @@ public class Trie<K> implements Serializable {
 
 				String word2 = UnicodeUtils.decomposeToJamo(word);
 
-				sysDict1.insert(StrUtils.toCharacters(word2.toCharArray()));
+				sysDict1.insert(StrUtils.asCharacters(word2.toCharArray()));
 			}
 
 			sysDict1.trimToSize();

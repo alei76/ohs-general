@@ -81,8 +81,8 @@ public class AffineGap implements SimScorer {
 
 		AffineGap af = new AffineGap();
 
-		// System.out.println(af.compute(new CharacterSequence(strs[0]), new CharacterSequence(strs[1])));
-		System.out.println(af.getSimilarity(new CharacterSequence(strs[0]), new CharacterSequence(strs[1])));
+		// System.out.println(af.compute(new CharSequence(strs[0]), new CharSequence(strs[1])));
+		System.out.println(af.getSimilarity(new CharSequence(strs[0]), new CharSequence(strs[1])));
 
 	}
 
@@ -144,6 +144,11 @@ public class AffineGap implements SimScorer {
 			return (score / max_score);
 		}
 
+	}
+
+	@Override
+	public double getDistance(Sequence s, Sequence t) {
+		return 0;
 	}
 
 }

@@ -1,5 +1,6 @@
 package ohs.eden.keyphrase;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
@@ -30,9 +31,10 @@ public class DataHandler {
 		System.out.println("process begins.");
 		DataHandler dh = new DataHandler();
 		// dh.mergeDumps();
-		dh.tagPOS();
+		// dh.tagPOS();
 		// dh.makeKeywordData();
-		// dh.makeTitleData();
+		dh.makeTitleData();
+
 		// dh.extractKeywordAbbreviations();
 
 		System.out.println("process ends.");
@@ -189,20 +191,12 @@ public class DataHandler {
 		while (reader.hasNext()) {
 			reader.print(100000);
 
-			// if (reader.getNumLines() < 135400) {
-			// continue;
-			// }
-
 			String line = reader.next();
-
-			// System.out.println(line);
 
 			String[] parts = line.split("\t");
 
 			if (reader.getNumLines() == 1) {
-				for (String p : parts) {
-					labels.add(p);
-				}
+				labels = Arrays.asList(parts);
 			} else {
 				if (parts.length != labels.size()) {
 					continue;
@@ -233,22 +227,20 @@ public class DataHandler {
 				if (korKwds.size() == 0 && engKwds.size() == 0) {
 
 				} else if (korKwds.size() == engKwds.size()) {
-					if (korKwds.size() > 0) {
-						for (int j = 0; j < korKwds.size(); j++) {
-							String kor = korKwds.get(j);
-							String eng = engKwds.get(j);
-							String[] p = StrUtils.wrap(new String[] { kor, eng });
-							kwdToDocs.put(StrUtils.join("\t", p), cn);
-						}
+					for (int j = 0; j < korKwds.size(); j++) {
+						String kor = korKwds.get(j);
+						String eng = engKwds.get(j);
+						String[] p = StrUtils.wrap(StrUtils.asArray(kor, eng));
+						kwdToDocs.put(StrUtils.join("\t", p), cn);
 					}
 				} else {
 					for (String kwd : korKwds) {
-						String[] p = StrUtils.wrap(new String[] { kwd, "" });
+						String[] p = StrUtils.wrap(StrUtils.asArray(kwd, ""));
 						kwdToDocs.put(StrUtils.join("\t", p), cn);
 					}
 
 					for (String kwd : engKwds) {
-						String[] p = StrUtils.wrap(new String[] { "", kwd });
+						String[] p = StrUtils.wrap(StrUtils.asArray("", kwd));
 						kwdToDocs.put(StrUtils.join("\t", p), cn);
 					}
 				}
@@ -299,6 +291,13 @@ public class DataHandler {
 
 				if (type.equals("patent")) {
 					break;
+				}
+
+				korKwdStr = StrUtils.unwrap(korKwdStr);
+				korKwdStrPos = StrUtils.unwrap(korKwdStrPos);
+
+				if (korKwdStr.length() == 0 && engKwdStr.length() == 0) {
+					continue;
 				}
 
 				Counter<String> c = Generics.newCounter();
@@ -456,14 +455,8 @@ public class DataHandler {
 					break;
 				}
 
-				if (!type.equals("patent")) {
-					if (korTitle.length() == 0 || korAbs.length() == 0) {
-						continue;
-					}
-
-					if (korKwds1.size() == 0 || engKwds.size() == 0) {
-						continue;
-					}
+				if ((korTitle.length() == 0 && korAbs.length() == 0) || (engTitle.length() == 0 && engAbs.length() == 0)) {
+					continue;
 				}
 
 				for (int i = 0; i < korKwds1.size(); i++) {

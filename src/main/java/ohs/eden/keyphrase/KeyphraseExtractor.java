@@ -66,7 +66,7 @@ public class KeyphraseExtractor {
 			String engKwd = parts[1];
 
 			if (!korKwd.equals(DataHandler.NONE) && !korKwd.equals("\"\"") && korKwd.length() > 0) {
-				Character[] chs = StrUtils.toCharacters(korKwd);
+				Character[] chs = StrUtils.asCharacters(korKwd);
 				korTrie.insert(chs);
 				max_kwd_lens[0] = Math.max(max_kwd_lens[0], chs.length);
 			}
@@ -132,7 +132,7 @@ public class KeyphraseExtractor {
 					Counter<String> kwdCnts = Generics.newCounter();
 
 					if (i == 0) {
-						Character[] chs = StrUtils.toCharacters(text);
+						Character[] chs = StrUtils.asCharacters(text);
 						int max_kwd_len = max_kwd_lens[i];
 
 						for (int j = 0; j < chs.length; j++) {

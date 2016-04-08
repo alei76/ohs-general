@@ -3,6 +3,7 @@ package ohs.utils;
 import java.lang.Character.UnicodeBlock;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -10,8 +11,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.http.impl.auth.GGSSchemeBase;
 
 import ohs.math.ArrayMath;
 import ohs.nlp.ling.types.TextSpan;
@@ -31,6 +30,51 @@ public class StrUtils {
 
 	private static Pattern p = Pattern.compile("\\d+[\\d,\\.]*");
 
+	public static String[] asArray(Collection<String> a) {
+		return a.toArray(new String[a.size()]);
+	}
+
+	public static String[] asArray(String... a) {
+		String[] ret = new String[a.length];
+		int loc = 0;
+		for (String b : a) {
+			ret[loc++] = b;
+		}
+		return ret;
+	}
+
+	public static Character[] asCharacters(char[] a) {
+		Character[] ret = new Character[a.length];
+		for (int i = 0; i < a.length; i++) {
+			ret[i] = new Character(a[i]);
+		}
+		return ret;
+	}
+
+	public static Character[] asCharacters(String s) {
+		return asCharacters(s.toCharArray());
+	}
+
+	public static char[] asChars(Character[] a) {
+		char[] ret = new char[a.length];
+		for (int i = 0; i < a.length; i++) {
+			ret[i] = a[i].charValue();
+		}
+		return ret;
+	}
+
+	public static char[] asChars(List<Character> a) {
+		char[] ret = new char[a.size()];
+		for (int i = 0; i < a.size(); i++) {
+			ret[i] = a.get(i).charValue();
+		}
+		return ret;
+	}
+
+	public static List<String> asList(String[] s) {
+		return Arrays.asList(s);
+	}
+
 	public static String[] copy(String[] a) {
 		String[] b = new String[a.length];
 		copy(a, b);
@@ -41,6 +85,14 @@ public class StrUtils {
 		for (int i = 0; i < a.length; i++) {
 			b[i] = a[i];
 		}
+	}
+
+	public static int absLengthDiff(String a, String b) {
+		return Math.abs(lengthDiff(a, b));
+	}
+
+	public static int lengthDiff(String a, String b) {
+		return a.length() - b.length();
 	}
 
 	/**
@@ -629,38 +681,6 @@ public class StrUtils {
 		return tag(t, targets, tagName);
 	}
 
-	public static Character[] toCharacters(char[] chs) {
-		Character[] ret = new Character[chs.length];
-		for (int i = 0; i < chs.length; i++) {
-			ret[i] = new Character(chs[i]);
-		}
-		return ret;
-	}
-
-	public static Character[] toCharacters(String s) {
-		return toCharacters(s.toCharArray());
-	}
-
-	public static char[] toChars(Character[] chs) {
-		char[] ret = new char[chs.length];
-		for (int i = 0; i < chs.length; i++) {
-			ret[i] = chs[i].charValue();
-		}
-		return ret;
-	}
-
-	public static char[] toChars(List<Character> chs) {
-		char[] ret = new char[chs.size()];
-		for (int i = 0; i < chs.size(); i++) {
-			ret[i] = chs.get(i).charValue();
-		}
-		return ret;
-	}
-
-	public static String[] toStrArray(Collection<String> c) {
-		return c.toArray(new String[c.size()]);
-	}
-
 	public static String toString(char[] chs) {
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < chs.length; i++) {
@@ -702,14 +722,6 @@ public class StrUtils {
 		return sb.toString();
 	}
 
-	public static List<String> toStrList(String[] s) {
-		List<String> ret = Generics.newArrayList(s.length);
-		for (String t : s) {
-			ret.add(t);
-		}
-		return ret;
-	}
-
 	public static String unwrap(String a) {
 		return unwrap(a, "\"", "\"");
 	}
@@ -729,14 +741,6 @@ public class StrUtils {
 			b[i] = unwrap(a[i], open, close);
 		}
 		return b;
-	}
-
-	public static char value(boolean condition, char a, char b) {
-		return condition ? a : b;
-	}
-
-	public static String value(boolean condition, String a, String b) {
-		return condition ? a : b;
 	}
 
 	public static String wrap(String a) {

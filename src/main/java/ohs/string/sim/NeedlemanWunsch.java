@@ -39,11 +39,11 @@ public class NeedlemanWunsch implements SimScorer {
 		//
 		NeedlemanWunsch nw = new NeedlemanWunsch();
 
-		// System.out.println(nw.compute(new CharacterSequence(strs[0]), new CharacterSequence(strs[1])));
-		// System.out.println(nw.getSimilarity(new CharacterSequence(strs[0]), new CharacterSequence(strs[1])));
+		// System.out.println(nw.compute(new CharSequence(strs[0]), new CharSequence(strs[1])));
+		// System.out.println(nw.getSimilarity(new CharSequence(strs[0]), new CharSequence(strs[1])));
 
 		Aligner aligner = new Aligner();
-		AlignResult ar = aligner.align(nw.compute(new CharacterSequence(strs[0]), new CharacterSequence(strs[1])));
+		AlignResult ar = aligner.align(nw.compute(new CharSequence(strs[0]), new CharSequence(strs[1])));
 		System.out.println(ar);
 	}
 
@@ -97,5 +97,11 @@ public class NeedlemanWunsch implements SimScorer {
 		} else {
 			return (score / max_score);
 		}
+	}
+
+	@Override
+	public double getDistance(Sequence s, Sequence t) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

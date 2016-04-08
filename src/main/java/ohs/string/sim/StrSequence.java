@@ -4,7 +4,7 @@ import java.util.List;
 
 import ohs.utils.StrUtils;
 
-public class StringSequence implements Sequence {
+public class StrSequence implements Sequence<String> {
 
 	/**
 	 * 
@@ -13,11 +13,11 @@ public class StringSequence implements Sequence {
 
 	private List<String> s;
 
-	public StringSequence(List<String> s) {
+	public StrSequence(List<String> s) {
 		this.s = s;
 	}
 
-	public StringSequence(String s) {
+	public StrSequence(String s) {
 		this(StrUtils.split(s));
 	}
 

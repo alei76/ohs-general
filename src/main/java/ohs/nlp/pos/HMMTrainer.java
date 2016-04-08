@@ -15,6 +15,7 @@ import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
+import ohs.utils.Conditions;
 import ohs.utils.Generics;
 import ohs.utils.UnicodeUtils;
 
@@ -90,7 +91,7 @@ public class HMMTrainer {
 			for (KSentence sent : doc.getSentences()) {
 				for (MultiToken mt : sent.toMultiTokens()) {
 					String text = mt.getText();
-					String text2 = UnicodeUtils.getDecomposedKoreanWord(text);
+					String text2 = UnicodeUtils.decomposeToJamo(text);
 
 					System.out.println(text + "\t" + text2 + "\t" + String.valueOf(text2.getBytes()));
 					// char[][] phomenes = UnicodeUtils.decomposeKoreanWordToPhonemes(word);
@@ -290,7 +291,7 @@ public class HMMTrainer {
 				double norm = 0;
 				for (int t = 0; t < T; t++) {
 					double g = gamma(t, i, alpha, beta);
-					value += g * CommonFuncs.value(k == obs[t], 1, 0);
+					value += g * Conditions.value(k == obs[t], 1, 0);
 					norm += g;
 				}
 				tmp_b[i][k] = CommonFuncs.divide(value, norm);

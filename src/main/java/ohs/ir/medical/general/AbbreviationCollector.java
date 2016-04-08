@@ -199,7 +199,7 @@ public class AbbreviationCollector {
 				}
 			}
 
-			Counter<String> shortCounts = cm.getRowCountSums();
+			Counter<String> shortCounts = cm.getOutKeyCountSums();
 
 			TextFileWriter writer = new TextFileWriter(outputFileName);
 
@@ -283,7 +283,7 @@ public class AbbreviationCollector {
 			}
 			reader.close();
 
-			Counter<String> short_count = shortLongCounts.getRowCountSums();
+			Counter<String> short_count = shortLongCounts.getOutKeyCountSums();
 
 			String outputFileName = collDirs[i] + "abbrs_group.txt";
 

@@ -36,7 +36,7 @@ public class MorphemeAnalyzer {
 
 			String word2 = UnicodeUtils.decomposeToJamo(word);
 
-			sysDict.insert(StrUtils.toCharacters(word2.toCharArray()));
+			sysDict.insert(StrUtils.asCharacters(word2.toCharArray()));
 		}
 
 		sysDict.trimToSize();
@@ -130,7 +130,7 @@ public class MorphemeAnalyzer {
 
 		String word2 = UnicodeUtils.decomposeToJamo(word);
 
-		SearchResult<Character> sr = sysDict.search(StrUtils.toCharacters(word2.toCharArray()));
+		SearchResult<Character> sr = sysDict.search(StrUtils.asCharacters(word2.toCharArray()));
 
 		return ret;
 	}

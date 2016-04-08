@@ -115,10 +115,10 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 		return os;
 	}
 
-	public List<E> getObjects(List<Integer> ids) {
+	public List<E> getObjects(Collection<Integer> ids) {
 		List<E> ret = new ArrayList<E>();
-		for (int i = 0; i < ids.size(); i++) {
-			ret.add(getObject(ids.get(i)));
+		for (int id : ids) {
+			ret.add(getObject(id));
 		}
 		return ret;
 	}

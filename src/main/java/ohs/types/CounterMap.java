@@ -102,7 +102,7 @@ public class CounterMap<K, V> implements java.io.Serializable {
 		return valueCounter;
 	}
 
-	public Counter<V> getColumnCountSums() {
+	public Counter<V> getInKeyCountSums() {
 		Counter<V> ret = new Counter<V>();
 		for (K key : counterMap.keySet()) {
 			Counter<V> c = counterMap.get(key);
@@ -193,7 +193,7 @@ public class CounterMap<K, V> implements java.io.Serializable {
 		return new PairIterator();
 	}
 
-	public Counter<K> getRowCountSums() {
+	public Counter<K> getOutKeyCountSums() {
 		Counter<K> ret = new Counter<K>();
 		for (K key : counterMap.keySet()) {
 			ret.setCount(key, counterMap.get(key).totalCount());
@@ -407,7 +407,7 @@ public class CounterMap<K, V> implements java.io.Serializable {
 		StringBuilder sb = new StringBuilder("[\n");
 		int numKeys = 0;
 
-		for (K key : getRowCountSums().getSortedKeys()) {
+		for (K key : getOutKeyCountSums().getSortedKeys()) {
 			Counter<V> inner = counterMap.get(key);
 			if (++numKeys > numPrintRows) {
 				sb.append("...\n");
