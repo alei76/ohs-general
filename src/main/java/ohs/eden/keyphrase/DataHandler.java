@@ -32,7 +32,7 @@ public class DataHandler {
 		DataHandler dh = new DataHandler();
 		// dh.mergeDumps();
 		// dh.tagPOS();
-		// dh.makeKeywordData();
+		dh.makeKeywordData();
 		dh.makeTitleData();
 
 		// dh.extractKeywordAbbreviations();

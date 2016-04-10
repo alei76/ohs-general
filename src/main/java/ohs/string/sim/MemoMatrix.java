@@ -11,15 +11,15 @@ import ohs.types.Pair;
  * 
  * @author ohs
  */
-public abstract class MemoMatrix {
+public abstract class MemoMatrix<E> {
 
 	protected double[][] values;
 
 	protected boolean[][] computed;
 
-	protected Sequence s;
+	protected Sequence<E> s;
 
-	protected Sequence t;
+	protected Sequence<E> t;
 
 	protected Pair<Integer, Integer> indexAtMax;
 
@@ -29,7 +29,7 @@ public abstract class MemoMatrix {
 
 	protected double min;
 
-	protected MemoMatrix(Sequence s, Sequence t) {
+	protected MemoMatrix(Sequence<E> s, Sequence<E> t) {
 		this.s = s;
 		this.t = t;
 		values = new double[s.length() + 1][t.length() + 1];
@@ -62,11 +62,11 @@ public abstract class MemoMatrix {
 		return get(indexAtMin.getFirst(), indexAtMin.getSecond());
 	}
 
-	public Sequence getSource() {
+	public Sequence<E> getSource() {
 		return s;
 	}
 
-	public Sequence getTarget() {
+	public Sequence<E> getTarget() {
 		return t;
 	}
 

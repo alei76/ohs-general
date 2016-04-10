@@ -17,7 +17,7 @@ import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.string.search.ppss.Gram.Type;
-import ohs.string.sim.CharSequence;
+import ohs.string.sim.SequenceFactory;
 import ohs.string.sim.SmithWaterman;
 import ohs.types.Counter;
 import ohs.types.DeepMap;
@@ -27,9 +27,7 @@ import ohs.utils.StrUtils;
 
 /**
  * 
- * Implementation of
- * "A Pivotal Prefix Based Filtering Algorithm for String Similarity Search" at
- * SIGMOD'14
+ * Implementation of "A Pivotal Prefix Based Filtering Algorithm for String Similarity Search" at SIGMOD'14
  * 
  * 
  * @author Heung-Seon Oh
@@ -289,8 +287,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 
 		pivotSelector = useOptimalPivotSelector
 
-				? new OptimalPivotSelector(q, prefix_size, pivot_size)
-				: new RandomPivotSelector(q, prefix_size, pivot_size);
+				? new OptimalPivotSelector(q, prefix_size, pivot_size) : new RandomPivotSelector(q, prefix_size, pivot_size);
 	}
 
 	private void computeCharacterWeights() {
@@ -548,8 +545,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 			} else if (i == 2) {
 				pivotSelector = Boolean.parseBoolean(parts[1]) ?
 
-				new OptimalPivotSelector(q, prefix_size, pivot_size)
-						: new RandomPivotSelector(q, pivot_size, prefix_size);
+						new OptimalPivotSelector(q, prefix_size, pivot_size) : new RandomPivotSelector(q, pivot_size, prefix_size);
 			}
 		}
 
@@ -666,8 +662,8 @@ public class PivotalPrefixStringSearcher implements Serializable {
 					/*
 					 * Lemma 2. If srs r and text are similar, we have
 					 * 
-					 * If last(pre(r)) > last(pre(text)), piv(text) ∩ pre(r) != phi ;
-					 * If last(pre(r)) <= last(pre(text)), piv(r) ∩ pre(text) != phi;
+					 * If last(pre(r)) > last(pre(text)), piv(text) ∩ pre(r) != phi ; If last(pre(r)) <= last(pre(text)), piv(r) ∩ pre(text)
+					 * != phi;
 					 */
 
 					if (Math.abs(p - gram.getStart()) > tau
@@ -687,7 +683,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 
 		Counter<StringRecord> A = new Counter<StringRecord>();
 
-		SmithWaterman sw = new SmithWaterman();
+		SmithWaterman<Character> sw = new SmithWaterman<Character>();
 		// sw.setChWeight(chWeights);
 
 		for (int loc : C) {
@@ -701,7 +697,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 			// continue;
 			// }
 
-			double swScore = sw.getSimilarity(new CharSequence(s), new CharSequence(r));
+			double swScore = sw.getSimilarity(SequenceFactory.newCharSequences(s, r));
 
 			// double long_len = Math.max(text.length(), r.length());
 			// double sim = 1 - (ed / long_len);
@@ -726,8 +722,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		writer.write(String.format("## Basic Parameters\t%d\n", 3));
 		writer.write(String.format("q\t%d\n", q));
 		writer.write(String.format("tau\t%d\n", tau));
-		writer.write(String.format("useOptimalPivotSelector\t%s\n",
-				pivotSelector instanceof OptimalPivotSelector ? true : false));
+		writer.write(String.format("useOptimalPivotSelector\t%s\n", pivotSelector instanceof OptimalPivotSelector ? true : false));
 		writer.write("\n");
 		writer.write(String.format("## Strings\t%d\n", srs.size()));
 

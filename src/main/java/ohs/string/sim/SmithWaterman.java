@@ -1,11 +1,13 @@
 package ohs.string.sim;
 
 import ohs.math.ArrayMath;
+import ohs.math.ArrayUtils;
+import ohs.utils.Conditions;
 
-public class SmithWaterman implements SimScorer {
+public class SmithWaterman<E> implements StringScorer<E> {
 
-	private class ScoreMatrix extends MemoMatrix {
-		public ScoreMatrix(Sequence s, Sequence t) {
+	private class ScoreMatrix extends MemoMatrix<E> {
+		public ScoreMatrix(Sequence<E> s, Sequence<E> t) {
 			super(s, t);
 		}
 
@@ -16,21 +18,14 @@ public class SmithWaterman implements SimScorer {
 			if (j == 0)
 				return 0;
 
-			String si = getSource().get(i - 1);
-			String tj = getTarget().get(j - 1);
+			E si = getSource().get(i - 1);
+			E tj = getTarget().get(j - 1);
 
-			double cost = 0;
-
-			if (si.equals(tj)) {
-				cost = match_cost;
-			} else {
-				cost = unmatch_cost;
-			}
-
+			double cost = Conditions.value(si.equals(tj), match_cost, unmatch_cost);
 			double replace_score = get(i - 1, j - 1) + cost;
 			double delete_score = get(i - 1, j) + gap_cost;
 			double insert_score = get(i, j - 1) + gap_cost;
-			double ret = ArrayMath.max(new double[] { 0, replace_score, delete_score, insert_score });
+			double ret = ArrayMath.max(ArrayUtils.array(0, replace_score, delete_score, insert_score));
 
 			if (ret > max) {
 				max = ret;
@@ -43,10 +38,10 @@ public class SmithWaterman implements SimScorer {
 	public static void main(String[] argv) {
 		String[] strs = { "You and I love New York !!!", "I hate New Mexico !!!" };
 
-		SmithWaterman sw = new SmithWaterman();
+		SmithWaterman<Character> sw = new SmithWaterman<Character>();
 
 		// System.out.println(sw.compute(new StrSequence(strs[0]), new StrSequence(strs[1])));
-		System.out.println(sw.getSimilarity(new StrSequence(strs[0]), new StrSequence(strs[1])));
+		System.out.println(sw.getSimilarity(SequenceFactory.newCharSequences(strs[0], strs[1])));
 
 	}
 
@@ -67,17 +62,23 @@ public class SmithWaterman implements SimScorer {
 		this.gap_cost = gap_cost;
 	}
 
-	public MemoMatrix compute(Sequence s, Sequence t) {
+	public ScoreMatrix compute(Sequence<E> s, Sequence<E> t) {
 		ScoreMatrix ret = new ScoreMatrix(s, t);
 		ret.compute(s.length(), t.length());
 		return ret;
 	}
 
 	@Override
-	public double getSimilarity(Sequence s, Sequence t) {
-		MemoMatrix m = compute(s, t);
+	public double getDistance(Sequence<E> s, Sequence<E> t) {
+		return 0;
+	}
+
+	@Override
+	public double getSimilarity(Sequence<E> s, Sequence<E> t) {
+		ScoreMatrix m = compute(s, t);
 		double score = m.getMaxScore();
 		float max_score = Math.min(s.length(), t.length());
+
 		if (Math.max(match_cost, unmatch_cost) > -gap_cost) {
 			max_score *= Math.max(match_cost, unmatch_cost);
 		} else {
@@ -90,11 +91,6 @@ public class SmithWaterman implements SimScorer {
 		} else {
 			return (score / max_score);
 		}
-	}
-
-	@Override
-	public double getDistance(Sequence s, Sequence t) {
-		return 0;
 	}
 
 }

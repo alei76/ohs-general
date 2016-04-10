@@ -23,7 +23,7 @@ import ohs.types.ListMap;
 public class TermWeighting {
 
 	public static void computeTFIDFs(Collection<SparseVector> docs) {
-		computeTFIDFs(docs, docFreq(docs, maxTermIndex(docs) + 1));
+		computeTFIDFs(docs, docFreqs(docs, maxTermIndex(docs) + 1));
 	}
 
 	public static void computeTFIDFs(Collection<SparseVector> docs, DenseVector docFreqs) {
@@ -41,11 +41,10 @@ public class TermWeighting {
 		}
 	}
 
-	public static DenseVector docFreq(Collection<SparseVector> docs, int num_terms) {
-		DenseVector ret = new DenseVector(num_terms);
+	public static DenseVector docFreqs(Collection<SparseVector> docs, int word_size) {
+		DenseVector ret = new DenseVector(word_size);
 		for (SparseVector doc : docs) {
-			for (int j = 0; j < doc.size(); j++) {
-				int w = doc.indexAtLoc(j);
+			for (int w : doc.indexes()) {
 				ret.increment(w, 1);
 			}
 		}
@@ -245,7 +244,7 @@ public class TermWeighting {
 
 		avgDocLen /= docs.size();
 
-		DenseVector term_docFreq = docFreq(docs, maxTermIndex(docs) + 1);
+		DenseVector term_docFreq = docFreqs(docs, maxTermIndex(docs) + 1);
 
 		for (int i = 0; i < docs.size(); i++) {
 			SparseVector x = docs.get(i);

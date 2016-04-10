@@ -84,14 +84,14 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 		return ret;
 	}
 
-	public List<Integer> getIndexes(List<E> objs) {
+	public List<Integer> getIndexes(Collection<E> objs) {
 		return getIndexes(objs, -1);
 	}
 
-	public List<Integer> getIndexes(List<E> objs, int unknown) {
+	public List<Integer> getIndexes(Collection<E> objs, int unknown) {
 		List<Integer> ret = new ArrayList<Integer>();
-		for (int i = 0; i < objs.size(); i++) {
-			ret.add(getIndex(objs.get(i), unknown));
+		for (E obj : objs) {
+			ret.add(getIndex(obj, unknown));
 		}
 		return ret;
 	}
@@ -135,10 +135,10 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 		return ret;
 	}
 
-	public List<Integer> indexesOf(List<Object> objs, int unknown) {
+	public List<Integer> indexesOf(Collection<Object> objs, int unknown) {
 		List<Integer> ret = new ArrayList<>(objs.size());
-		for (int i = 0; i < objs.size(); i++) {
-			ret.add(indexOf(objs.get(i)));
+		for (Object obj : objs) {
+			ret.add(indexOf(obj));
 		}
 		return ret;
 	}

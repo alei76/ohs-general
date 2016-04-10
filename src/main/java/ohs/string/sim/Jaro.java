@@ -1,5 +1,6 @@
 package ohs.string.sim;
 
+import java.lang.reflect.Array;
 import java.util.List;
 
 import ohs.utils.Generics;
@@ -9,7 +10,7 @@ import ohs.utils.Generics;
  * Winkler and Yves Thibaudeau.
  */
 
-public class Jaro implements SimScorer {
+public class Jaro<E> implements StringScorer<E> {
 	static public void main(String[] argv) {
 		// doMain(new SmithWatermanAligner(), argv);
 
@@ -24,10 +25,10 @@ public class Jaro implements SimScorer {
 
 		{
 
-			Jaro ed = new Jaro();
+			Jaro<Character> ed = new Jaro<Character>();
 			// MemoMatrix m = sw.compute(new CharSequence(strs[0]), new CharSequence(strs[1]));
 			// MemoMatrix m = ed.compute(new StrSequence(strs[0]), new StrSequence(strs[1]));
-			System.out.println(ed.getSimilarity(new CharSequence(strs[0]), new CharSequence(strs[1])));
+			System.out.println(ed.getSimilarity(SequenceFactory.newCharSequences(strs[0], strs[1])));
 
 		}
 
@@ -42,37 +43,45 @@ public class Jaro implements SimScorer {
 	public Jaro() {
 	}
 
-	private Sequence common(Sequence s, Sequence t, int halflen) {
+	private Sequence<E> common(Sequence<E> s, Sequence<E> t, int halflen) {
 		// StringBuilder common = new StringBuilder();
 		// StringBuilder copy = new StringBuilder(t);
 
-		List<String> common = Generics.newArrayList();
-		List<String> copy = Generics.newArrayList(t.length());
+		List<E> common = Generics.newArrayList();
+		List<E> copy = Generics.newArrayList(t.length());
 
 		for (int i = 0; i < t.length(); i++) {
 			copy.add(t.get(i));
 		}
 
 		for (int i = 0; i < s.length(); i++) {
-			String ch = s.get(i);
+			E ch = s.get(i);
 			boolean foundIt = false;
 			for (int j = Math.max(0, i - halflen); !foundIt && j < Math.min(i + halflen, t.length()); j++) {
 				if (copy.get(j).equals(ch)) {
 					foundIt = true;
 					common.add(ch);
-					copy.set(j, "*");
+					// copy.set(j, "*");
+					copy.set(j, null);
 				}
 			}
 		}
 
-		return new StrSequence(common);
+		Class c = common.get(0).getClass();
+		E[] os = (E[]) Array.newInstance(c, common.size());
+
+		for (int i = 0; i < common.size(); i++) {
+			os[i] = common.get(i);
+		}
+		return new Sequence<E>(os);
 	}
 
 	@Override
-	public double getSimilarity(Sequence s, Sequence t) {
+	public double getSimilarity(Sequence<E> s, Sequence<E> t) {
 		int halflen = halfLengthOfShorter(s, t);
-		Sequence common1 = common(s, t, halflen);
-		Sequence common2 = common(t, s, halflen);
+		Sequence<E> common1 = common(s, t, halflen);
+		Sequence<E> common2 = common(t, s, halflen);
+
 		if (common1.length() != common2.length())
 			return 0;
 		if (common1.length() == 0 || common2.length() == 0)
@@ -87,13 +96,13 @@ public class Jaro implements SimScorer {
 		return dist;
 	}
 
-	private int halfLengthOfShorter(Sequence str1, Sequence str2) {
+	private int halfLengthOfShorter(Sequence<E> str1, Sequence<E> str2) {
 		int ret = Math.min(str1.length(), str2.length());
 		ret = ret / 2 + 1;
 		return ret;
 	}
 
-	private int transpositions(Sequence common1, Sequence common2) {
+	private int transpositions(Sequence<E> common1, Sequence<E> common2) {
 		int transpositions = 0;
 		for (int i = 0; i < common1.length(); i++) {
 			if (!common1.get(i).equals(common2.get(i))) {
@@ -105,7 +114,7 @@ public class Jaro implements SimScorer {
 	}
 
 	@Override
-	public double getDistance(Sequence s, Sequence t) {
+	public double getDistance(Sequence<E> s, Sequence<E> t) {
 		return 0;
 	}
 

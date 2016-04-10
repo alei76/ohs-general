@@ -7,7 +7,7 @@ import java.util.List;
 import ohs.math.ArrayMath;
 import ohs.types.Pair;
 
-public class Aligner {
+public class Aligner<E> {
 
 	static enum Direction {
 		WEST, NORTH, DIAGONAL, NONE
@@ -17,11 +17,11 @@ public class Aligner {
 
 	}
 
-	public AlignResult align(MemoMatrix mm) {
+	public AlignResult align(MemoMatrix<E> mm) {
 		List<Pair<Integer, Integer>> path = getAlignmentPath(mm);
 
-		Sequence s = mm.getSource();
-		Sequence t = mm.getTarget();
+		Sequence<E> s = mm.getSource();
+		Sequence<E> t = mm.getTarget();
 
 		List<MatchType> mt = new ArrayList<MatchType>();
 
@@ -36,8 +36,8 @@ public class Aligner {
 			int i = index.getFirst();
 			int j = index.getSecond();
 
-			String si = s.get(i);
-			String tj = t.get(j);
+			String si = s.get(i).toString();
+			String tj = t.get(j).toString();
 
 			// System.out.printf("[%d, %d = %s, %s]\n", i, j, wi, wj);
 

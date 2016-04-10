@@ -8,12 +8,12 @@ import ohs.math.ArrayMath;
  *         Adaptation of AffineGap in SecondString
  * 
  */
-public class AffineGap implements SimScorer {
+public class AffineGap<E> implements StringScorer<E> {
 
 	// a set of three linked distance matrices
-	protected class MatrixTrio extends MemoMatrix {
-		protected class InsertSMatrix extends MemoMatrix {
-			public InsertSMatrix(Sequence s, Sequence t) {
+	protected class MatrixTrio extends MemoMatrix<E> {
+		protected class InsertSMatrix extends MemoMatrix<E> {
+			public InsertSMatrix(Sequence<E> s, Sequence<E> t) {
 				super(s, t);
 			}
 
@@ -27,8 +27,8 @@ public class AffineGap implements SimScorer {
 			}
 		}
 
-		protected class InsertTMatrix extends MemoMatrix {
-			public InsertTMatrix(Sequence s, Sequence t) {
+		protected class InsertTMatrix extends MemoMatrix<E> {
+			public InsertTMatrix(Sequence<E> s, Sequence<E> t) {
 				super(s, t);
 			}
 
@@ -42,13 +42,13 @@ public class AffineGap implements SimScorer {
 			}
 		}
 
-		protected MemoMatrix m;
+		protected MatrixTrio m;
 
 		protected InsertSMatrix is;
 
 		protected InsertTMatrix it;
 
-		public MatrixTrio(Sequence s, Sequence t) {
+		public MatrixTrio(Sequence<E> s, Sequence<E> t) {
 			super(s, t);
 			is = new InsertSMatrix(s, t);
 			it = new InsertTMatrix(s, t);
@@ -60,8 +60,8 @@ public class AffineGap implements SimScorer {
 			if (i == 0 || j == 0)
 				return 0;
 
-			String si = getSource().get(i - 1);
-			String tj = getTarget().get(j - 1);
+			E si = getSource().get(i - 1);
+			E tj = getTarget().get(j - 1);
 			double cost = si.equals(tj) ? match_cost : unmatch_cost;
 
 			double score1 = m.get(i - 1, j - 1) + cost;
@@ -79,10 +79,10 @@ public class AffineGap implements SimScorer {
 		// String[] strs = { "I love New York !!!", "I love New York !!!" };
 		String[] strs = { "ABCD", "ABCD" };
 
-		AffineGap af = new AffineGap();
+		AffineGap<Character> af = new AffineGap<Character>();
 
 		// System.out.println(af.compute(new CharSequence(strs[0]), new CharSequence(strs[1])));
-		System.out.println(af.getSimilarity(new CharSequence(strs[0]), new CharSequence(strs[1])));
+		System.out.println(af.getSimilarity(SequenceFactory.newCharSequences(strs[0], strs[1])));
 
 	}
 
@@ -108,14 +108,14 @@ public class AffineGap implements SimScorer {
 		this.lower_bound = lower_bound;
 	}
 
-	public MemoMatrix compute(Sequence s, Sequence t) {
+	public MemoMatrix compute(Sequence<E> s, Sequence<E> t) {
 		MatrixTrio ret = new MatrixTrio(s, t);
 		ret.compute(s.length(), t.length());
 		return ret;
 	}
 
 	@Override
-	public double getSimilarity(Sequence s, Sequence t) {
+	public double getSimilarity(Sequence<E> s, Sequence<E> t) {
 		MemoMatrix m = compute(s, t);
 
 		System.out.println(m.toString());
@@ -147,7 +147,7 @@ public class AffineGap implements SimScorer {
 	}
 
 	@Override
-	public double getDistance(Sequence s, Sequence t) {
+	public double getDistance(Sequence<E> s, Sequence<E> t) {
 		return 0;
 	}
 

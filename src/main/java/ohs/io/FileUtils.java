@@ -369,7 +369,7 @@ public class FileUtils {
 		}
 
 		{
-			double[] ar = ArrayUtils.range(10000000, 0.0, 1);
+			double[] ar = ArrayUtils.arrayRange(10000000, 0.0, 1);
 			ObjectOutputStream oos = openObjectOutputStream("../../data/entity_iden/wiki/test-a1.ser.gz");
 
 			FileUtils.writeDoubleArray(oos, ar);
@@ -378,7 +378,7 @@ public class FileUtils {
 		}
 
 		{
-			int[] ar = ArrayUtils.range(10, 0, 1);
+			int[] ar = ArrayUtils.arrayRange(10, 0, 1);
 			ObjectOutputStream oos = openObjectOutputStream("../../data/entity_iden/wiki/test-a2.ser.gz");
 
 			FileUtils.writeIntArray(oos, ar);

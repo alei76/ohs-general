@@ -2,10 +2,10 @@ package ohs.string.sim;
 
 import ohs.math.ArrayMath;
 
-public class EditDistance implements SimScorer {
-	private class ScoreMatrix extends MemoMatrix {
+public class EditDistance<E> implements StringScorer<E> {
+	private class ScoreMatrix extends MemoMatrix<E> {
 
-		public ScoreMatrix(Sequence s, Sequence t) {
+		public ScoreMatrix(Sequence<E> s, Sequence<E> t) {
 			super(s, t);
 		}
 
@@ -18,15 +18,12 @@ public class EditDistance implements SimScorer {
 
 			double cost = 0;
 
-			if (s instanceof CharSequence) {
-				Character si = (Character) getSource().get(i - 1);
-				Character sj = (Character) getTarget().get(j - 1);
-				cost = si.equals(sj) ? 0 : 1;
-			} else {
-				String si = (String) getSource().get(i - 1);
-				String tj = (String) getTarget().get(j - 1);
-				cost = si.equals(tj) ? 0 : 1;
-			}
+			E si = getSource().get(i - 1);
+			E tj = getTarget().get(j - 1);
+
+			// String si = (String) getSource().get(i - 1);
+			// String tj = (String) getTarget().get(j - 1);
+			cost = si.equals(tj) ? 0 : 1;
 
 			double replace_score = get(i - 1, j - 1) + cost;
 			double delete_score = get(i - 1, j) + 1;
@@ -34,7 +31,6 @@ public class EditDistance implements SimScorer {
 			double[] scores = new double[] { delete_score, insert_score, replace_score };
 			int index = ArrayMath.argMin(scores);
 			double ret = scores[index];
-
 			return ret;
 		}
 	}
@@ -45,14 +41,14 @@ public class EditDistance implements SimScorer {
 		// String[] strs = { "William W. ‘Don’t call me Dubya’ Cohen", "William W. Cohen" };
 		// String[] strs = { "COHEN", "MCCOHN" };
 
-		String[] strs = { "ABCD", "ABCD" };
+		String[] strs = { "ABCD", "ABCDE" };
 
 		// String[] strs = { "I love New York !!!", "I hate New Mexico !!!" };
 
-		EditDistance ed = new EditDistance();
+		EditDistance<Character> ed = new EditDistance<Character>();
 		// MemoMatrix m = sw.compute(new CharSequence(strs[0]), new CharSequence(strs[1]));
 		// MemoMatrix m = ed.compute(new StrSequence(strs[0]), new StrSequence(strs[1]));
-		System.out.println(ed.getSimilarity(new StrSequence(strs[0]), new StrSequence(strs[1])));
+		System.out.println(ed.getSimilarity(SequenceFactory.newCharSequence(strs[0]), SequenceFactory.newCharSequence(strs[1])));
 
 		// System.out.println(m.getBestScore());
 
@@ -66,19 +62,18 @@ public class EditDistance implements SimScorer {
 
 	}
 
-	public ScoreMatrix compute(Sequence s, Sequence t) {
+	public ScoreMatrix compute(Sequence<E> s, Sequence<E> t) {
 		ScoreMatrix ret = new ScoreMatrix(s, t);
 		ret.get(s.length(), t.length());
 		return ret;
 	}
 
-	public double getDistance(Sequence s, Sequence t) {
+	public double getDistance(Sequence<E> s, Sequence<E> t) {
 		ScoreMatrix sm = compute(s, t);
 		return sm.get(s.length(), t.length());
 	}
 
-	@Override
-	public double getSimilarity(Sequence s, Sequence t) {
+	public double getSimilarity(Sequence<E> s, Sequence<E> t) {
 		ScoreMatrix sm = compute(s, t);
 		double edit_dist = sm.get(s.length(), t.length());
 		double longer = Math.max(s.length(), t.length());

@@ -14,6 +14,7 @@ import ohs.matrix.SparseVector;
 import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.GramGenerator;
 import ohs.string.sim.EditDistance;
+import ohs.string.sim.SequenceFactory;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
@@ -451,7 +452,7 @@ public class KeywordClusterer2 {
 			}
 		}
 
-		EditDistance ed = new EditDistance();
+		EditDistance<Character> ed = new EditDistance<Character>();
 
 		List<Integer> lens = Generics.newArrayList(lenToKeys.keySet());
 
@@ -490,7 +491,7 @@ public class KeywordClusterer2 {
 						String korKey2 = key2.split("\t")[0];
 						String engKey2 = key2.split("\t")[1];
 
-						double dist = ed.getDistance(key1, key2);
+						double dist = ed.getDistance(SequenceFactory.newCharSequences(key1, key2));
 						if (dist < 2) {
 							System.out.printf("[%s, %s , %d]\n", key1, key2, (int) dist);
 						}

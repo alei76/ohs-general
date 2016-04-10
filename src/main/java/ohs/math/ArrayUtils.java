@@ -11,10 +11,18 @@ import java.util.Random;
 import java.util.Set;
 
 import ohs.utils.ByteSize;
+import ohs.utils.Conditions;
 import ohs.utils.Generics;
-import ohs.utils.StrUtils;
 
 public class ArrayUtils {
+
+	public static double[] array(double... a) {
+		double[] b = array(a.length);
+		for (int i = 0; i < b.length; i++) {
+			b[i] = a[i];
+		}
+		return b;
+	}
 
 	public static double[] array(int size) {
 		return array(size, 0);
@@ -32,8 +40,8 @@ public class ArrayUtils {
 		return arrayInt(size, 0);
 	}
 
-	public static double[] array(double... a) {
-		double[] b = array(a.length);
+	public static int[] arrayInt(int... a) {
+		int[] b = arrayInt(a.length);
 		for (int i = 0; i < b.length; i++) {
 			b[i] = a[i];
 		}
@@ -48,12 +56,38 @@ public class ArrayUtils {
 		return ret;
 	}
 
-	public static int[] arrayInt(int... a) {
-		int[] b = arrayInt(a.length);
-		for (int i = 0; i < b.length; i++) {
-			b[i] = a[i];
+	public static double arrayRange(double[] a, double start, double increment) {
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			a[i] = start + i * increment;
+			sum += a[i];
 		}
-		return b;
+		return sum;
+	}
+
+	public static int[] arrayRange(int size) {
+		return arrayRange(size, 0, 1);
+	}
+
+	public static double[] arrayRange(int size, double start, double increment) {
+		double[] a = new double[size];
+		arrayRange(a, start, increment);
+		return a;
+	}
+
+	public static int[] arrayRange(int size, int start, int increment) {
+		int[] a = new int[size];
+		arrayRange(a, 0, 1);
+		return a;
+	}
+
+	public static int arrayRange(int[] a, int start, int increment) {
+		int sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			a[i] = start + i * increment;
+			sum += a[i];
+		}
+		return sum;
 	}
 
 	public static ByteSize byteSize(double[] a) {
@@ -412,7 +446,7 @@ public class ArrayUtils {
 		System.out.println("process begins.");
 
 		{
-			int[] indexes = range(10);
+			int[] indexes = arrayRange(10);
 
 			double[] props = new double[] { 3, 3, 3 };
 			ArrayMath.normalize(props);
@@ -597,34 +631,6 @@ public class ArrayUtils {
 		System.out.println(toString("None", x) + "\n");
 	}
 
-	public static void print(String label, double[] x) {
-		System.out.println(toString(label, x) + "\n");
-	}
-
-	public static void print(String label, double[][] x) {
-		System.out.println(toString(label, x) + "\n");
-	}
-
-	public static void print(String label, double[][] x, int rows, int cols, boolean sparse, NumberFormat nf) {
-		System.out.println(toString(label, x, rows, cols, sparse, nf) + "\n");
-	}
-
-	public static void quickSort(int[] indexes, double[] values, boolean sortByIndex) {
-		if (indexes.length != values.length) {
-			throw new IllegalArgumentException();
-		}
-
-		quickSortHere(indexes, values, 0, indexes.length - 1, sortByIndex);
-	}
-
-	private static void quickSortHere(int[] indexes, double[] values, int low, int high, boolean sortByIndex) {
-		if (low >= high)
-			return;
-		int p = quickSortPartition(indexes, values, low, high, sortByIndex);
-		quickSortHere(indexes, values, low, p, sortByIndex);
-		quickSortHere(indexes, values, p + 1, high, sortByIndex);
-	}
-
 	// public static double random(double min, double max, double[] x) {
 	// Random random = new Random();
 	// double range = max - min;
@@ -672,6 +678,34 @@ public class ArrayUtils {
 	// }
 	// return sum;
 	// }
+
+	public static void print(String label, double[] x) {
+		System.out.println(toString(label, x) + "\n");
+	}
+
+	public static void print(String label, double[][] x) {
+		System.out.println(toString(label, x) + "\n");
+	}
+
+	public static void print(String label, double[][] x, int rows, int cols, boolean sparse, NumberFormat nf) {
+		System.out.println(toString(label, x, rows, cols, sparse, nf) + "\n");
+	}
+
+	public static void quickSort(int[] indexes, double[] values, boolean sortByIndex) {
+		if (indexes.length != values.length) {
+			throw new IllegalArgumentException();
+		}
+
+		quickSortHere(indexes, values, 0, indexes.length - 1, sortByIndex);
+	}
+
+	private static void quickSortHere(int[] indexes, double[] values, int low, int high, boolean sortByIndex) {
+		if (low >= high)
+			return;
+		int p = quickSortPartition(indexes, values, low, high, sortByIndex);
+		quickSortHere(indexes, values, low, p, sortByIndex);
+		quickSortHere(indexes, values, p + 1, high, sortByIndex);
+	}
 
 	private static int quickSortPartition(int[] indexes, double[] values, int low, int high, boolean sortByIndex) {
 		// First element
@@ -729,42 +763,8 @@ public class ArrayUtils {
 		return j;
 	}
 
-	public static double range(double[] a, double start, double increment) {
-		double sum = 0;
-		for (int i = 0; i < a.length; i++) {
-			a[i] = start + i * increment;
-			sum += a[i];
-		}
-		return sum;
-	}
-
-	public static int[] range(int size) {
-		return range(size, 0, 1);
-	}
-
-	public static double[] range(int size, double start, double increment) {
-		double[] a = new double[size];
-		range(a, start, increment);
-		return a;
-	}
-
-	public static int[] range(int size, int start, int increment) {
-		int[] a = new int[size];
-		range(a, 0, 1);
-		return a;
-	}
-
-	public static int range(int[] a, int start, int increment) {
-		int sum = 0;
-		for (int i = 0; i < a.length; i++) {
-			a[i] = start + i * increment;
-			sum += a[i];
-		}
-		return sum;
-	}
-
 	public static int[] rankedIndexes(double[] a) {
-		int[] b = range(a.length);
+		int[] b = arrayRange(a.length);
 		quickSort(b, copy(a), false);
 		return b;
 	}
@@ -903,7 +903,7 @@ public class ArrayUtils {
 	}
 
 	public static void sort(double[] a) {
-		int[] b = range(a.length);
+		int[] b = arrayRange(a.length);
 		quickSort(b, a, false);
 	}
 
@@ -1073,7 +1073,7 @@ public class ArrayUtils {
 	public static String toString(String label, double[] x, int len, boolean sparse, boolean vertical, NumberFormat nf) {
 		StringBuffer sb = new StringBuffer();
 
-		String delim = StrUtils.value(vertical, "\t", "\n");
+		String delim = Conditions.value(vertical, "\t", "\n");
 
 		sb.append(String.format("(%s)", label));
 

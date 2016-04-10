@@ -603,7 +603,9 @@ public class StrUtils {
 	public static List<String> split(String delim, String s) {
 		ArrayList<String> ret = new ArrayList<String>();
 		for (String tok : s.split(delim)) {
-			ret.add(tok);
+			if (tok.length() > 0) {
+				ret.add(tok);
+			}
 		}
 		ret.trimToSize();
 		return ret;

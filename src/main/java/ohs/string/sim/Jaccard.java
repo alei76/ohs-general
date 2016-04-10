@@ -1,8 +1,9 @@
 package ohs.string.sim;
 
 import ohs.types.Counter;
+import ohs.utils.Generics;
 
-public class Jaccard implements SimScorer {
+public class Jaccard<E> implements StringScorer<E> {
 	static public void main(String[] argv) {
 		// doMain(new SmithWatermanAligner(), argv);
 
@@ -15,10 +16,10 @@ public class Jaccard implements SimScorer {
 
 		{
 
-			Jaccard ed = new Jaccard();
+			Jaccard<Character> ed = new Jaccard<Character>();
 			// MemoMatrix m = sw.compute(new CharSequence(strs[0]), new CharSequence(strs[1]));
 			// MemoMatrix m = ed.compute(new StrSequence(strs[0]), new StrSequence(strs[1]));
-			System.out.println(ed.getSimilarity(new CharSequence(strs[0]), new CharSequence(strs[1])));
+			System.out.println(ed.getSimilarity(SequenceFactory.newCharSequences(strs[0], strs[1])));
 
 		}
 
@@ -30,30 +31,37 @@ public class Jaccard implements SimScorer {
 
 	}
 
-	@Override
-	public double getSimilarity(Sequence s, Sequence t) {
-		Sequence ss = s;
-		Sequence ll = t;
-
-		if (s.length() > t.length()) {
-			ss = t;
-			ll = s;
+	public Counter<E> getTokenCounts(Sequence<E> s) {
+		Counter<E> ret = Generics.newCounter();
+		for (E key : s.values()) {
+			ret.incrementCount(key, 1);
 		}
-		Counter<String> c1 = ss.getTokenCounts();
-		Counter<String> c2 = ll.getTokenCounts();
-		double num_commons = 0;
-
-		for (String key : c1.keySet()) {
-			if (c2.containsKey(key)) {
-				num_commons++;
-			}
-		}
-		double ret = num_commons / (c1.size() + c2.size() - num_commons);
 		return ret;
 	}
 
-	public double getDistance(Sequence s, Sequence t) {
-		// TODO Auto-generated method stub
+	@Override
+	public double getSimilarity(Sequence<E> s, Sequence<E> t) {
+
+		Counter<E> small = getTokenCounts(s);
+		Counter<E> large = getTokenCounts(t);
+		double num_commons = 0;
+
+		if (small.size() > large.size()) {
+			Counter<E> tmp = small;
+			small = large;
+			large = tmp;
+		}
+
+		for (E key : small.keySet()) {
+			if (large.containsKey(key)) {
+				num_commons++;
+			}
+		}
+		double ret = num_commons / (small.size() + large.size() - num_commons);
+		return ret;
+	}
+
+	public double getDistance(Sequence<E> s, Sequence<E> t) {
 		return 0;
 	}
 }

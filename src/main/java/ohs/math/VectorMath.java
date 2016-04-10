@@ -391,7 +391,7 @@ public class VectorMath {
 	public static void main(String[] args) {
 		System.out.println("process begins.");
 
-		int[] indexes = ArrayUtils.range(10);
+		int[] indexes = ArrayUtils.arrayRange(10);
 		double[] values = ArrayMath.random(0f, 1f, 10);
 
 		SparseVector sv = new SparseVector(indexes, values, 0);

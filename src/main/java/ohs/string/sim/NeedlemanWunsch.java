@@ -2,10 +2,10 @@ package ohs.string.sim;
 
 import ohs.math.ArrayMath;
 
-public class NeedlemanWunsch implements SimScorer {
+public class NeedlemanWunsch<E> implements StringScorer<E> {
 
-	private class ScoreMatrix extends MemoMatrix {
-		public ScoreMatrix(Sequence s, Sequence t) {
+	private class ScoreMatrix extends MemoMatrix<E> {
+		public ScoreMatrix(Sequence<E> s, Sequence<E> t) {
 			super(s, t);
 		}
 
@@ -16,8 +16,8 @@ public class NeedlemanWunsch implements SimScorer {
 			if (j == 0)
 				return i * gap_cost;
 
-			String si = getSource().get(i - 1);
-			String tj = getTarget().get(j - 1);
+			E si = getSource().get(i - 1);
+			E tj = getTarget().get(j - 1);
 
 			double cost = si.equals(tj) ? match_cost : unmatch_cost;
 			double replace_score = get(i - 1, j - 1) + cost;
@@ -37,14 +37,14 @@ public class NeedlemanWunsch implements SimScorer {
 		// String[] strs = { "I love New York !!!", "I love New York !!!" };
 		String[] strs = { "ABCD", "ABBBBBCD" };
 		//
-		NeedlemanWunsch nw = new NeedlemanWunsch();
+		NeedlemanWunsch<Character> nw = new NeedlemanWunsch<Character>();
 
 		// System.out.println(nw.compute(new CharSequence(strs[0]), new CharSequence(strs[1])));
 		// System.out.println(nw.getSimilarity(new CharSequence(strs[0]), new CharSequence(strs[1])));
 
-		Aligner aligner = new Aligner();
-		AlignResult ar = aligner.align(nw.compute(new CharSequence(strs[0]), new CharSequence(strs[1])));
-		System.out.println(ar);
+		// Aligner aligner = new Aligner();
+		// AlignResult ar = aligner.align(nw.compute(new CharSequence(strs[0]), new CharSequence(strs[1])));
+		// System.out.println(ar);
 	}
 
 	private double match_cost;
@@ -64,28 +64,32 @@ public class NeedlemanWunsch implements SimScorer {
 		this.gap_cost = gap_cost;
 	}
 
-	public MemoMatrix compute(Sequence s, Sequence t) {
+	public ScoreMatrix compute(Sequence<E> s, Sequence<E> t) {
 		ScoreMatrix ret = new ScoreMatrix(s, t);
 		ret.compute(s.length(), t.length());
 		return ret;
 	}
 
 	@Override
-	public double getSimilarity(Sequence s, Sequence t) {
-		MemoMatrix m = compute(s, t);
+	public double getSimilarity(Sequence<E> s, Sequence<E> t) {
+		ScoreMatrix m = compute(s, t);
+
 		double score = m.get(s.length(), t.length());
 		double max_score = Math.max(s.length(), t.length());
 		double min = max_score;
+
 		if (Math.max(match_cost, unmatch_cost) > gap_cost) {
 			max_score *= Math.max(match_cost, unmatch_cost);
 		} else {
 			max_score *= gap_cost;
 		}
+
 		if (Math.min(match_cost, unmatch_cost) < gap_cost) {
 			min *= Math.min(match_cost, unmatch_cost);
 		} else {
 			min *= gap_cost;
 		}
+
 		if (min < 0.0f) {
 			max_score -= min;
 			score -= min;
@@ -100,8 +104,7 @@ public class NeedlemanWunsch implements SimScorer {
 	}
 
 	@Override
-	public double getDistance(Sequence s, Sequence t) {
-		// TODO Auto-generated method stub
+	public double getDistance(Sequence<E> s, Sequence<E> t) {
 		return 0;
 	}
 }

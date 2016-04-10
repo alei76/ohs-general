@@ -1,5 +1,6 @@
 package ohs.eden.keyphrase;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -8,19 +9,20 @@ import java.util.Set;
 
 import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
+import ohs.math.ArrayMath;
 import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
 import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.GramGenerator;
 import ohs.string.sim.EditDistance;
+import ohs.string.sim.SequenceFactory;
 import ohs.tree.trie.hash.Node;
 import ohs.tree.trie.hash.Trie;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.SetMap;
-import ohs.utils.Conditions;
 import ohs.utils.Generics;
 import ohs.utils.StopWatch;
 import ohs.utils.StrUtils;
@@ -69,7 +71,7 @@ public class KeywordClusterer {
 
 	private Map<Integer, String> clusterLabel;
 
-	private GramGenerator gg = new GramGenerator(2);
+	private GramGenerator gg = new GramGenerator(3);
 
 	private int prefix_size = 6;
 
@@ -79,311 +81,142 @@ public class KeywordClusterer {
 		kwdIndexer = kwdData.getKeywordIndexer();
 	}
 
-	public void perform() throws Exception {
-		kwdToCluster = new int[kwdIndexer.size()];
-
-		clusterToKwds = Generics.newSetMap(kwdIndexer.size());
-
-		for (int i = 0; i < kwdIndexer.size(); i++) {
-			clusterToKwds.put(i, i);
-			kwdToCluster[i] = i;
-		}
-
-		matchTwoLanguages();
-
-		// selectClusterLabels();
-		// writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-01.txt"));
-
-		matchSyllables();
-
-		selectClusterLabels();
-		writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-02.txt"));
-
-		matchSingleLanguage(false);
-
-		selectClusterLabels();
-		writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-03.txt"));
-
-		// matchKoreanCharacters();
-		//
-		// selectClusterLabels();
-		// writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-03.txt"));
-
-		// exactLanguageMatch(true);
-
-		// selectClusterLabels();
-
-		// writeClusterText(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-03.txt"));
-
-		// filter(3);
-
-		// hierarchicalAgglomerativeClustering();
-
-		selectClusterLabels();
-
-		SetMap<Integer, Integer> t = Generics.newSetMap(clusterToKwds.size());
-
-		for (int cid : clusterToKwds.keySet()) {
-			t.put(cid, clusterToKwds.get(cid));
-		}
-
-		kwdData.setClusterLabel(clusterLabel);
-		kwdData.setClusters(t);
-	}
-
 	private Counter<String>[] computeLabelScores(Set<Integer> kwdids) {
-		GramGenerator gg = new GramGenerator(3);
 		int num_langs = 2;
 
 		Counter<String>[] ret = new Counter[num_langs];
+		CounterMap<Integer, Integer>[] bigramProbData = new CounterMap[2];
+		Counter<Integer>[] unigramProbData = new Counter[2];
 
-		for (int i = 0; i < num_langs; i++) {
-			CounterMap<String, Character> gramProbs = Generics.newCounterMap();
-
-			for (int kwdid : kwdids) {
-				String kwdStr = kwdIndexer.getObject(kwdid);
-				String kwd = kwdStr.split("\t")[i];
-				kwd = normalize(kwd);
-				int kw_freq = kwdData.getKeywordFreqs()[kwdid];
-
-				for (Gram g : gg.generateQGrams(kwd.toLowerCase())) {
-					gramProbs.incrementCount(g.getString().substring(0, 2), g.getString().charAt(2), kw_freq);
-				}
-			}
-
-			gramProbs.normalize();
-
-			Counter<String> kwdScores = Generics.newCounter();
-
-			for (int kwdid : kwdids) {
-				String kwdStr = kwdIndexer.getObject(kwdid);
-				String kwd = kwdStr.split("\t")[i];
-				double log_likelihood = computeLoglikelihood(gg.generateQGrams(normalize(kwd)), gramProbs);
-				kwdScores.incrementCount(kwd, log_likelihood);
-			}
-
-			if (kwdScores.size() == 0) {
-				kwdScores.setCount("\"\"", 0);
-			}
-
-			double max = kwdScores.max();
-			double score_sum = 0;
-
-			for (String lang : kwdScores.keySet()) {
-				double score = kwdScores.getCount(lang);
-				score = Math.exp(score - max);
-				kwdScores.setCount(lang, score);
-				score_sum += score;
-			}
-			kwdScores.scale(1f / score_sum);
-			ret[i] = kwdScores;
+		for (int i = 0; i < bigramProbData.length; i++) {
+			bigramProbData[i] = Generics.newCounterMap();
+			unigramProbData[i] = Generics.newCounter();
+			ret[i] = Generics.newCounter();
 		}
-		return ret;
-	}
 
-	private double computeLoglikelihood(Gram[] gs, CounterMap<String, Character> bigramProbs) {
-		double ret = 0;
-		for (Gram g : gs) {
-			double prob = bigramProbs.getCount(g.getString().substring(0, 2), g.getString().charAt(2));
-			if (prob > 0) {
-				ret += Math.log(prob);
-			}
-		}
-		return ret;
-	}
+		for (int kwdid : kwdids) {
+			String kwdStr = kwdIndexer.getObject(kwdid);
+			String[] two = normalize(kwdStr.split("\t"));
 
-	private double computeSyllableCosine(int cid1, int cid2) {
-		int[] cids = new int[] { cid1, cid2 };
-		SparseVector[] vs = new SparseVector[2];
+			int kw_freq = kwdData.getKeywordFreqs()[kwdid];
 
-		for (int i = 0; i < cids.length; i++) {
-			Counter<Integer> c = new Counter<Integer>();
-			for (int kwdid : clusterToKwds.get(cids[i])) {
-				String kwd = getKoreanKeyword(kwdid);
-				String key = normalize(kwd);
-				key = UnicodeUtils.decomposeToJamo(key);
-
-				for (int j = 0; j < key.length(); j++) {
-					c.incrementCount((int) key.charAt(j), 1);
-				}
-			}
-			vs[i] = new SparseVector(c);
-			VectorMath.unitVector(vs[i]);
-		}
-		return VectorMath.dotProduct(vs[0], vs[1], false);
-	}
-
-	private String getKoreanKeyword(int kwdid) {
-		return kwdIndexer.getObject(kwdid).split("\t")[0];
-	}
-
-	private void matchKoreanCharacters() {
-		System.out.println("match korean characters");
-
-		int old_size = clusterToKwds.size();
-
-		Map<Integer, SparseVector> clusterToChars = Generics.newHashMap();
-		SetMap<Integer, Integer> gramToClusters = Generics.newSetMap();
-		Indexer<String> gramIndexer = Generics.newIndexer();
-		Counter<Integer> gramFreqs = Generics.newCounter();
-
-		for (Entry<Integer, Set<Integer>> e : clusterToKwds.getEntrySet()) {
-			int cid = e.getKey();
-			Set<Integer> kwdids = e.getValue();
-			Counter<Integer> chCnts = Generics.newCounter();
-
-			for (int kwdid : kwdids) {
-				String kwd = getKoreanKeyword(kwdid);
-				String key = normalize(kwd);
+			for (int i = 0; i < two.length; i++) {
+				String key = two[i];
 
 				if (key.length() < 2) {
 					continue;
 				}
 
-				// String s = UnicodeUtils.decomposeToJamo(korKwd);
-				for (char c : key.toCharArray()) {
-					chCnts.incrementCount((int) c, 1);
-				}
+				unigramProbData[i].incrementCount((int) key.charAt(0), kw_freq);
 
-				Counter<Integer> gramCnts = gg.generateQGrams(key, gramIndexer, true);
-
-				for (int gid : gramCnts.keySet()) {
-					gramToClusters.put(gid, cid);
-					gramFreqs.incrementCount(gid, 1);
-				}
-			}
-
-			if (chCnts.size() > 0) {
-				SparseVector sv = VectorUtils.toSparseVector(chCnts);
-				clusterToChars.put(cid, sv);
-			}
-		}
-
-		double num_clusters = clusterToKwds.keySet().size();
-
-		TermWeighting.computeTFIDFs(clusterToChars.values());
-
-		List<Integer> cids = Generics.newArrayList(clusterToChars.keySet());
-
-		CounterMap<Integer, Integer> toMerge = Generics.newCounterMap();
-
-		StopWatch stopWatch = StopWatch.newStopWatch();
-
-		for (int i = 0; i < cids.size(); i++) {
-			if ((i + 1) % 1000 == 0) {
-				System.out.printf("\r[%d/%d, %s]", i + 1, cids.size(), stopWatch.stop());
-			}
-			int cid1 = cids.get(i);
-			String kwd1 = getKoreanKeyword(cid1);
-			String key = normalize(kwd1);
-
-			// if (cid1 != 1072666) {
-			// continue;
-			// }
-
-			Counter<Integer> gramIDFs = gg.generateQGrams(key, gramIndexer, false);
-
-			for (int gid : gramIDFs.keySet()) {
-				double idf = TermWeighting.idf(num_clusters, gramFreqs.getCount(gid));
-				gramIDFs.setCount(gid, idf);
-			}
-
-			Counter<Integer> toCompare = Generics.newCounter();
-
-			List<Integer> gids = gramIDFs.getSortedKeys();
-
-			for (int j = 0; j < gids.size() && j < prefix_size; j++) {
-				int gid = gids.get(j);
-				toCompare.incrementAll(gramToClusters.get(gid, false), gramIDFs.getCount(gid));
-			}
-
-			if (toCompare.size() == 0) {
-				continue;
-			}
-
-			SparseVector sv1 = clusterToChars.get(cid1);
-
-			List<Integer> keys = toCompare.getSortedKeys();
-
-			for (int j = 0; j < keys.size(); j++) {
-				int cid2 = keys.get(j);
-				String kwd2 = getKoreanKeyword(cid2);
-
-				if (cid1 == cid2) {
-					continue;
-				}
-
-				// if (cid2 != 1072717) {
-				// continue;
-				// }
-
-				if (toMerge.containKey(cid1, cid2) || toMerge.containKey(cid2, cid1)) {
-					continue;
-				}
-
-				SparseVector sv2 = clusterToChars.get(cid2);
-				double cosine = VectorMath.dotProduct(sv1, sv2);
-
-				if (cosine >= 0.9) {
-					toMerge.incrementCount(cid1, cid2, cosine);
-					toMerge.incrementCount(cid2, cid1, cosine);
-				} else if (cosine >= 0.75) {
-					double cosine2 = computeSyllableCosine(cid1, cid2);
-
-					if (cosine2 >= 0.9) {
-						toMerge.incrementCount(cid1, cid2, cosine);
-						toMerge.incrementCount(cid2, cid1, cosine);
-					}
+				for (int j = 1; j < key.length(); j++) {
+					int ch1 = key.charAt(j - 1);
+					int ch2 = key.charAt(j);
+					bigramProbData[i].incrementCount(ch1, ch2, kw_freq);
+					unigramProbData[i].incrementCount(ch2, kw_freq);
 				}
 			}
 		}
 
-		System.out.printf("\r[%d/%d, %s]\n", cids.size(), cids.size(), stopWatch.stop());
+		for (int i = 0; i < bigramProbData.length; i++) {
+			bigramProbData[i].normalize();
+			unigramProbData[i].normalize();
+		}
 
-		Set<Integer> merged = Generics.newHashSet();
+		for (int kwdid : kwdids) {
+			String kwdStr = kwdIndexer.getObject(kwdid);
+			String[] two = kwdStr.split("\t");
+			String korKwd = two[0];
+			String engKwd = two[1];
 
-		for (int cid1 : toMerge.keySet()) {
-			Counter<Integer> c = toMerge.getCounter(cid1);
-			List<Integer> keys = c.getSortedKeys();
+			int kw_freq = kwdData.getKeywordFreqs()[kwdid];
 
-			if (merged.contains(cid1)) {
-				continue;
+			for (int i = 0; i < two.length; i++) {
+				String key = normalize(two[i]);
+				if (key.length() > 0) {
+					double log_score = computeLoglikelihood(key, bigramProbData[i], unigramProbData[i]);
+					ret[i].setCount(two[i], log_score);
+				}
 			}
+		}
 
-			for (int i = 0; i < keys.size(); i++) {
-				int cid2 = keys.get(i);
-				double cosine = c.getCount(cid2);
+		for (int i = 0; i < ret.length; i++) {
+			Counter<String> c = ret[i];
+			if (c.size() > 0) {
+				double max = c.max();
+				double score_sum = 0;
+				for (String kwd : c.keySet()) {
+					double score = c.getCount(kwd);
+					score = Math.exp(score - max);
+					c.setCount(kwd, score);
+					score_sum += score;
+				}
+				c.scale(1f / score_sum);
+			} else {
+				c.setCount("", 1);
+			}
+		}
+		return ret;
+	}
 
-				if (merged.contains(cid2)) {
-					continue;
+	private double computeLoglikelihood(String key, CounterMap<Integer, Integer> bigramProbs, Counter<Integer> unigramProbs) {
+		double ret = 0;
+
+		for (int i = 1; i < key.length(); i++) {
+			int ch1 = key.charAt(i - 1);
+			int ch2 = key.charAt(i);
+			double prob1 = bigramProbs.getCount(ch1, ch2);
+			double prob2 = unigramProbs.getCount(ch2);
+			double prob = ArrayMath.addAfterScale(prob1, 0.5, prob2);
+
+			if (prob > 0) {
+				ret += Math.log(prob);
+			}
+		}
+
+		return ret;
+	}
+
+	private double computeSyllableCosine(int cid1, int cid2) {
+		int[] cids = new int[] { cid1, cid2 };
+		SparseVector[][] svss = new SparseVector[2][];
+
+		for (int i = 0; i < cids.length; i++) {
+			SparseVector[] svs = new SparseVector[2];
+
+			Counter<Integer> c1 = new Counter<Integer>();
+			Counter<Integer> c2 = new Counter<Integer>();
+
+			for (int kwdid : clusterToKwds.get(cids[i])) {
+				String kwdStr = kwdIndexer.getObject(kwdid);
+				int kwd_freq = kwdData.getKeywordFreqs()[kwdid];
+				String[] two = normalize(kwdStr.split("\t"));
+				String korKey = two[0];
+				String engKey = two[1];
+				korKey = UnicodeUtils.decomposeToJamo(korKey);
+
+				for (int j = 0; j < korKey.length(); j++) {
+					c1.incrementCount((int) korKey.charAt(j), kwd_freq);
 				}
 
-				merged.add(cid1);
-				merged.add(cid2);
-
-				// System.out.printf("[%s] + [%s]\n", kwdIndexer.getObject(cid1), kwdIndexer.getObject(cid2));
-
-				Set<Integer> newCluster = Generics.newHashSet();
-				newCluster.addAll(clusterToKwds.removeKey(cid1));
-				newCluster.addAll(clusterToKwds.removeKey(cid2));
-
-				int new_cid = Math.min(cid1, cid2);
-
-				clusterToKwds.put(new_cid, newCluster);
-
-				break;
+				for (int j = 0; j < engKey.length(); j++) {
+					c2.incrementCount((int) engKey.charAt(j), kwd_freq);
+				}
 			}
+
+			svs[0] = VectorUtils.toSparseVector(c1);
+			svs[1] = VectorUtils.toSparseVector(c2);
+
+			for (SparseVector sv : svs) {
+				VectorMath.unitVector(sv);
+			}
+			svss[i] = svs;
 		}
 
-		for (int cid : clusterToKwds.keySet()) {
-			for (int kwdid : clusterToKwds.get(cid)) {
-				kwdToCluster[kwdid] = cid;
-			}
-		}
-
-		int new_size = clusterToKwds.size();
-
-		System.out.printf("[%d -> %d clusters]\n", old_size, new_size);
+		double kor_cosine = VectorMath.dotProduct(svss[0][0], svss[1][0]);
+		double eng_cosine = VectorMath.dotProduct(svss[0][1], svss[1][1]);
+		double cosine = ArrayMath.addAfterScale(kor_cosine, 0.5, eng_cosine);
+		return cosine;
 	}
 
 	private boolean hasUsed(int kid, Set<Integer> used, SetMap<Integer, Integer> keyToClusters) {
@@ -397,186 +230,80 @@ public class KeywordClusterer {
 		return hasUsed;
 	}
 
-	private void matchSyllables() {
-		System.out.println("match syllables.");
+	private void matchApproxTwoLanguages() {
+		System.out.println("match approx two languages.");
 
 		int old_size = clusterToKwds.size();
 
-		SetMap<Integer, Integer> keyToClusters = Generics.newSetMap();
 		Indexer<String> keyIndexer = Generics.newIndexer();
-
-		Trie<Character> trie = new Trie<Character>();
-		int gram_size = 3;
+		SetMap<Integer, Integer> keyToClusters = Generics.newSetMap();
 
 		for (Entry<Integer, Set<Integer>> e : clusterToKwds.getEntrySet()) {
 			int cid = e.getKey();
 			Set<Integer> kwdids = e.getValue();
 
-			for (int kwdid : kwdids) {
-				String kwdStr = kwdIndexer.getObject(kwdid);
-				String[] two = kwdStr.split("\t");
+			String kwdStr = kwdIndexer.getObject(cid);
+			String[] two = normalize(kwdStr.split("\t"));
+			String korKey = two[0];
+			String engKey = two[1];
 
-				for (int i = 0; i < two.length; i++) {
-					two[i] = normalize(two[i]);
-				}
-
-				String korKey = two[0];
-				String engKey = two[1];
-
-				if (korKey.length() == 0 || !UnicodeUtils.isKorean(korKey)) {
-					continue;
-				}
-
-				if (engKey.length() == 0) {
-					continue;
-				}
-
-				if (korKey.length() < gram_size) {
-					continue;
-				}
-
-				String newKorKey = UnicodeUtils.decomposeToJamo(korKey);
-				int kid = keyIndexer.getIndex(newKorKey + "\t" + engKey);
-
-				Character[] cs = StrUtils.asCharacters(korKey);
-				for (int j = gram_size; j < korKey.length(); j++) {
-					Node<Character> node = trie.insert(cs, j - gram_size, j);
-					Set<Integer> kids = Generics.cast(node.getData());
-
-					if (kids == null) {
-						kids = Generics.newHashSet();
-						node.setData(kids);
-					}
-					kids.add(kid);
-				}
-
-				keyToClusters.put(kid, cid);
+			if (korKey.length() == 0 || engKey.length() == 0) {
+				continue;
 			}
+
+			String key = StrUtils.join("\t", two);
+			int kid = keyIndexer.getIndex(key);
+
+			keyToClusters.put(kid, cid);
 		}
 
 		for (int kid : keyToClusters.keySet()) {
-			Set<Integer> cids = keyToClusters.get(kid);
-			if (cids.size() != 1) {
-				System.out.printf("%d -> %s\n", kid, cids);
-			}
-		}
+			List<Integer> cids = Generics.newArrayList(keyToClusters.get(kid));
 
-		EditDistance ed = new EditDistance();
-
-		SetMap<Integer, Integer> toMerge = Generics.newSetMap();
-		Set<Integer> used = Generics.newHashSet();
-
-		List<Node<Character>> nodes = trie.getNodes();
-
-		for (int i = 0; i < nodes.size(); i++) {
-			if ((i + 1) % 1000 == 0) {
-				System.out.printf("\r[%d/%d]", i + 1, nodes.size());
-			}
-
-			Node<Character> node = nodes.get(i);
-
-			if (node.getData() == null) {
+			if (cids.size() < 2) {
 				continue;
 			}
 
-			List<Integer> kids = Generics.newArrayList((Set<Integer>) node.getData());
-
-			if (kids.size() < 2) {
-				continue;
-			}
-
-			List<String> keys = keyIndexer.getObjects(kids);
-
-			for (int j = 0; j < keys.size(); j++) {
-				String key1 = keys.get(j);
-				int kid1 = kids.get(j);
-
-				String[] subKeys1 = key1.split("\t");
-				String korKey1 = subKeys1[0];
-				String engKey1 = subKeys1[1];
-
-				if (hasUsed(kid1, used, keyToClusters)) {
-					continue;
-				}
-
-				for (int k = j + 1; k < keys.size(); k++) {
-					String key2 = keys.get(k);
-					int kid2 = kids.get(k);
-
-					String[] subKeys2 = key2.split("\t");
-					String korKey2 = subKeys2[0];
-					String engKey2 = subKeys2[1];
-
-					if (hasUsed(kid2, used, keyToClusters)) {
-						continue;
-					}
-
-					if (StrUtils.absLengthDiff(korKey1, korKey2) > 2) {
-						continue;
-					}
-
-					if (StrUtils.absLengthDiff(engKey1, engKey2) > 2) {
-						continue;
-					}
-
-					double v1 = ed.getDistance(korKey1, korKey2);
-					double v2 = ed.getDistance(engKey1, engKey2);
-
-					if (v1 < 3 && v2 < 3) {
-
-					} else {
-						continue;
-					}
-
-					// System.out.printf("[%s, %s, %d]\n", key1, key2, (int) ed1);
-
-					for (int cid : keyToClusters.get(kid1)) {
-						toMerge.put(kid1, cid);
-						used.add(cid);
-					}
-
-					for (int cid : keyToClusters.get(kid2)) {
-						toMerge.put(kid1, cid);
-						used.add(cid);
-					}
-
-				}
-			}
-		}
-
-		System.out.printf("\r[%d/%d]\n", nodes.size(), nodes.size());
-
-		Counter<Integer> c = Generics.newCounter();
-
-		for (int kid : toMerge.keySet()) {
-			for (int cid : toMerge.get(kid)) {
-				c.incrementCount(cid, 1);
-			}
-		}
-
-		c.pruneKeysOverThreshold(1);
-
-		System.out.println(c.toString());
-
-		for (int kid : toMerge.keySet()) {
-			Set<Integer> cids = toMerge.get(kid);
-
-			cids.retainAll(c.keySet());
-
-			Set<Integer> kwdids = Generics.newHashSet();
+			Map<Integer, SparseVector> cents = Generics.newHashMap();
+			Counter<Integer> cc = Generics.newCounter();
 
 			for (int cid : cids) {
-				kwdids.addAll(clusterToKwds.removeKey(cid));
+				for (int kwdid : clusterToKwds.get(cid)) {
+					int kwd_freq = kwdData.getKeywordFreqs()[kwdid];
+					String kwdStr = kwdIndexer.getObject(kwdid);
+					String[] two = normalize(kwdStr.split("\t"));
+					String korKey = two[0];
+					String engKey = two[1];
+
+					Counter<Integer> c = Generics.newCounter();
+
+					for (int k = 0; k < engKey.length(); k++) {
+						c.incrementCount((int) engKey.charAt(k), kwd_freq);
+					}
+
+					cc.incrementAll(c);
+
+					SparseVector sv = VectorUtils.toSparseVector(c);
+					VectorMath.unitVector(sv);
+					cents.put(cid, sv);
+				}
 			}
 
-			int new_cid = min(cids);
+			SparseVector avgCent = VectorUtils.toSparseVector(cc);
+			VectorMath.unitVector(avgCent);
 
-			clusterToKwds.put(new_cid, kwdids);
+			Counter<Integer> cosines = Generics.newCounter();
 
-			for (int kwdid : kwdids) {
-				kwdToCluster[kwdid] = new_cid;
+			for (int cid : cents.keySet()) {
+				double cosine = VectorMath.dotProduct(avgCent, cents.get(cid), false);
+				if (cosine >= 0.9) {
+					cosines.setCount(cid, cosine);
+				}
 			}
 
+			if (cosines.size() > 1) {
+				merge(cosines.keySet());
+			}
 		}
 
 		int new_size = clusterToKwds.size();
@@ -584,7 +311,7 @@ public class KeywordClusterer {
 		System.out.printf("[%d -> %d clusters]\n", old_size, new_size);
 	}
 
-	private void matchSingleLanguage(boolean isEnglish) {
+	private void matchContextualLanguage(boolean isEnglish) {
 		System.out.println("match language (English: " + isEnglish + ")");
 
 		int old_size = clusterToKwds.size();
@@ -598,7 +325,7 @@ public class KeywordClusterer {
 			for (int kwdid : kwdids) {
 				String kwdStr = kwdIndexer.getObject(kwdid);
 				String[] two = kwdStr.split("\t");
-				String key = Conditions.value(isEnglish, two[1], two[0]);
+				String key = isEnglish ? two[1] : two[0];
 				key = normalize(key);
 
 				if (key.length() == 0) {
@@ -699,12 +426,49 @@ public class KeywordClusterer {
 		System.out.printf("[%d -> %d clusters]\n", old_size, new_size);
 	}
 
-	private void matchTwoLanguages() {
-		System.out.println("match two languages");
+	private void matchExactLanguage(boolean isEnglish) {
+		System.out.println("match exact language (English: " + isEnglish + ")");
 
 		int old_size = clusterToKwds.size();
 
-		Trie<Character> trie = new Trie<Character>();
+		SetMap<String, Integer> keyToClusters = Generics.newSetMap();
+
+		for (Entry<Integer, Set<Integer>> e : clusterToKwds.getEntrySet()) {
+			int cid = e.getKey();
+			Set<Integer> kwdids = e.getValue();
+
+			for (int kwdid : kwdids) {
+				String kwdStr = kwdIndexer.getObject(kwdid);
+				String[] two = normalize(kwdStr.split("\t"));
+				String key = isEnglish ? two[1] : two[0];
+
+				if (key.length() == 0) {
+					continue;
+				}
+
+				keyToClusters.put(key, cid);
+			}
+		}
+
+		for (String key : keyToClusters.keySet()) {
+			Set<Integer> cids = keyToClusters.get(key);
+
+			if (cids.size() > 1) {
+				merge(cids);
+			}
+		}
+
+		int new_size = clusterToKwds.size();
+
+		System.out.printf("[%d -> %d clusters]\n", old_size, new_size);
+	}
+
+	private void matchExactTwoLanguages() {
+		System.out.println("match exact two languages.");
+
+		int old_size = clusterToKwds.size();
+
+		SetMap<String, Integer> keyToClusters = Generics.newSetMap();
 
 		for (int cid : clusterToKwds.keySet()) {
 			for (int kwdid : clusterToKwds.get(cid)) {
@@ -714,27 +478,496 @@ public class KeywordClusterer {
 					parts[j] = normalize(parts[j]);
 				}
 				String key = StrUtils.join("\t", parts);
-				Node<Character> node = trie.insert(StrUtils.asCharacters(key.toCharArray()));
-
-				Set<Integer> cids = Generics.cast(node.getData());
-
-				if (cids == null) {
-					cids = Generics.newHashSet();
-					node.setData(cids);
-				}
-				cids.add(cid);
+				keyToClusters.put(key, cid);
 			}
 		}
 
-		List<Node<Character>> nodes = trie.getNodes();
+		for (String kid : keyToClusters.keySet()) {
+			Set<Integer> cids = keyToClusters.get(kid);
 
-		for (Node<Character> node : nodes) {
-			Set<Integer> kwdids = Generics.newHashSet();
-			Set<Integer> cids = (Set<Integer>) node.getData();
-
-			if (cids == null) {
+			if (cids.size() < 2) {
 				continue;
 			}
+
+			merge(cids);
+		}
+
+		int new_size = clusterToKwds.size();
+
+		System.out.printf("[%d -> %d clusters]\n", old_size, new_size);
+	}
+
+	private void matchKoreanGrams() {
+		System.out.println("match korean grams.");
+
+		for (int iter = 0; iter < 10; iter++) {
+
+			int old_size = clusterToKwds.size();
+
+			Map<Integer, SparseVector> korCents = Generics.newHashMap();
+			Map<Integer, SparseVector> engCents = Generics.newHashMap();
+
+			SetMap<Integer, Integer> gramToClusters = Generics.newSetMap();
+			SetMap<Integer, Integer> clusterToGrams = Generics.newSetMap();
+
+			Indexer<String> gramIndexer = Generics.newIndexer();
+
+			GramGenerator gg = new GramGenerator(3);
+
+			for (Entry<Integer, Set<Integer>> e : clusterToKwds.getEntrySet()) {
+				int cid = e.getKey();
+				Set<Integer> kwdids = e.getValue();
+				Counter<String> korGramCnts = Generics.newCounter();
+				Counter<String> korCharCnts = Generics.newCounter();
+				Counter<String> engWordCnts = Generics.newCounter();
+
+				for (int kwdid : kwdids) {
+					String kwdStr = kwdIndexer.get(kwdid);
+					String[] two = kwdStr.split("\t");
+					String korKwd = normalize(two[0]);
+					String engKwd = two[1];
+					int kwd_freq = kwdData.getKeywordFreqs()[kwdid];
+
+					// String s = UnicodeUtils.decomposeToJamo(korKwd);
+
+					for (char c : korKwd.toCharArray()) {
+						korCharCnts.incrementCount(c + "", kwd_freq);
+					}
+
+					for (Gram g : gg.generateQGrams(korKwd)) {
+						korGramCnts.incrementCount(g.getString(), kwd_freq);
+					}
+
+					for (String word : StrUtils.splitPunctuations(engKwd.toLowerCase())) {
+						engWordCnts.incrementCount(word, kwd_freq);
+					}
+				}
+
+				if (korGramCnts.size() > 0 && engWordCnts.size() > 0) {
+
+					Set<Integer> gids = Generics.newHashSet();
+					for (int gid : gramIndexer.getIndexes(korGramCnts.keySet())) {
+						gramToClusters.put(gid, cid);
+						gids.add(gid);
+					}
+					clusterToGrams.put(cid, gids);
+
+					korCents.put(cid, VectorUtils.toSparseVector(korCharCnts, gramIndexer, true));
+					engCents.put(cid, VectorUtils.toSparseVector(engWordCnts, gramIndexer, true));
+				}
+			}
+
+			TermWeighting.computeTFIDFs(korCents.values());
+
+			TermWeighting.computeTFIDFs(engCents.values());
+
+			StopWatch stopWatch = StopWatch.newStopWatch();
+
+			CounterMap<Integer, Integer> queryToTargets = Generics.newCounterMap();
+
+			List<Integer> cids = Generics.newArrayList(korCents.keySet());
+
+			for (int i = 0; i < cids.size(); i++) {
+				if ((i + 1) % 5000 == 0) {
+					System.out.printf("\r[%d/%d, %s]", i + 1, cids.size(), stopWatch.stop());
+				}
+				int qcid = cids.get(i);
+				SparseVector qKorCent = korCents.get(qcid);
+				SparseVector qEngCent = engCents.get(qcid);
+
+				String qKwdStr = kwdIndexer.get(qcid);
+
+				Counter<Integer> toCompare = Generics.newCounter();
+
+				for (int gid : clusterToGrams.get(qcid)) {
+					if (gramToClusters.containsKey(gid)) {
+						for (int cid : gramToClusters.get(gid)) {
+							if (qcid != cid) {
+								toCompare.incrementCount(cid, 1);
+							}
+						}
+					}
+				}
+
+				if (toCompare.size() < 2) {
+					continue;
+				}
+
+				List<Integer> keys = toCompare.getSortedKeys();
+
+				for (int j = 0; j < keys.size(); j++) {
+					int tcid = keys.get(j);
+					String tKwdStr = kwdIndexer.get(tcid);
+
+					if (queryToTargets.containKey(qcid, tcid) || queryToTargets.containKey(tcid, qcid)) {
+						continue;
+					}
+
+					SparseVector tKorCent = korCents.get(tcid);
+					SparseVector tEngCent = engCents.get(tcid);
+
+					double korCosine = VectorMath.dotProduct(qKorCent, tKorCent);
+					double engCosine = VectorMath.dotProduct(qEngCent, tEngCent);
+					double cosine = ArrayMath.addAfterScale(korCosine, 0.5, engCosine);
+
+					if (cosine >= 0.9) {
+						queryToTargets.incrementCount(qcid, tcid, cosine);
+						queryToTargets.incrementCount(tcid, qcid, cosine);
+					} else if (cosine >= 0.75) {
+						double cosine2 = computeSyllableCosine(qcid, tcid);
+
+						if (cosine2 >= 0.9) {
+							queryToTargets.incrementCount(qcid, tcid, korCosine);
+							queryToTargets.incrementCount(tcid, qcid, korCosine);
+						}
+					}
+				}
+			}
+
+			System.out.printf("\r[%d/%d, %s]\n", cids.size(), cids.size(), stopWatch.stop());
+
+			if (queryToTargets.size() == 0) {
+				break;
+			}
+
+			Set<Integer> merged = Generics.newHashSet();
+
+			for (int qcid : queryToTargets.keySet()) {
+				if (merged.contains(qcid)) {
+					continue;
+				}
+
+				Counter<Integer> targets = queryToTargets.getCounter(qcid);
+
+				Set<Integer> toMerge = Generics.newHashSet();
+				toMerge.add(qcid);
+
+				for (int tcid : targets.keySet()) {
+					if (!merged.contains(tcid)) {
+						toMerge.add(tcid);
+					}
+				}
+
+				if (toMerge.size() > 1) {
+					merge(toMerge);
+
+					merged.addAll(toMerge);
+				}
+			}
+
+			int new_size = clusterToKwds.size();
+
+			System.out.printf("[%d -> %d clusters]\n", old_size, new_size);
+
+			selectClusterLabels();
+			writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", String.format("-loop-%d.txt", iter)));
+		}
+	}
+
+	private void matchEnglishWords() {
+		System.out.println("match English words.");
+
+		for (int iter = 0; iter < 10; iter++) {
+
+			int old_size = clusterToKwds.size();
+
+			Map<Integer, SparseVector> engCents = Generics.newHashMap();
+
+			SetMap<Integer, Integer> wordToClusters = Generics.newSetMap();
+			SetMap<Integer, Integer> clusterToWords = Generics.newSetMap();
+
+			Indexer<String> wordIndexer = Generics.newIndexer();
+
+			for (Entry<Integer, Set<Integer>> e : clusterToKwds.getEntrySet()) {
+				int cid = e.getKey();
+				Set<Integer> kwdids = e.getValue();
+				Counter<String> engWordCnts = Generics.newCounter();
+
+				for (int kwdid : kwdids) {
+					String kwdStr = kwdIndexer.get(kwdid);
+					String[] two = kwdStr.split("\t");
+					String korKwd = normalize(two[0]);
+					String engKwd = two[1];
+					int kwd_freq = kwdData.getKeywordFreqs()[kwdid];
+
+					for (String word : StrUtils.splitPunctuations(engKwd.toLowerCase())) {
+						engWordCnts.incrementCount(word, kwd_freq);
+					}
+				}
+
+				if (engWordCnts.size() > 0) {
+
+					Set<Integer> ws = Generics.newHashSet();
+					for (int w : wordIndexer.getIndexes(engWordCnts.keySet())) {
+						wordToClusters.put(w, cid);
+						ws.add(w);
+					}
+					clusterToWords.put(cid, ws);
+					engCents.put(cid, VectorUtils.toSparseVector(engWordCnts, wordIndexer, true));
+				}
+			}
+
+			TermWeighting.computeTFIDFs(engCents.values());
+
+			StopWatch stopWatch = StopWatch.newStopWatch();
+
+			CounterMap<Integer, Integer> queryToTargets = Generics.newCounterMap();
+
+			List<Integer> cids = Generics.newArrayList(engCents.keySet());
+
+			for (int i = 0; i < cids.size(); i++) {
+				if ((i + 1) % 5000 == 0) {
+					System.out.printf("\r[%d/%d, %s]", i + 1, cids.size(), stopWatch.stop());
+				}
+				int qcid = cids.get(i);
+				SparseVector qEngCent = engCents.get(qcid);
+
+				String qKwdStr = kwdIndexer.get(qcid);
+
+				Counter<Integer> toCompare = Generics.newCounter();
+
+				for (int w : clusterToWords.get(qcid)) {
+					if (wordToClusters.containsKey(w)) {
+						for (int cid : wordToClusters.get(w)) {
+							if (qcid != cid) {
+								toCompare.incrementCount(cid, 1);
+							}
+						}
+					}
+				}
+
+				if (toCompare.size() < 2) {
+					continue;
+				}
+
+				List<Integer> keys = toCompare.getSortedKeys();
+
+				for (int j = 0; j < keys.size(); j++) {
+					int tcid = keys.get(j);
+					String tKwdStr = kwdIndexer.get(tcid);
+
+					if (queryToTargets.containKey(qcid, tcid) || queryToTargets.containKey(tcid, qcid)) {
+						continue;
+					}
+
+					SparseVector tEngCent = engCents.get(tcid);
+
+					double cosine = VectorMath.dotProduct(qEngCent, tEngCent);
+
+					if (cosine >= 0.9) {
+						queryToTargets.incrementCount(qcid, tcid, cosine);
+						queryToTargets.incrementCount(tcid, qcid, cosine);
+					}
+				}
+			}
+
+			System.out.printf("\r[%d/%d, %s]\n", cids.size(), cids.size(), stopWatch.stop());
+
+			if (queryToTargets.size() == 0) {
+				break;
+			}
+
+			Set<Integer> merged = Generics.newHashSet();
+
+			for (int qcid : queryToTargets.keySet()) {
+				if (merged.contains(qcid)) {
+					continue;
+				}
+
+				Counter<Integer> targets = queryToTargets.getCounter(qcid);
+
+				Set<Integer> toMerge = Generics.newHashSet();
+				toMerge.add(qcid);
+
+				for (int tcid : targets.keySet()) {
+					if (!merged.contains(tcid)) {
+						toMerge.add(tcid);
+					}
+				}
+
+				if (toMerge.size() > 1) {
+					merge(toMerge);
+
+					merged.addAll(toMerge);
+				}
+			}
+
+			int new_size = clusterToKwds.size();
+
+			System.out.printf("[%d -> %d clusters]\n", old_size, new_size);
+
+			selectClusterLabels();
+			writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", String.format("-eng-loop-%d.txt", iter)));
+		}
+	}
+
+	private void matchSyllables() {
+		System.out.println("match syllables.");
+
+		int old_size = clusterToKwds.size();
+
+		SetMap<Integer, Integer> keyToClusters = Generics.newSetMap();
+		Indexer<String> keyIndexer = Generics.newIndexer();
+
+		Trie<Character> trie = new Trie<Character>();
+		int gram_size = 3;
+
+		for (Entry<Integer, Set<Integer>> e : clusterToKwds.getEntrySet()) {
+			int cid = e.getKey();
+			Set<Integer> kwdids = e.getValue();
+
+			for (int kwdid : kwdids) {
+				String kwdStr = kwdIndexer.getObject(kwdid);
+				String[] two = kwdStr.split("\t");
+
+				for (int i = 0; i < two.length; i++) {
+					two[i] = normalize(two[i]);
+				}
+
+				String korKey = two[0];
+				String engKey = two[1];
+
+				if (korKey.length() == 0 || !UnicodeUtils.isKorean(korKey)) {
+					continue;
+				}
+
+				if (engKey.length() == 0) {
+					continue;
+				}
+
+				if (korKey.length() < gram_size) {
+					continue;
+				}
+
+				String newKorKey = UnicodeUtils.decomposeToJamo(korKey);
+				int kid = keyIndexer.getIndex(newKorKey + "\t" + engKey);
+
+				Character[] cs = StrUtils.asCharacters(korKey);
+				for (int j = gram_size; j < korKey.length(); j++) {
+					Node<Character> node = trie.insert(cs, j - gram_size, j);
+					Set<Integer> kids = Generics.cast(node.getData());
+
+					if (kids == null) {
+						kids = Generics.newHashSet();
+						node.setData(kids);
+					}
+					kids.add(kid);
+				}
+
+				keyToClusters.put(kid, cid);
+			}
+		}
+
+		for (int kid : keyToClusters.keySet()) {
+			Set<Integer> cids = keyToClusters.get(kid);
+			if (cids.size() != 1) {
+				System.out.printf("%d -> %s\n", kid, cids);
+			}
+		}
+
+		EditDistance<Character> ed = new EditDistance<Character>();
+
+		SetMap<Integer, Integer> toMerge = Generics.newSetMap();
+		Set<Integer> used = Generics.newHashSet();
+
+		List<Node<Character>> nodes = trie.getNodes();
+
+		for (int i = 0; i < nodes.size(); i++) {
+			if ((i + 1) % 1000 == 0) {
+				System.out.printf("\r[%d/%d]", i + 1, nodes.size());
+			}
+
+			Node<Character> node = nodes.get(i);
+
+			if (node.getData() == null) {
+				continue;
+			}
+
+			List<Integer> kids = Generics.newArrayList((Set<Integer>) node.getData());
+
+			if (kids.size() < 2) {
+				continue;
+			}
+
+			List<String> keys = keyIndexer.getObjects(kids);
+
+			for (int j = 0; j < keys.size(); j++) {
+				String key1 = keys.get(j);
+				int kid1 = kids.get(j);
+
+				String[] two1 = key1.split("\t");
+				String korKey1 = two1[0];
+				String engKey1 = two1[1];
+
+				if (hasUsed(kid1, used, keyToClusters)) {
+					continue;
+				}
+
+				for (int k = j + 1; k < keys.size(); k++) {
+					String key2 = keys.get(k);
+					int kid2 = kids.get(k);
+
+					String[] two2 = key2.split("\t");
+					String korKey2 = two2[0];
+					String engKey2 = two2[1];
+
+					if (hasUsed(kid2, used, keyToClusters)) {
+						continue;
+					}
+
+					if (StrUtils.absLengthDiff(korKey1, korKey2) > 2) {
+						continue;
+					}
+
+					if (StrUtils.absLengthDiff(engKey1, engKey2) > 2) {
+						continue;
+					}
+
+					double v1 = ed.getDistance(SequenceFactory.newCharSequences(korKey1, korKey2));
+					double v2 = ed.getDistance(SequenceFactory.newCharSequences(engKey1, engKey2));
+
+					if (v1 < 3 && v2 < 3) {
+
+					} else {
+						continue;
+					}
+
+					// System.out.printf("[%s, %s, %d]\n", key1, key2, (int) ed1);
+
+					for (int cid : keyToClusters.get(kid1)) {
+						toMerge.put(kid1, cid);
+						used.add(cid);
+					}
+
+					for (int cid : keyToClusters.get(kid2)) {
+						toMerge.put(kid1, cid);
+						used.add(cid);
+					}
+
+				}
+			}
+		}
+
+		System.out.printf("\r[%d/%d]\n", nodes.size(), nodes.size());
+
+		Counter<Integer> c = Generics.newCounter();
+
+		for (int kid : toMerge.keySet()) {
+			for (int cid : toMerge.get(kid)) {
+				c.incrementCount(cid, 1);
+			}
+		}
+
+		c.pruneKeysOverThreshold(1);
+
+		System.out.println(c.toString());
+
+		for (int kid : toMerge.keySet()) {
+			Set<Integer> cids = toMerge.get(kid);
+
+			cids.retainAll(c.keySet());
+
+			Set<Integer> kwdids = Generics.newHashSet();
 
 			for (int cid : cids) {
 				kwdids.addAll(clusterToKwds.removeKey(cid));
@@ -747,15 +980,34 @@ public class KeywordClusterer {
 			for (int kwdid : kwdids) {
 				kwdToCluster[kwdid] = new_cid;
 			}
+
 		}
 
 		int new_size = clusterToKwds.size();
 
 		System.out.printf("[%d -> %d clusters]\n", old_size, new_size);
-
 	}
 
-	private int min(Set<Integer> set) {
+	private void merge(Collection<Integer> cids) {
+		Set<Integer> kwds = Generics.newHashSet();
+
+		for (int cid : cids) {
+			Set<Integer> temp = clusterToKwds.removeKey(cid);
+			if (temp != null) {
+				kwds.addAll(temp);
+			}
+		}
+
+		int new_cid = min(cids);
+
+		clusterToKwds.put(new_cid, kwds);
+
+		for (int kwdid : kwds) {
+			kwdToCluster[kwdid] = new_cid;
+		}
+	}
+
+	private int min(Collection<Integer> set) {
 		int ret = Integer.MAX_VALUE;
 		for (int i : set) {
 			if (i < ret) {
@@ -765,8 +1017,80 @@ public class KeywordClusterer {
 		return ret;
 	}
 
+	private String[] normalize(String[] s) {
+		String[] ret = new String[s.length];
+		for (int i = 0; i < s.length; i++) {
+			ret[i] = normalize(s[i]);
+		}
+		return ret;
+	}
+
+	public void perform() throws Exception {
+		kwdToCluster = new int[kwdIndexer.size()];
+
+		clusterToKwds = Generics.newSetMap(kwdIndexer.size());
+
+		for (int i = 0; i < kwdIndexer.size(); i++) {
+			clusterToKwds.put(i, i);
+			kwdToCluster[i] = i;
+		}
+
+		matchExactTwoLanguages();
+
+		selectClusterLabels();
+		writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-01.txt"));
+
+		matchExactLanguage(false);
+
+		selectClusterLabels();
+		writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-02.txt"));
+
+		matchKoreanGrams();
+
+		selectClusterLabels();
+		writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-03.txt"));
+
+		matchEnglishWords();
+
+		selectClusterLabels();
+		writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-04.txt"));
+
+		// matchLanguage(false);
+		//
+		// selectClusterLabels();
+		// writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-03.txt"));
+
+		// matchSingleLanguage(false);
+
+		// matchKoreanCharacters();
+		//
+		// selectClusterLabels();
+		// writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-03.txt"));
+
+		// exactLanguageMatch(true);
+
+		// selectClusterLabels();
+
+		// writeClusterText(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-03.txt"));
+
+		// filter(3);
+
+		// hierarchicalAgglomerativeClustering();
+
+		selectClusterLabels();
+
+		SetMap<Integer, Integer> t = Generics.newSetMap(clusterToKwds.size());
+
+		for (int cid : clusterToKwds.keySet()) {
+			t.put(cid, clusterToKwds.get(cid));
+		}
+
+		kwdData.setClusterLabel(clusterLabel);
+		kwdData.setClusters(t);
+	}
+
 	private void selectClusterLabels() {
-		System.out.println("select cluster labels");
+		System.out.println("select cluster labels.");
 
 		clusterLabel = Generics.newHashMap();
 
@@ -797,7 +1121,6 @@ public class KeywordClusterer {
 	}
 
 	public void writeClusters(String fileName) {
-		System.out.printf("write clusters at [%s].\n", fileName);
 		TextFileWriter writer = new TextFileWriter(fileName);
 
 		writer.write(String.format("Clusters:\t%d", clusterToKwds.size()));
@@ -875,7 +1198,7 @@ public class KeywordClusterer {
 		}
 		writer.close();
 
-		System.out.printf("write [%d] clusterToKwds at [%s]\n", clusterToKwds.size(), fileName);
+		System.out.printf("write [%d] clusters at [%s]\n", clusterToKwds.size(), fileName);
 	}
 
 }

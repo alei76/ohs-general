@@ -20,7 +20,7 @@ import ohs.string.sim.EditDistance;
 import ohs.string.sim.Jaccard;
 import ohs.string.sim.Jaro;
 import ohs.string.sim.Sequence;
-import ohs.string.sim.SimScorer;
+import ohs.string.sim.StringScorer;
 import ohs.string.sim.SmithWaterman;
 import ohs.types.Counter;
 import ohs.types.DeepMap;
@@ -64,7 +64,7 @@ public class StringSearcher implements Serializable {
 
 	private int[] gram_cnts;
 
-	private List<SimScorer> simScorers;
+	private List<StringScorer> stringScorers;
 
 	private Map<Integer, Double[]> simScores;
 
@@ -84,12 +84,12 @@ public class StringSearcher implements Serializable {
 		gg = new GramGenerator(q);
 		cache = new DeepMap<String, Integer, Double[]>(1000, MapType.WEAK_HASH_MAP, MapType.WEAK_HASH_MAP);
 
-		simScorers = Generics.newArrayList();
+		stringScorers = Generics.newArrayList();
 
-		simScorers.add(new EditDistance());
-		simScorers.add(new SmithWaterman());
-		simScorers.add(new Jaro());
-		simScorers.add(new Jaccard());
+		stringScorers.add(new EditDistance());
+		stringScorers.add(new SmithWaterman());
+		stringScorers.add(new Jaro());
+		stringScorers.add(new Jaccard());
 		simScores = Generics.newHashMap();
 
 	}
@@ -166,8 +166,8 @@ public class StringSearcher implements Serializable {
 		return logBuff;
 	}
 
-	public List<SimScorer> getSimScorers() {
-		return simScorers;
+	public List<StringScorer> getSimScorers() {
+		return stringScorers;
 	}
 
 	public Map<Integer, Double[]> getSimScores() {
@@ -375,9 +375,9 @@ public class StringSearcher implements Serializable {
 			Double[] scores = cache.get(s, sr.getId(), false);
 
 			if (scores == null) {
-				scores = new Double[simScorers.size()];
-				for (int j = 0; j < simScorers.size(); j++) {
-					scores[j] = simScorers.get(j).getSimilarity(ss, tt);
+				scores = new Double[stringScorers.size()];
+				for (int j = 0; j < stringScorers.size(); j++) {
+					scores[j] = stringScorers.get(j).getSimilarity(ss, tt);
 				}
 				cache.put(s, sr.getId(), scores);
 			}
