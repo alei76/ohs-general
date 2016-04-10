@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.tartarus.snowball.ext.PorterStemmer;
+
 import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
 import ohs.math.ArrayMath;
@@ -54,10 +56,6 @@ public class KeywordClusterer {
 		System.out.println("process ends.");
 	}
 
-	private static String normalize(String s) {
-		return s.replaceAll("[\\p{Punct}\\s]+", "").toLowerCase();
-	}
-
 	private Map<Integer, SparseVector> kwdToWords;
 
 	private Indexer<String> wordIndexer;
@@ -71,10 +69,6 @@ public class KeywordClusterer {
 	private int[] kwdToCluster;
 
 	private Map<Integer, String> clusterLabel;
-
-	private GramGenerator gg = new GramGenerator(3);
-
-	private int prefix_size = 6;
 
 	public KeywordClusterer(KeywordData kwdData) {
 		this.kwdData = kwdData;
@@ -97,53 +91,31 @@ public class KeywordClusterer {
 		selectClusterLabels();
 		writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-01.txt"));
 
-		matchExactLanguage(false);
+		matchExactKoreanLanguage();
 
 		selectClusterLabels();
 		writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-02.txt"));
 
-		// matchKoreanGrams();
-		//
-		// selectClusterLabels();
-		// writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-03.txt"));
+		matchKoreanGrams();
+
+		selectClusterLabels();
+		writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-03.txt"));
 
 		matchEnglishWords();
 
 		selectClusterLabels();
 		writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-04.txt"));
 
-		// matchLanguage(false);
-		//
-		// selectClusterLabels();
-		// writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-03.txt"));
-
-		// matchSingleLanguage(false);
-
-		// matchKoreanCharacters();
-		//
-		// selectClusterLabels();
-		// writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-03.txt"));
-
-		// exactLanguageMatch(true);
-
-		// selectClusterLabels();
-
-		// writeClusterText(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-03.txt"));
-
-		// filter(3);
-
-		// hierarchicalAgglomerativeClustering();
-
 		selectClusterLabels();
 
-		SetMap<Integer, Integer> t = Generics.newSetMap(clusterToKwds.size());
-
-		for (int cid : clusterToKwds.keySet()) {
-			t.put(cid, clusterToKwds.get(cid));
-		}
-
-		kwdData.setClusterLabel(clusterLabel);
-		kwdData.setClusters(t);
+		// SetMap<Integer, Integer> t = Generics.newSetMap(clusterToKwds.size());
+		//
+		// for (int cid : clusterToKwds.keySet()) {
+		// t.put(cid, clusterToKwds.get(cid));
+		// }
+		//
+		// kwdData.setClusterLabel(clusterLabel);
+		// kwdData.setClusters(t);
 	}
 
 	private Counter<String>[] computeLabelScores(Set<Integer> kwdids) {
@@ -258,7 +230,9 @@ public class KeywordClusterer {
 				String[] two = normalize(kwdStr.split("\t"));
 				String korKey = two[0];
 				String engKey = two[1];
+
 				korKey = UnicodeUtils.decomposeToJamo(korKey);
+				engKey = normalizeEnglish(engKey).replace(" ", "");
 
 				for (int j = 0; j < korKey.length(); j++) {
 					c1.incrementCount((int) korKey.charAt(j), kwd_freq);
@@ -513,10 +487,11 @@ public class KeywordClusterer {
 					String kwdStr = kwdIndexer.get(kwdid);
 					String[] two = kwdStr.split("\t");
 					String korKwd = normalize(two[0]);
-					String engKwd = two[1];
+					String engKwd = normalizeEnglish(two[1]);
+
 					int kwd_freq = kwdData.getKeywordFreqs()[kwdid];
 
-					for (String word : StrUtils.splitPunctuations(engKwd.toLowerCase())) {
+					for (String word : engKwd.split(" ")) {
 						engWordCnts.incrementCount(word, kwd_freq);
 					}
 				}
@@ -633,8 +608,8 @@ public class KeywordClusterer {
 		}
 	}
 
-	private void matchExactLanguage(boolean isEnglish) {
-		System.out.println("match exact language (English: " + isEnglish + ")");
+	private void matchExactKoreanLanguage() {
+		System.out.println("match exact Korean language.");
 
 		int old_size = clusterToKwds.size();
 
@@ -646,14 +621,12 @@ public class KeywordClusterer {
 
 			for (int kwdid : kwdids) {
 				String kwdStr = kwdIndexer.getObject(kwdid);
-				String[] two = normalize(kwdStr.split("\t"));
-				String key = isEnglish ? two[1] : two[0];
+				String[] two = kwdStr.split("\t");
+				String korKey = normalize(two[0]);
 
-				if (key.length() == 0) {
-					continue;
+				if (korKey.length() > 0) {
+					keyToClusters.put(korKey, cid);
 				}
-
-				keyToClusters.put(key, cid);
 			}
 		}
 
@@ -680,11 +653,12 @@ public class KeywordClusterer {
 		for (int cid : clusterToKwds.keySet()) {
 			for (int kwdid : clusterToKwds.get(cid)) {
 				String kwdStr = kwdIndexer.getObject(kwdid);
-				String[] parts = kwdStr.split("\t");
-				for (int j = 0; j < parts.length; j++) {
-					parts[j] = normalize(parts[j]);
-				}
-				String key = StrUtils.join("\t", parts);
+				String[] two = kwdStr.split("\t");
+
+				two[0] = normalize(two[0]);
+				two[1] = normalizeEnglish(two[1]);
+
+				String key = StrUtils.join("\t", two);
 				keyToClusters.put(key, cid);
 			}
 		}
@@ -732,7 +706,7 @@ public class KeywordClusterer {
 					String kwdStr = kwdIndexer.get(kwdid);
 					String[] two = kwdStr.split("\t");
 					String korKwd = normalize(two[0]);
-					String engKwd = two[1];
+					String engKwd = normalizeEnglish(two[1]);
 					int kwd_freq = kwdData.getKeywordFreqs()[kwdid];
 
 					// String s = UnicodeUtils.decomposeToJamo(korKwd);
@@ -745,7 +719,7 @@ public class KeywordClusterer {
 						korGramCnts.incrementCount(g.getString(), kwd_freq);
 					}
 
-					for (String word : StrUtils.splitPunctuations(engKwd.toLowerCase())) {
+					for (String word : engKwd.split(" ")) {
 						engWordCnts.incrementCount(word, kwd_freq);
 					}
 				}
@@ -1090,12 +1064,28 @@ public class KeywordClusterer {
 		return ret;
 	}
 
+	private String normalize(String s) {
+		return s.replaceAll("[\\p{Punct}\\s]+", "").toLowerCase();
+	}
+
 	private String[] normalize(String[] s) {
 		String[] ret = new String[s.length];
 		for (int i = 0; i < s.length; i++) {
 			ret[i] = normalize(s[i]);
 		}
 		return ret;
+	}
+
+	private String normalizeEnglish(String s) {
+		PorterStemmer stemmer = new PorterStemmer();
+
+		StringBuffer sb = new StringBuffer();
+		for (String word : StrUtils.splitPunctuations(s)) {
+			stemmer.setCurrent(word);
+			stemmer.stem();
+			sb.append(stemmer.getCurrent().toLowerCase() + " ");
+		}
+		return sb.toString().trim();
 	}
 
 	private void selectClusterLabels() {
