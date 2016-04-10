@@ -74,12 +74,11 @@ public class SetMap<K, V> implements Serializable {
 		return get(key, true);
 	}
 
-	public Set<V> get(K key, boolean createIfAbsent) {
-		return createIfAbsent ? ensure(key) : entries.get(key);
+	public Set<V> get(K key, boolean addIfUnseen) {
+		return addIfUnseen ? ensure(key) : entries.get(key);
 	}
 
 	public Set<Map.Entry<K, Set<V>>> getEntrySet() {
-		// TODO Auto-generated method stub
 		return entries.entrySet();
 	}
 
