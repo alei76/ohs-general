@@ -176,28 +176,27 @@ public class SejongDataHandler {
 			String word = keys.get(i);
 			Counter<String> posCnts = cm.getCounter(word);
 
+			StringBuffer sb = new StringBuffer();
+
 			for (int j = 0; j < word.length(); j++) {
 				char in = word.charAt(j);
-				char[] out = UnicodeUtils.decomposeToJamo(in);
-
-				Node<Character> node = trie.insert(StrUtils.asCharacters(out));
-
-				Counter<String> c = (Counter<String>) node.getData();
-
-				if (c == null) {
-					c = Generics.newCounter();
-					node.setData(c);
-				}
-
-				c.incrementAll(posCnts);
+				sb.append(UnicodeUtils.decomposeToJamo(in));
 			}
 
-			String str = UnicodeUtils.decomposeToJamo(word);
+			Node<Character> node = trie.insert(StrUtils.asCharacters(sb.toString().toCharArray()));
 
-			System.out.println(str);
+			Counter<String> c = (Counter<String>) node.getData();
 
-			Node<Character> node = trie.insert(StrUtils.asCharacters(str));
-			node.setData("");
+			if (c == null) {
+				c = Generics.newCounter();
+				node.setData(c);
+			}
+
+			c.incrementAll(posCnts);
+
+			// String str = UnicodeUtils.decomposeToJamo(word);
+
+			// System.out.println(str);
 
 			// System.out.println(s);
 		}

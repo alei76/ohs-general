@@ -3,18 +3,25 @@ package ohs.nlp.pos;
 import java.util.List;
 import java.util.Set;
 
+import org.hibernate.engine.spi.ExecuteUpdateResultCheckStyle;
+
+import ohs.eden.keyphrase.TaggedTextParser;
 import ohs.io.FileUtils;
 import ohs.nlp.ling.types.KDocument;
 import ohs.nlp.ling.types.KSentence;
 import ohs.nlp.ling.types.MultiToken;
+import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
 import ohs.tree.trie.hash.Node;
 import ohs.tree.trie.hash.Trie;
 import ohs.tree.trie.hash.Trie.SearchResult;
+import ohs.tree.trie.hash.Trie.SearchResult.MatchType;
+import ohs.types.Counter;
+import ohs.types.Indexer;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
-import ohs.utils.UnicodeUtils;
 import ohs.utils.StrUtils;
+import ohs.utils.UnicodeUtils;
 
 public class MorphemeAnalyzer {
 
@@ -25,7 +32,7 @@ public class MorphemeAnalyzer {
 		MorphemeAnalyzer a = new MorphemeAnalyzer();
 
 		{
-			String document = "프로젝트 대한전산 전체 회의.\n" + "회의 일정은 다음과 같습니다.\n";
+			String document = "직업이라고눈\n프로젝트 대한전산 전체 회의.\n" + "회의 일정은 다음과 같습니다.\n";
 
 			KDocument doc = t.tokenize(document);
 			a.analyze(doc);
@@ -94,14 +101,44 @@ public class MorphemeAnalyzer {
 		System.out.println();
 	}
 
-	public Set<String> analyze(String word) {
+	public Set<String> analyze(String eojeol) {
 		Set<String> ret = Generics.newHashSet();
 
-		String word2 = UnicodeUtils.decomposeToJamo(word);
+		String s = UnicodeUtils.decomposeToJamo(eojeol);
 
-		SearchResult<Character> sr = sysDict.search(StrUtils.asCharacters(word2.toCharArray()));
+		Character[] cs = StrUtils.asCharacters(s.toCharArray());
+
+		search(cs, 0, 1);
+
+		// for (int i = 0; i < cs.length; i++) {
+		//
+		// for (int j = i + 1; j < cs.length; j++) {
+		// SearchResult<Character> sr = trie.search(cs, i, j);
+		//
+		// if (sr.getMatchType() == MatchType.EXACT) {
+		//
+		// } else {
+		//
+		// }
+		// }
+		// }
 
 		return ret;
+	}
+
+	private void search(Character[] cs, int start, int end) {
+		if (start >= 0 && end <= cs.length) {
+			SearchResult<Character> sr = trie.search(cs, start, end);
+
+			if (sr.getMatchType() == MatchType.EXACT) {
+				search(cs, start, end + 1);
+			} else {
+				search(cs, end - 1, end);
+				System.out.println();
+
+			}
+		}
+
 	}
 
 	public void analyze(String[] words) {
@@ -112,17 +149,51 @@ public class MorphemeAnalyzer {
 		}
 	}
 
+	private Indexer<String> posIndexer;
+
+	private Trie<Character> trie;
+
 	private void readAnalyzedDict(String fileName) throws Exception {
 		List<String> lines = FileUtils.readLines(fileName);
 
 		analDict = Generics.newSetMap(lines.size());
 
+		posIndexer = Generics.newIndexer();
+
+		trie = Trie.newTrie();
+
 		for (String line : lines) {
 			String[] parts = line.split("\t");
 			for (int i = 1; i < parts.length; i++) {
 				analDict.put(parts[0], parts[i]);
+
+				String[] subParts = parts[i].split(MultiToken.DELIM_MULTI_TOKEN.replace("+", "\\+"));
+
+				for (int j = 0; j < subParts.length; j++) {
+					String[] two = subParts[j].split(Token.DELIM_TOKEN);
+					String word = two[0];
+					String pos = two[1];
+
+					StringBuffer sb = new StringBuffer();
+					for (int k = 0; k < word.length(); k++) {
+						sb.append(UnicodeUtils.decomposeToJamo(word.charAt(k)));
+					}
+
+					Node<Character> node = trie.insert(StrUtils.asCharacters(sb.toString().toCharArray()));
+
+					Counter<Integer> c = (Counter<Integer>) node.getData();
+
+					if (c == null) {
+						c = Generics.newCounter();
+						node.setData(c);
+					}
+
+					c.incrementCount(posIndexer.getIndex(pos), 1);
+				}
 			}
 		}
+
+		trie.trimToSize();
 	}
 
 	private void readSystemDict(String fileName) throws Exception {
