@@ -33,9 +33,9 @@ public class SejongDataHandler {
 		// sdh.extractPosData();
 		// sdh.extractCounts();
 		// sdh.buildSystemDict();
-		sdh.buildAnalyzedDict();
-		// sdh.buildTrie();
-		// sdh.test();
+		// sdh.buildAnalyzedDict();
+		sdh.buildTrie();
+		// sdh.build();
 
 		System.out.println("process ends.");
 	}
@@ -54,7 +54,49 @@ public class SejongDataHandler {
 			oos.writeInt(depth);
 			oos.writeInt(id);
 		}
+	}
 
+	public void build() throws Exception {
+		CounterMap<String, String> cm = Generics.newCounterMap();
+
+		SejongReader reader = new SejongReader(NLPPath.POS_DATA_FILE, NLPPath.POS_TAG_SET_FILE);
+		while (reader.hasNext()) {
+			KDocument doc = reader.next();
+
+			for (KSentence sent : doc.getSentences()) {
+				String[][] words = sent.getSubValues(TokenAttr.WORD);
+				String[][] poss = sent.getSubValues(TokenAttr.POS);
+
+				for (MultiToken mt : sent.toMultiTokens()) {
+					for (Token t : mt.getTokens()) {
+						String word = t.getValue(TokenAttr.WORD);
+						String pos = t.getValue(TokenAttr.POS);
+
+						if (pos.startsWith("N") || pos.startsWith("V") || pos.startsWith("S")) {
+							continue;
+						}
+
+						cm.incrementCount(pos, word, 1);
+					}
+				}
+			}
+		}
+		reader.close();
+
+		// List<String> words = Generics.newArrayList(cm.keySet());
+		// Collections.sort(words);
+		//
+		// for (int i = 0; i < words.size(); i++) {
+		// String word = words.get(i);
+		// Counter<String> c = cm.getCounter(word);
+		//
+		// List<String> res = Generics.newArrayList();
+		// res.add(word);
+		// res.addAll(c.keySet());
+		// words.set(i, String.join("\t", res));
+		// }
+
+		FileUtils.writeStrCounterMap(NLPPath.POS_TAG_CHECK_FILE, cm, null, true);
 	}
 
 	public void buildAnalyzedDict() throws Exception {
@@ -125,13 +167,32 @@ public class SejongDataHandler {
 	}
 
 	public void buildTrie() throws Exception {
-		List<String> lines = FileUtils.readLines(NLPPath.DICT_ANALYZED_FILE);
+		CounterMap<String, String> cm = FileUtils.readStrCounterMap(NLPPath.WORD_POS_CNT_ILE);
 		Trie<Character> trie = new Trie<Character>();
 
-		for (int i = 0; i < lines.size(); i++) {
-			String[] parts = lines.get(i).split("\t");
+		List<String> keys = cm.getOutKeyCountSums().getSortedKeys();
 
-			String str = UnicodeUtils.decomposeToJamo(parts[0]);
+		for (int i = 0; i < keys.size(); i++) {
+			String word = keys.get(i);
+			Counter<String> posCnts = cm.getCounter(word);
+
+			for (int j = 0; j < word.length(); j++) {
+				char in = word.charAt(j);
+				char[] out = UnicodeUtils.decomposeToJamo(in);
+
+				Node<Character> node = trie.insert(StrUtils.asCharacters(out));
+
+				Counter<String> c = (Counter<String>) node.getData();
+
+				if (c == null) {
+					c = Generics.newCounter();
+					node.setData(c);
+				}
+
+				c.incrementAll(posCnts);
+			}
+
+			String str = UnicodeUtils.decomposeToJamo(word);
 
 			System.out.println(str);
 
@@ -145,49 +206,46 @@ public class SejongDataHandler {
 
 		trie.trimToSize();
 
-		// {
-		// ObjectOutputStream oos = FileUtils.openObjectOutputStream(NLPPath.DATA_DIR + "test_1.ser");
-		// oos.writeObject(trie);
-		// oos.close();
-		// }
-
-		// {
-		// ObjectOutputStream oos = FileUtils.openObjectOutputStream(NLPPath.DATA_DIR + "test_2.ser");
-		//
-		// Node<Character> root = trie.getRoot();
-		// write(oos, root);
-		// oos.close();
-		//
-		// FileUtils.write(oos, s);
-		//
-		// }
-
 		System.out.println();
 	}
 
 	public void extractCounts() throws Exception {
 		CounterMap<String, String> cm = Generics.newCounterMap();
 		CounterMap<String, String> cm2 = Generics.newCounterMap();
+		CounterMap<String, String> cm3 = Generics.newCounterMap();
 
 		SejongReader reader = new SejongReader(NLPPath.POS_DATA_FILE, NLPPath.POS_TAG_SET_FILE);
 		while (reader.hasNext()) {
 			KDocument doc = reader.next();
 
 			for (KSentence sent : doc.getSentences()) {
-				for (Token tok : sent.getTokens()) {
-					MultiToken mt = (MultiToken) tok;
+				for (MultiToken mt : sent.toMultiTokens()) {
 
-					for (Token t : mt.getTokens()) {
+					if (mt.size() > 0) {
+						Token t = mt.getToken(0);
 						String word = t.getValue(TokenAttr.WORD);
 						String pos = t.getValue(TokenAttr.POS);
 						cm2.incrementCount(word, pos, 1);
+					}
+
+					for (int i = 1; i < mt.size(); i++) {
+						Token t1 = mt.getToken(i - 1);
+						String word1 = t1.getValue(TokenAttr.WORD);
+						String pos1 = t1.getValue(TokenAttr.POS);
+
+						Token t2 = mt.getToken(i);
+						String word2 = t2.getValue(TokenAttr.WORD);
+						String pos2 = t2.getValue(TokenAttr.POS);
+
+						cm2.incrementCount(word2, pos2, 1);
+						cm3.incrementCount(pos1, pos2, 1);
 					}
 				}
 			}
 		}
 		reader.close();
-		FileUtils.writeStrCounterMap(NLPPath.WORD_POS_CNT_ILE, cm);
-		FileUtils.writeStrCounterMap(NLPPath.WORD_CNT_ILE, cm2);
+		FileUtils.writeStrCounterMap(NLPPath.WORD_POS_CNT_ILE, cm2);
+		FileUtils.writeStrCounterMap(NLPPath.WORD_POS_TRANS_CNT_ILE, cm3);
 	}
 
 	public void extractPosData() throws Exception {
@@ -265,23 +323,6 @@ public class SejongDataHandler {
 		}
 		br.close();
 		writer.close();
-	}
-
-	public void test() throws Exception {
-
-		List<String> lines = FileUtils.readLines(NLPPath.DICT_ANALYZED_FILE);
-
-		{
-			ObjectOutputStream oos = FileUtils.openObjectOutputStream(NLPPath.DATA_DIR + "test_1.ser");
-			oos.writeObject(lines);
-			oos.close();
-		}
-
-		{
-			ObjectOutputStream oos = FileUtils.openObjectOutputStream(NLPPath.DATA_DIR + "test_2.ser");
-			FileUtils.writeStrCollection(oos, lines);
-			oos.close();
-		}
 	}
 
 }

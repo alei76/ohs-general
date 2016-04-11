@@ -212,13 +212,11 @@ public class UnicodeUtils {
 		}
 	}
 
-	public static int[] getCodePoints(char[] cs) {
-		int[] ret = new int[cs.length];
-		for (int i = 0; i < ret.length; i++) {
-			ret[i] = Character.codePointAt(cs, i);
-		}
-		return ret;
-	}
+	public static final int[] ENGLISH_LOWER_RANGE = { 'a', 'z' + 1 };
+
+	public static final int[] ENGLISH_UPPER_RANGE = { 'A', 'Z' + 1 };
+
+	public static final int[] NUMBER_RANGE = { '0', '9' + 1 };
 
 	public static String composeJamo(String word) {
 		StringBuffer sb = new StringBuffer();
@@ -356,35 +354,59 @@ public class UnicodeUtils {
 		return sb.toString();
 	}
 
+	public static char[] decomposeToJamo(char c) {
+		char[] ret = new char[] { c };
+		int cp = (int) c;
+
+		if (isInRange(HANGUL_SYLLABLES_RANGE, cp)) {
+			// System.out.printf("한글: %c\n", c);
+			ret = toJamo(c);
+		} else if (isInRange(HANGUL_COMPATIBILITY_JAMO_JAEUM_RANGE, cp)) {
+			// System.out.printf("자음: %c\n", c);
+		} else if (isInRange(HANGUL_COMPATIBILITY_JAMO_MOEUM_RANGE, cp)) {
+			// System.out.printf("모음: %c\n", c);
+		} else if (cp == CHAEUM) {
+			// System.out.printf("채움코드: %c\n", c);
+		} else if (isInRange(OLD_JAEUM_RANGE, cp)) {
+			// System.out.printf("옛글 자모: %c\n", c);
+		} else {
+
+		}
+
+		return ret;
+	}
+
 	public static String decomposeToJamo(String word) {
 		StringBuffer sb = new StringBuffer();
 
 		for (int i = 0; i < word.length(); i++) {
 			char c = word.charAt(i);
-			int cp = word.codePointAt(i);
 
-			if (isInRange(HANGUL_SYLLABLES_RANGE, cp)) {
-				// System.out.printf("한글: %c\n", c);
-				for (char cc : toJamo(c)) {
-					sb.append(cc);
-				}
-			} else if (isInRange(HANGUL_COMPATIBILITY_JAMO_JAEUM_RANGE, cp)) {
-				// System.out.printf("자음: %c\n", c);
-				sb.append(c);
-			} else if (isInRange(HANGUL_COMPATIBILITY_JAMO_MOEUM_RANGE, cp)) {
-				// System.out.printf("모음: %c\n", c);
-				sb.append(c);
-			} else if (cp == CHAEUM) {
-				// System.out.printf("채움코드: %c\n", c);
-				sb.append(c);
-			} else if (isInRange(OLD_JAEUM_RANGE, cp)) {
-				// System.out.printf("옛글 자모: %c\n", c);
-			} else {
-				sb.append(c);
+			for (char cs : decomposeToJamo(c)) {
+				sb.append(cs);
 			}
+
+			// if (isInRange(HANGUL_SYLLABLES_RANGE, cp)) {
+			// // System.out.printf("한글: %c\n", c);
+			// for (char cc : toJamo(c)) {
+			// sb.append(cc);
+			// }
+			// } else if (isInRange(HANGUL_COMPATIBILITY_JAMO_JAEUM_RANGE, cp)) {
+			// // System.out.printf("자음: %c\n", c);
+			// sb.append(c);
+			// } else if (isInRange(HANGUL_COMPATIBILITY_JAMO_MOEUM_RANGE, cp)) {
+			// // System.out.printf("모음: %c\n", c);
+			// sb.append(c);
+			// } else if (cp == CHAEUM) {
+			// // System.out.printf("채움코드: %c\n", c);
+			// sb.append(c);
+			// } else if (isInRange(OLD_JAEUM_RANGE, cp)) {
+			// // System.out.printf("옛글 자모: %c\n", c);
+			// } else {
+			// sb.append(c);
+			// }
 		}
 		return sb.toString();
-
 	}
 
 	public static int fromAnalyzedJAMO(int[] cps) {
@@ -406,8 +428,51 @@ public class UnicodeUtils {
 		return cp;
 	}
 
+	public static int[] getCodePoints(char[] cs) {
+		int[] ret = new int[cs.length];
+		for (int i = 0; i < ret.length; i++) {
+			ret[i] = Character.codePointAt(cs, i);
+		}
+		return ret;
+	}
+
+	public static boolean isEnglish(char c) {
+		int i = c;
+		return isInRange(ENGLISH_LOWER_RANGE, i) || isInRange(ENGLISH_UPPER_RANGE, i);
+	}
+
 	public static boolean isInRange(int[] range, int cp) {
 		return Conditions.isInArrayRange(range[0], range[1], cp);
+	}
+
+	public static boolean isKorean(char c) {
+
+		return isInRange(HANGUL_SYLLABLES_RANGE, c)
+
+				|| isInRange(HANGUL_COMPATIBILITY_JAMO_JAEUM_RANGE, c)
+
+				|| isInRange(HANGUL_COMPATIBILITY_JAMO_MOEUM_RANGE, c)
+
+				|| isInRange(HANGUL_JAMO_CHOSUNG_RANGE, c)
+
+				|| isInRange(HANGUL_JAMO_JUNGSUNG_RANGE, c)
+
+				|| isInRange(HANGUL_JAMO_JONGSUNG_RANGE, c)
+
+		;
+	}
+
+	public static boolean isKorean(String s) {
+		for (int i = 0; i < s.length(); i++) {
+			if (!isKorean(s.charAt(i))) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static boolean isNumber(char c) {
+		return isInRange(NUMBER_RANGE, c);
 	}
 
 	public static void main(String args[]) {
@@ -446,11 +511,11 @@ public class UnicodeUtils {
 	}
 
 	public static final char[] toJamo(char c) {
-		int[] cps = toJamo(Character.codePointAt(new char[] { c }, 0));
+		int[] cps = toJamo((int) c);
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < cps.length; i++) {
 			if (cps[i] != 0) {
-				sb.append(Character.toChars(cps[i]));
+				sb.append((char) cps[i]);
 			}
 		}
 		return sb.toString().toCharArray();
@@ -522,47 +587,6 @@ public class UnicodeUtils {
 		}
 
 		System.out.println();
-	}
-
-	public static final int[] ENGLISH_LOWER_RANGE = { 'a', 'z' + 1 };
-
-	public static final int[] ENGLISH_UPPER_RANGE = { 'A', 'Z' + 1 };
-
-	public static final int[] NUMBER_RANGE = { '0', '9' + 1 };
-
-	public static boolean isNumber(char c) {
-		return isInRange(NUMBER_RANGE, c);
-	}
-
-	public static boolean isEnglish(char c) {
-		int i = c;
-		return isInRange(ENGLISH_LOWER_RANGE, i) || isInRange(ENGLISH_UPPER_RANGE, i);
-	}
-
-	public static boolean isKorean(char c) {
-
-		return isInRange(HANGUL_SYLLABLES_RANGE, c)
-
-				|| isInRange(HANGUL_COMPATIBILITY_JAMO_JAEUM_RANGE, c)
-
-				|| isInRange(HANGUL_COMPATIBILITY_JAMO_MOEUM_RANGE, c)
-
-				|| isInRange(HANGUL_JAMO_CHOSUNG_RANGE, c)
-
-				|| isInRange(HANGUL_JAMO_JUNGSUNG_RANGE, c)
-
-				|| isInRange(HANGUL_JAMO_JONGSUNG_RANGE, c)
-
-		;
-	}
-
-	public static boolean isKorean(String s) {
-		for (int i = 0; i < s.length(); i++) {
-			if (!isKorean(s.charAt(i))) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 }

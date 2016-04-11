@@ -16,6 +16,8 @@ public class NLPPath {
 
 	public static final String WORD_POS_CNT_ILE = DATA_DIR + "word_pos_cnt.txt";
 
+	public static final String WORD_POS_TRANS_CNT_ILE = DATA_DIR + "word_pos_trans_cnt.txt";
+
 	public static final String WORD_CNT_ILE = DATA_DIR + "word_cnt.txt";
 
 	public static final String DICT_SYSTEM_FILE = DATA_DIR + "dic_sys.txt.gz";
@@ -23,5 +25,7 @@ public class NLPPath {
 	public static final String DICT_SYSTEM_TRIE_FILE = DATA_DIR + "dic_sys_trie.ser.gz";
 
 	public static final String DICT_ANALYZED_FILE = DATA_DIR + "dic_anal.txt.gz";
+
+	public static final String POS_TAG_CHECK_FILE = DATA_DIR + "pos_tag_check.txt";
 
 }

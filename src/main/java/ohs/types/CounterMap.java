@@ -310,6 +310,10 @@ public class CounterMap<K, V> implements java.io.Serializable {
 		return counterMap.get(key).keySet();
 	}
 
+	public int sizeOfCounter(K key) {
+		return counterMap.get(key).size();
+	}
+
 	public void normalize() {
 		for (K key : keySet()) {
 			getCounter(key).normalize();

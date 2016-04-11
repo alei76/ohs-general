@@ -21,33 +21,39 @@ import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.ir.medical.general.MIRPath;
 import ohs.types.CounterMap;
+import ohs.utils.Generics;
 
 public class QueryReader {
 
-	public static List<BaseQuery> filter(List<BaseQuery> baseQueries, CounterMap<String, String> relevanceData) {
-		List<BaseQuery> ret = new ArrayList<BaseQuery>();
-		for (int i = 0; i < baseQueries.size(); i++) {
-			BaseQuery q = baseQueries.get(i);
-			if (relevanceData.getCounter(q.getId()).size() > 0) {
-				ret.add(q);
+	public static List<BaseQuery> filter(List<BaseQuery> bqs, CounterMap<String, String> relData) {
+		List<BaseQuery> ret = Generics.newArrayList();
+
+		for (BaseQuery bq : bqs) {
+			if (relData.sizeOfCounter(bq.getId()) > 0) {
+				ret.add(bq);
 			}
 		}
-		System.out.printf("filter out queries which have no relevance judgements [%d -> %d].\n", baseQueries.size(), ret.size());
+		System.out.printf("filter out queries which have no relevance judgements [%d -> %d].\n", bqs.size(), ret.size());
 		return ret;
 	}
 
 	public static void main(String[] args) throws Exception {
 
 		{
-			List<BaseQuery> bqs = readClefEHealthQueries(MIRPath.CLEF_EHEALTH_QUERY_2014_FILE, null);
+			List<BaseQuery> bqs = readClefEHealthQueries(MIRPath.CLEF_EHEALTH_QUERY_2016_FILE, null);
+			System.out.println(bqs.size());
 		}
 
-		{
-			List<BaseQuery> bqs = readTrecGenomicsQueries(MIRPath.TREC_GENOMICS_QUERY_2007_FILE);
+		// {
+		// List<BaseQuery> bqs = readTrecGenomicsQueries(MIRPath.TREC_GENOMICS_QUERY_2007_FILE);
+		//
+		// for (int i = 0; i < bqs.size(); i++) {
+		// System.out.println(bqs.get(i));
+		// }
+		// }
 
-			for (int i = 0; i < bqs.size(); i++) {
-				System.out.println(bqs.get(i));
-			}
+		{
+
 		}
 
 	}
@@ -73,9 +79,39 @@ public class QueryReader {
 			year = 2014;
 		} else if (queryFileName.contains("clef2015")) {
 			year = 2015;
+		} else if (queryFileName.contains("2016")) {
+			year = 2016;
 		}
 
-		if (year == 2015) {
+		if (year == 2016) {
+			nodeList = docElem.getElementsByTagName("query");
+
+			String[] nodeNames = { "id", "title" };
+
+			for (int i = 0; i < nodeList.getLength(); i++) {
+				Element queryElem = (Element) nodeList.item(i);
+
+				String[] values = new String[nodeNames.length];
+
+				for (int j = 0; j < nodeNames.length; j++) {
+					NodeList nodes = queryElem.getElementsByTagName(nodeNames[j]);
+					if (nodes.getLength() > 0) {
+						values[j] = nodes.item(0).getTextContent();
+					}
+				}
+
+				String id = values[0];
+				String dischargeFileName = "";
+				String discharge = "";
+				String title = "";
+				String description = values[1];
+				String profile = "";
+				String narrative = "";
+
+				ClefEHealthQuery cq = new ClefEHealthQuery(id, discharge, title, description, profile, narrative);
+				ret.add(cq);
+			}
+		} else if (year == 2015) {
 			nodeList = docElem.getElementsByTagName("top");
 
 			String[] nodeNames = { "num", "query" };

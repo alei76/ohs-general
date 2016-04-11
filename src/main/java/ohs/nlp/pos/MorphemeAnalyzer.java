@@ -18,48 +18,6 @@ import ohs.utils.StrUtils;
 
 public class MorphemeAnalyzer {
 
-	private SetMap<String, String> analDict;
-
-	private Trie<Character> userDict;
-
-	private Trie<Character> sysDict;
-
-	private void readSystemDict(String fileName) throws Exception {
-		List<String> lines = FileUtils.readLines(fileName);
-
-		sysDict = Trie.newTrie();
-
-		for (String line : lines) {
-			String[] parts = line.split("\t");
-			String word = parts[0];
-			String pos = parts[1];
-
-			String word2 = UnicodeUtils.decomposeToJamo(word);
-
-			sysDict.insert(StrUtils.asCharacters(word2.toCharArray()));
-		}
-
-		sysDict.trimToSize();
-	}
-
-	private void readAnalyzedDict(String fileName) throws Exception {
-		List<String> lines = FileUtils.readLines(fileName);
-
-		analDict = Generics.newSetMap(lines.size());
-
-		for (String line : lines) {
-			String[] parts = line.split("\t");
-			for (int i = 1; i < parts.length; i++) {
-				analDict.put(parts[0], parts[i]);
-			}
-		}
-	}
-
-	public MorphemeAnalyzer() throws Exception {
-		readAnalyzedDict(NLPPath.DICT_ANALYZED_FILE);
-		readSystemDict(NLPPath.DICT_SYSTEM_FILE);
-	}
-
 	public static void main(String[] args) throws Exception {
 		System.out.println("proces begins.");
 
@@ -103,6 +61,17 @@ public class MorphemeAnalyzer {
 		System.out.println("proces ends.");
 	}
 
+	private SetMap<String, String> analDict;
+
+	private Trie<Character> userDict;
+
+	private Trie<Character> sysDict;
+
+	public MorphemeAnalyzer() throws Exception {
+		readAnalyzedDict(NLPPath.DICT_ANALYZED_FILE);
+		readSystemDict(NLPPath.DICT_SYSTEM_FILE);
+	}
+
 	public void analyze(KDocument doc) {
 		for (int i = 0; i < doc.size(); i++) {
 			KSentence sent = doc.getSentence(i);
@@ -141,6 +110,37 @@ public class MorphemeAnalyzer {
 		for (int i = 0; i < ret.length; i++) {
 			ret[i] = Generics.newArrayList();
 		}
+	}
+
+	private void readAnalyzedDict(String fileName) throws Exception {
+		List<String> lines = FileUtils.readLines(fileName);
+
+		analDict = Generics.newSetMap(lines.size());
+
+		for (String line : lines) {
+			String[] parts = line.split("\t");
+			for (int i = 1; i < parts.length; i++) {
+				analDict.put(parts[0], parts[i]);
+			}
+		}
+	}
+
+	private void readSystemDict(String fileName) throws Exception {
+		List<String> lines = FileUtils.readLines(fileName);
+
+		sysDict = Trie.newTrie();
+
+		for (String line : lines) {
+			String[] parts = line.split("\t");
+			String word = parts[0];
+			String pos = parts[1];
+
+			String word2 = UnicodeUtils.decomposeToJamo(word);
+
+			sysDict.insert(StrUtils.asCharacters(word2.toCharArray()));
+		}
+
+		sysDict.trimToSize();
 	}
 
 }

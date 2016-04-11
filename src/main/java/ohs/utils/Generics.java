@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -204,6 +205,15 @@ public class Generics {
 
 	public static <K> Set<K> newIdentityHashSet(int size) {
 		return Collections.newSetFromMap(Generics.<K, Boolean> newIdentityHashMap(size));
+	}
+
+	public static <K> void nullify(Collection<K> c) {
+		Iterator<K> iter = c.iterator();
+		while (iter.hasNext()) {
+			iter.next();
+			iter.remove();
+		}
+		c = null;
 	}
 
 	public static <T> Indexer<T> newIndexer() {
