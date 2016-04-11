@@ -31,9 +31,7 @@ public class VectorMath {
 	}
 
 	public static SparseVector add(Vector[] as) {
-		double[] coefs = new double[as.length];
-		ArrayUtils.setAll(coefs, 1);
-		return addAfterScale(as, coefs);
+		return addAfterScale(as, ArrayUtils.array(as.length, 1));
 	}
 
 	public static void addAfterScale(SparseVector a, Counter<Integer> b, double ca, double cb, Counter<Integer> c) {
@@ -83,13 +81,12 @@ public class VectorMath {
 		}
 	}
 
-	public static SparseVector addAfterScale(Vector[] vs, double[] coefs) {
+	public static SparseVector addAfterScale(Vector[] as, double[] cas) {
 		Counter<Integer> c = new Counter<Integer>();
-		for (int i = 0; i < vs.length; i++) {
-			Vector a = vs[i];
-			double coef = coefs[i];
+		for (int i = 0; i < as.length; i++) {
+			Vector a = as[i];
 			for (int j = 0; j < a.size(); j++) {
-				c.incrementCount(a.indexAtLoc(j), coef * a.valueAtLoc(j));
+				c.incrementCount(a.indexAtLoc(j), cas[i] * a.valueAtLoc(j));
 			}
 		}
 		return VectorUtils.toSparseVector(c);

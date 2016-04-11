@@ -7,11 +7,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import ohs.math.ArrayMath;
 import ohs.math.CommonFuncs;
 import ohs.math.VectorMath;
+import ohs.math.VectorUtils;
 import ohs.matrix.DenseVector;
 import ohs.matrix.SparseVector;
+import ohs.types.Counter;
 import ohs.types.ListMap;
 
 /**
@@ -26,18 +27,43 @@ public class TermWeighting {
 		computeTFIDFs(docs, docFreqs(docs));
 	}
 
-	public static void computeTFIDFs(Collection<SparseVector> docs, DenseVector docFreqs) {
-		System.out.println("compute tfidfs.");
+	public static SparseVector computeAverageVector(Collection<SparseVector> docs) {
+		Counter<Integer> c = Generics.newCounter();
+
 		for (SparseVector doc : docs) {
+			VectorMath.add(doc, c);
+		}
+
+		SparseVector ret = VectorUtils.toSparseVector(c);
+		ret.scale(1f / docs.size());
+		return ret;
+	}
+
+	public static boolean print_log = false;
+
+	public static void print(String log) {
+		System.out.println(log);
+	}
+
+	public static void computeTFIDFs(Collection<SparseVector> docs, DenseVector docFreqs) {
+
+		if (print_log) {
+			print("compute tfidfs.");
+		}
+
+		for (SparseVector doc : docs) {
+			double norm = 0;
 			for (int j = 0; j < doc.size(); j++) {
 				int w = doc.indexAtLoc(j);
 				double cnt = doc.valueAtLoc(j);
 				double doc_freq = docFreqs.value(w);
 				double num_docs = docs.size();
 				double tfidf = tfidf(cnt, num_docs, doc_freq);
+				norm += (tfidf * tfidf);
 				doc.setAtLoc(j, tfidf);
 			}
-			VectorMath.unitVector(doc);
+			norm = Math.sqrt(norm);
+			doc.scale(1f / norm);
 		}
 	}
 

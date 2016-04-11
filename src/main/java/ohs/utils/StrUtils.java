@@ -283,9 +283,9 @@ public class StrUtils {
 		return true;
 	}
 
-	public static String join(String glue, Collection<String> c, int start, int end) {
-		return join(glue, c, start, end);
-	}
+	// public static String join(String glue, Collection<String> c, int start, int end) {
+	// return join(glue, c, start, end);
+	// }
 
 	public static String join(String glue, Iterable<String> a) {
 		return join(glue, a, 0, Integer.MAX_VALUE);
@@ -294,19 +294,29 @@ public class StrUtils {
 	public static String join(String glue, Iterable<String> a, int start, int end) {
 		StringBuffer sb = new StringBuffer();
 
-		Iterator<String> iter = a.iterator();
-		int loc = 0;
-
-		while (iter.hasNext()) {
-			if (loc == end) {
-				break;
-			} else if (loc >= start && loc < end) {
-				if (loc > start) {
+		if (a instanceof List) {
+			List<String> b = (List<String>) a;
+			for (int i = start; i < end; i++) {
+				sb.append(b.get(i));
+				if (i != end - 1) {
 					sb.append(glue);
 				}
-				sb.append(iter.next());
 			}
-			loc++;
+		} else {
+			Iterator<String> iter = a.iterator();
+			int loc = 0;
+
+			while (iter.hasNext()) {
+				if (loc == end) {
+					break;
+				} else if (loc >= start && loc < end) {
+					if (loc > start) {
+						sb.append(glue);
+					}
+					sb.append(iter.next());
+				}
+				loc++;
+			}
 		}
 
 		return sb.toString();

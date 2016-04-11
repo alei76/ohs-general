@@ -68,7 +68,7 @@ public class KeywordClusterer {
 
 	private int[] kwdToCluster;
 
-	private Map<Integer, String> clusterLabel;
+	private Map<Integer, Integer> clusterToLabel;
 
 	public KeywordClusterer(KeywordData kwdData) {
 		this.kwdData = kwdData;
@@ -114,104 +114,74 @@ public class KeywordClusterer {
 		// t.put(cid, clusterToKwds.get(cid));
 		// }
 		//
-		// kwdData.setClusterLabel(clusterLabel);
+		// kwdData.setClusterLabel(clusterToLabel);
 		// kwdData.setClusters(t);
 	}
 
-	private Counter<String>[] computeLabelScores(Set<Integer> kwdids) {
-		int num_langs = 2;
+	private Counter<Integer> computeKeywordScores(Set<Integer> kwdids) {
+		Map<Integer, SparseVector> kwdCents = Generics.newHashMap();
 
-		Counter<String>[] ret = new Counter[num_langs];
-		CounterMap<Integer, Integer>[] bigramProbData = new CounterMap[2];
-		Counter<Integer>[] unigramProbData = new Counter[2];
-
-		for (int i = 0; i < bigramProbData.length; i++) {
-			bigramProbData[i] = Generics.newCounterMap();
-			unigramProbData[i] = Generics.newCounter();
-			ret[i] = Generics.newCounter();
-		}
+		Indexer<String> wordIndexer = Generics.newIndexer();
 
 		for (int kwdid : kwdids) {
 			String kwdStr = kwdIndexer.getObject(kwdid);
-			String[] two = normalize(kwdStr.split("\t"));
 
-			int kw_freq = kwdData.getKeywordFreqs()[kwdid];
+			Counter<Integer> cc = Generics.newCounter();
+			String[] two = kwdStr.split("\t");
 
 			for (int i = 0; i < two.length; i++) {
 				String key = two[i];
 
-				if (key.length() < 2) {
-					continue;
+				Counter<String> c = Generics.newCounter();
+
+				if (i == 0) {
+					key = normalize(key);
+
+					if (key.length() > 0) {
+						c.incrementCount(key.charAt(0) + "", 1);
+					}
+
+					if (key.length() > 1) {
+						for (int j = 1; j < key.length(); j++) {
+							c.incrementCount(key.substring(j - 1, j), 1);
+							c.incrementCount(key.charAt(j) + "", 1);
+						}
+					}
+				} else {
+					List<String> words = StrUtils.splitPunctuations(key.toLowerCase());
+
+					if (words.size() > 0) {
+						c.incrementCount(words.get(0) + "", 1);
+					}
+
+					if (words.size() > 1) {
+						for (int j = 1; j < words.size(); j++) {
+							c.incrementCount(StrUtils.join("_", words, j - 1, j + 1), 1);
+							c.incrementCount(words.get(j), 1);
+						}
+					}
 				}
 
-				unigramProbData[i].incrementCount((int) key.charAt(0), kw_freq);
-
-				for (int j = 1; j < key.length(); j++) {
-					int ch1 = key.charAt(j - 1);
-					int ch2 = key.charAt(j);
-					bigramProbData[i].incrementCount(ch1, ch2, kw_freq);
-					unigramProbData[i].incrementCount(ch2, kw_freq);
+				for (String word : c.keySet()) {
+					cc.incrementCount(wordIndexer.getIndex(word), c.getCount(word));
 				}
 			}
+			// cc.scale(kwd_freq);
+
+			kwdCents.put(kwdid, VectorUtils.toSparseVector(cc));
 		}
 
-		for (int i = 0; i < bigramProbData.length; i++) {
-			bigramProbData[i].normalize();
-			unigramProbData[i].normalize();
+		TermWeighting.computeTFIDFs(kwdCents.values());
+
+		SparseVector avgCent = TermWeighting.computeAverageVector(kwdCents.values());
+
+		Counter<Integer> ret = Generics.newCounter(kwdids.size());
+
+		for (int kwdid : kwdCents.keySet()) {
+			int kwd_freq = kwdData.getKeywordFreqs()[kwdid];
+			ret.setCount(kwdid, kwd_freq * VectorMath.dotProduct(avgCent, kwdCents.get(kwdid), false));
 		}
-
-		for (int kwdid : kwdids) {
-			String kwdStr = kwdIndexer.getObject(kwdid);
-			String[] two = kwdStr.split("\t");
-			String korKwd = two[0];
-			String engKwd = two[1];
-
-			int kw_freq = kwdData.getKeywordFreqs()[kwdid];
-
-			for (int i = 0; i < two.length; i++) {
-				String key = normalize(two[i]);
-
-				if (key.length() > 0 && !StrUtils.isUppercase(two[i])) {
-					double log_score = computeLoglikelihood(key, bigramProbData[i], unigramProbData[i]);
-					ret[i].setCount(two[i], log_score);
-				}
-			}
-		}
-
-		for (int i = 0; i < ret.length; i++) {
-			Counter<String> c = ret[i];
-			if (c.size() > 0) {
-				double max = c.max();
-				double score_sum = 0;
-				for (String kwd : c.keySet()) {
-					double score = c.getCount(kwd);
-					score = Math.exp(score - max);
-					c.setCount(kwd, score);
-					score_sum += score;
-				}
-				c.scale(1f / score_sum);
-			} else {
-				c.setCount("", 1);
-			}
-		}
-		return ret;
-	}
-
-	private double computeLoglikelihood(String key, CounterMap<Integer, Integer> bigramProbs, Counter<Integer> unigramProbs) {
-		double ret = 0;
-
-		for (int i = 1; i < key.length(); i++) {
-			int ch1 = key.charAt(i - 1);
-			int ch2 = key.charAt(i);
-			double prob1 = bigramProbs.getCount(ch1, ch2);
-			double prob2 = unigramProbs.getCount(ch2);
-			double prob = ArrayMath.addAfterScale(prob1, 0.5, prob2);
-
-			if (prob > 0) {
-				ret += Math.log(prob);
-			}
-		}
-
+		ret.normalize();
 		return ret;
 	}
 
@@ -268,87 +238,6 @@ public class KeywordClusterer {
 			}
 		}
 		return hasUsed;
-	}
-
-	private void matchApproxTwoLanguages() {
-		System.out.println("match approx two languages.");
-
-		int old_size = clusterToKwds.size();
-
-		Indexer<String> keyIndexer = Generics.newIndexer();
-		SetMap<Integer, Integer> keyToClusters = Generics.newSetMap();
-
-		for (Entry<Integer, Set<Integer>> e : clusterToKwds.getEntrySet()) {
-			int cid = e.getKey();
-			Set<Integer> kwdids = e.getValue();
-
-			String kwdStr = kwdIndexer.getObject(cid);
-			String[] two = normalize(kwdStr.split("\t"));
-			String korKey = two[0];
-			String engKey = two[1];
-
-			if (korKey.length() == 0 || engKey.length() == 0) {
-				continue;
-			}
-
-			String key = StrUtils.join("\t", two);
-			int kid = keyIndexer.getIndex(key);
-
-			keyToClusters.put(kid, cid);
-		}
-
-		for (int kid : keyToClusters.keySet()) {
-			List<Integer> cids = Generics.newArrayList(keyToClusters.get(kid));
-
-			if (cids.size() < 2) {
-				continue;
-			}
-
-			Map<Integer, SparseVector> cents = Generics.newHashMap();
-			Counter<Integer> cc = Generics.newCounter();
-
-			for (int cid : cids) {
-				for (int kwdid : clusterToKwds.get(cid)) {
-					int kwd_freq = kwdData.getKeywordFreqs()[kwdid];
-					String kwdStr = kwdIndexer.getObject(kwdid);
-					String[] two = normalize(kwdStr.split("\t"));
-					String korKey = two[0];
-					String engKey = two[1];
-
-					Counter<Integer> c = Generics.newCounter();
-
-					for (int k = 0; k < engKey.length(); k++) {
-						c.incrementCount((int) engKey.charAt(k), kwd_freq);
-					}
-
-					cc.incrementAll(c);
-
-					SparseVector sv = VectorUtils.toSparseVector(c);
-					VectorMath.unitVector(sv);
-					cents.put(cid, sv);
-				}
-			}
-
-			SparseVector avgCent = VectorUtils.toSparseVector(cc);
-			VectorMath.unitVector(avgCent);
-
-			Counter<Integer> cosines = Generics.newCounter();
-
-			for (int cid : cents.keySet()) {
-				double cosine = VectorMath.dotProduct(avgCent, cents.get(cid), false);
-				if (cosine >= 0.9) {
-					cosines.setCount(cid, cosine);
-				}
-			}
-
-			if (cosines.size() > 1) {
-				merge(cosines.keySet());
-			}
-		}
-
-		int new_size = clusterToKwds.size();
-
-		System.out.printf("[%d -> %d clusters]\n", old_size, new_size);
 	}
 
 	private void matchContextualLanguage(boolean isEnglish) {
@@ -1096,15 +985,39 @@ public class KeywordClusterer {
 	private void selectClusterLabels() {
 		System.out.println("select cluster labels.");
 
-		clusterLabel = Generics.newHashMap();
+		clusterToLabel = Generics.newHashMap();
 
 		for (int cid : clusterToKwds.keySet()) {
-			Set<Integer> kwdids = clusterToKwds.get(cid);
-			Counter<String>[] scoreData = computeLabelScores(kwdids);
-			String korLabel = scoreData[0].argMax();
-			String engLabel = scoreData[1].argMax();
+			Counter<Integer> kwdScores = computeKeywordScores(clusterToKwds.get(cid));
 
-			clusterLabel.put(cid, korLabel + "\t" + engLabel);
+			List<Integer> kwdids = kwdScores.getSortedKeys();
+
+			int label = -1;
+
+			for (int i = 0; i < kwdids.size(); i++) {
+				int kwdid = kwdids.get(i);
+				int kwd_freq = kwdData.getKeywordFreqs()[kwdid];
+
+				String kwdStr = kwdIndexer.get(kwdid);
+				String[] two = kwdStr.split("\t");
+				String engKwd = two[1];
+
+				if (kwd_freq < 2) {
+					continue;
+				}
+
+				if (!StrUtils.isUppercase(normalize(engKwd))) {
+					label = kwdid;
+					break;
+				}
+			}
+
+			if (label == -1) {
+				clusterToLabel.put(cid, kwdScores.argMax());
+			} else {
+				clusterToLabel.put(cid, label);
+			}
+
 		}
 	}
 
@@ -1136,11 +1049,9 @@ public class KeywordClusterer {
 
 		if (sortAphabetically) {
 			List<String> keys = Generics.newArrayList();
-			Map<Integer, Integer> map = Generics.newHashMap();
 
 			for (int cid : clusterToKwds.keySet()) {
-				String kwd = kwdIndexer.getObject(cid);
-				keys.add(kwd);
+				keys.add(kwdIndexer.getObject(cid));
 			}
 
 			Collections.sort(keys);
@@ -1177,11 +1088,14 @@ public class KeywordClusterer {
 
 		for (int i = 0, n = 1; i < cids.size(); i++) {
 			int cid = cids.get(i);
+			int label = clusterToLabel.get(cid);
+			String kwdStr = kwdIndexer.getObject(label);
 
 			StringBuffer sb = new StringBuffer();
 			sb.append(String.format("No:\t%d", n));
 			sb.append(String.format("\nID:\t%d", cid));
-			sb.append(String.format("\nLabel:\t%s", clusterLabel.get(cid)));
+
+			sb.append(String.format("\nLabel:\n%d\t%s", label, kwdStr));
 			sb.append(String.format("\nKeywords:\t%d", clusterToKwds.get(cid).size()));
 
 			Counter<Integer> c = Generics.newCounter();
