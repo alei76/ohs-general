@@ -170,7 +170,8 @@ public class KeywordClusterer {
 
 			for (int i = 0; i < two.length; i++) {
 				String key = normalize(two[i]);
-				if (key.length() > 0) {
+
+				if (key.length() > 0 && !StrUtils.isUppercase(two[i])) {
 					double log_score = computeLoglikelihood(key, bigramProbData[i], unigramProbData[i]);
 					ret[i].setCount(two[i], log_score);
 				}
@@ -705,21 +706,25 @@ public class KeywordClusterer {
 				for (int kwdid : kwdids) {
 					String kwdStr = kwdIndexer.get(kwdid);
 					String[] two = kwdStr.split("\t");
-					String korKwd = normalize(two[0]);
-					String engKwd = normalizeEnglish(two[1]);
+					String korKey = normalize(two[0]);
+					String engKey = normalizeEnglish(two[1]);
 					int kwd_freq = kwdData.getKeywordFreqs()[kwdid];
+
+					if (!UnicodeUtils.isKorean(korKey)) {
+						continue;
+					}
 
 					// String s = UnicodeUtils.decomposeToJamo(korKwd);
 
-					for (char c : korKwd.toCharArray()) {
+					for (char c : korKey.toCharArray()) {
 						korCharCnts.incrementCount(c + "", kwd_freq);
 					}
 
-					for (Gram g : gg.generateQGrams(korKwd)) {
+					for (Gram g : gg.generateQGrams(korKey)) {
 						korGramCnts.incrementCount(g.getString(), kwd_freq);
 					}
 
-					for (String word : engKwd.split(" ")) {
+					for (String word : engKey.split(" ")) {
 						engWordCnts.incrementCount(word, kwd_freq);
 					}
 				}

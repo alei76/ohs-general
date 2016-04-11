@@ -30,6 +30,10 @@ public class StrUtils {
 
 	private static Pattern p = Pattern.compile("\\d+[\\d,\\.]*");
 
+	public static int absLengthDiff(String a, String b) {
+		return Math.abs(lengthDiff(a, b));
+	}
+
 	public static String[] asArray(Collection<String> a) {
 		return a.toArray(new String[a.size()]);
 	}
@@ -85,14 +89,6 @@ public class StrUtils {
 		for (int i = 0; i < a.length; i++) {
 			b[i] = a[i];
 		}
-	}
-
-	public static int absLengthDiff(String a, String b) {
-		return Math.abs(lengthDiff(a, b));
-	}
-
-	public static int lengthDiff(String a, String b) {
-		return a.length() - b.length();
 	}
 
 	/**
@@ -269,6 +265,24 @@ public class StrUtils {
 		}
 	}
 
+	public static boolean isLowercase(String s) {
+		for (int i = 0; i < s.length(); i++) {
+			if (!Character.isLowerCase(s.charAt(i))) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static boolean isUppercase(String s) {
+		for (int i = 0; i < s.length(); i++) {
+			if (!Character.isUpperCase(s.charAt(i))) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public static String join(String glue, Collection<String> c, int start, int end) {
 		return join(glue, c, start, end);
 	}
@@ -376,6 +390,10 @@ public class StrUtils {
 		for (int i = 0; i < a.length; i++) {
 			c[i] = a[i] + glue + b[i];
 		}
+	}
+
+	public static int lengthDiff(String a, String b) {
+		return a.length() - b.length();
 	}
 
 	public static void main(String[] args) throws Exception {
