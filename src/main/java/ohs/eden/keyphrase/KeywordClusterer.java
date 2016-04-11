@@ -378,7 +378,7 @@ public class KeywordClusterer {
 					String kwdStr = kwdIndexer.get(kwdid);
 					String[] two = kwdStr.split("\t");
 					String korKwd = normalize(two[0]);
-					String engKwd = normalizeEnglish(two[1]);
+					String engKwd = normalizeEnglish(two[1].replaceAll("[\\p{Punct}\\s]+", ""));
 
 					int kwd_freq = kwdData.getKeywordFreqs()[kwdid];
 
@@ -387,7 +387,7 @@ public class KeywordClusterer {
 					}
 				}
 
-				if (engWordCnts.size() > 0) {
+				if (engWordCnts.size() > 1) {
 					Set<Integer> ws = Generics.newHashSet();
 
 					for (int w : wordIndexer.getIndexes(engWordCnts.keySet())) {
