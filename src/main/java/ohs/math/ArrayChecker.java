@@ -51,6 +51,66 @@ public class ArrayChecker {
 		return ret;
 	}
 
+	public static boolean isApproxEqual(double[] a, double[] b, double tolerance) {
+		if (!isEqualDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		double diff_sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			diff_sum += Math.abs(a[i] - b[i]);
+			if (diff_sum >= tolerance) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static boolean isApproxEqual(double[][] a, double[][] b, double tolerance) {
+		if (!isEqualDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		double diff_sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			for (int j = 0; j < a[i].length; j++) {
+				diff_sum += Math.abs(a[i][j] - b[i][j]);
+				if (diff_sum >= tolerance) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	public static boolean isApproxEqual(int[][] a, int[][] b, int tolerance) {
+		if (!isEqualDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		double diff_sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			for (int j = 0; j < a[i].length; j++) {
+				diff_sum += Math.abs(a[i][j] - b[i][j]);
+				if (diff_sum >= tolerance) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	public static boolean isApproxEqual(int[] a, int[] b, int tolerance) {
+		if (!isEqualDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		int diff_sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			diff_sum += Math.abs(a[i] - b[i]);
+			if (diff_sum >= tolerance) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	/**
 	 * 
 	 * A system of linear equations has either
@@ -135,14 +195,131 @@ public class ArrayChecker {
 		if (!isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
-
 		for (int i = 0; i < a.length; i++) {
 			if (a[i] != b[i]) {
 				return false;
 			}
 		}
+		return true;
+	}
+
+	public static boolean isEqual(double[][] a, double[][] b) {
+		if (!isEqualDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+
+		for (int i = 0; i < a.length; i++) {
+			if (!isEqual(a[i], b[i])) {
+				return false;
+			}
+		}
 
 		return true;
+	}
+
+	public static boolean isEqual(int[][] a, int[][] b) {
+		if (!isEqualDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		for (int i = 0; i < a.length; i++) {
+			if (!isEqual(a[i], b[i])) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static boolean isEqual(int[] a, int[] b) {
+		if (!isEqualDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		for (int i = 0; i < a.length; i++) {
+			if (a[i] != b[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static boolean isEqualColumnDim(double[][] a, double[] b) {
+		int aRowDim = a.length;
+		int aColDim = a[0].length;
+		int bDim = b.length;
+
+		if (aColDim == bDim) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static boolean isEqualDim(double[] a, double[] b) {
+		return a.length == b.length ? true : false;
+	}
+
+	public static boolean isEqualDim(double[] a, double[] b, double[] c) {
+		return isEqualDim(a, b) && isEqualDim(b, c) ? true : false;
+	}
+
+	public static boolean isEqualDim(double[][] a, double[][] b) {
+		int aRowDim = a.length;
+		int aColDim = a[0].length;
+		int bRowDim = b.length;
+		int bColDim = b[0].length;
+
+		if (aRowDim == bRowDim && aColDim == bColDim) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static boolean isEqualDim(int[][] a, int[][] b) {
+		int aRowDim = a.length;
+		int aColDim = a[0].length;
+		int bRowDim = b.length;
+		int bColDim = b[0].length;
+
+		if (aRowDim == bRowDim && aColDim == bColDim) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static boolean isEqualDim(double[][] a, double[][] b, double[][] c) {
+		return isEqualDim(a, b) && isEqualDim(b, c) ? true : false;
+	}
+
+	public static boolean isEqualDim(int[] a, double[] b) {
+		return a.length == b.length ? true : false;
+	}
+
+	public static boolean isEqualDim(int[] a, int[] b) {
+		return a.length == b.length ? true : false;
+	}
+
+	public static boolean isEqualRowDim(double[][] a, double[] b) {
+		int aRowDim = a.length;
+		int aColDim = a[0].length;
+		int bDim = b.length;
+
+		if (aRowDim == bDim) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static boolean isEqualRowDim(double[][] a, double[][] b) {
+		int aRowDim = a.length;
+		int bRowDim = b.length;
+
+		if (aRowDim == bRowDim) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -626,74 +803,6 @@ public class ArrayChecker {
 		}
 
 		return true;
-	}
-
-	public static boolean isEqualColumnDim(double[][] a, double[] b) {
-		int aRowDim = a.length;
-		int aColDim = a[0].length;
-		int bDim = b.length;
-
-		if (aColDim == bDim) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public static boolean isEqualDim(double[] a, double[] b) {
-		return a.length == b.length ? true : false;
-	}
-
-	public static boolean isEqualDim(double[] a, double[] b, double[] c) {
-		return isEqualDim(a, b) && isEqualDim(b, c) ? true : false;
-	}
-
-	public static boolean isEqualDim(double[][] a, double[][] b) {
-		int aRowDim = a.length;
-		int aColDim = a[0].length;
-		int bRowDim = b.length;
-		int bColDim = b[0].length;
-
-		if (aRowDim == bRowDim && aColDim == bColDim) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public static boolean isEqualDim(double[][] a, double[][] b, double[][] c) {
-		return isEqualDim(a, b) && isEqualDim(b, c) ? true : false;
-	}
-
-	public static boolean isEqualDim(int[] a, double[] b) {
-		return a.length == b.length ? true : false;
-	}
-
-	public static boolean isEqualDim(int[] a, int[] b) {
-		return a.length == b.length ? true : false;
-	}
-
-	public static boolean isEqualRowDim(double[][] a, double[] b) {
-		int aRowDim = a.length;
-		int aColDim = a[0].length;
-		int bDim = b.length;
-
-		if (aRowDim == bDim) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public static boolean isEqualRowDim(double[][] a, double[][] b) {
-		int aRowDim = a.length;
-		int bRowDim = b.length;
-
-		if (aRowDim == bRowDim) {
-			return true;
-		} else {
-			return false;
-		}
 	}
 
 	/**

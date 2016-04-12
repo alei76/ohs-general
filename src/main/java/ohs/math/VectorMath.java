@@ -30,6 +30,11 @@ public class VectorMath {
 		addAfterScale(a, b, 1, 1, c);
 	}
 
+	public static void softmax(Vector a) {
+		double sum = ArrayMath.softmax(a.values(), a.values());
+		a.setSum(sum);
+	}
+
 	public static SparseVector add(Vector[] as) {
 		return addAfterScale(as, ArrayUtils.array(as.length, 1));
 	}

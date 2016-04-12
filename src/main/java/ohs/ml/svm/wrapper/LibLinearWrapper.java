@@ -1,14 +1,17 @@
 package ohs.ml.svm.wrapper;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.ui.Model;
-
+import de.bwaldvogel.liblinear.Feature;
+import de.bwaldvogel.liblinear.FeatureNode;
+import de.bwaldvogel.liblinear.Linear;
+import de.bwaldvogel.liblinear.Model;
 import ohs.io.FileUtils;
+import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
@@ -20,137 +23,126 @@ public class LibLinearWrapper implements Serializable {
 
 	private static final long serialVersionUID = -3273222430839071709L;
 
-	public static LibLinearWrapper read(String fileName) throws Exception {
+	public void read(String fileName) throws Exception {
 		System.out.printf("read [%s]\n", fileName);
 
-		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
+		BufferedReader br = FileUtils.openBufferedReader(fileName);
 
-		Indexer<String> labelIndexer = FileUtils.readStrIndexer(ois);
-		Indexer<String> featIndexer = FileUtils.readStrIndexer(ois);
+		labelIndexer = FileUtils.readStrIndexer(br);
+		featIndexer = FileUtils.readStrIndexer(br);
+		model = Linear.loadModel(br);
 
-		SolverType solver = SolverType.getById(ois.readInt());
-		int nr_class = ois.readInt();
-		int[] labels = new int[nr_class];
+		br.close();
 
-		for (int i = 0; i < labels.length; i++) {
-			labels[i] = ois.readInt();
+	}
+
+	public static Feature[] toFeatureNodes(SparseVector x, int num_feats, double bias) {
+		Feature[] fs = new Feature[bias >= 0 ? x.size() + 1 : x.size()];
+
+		for (int j = 0; j < x.size(); j++) {
+			int index = x.indexAtLoc(j);
+			double value = x.valueAtLoc(j);
+			fs[j] = new FeatureNode(index + 1, value);
 		}
 
-		int nr_feature = ois.readInt();
-		double bias = ois.readDouble();
-		double[] w = FileUtils.readDoubleArray(ois);
-
-		Model model = new Model();
-		model.solverType = solver;
-		model.nr_class = nr_class;
-		model.label = labels;
-		model.nr_feature = nr_feature;
-		model.w = w;
-
-		ois.close();
-
-		return new LibLinearWrapper(model, labelIndexer, featIndexer);
+		if (bias >= 0) {
+			fs[fs.length - 1] = new FeatureNode(num_feats, bias);
+		}
+		return fs;
 	}
 
 	private Model model;
 
 	private Indexer<String> labelIndexer;
 
-	private Indexer<String> featureIndexer;
+	private Indexer<String> featIndexer;
 
-	public LibLinearWrapper(Model model, Indexer<String> labelIndexer, Indexer<String> featureIndexer) {
-		this.model = model;
-		this.labelIndexer = labelIndexer;
-		this.featureIndexer = featureIndexer;
+	public LibLinearWrapper() {
+
 	}
 
-	public String evalute(List<SparseVector> testData) {
-		SparseVector label_correct = new SparseVector(ArrayUtils.copy(model.getLabels()));
+	public LibLinearWrapper(Model model, Indexer<String> labelIndexer, Indexer<String> featIndexer) {
+		this.model = model;
+		this.labelIndexer = labelIndexer;
+		this.featIndexer = featIndexer;
+	}
 
-		SparseVector label_answer = label_correct.copy();
-		SparseVector label_predict = label_correct.copy();
+	public String evalute(List<SparseVector> xs) {
+		SparseVector correct = new SparseVector(ArrayUtils.copy(model.getLabels()));
+		correct.sortByIndex();
 
-		for (int i = 0; i < testData.size(); i++) {
-			SparseVector query = testData.get(i);
-			SparseVector label_score = score(query);
-			int predictId = label_score.argMax();
-			int answerId = query.label();
+		SparseVector anss = correct.copy();
+		SparseVector preds = correct.copy();
 
-			if (predictId == answerId) {
-				label_correct.increment(answerId, 1);
+		for (int i = 0; i < xs.size(); i++) {
+			SparseVector x = xs.get(i);
+			SparseVector scores = score(x);
+			int pred = scores.argMax();
+			int ans = x.label();
+
+			if (pred == ans) {
+				correct.increment(ans, 1);
 			}
 
-			label_answer.increment(answerId, 1);
-			label_predict.increment(predictId, 1);
+			anss.increment(ans, 1);
+			preds.increment(pred, 1);
 		}
 
-		return TopicEval.evalute(null, label_answer, label_predict, label_correct);
+		return TopicEval.evalute(null, anss, preds, correct);
 	}
 
 	public Indexer<String> featureIndexer() {
-		return featureIndexer;
+		return featIndexer;
 	}
 
 	public Indexer<String> labelIndexer() {
 		return labelIndexer;
 	}
 
-	public Counter<String> score(Counter<String> query) {
-		return VectorUtils.toCounter(score(VectorUtils.toSparseVector(query, featureIndexer)), labelIndexer);
+	public Counter<String> score(Counter<String> x) {
+		SparseVector sv = VectorUtils.toSparseVector(x, featIndexer, false);
+		VectorMath.unitVector(sv);
+
+		return VectorUtils.toCounter(score(sv), labelIndexer);
 	}
 
-	public List<SparseVector> score(List<SparseVector> queries) {
+	public List<SparseVector> score(List<SparseVector> xs) {
 		List<SparseVector> ret = new ArrayList<SparseVector>();
-		for (int i = 0; i < queries.size(); i++) {
-			SparseVector query = queries.get(i);
-			SparseVector label_score = score(query);
-			label_score.setLabel(query.label());
-			ret.add(label_score);
+		for (int i = 0; i < xs.size(); i++) {
+			SparseVector x = xs.get(i);
+			SparseVector scores = score(x);
+			scores.setLabel(x.label());
+			ret.add(scores);
 		}
 		return ret;
 	}
 
-	public SparseVector score(SparseVector query) {
-		Feature[] input = new Feature[query.size()];
-
-		for (int i = 0; i < query.size(); i++) {
-			int index = query.indexAtLoc(i) + 1;
-			double value = query.valueAtLoc(i);
-			assert index >= 0;
-			input[i] = new FeatureNode(index + 1, value);
-		}
+	public SparseVector score(SparseVector x) {
 
 		int[] labels = model.getLabels();
 		double[] prob_estimates = new double[labels.length];
+		Feature[] fs = toFeatureNodes(x, model.getNrFeature(), model.getBias());
 
 		// Linear.predictProbability(model, input, prob_estimates);
 
-		Linear.predictValues(model, input, prob_estimates);
+		Linear.predictValues(model, fs, prob_estimates);
 
-		SparseVector ret = new SparseVector(labels, prob_estimates, query.label());
-		VectorMath.normalizeBySigmoid(ret);
+		SparseVector ret = new SparseVector(labels, prob_estimates, x.label());
+		VectorMath.softmax(ret);
 
 		return ret;
 	}
 
 	public void write(String fileName) throws Exception {
 		System.out.printf("write to [%s].\n", fileName);
-		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 
-		FileUtils.writeStrIndexer(oos, labelIndexer);
-		FileUtils.writeStrIndexer(oos, featureIndexer);
+		BufferedWriter bw = FileUtils.openBufferedWriter(fileName);
 
-		oos.writeInt(model.solverType.getId());
-		oos.writeInt(model.getNrClass());
+		FileUtils.writeStrIndexer(bw, labelIndexer);
+		FileUtils.writeStrIndexer(bw, featIndexer);
 
-		for (int i = 0; i < model.getNrClass(); i++) {
-			oos.writeInt(model.getLabels()[i]);
-		}
+		model.save(bw);
 
-		oos.writeInt(model.getNrFeature());
-		oos.writeDouble(model.getBias());
-
-		FileUtils.writeStrCollection(oos, model.getFeatureWeights());
-		oos.close();
+		bw.close();
 	}
 }

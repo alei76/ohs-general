@@ -446,15 +446,6 @@ public class ArrayUtils {
 		System.out.println("process begins.");
 
 		{
-			int[] indexes = arrayRange(10);
-
-			double[] props = new double[] { 3, 3, 3 };
-			ArrayMath.normalize(props);
-
-			splitInOrder(indexes, props);
-		}
-
-		{
 			int[] dims = { 3, 2, 3 };
 			int[] indexes = { 0, 1, 2 };
 
@@ -905,102 +896,6 @@ public class ArrayUtils {
 	public static void sort(double[] a) {
 		int[] b = arrayRange(a.length);
 		quickSort(b, a, false);
-	}
-
-	public static List<Integer>[] split(List<Integer> indexList, int num_folds) {
-		double[] proportions = new double[num_folds];
-		for (int i = 0; i < proportions.length; i++) {
-			proportions[i] = 1f / proportions.length;
-		}
-		return splitInOrder(indexList, proportions);
-	}
-
-	public static List<Integer>[] splitInOrder(int[] indexes, double[] proportions) {
-		// double[] fold_prop = copy(proportions);
-		// ArrayMath.normalize(fold_prop);
-
-		double[] fold_maxIndex = copy(proportions);
-		ArrayMath.normalize(fold_maxIndex);
-
-		ArrayMath.cumulate(fold_maxIndex, fold_maxIndex);
-
-		List<Integer>[] ret = new List[fold_maxIndex.length];
-
-		int[][] splits = new int[fold_maxIndex.length][];
-
-		for (int i = 0; i < 3; i++) {
-			shuffle(indexes);
-		}
-
-		for (int i = 0; i < fold_maxIndex.length; i++) {
-			ret[i] = new ArrayList<Integer>();
-			double value = fold_maxIndex[i];
-			double maxIndex = Math.rint(value * indexes.length);
-			fold_maxIndex[i] = maxIndex;
-		}
-
-		for (int i = 0, j = 0; i < indexes.length; i++) {
-			// This gives a slight bias toward putting an extra instance in the
-			// last InstanceList.
-
-			int maxIndex = (int) fold_maxIndex[j];
-
-			if (i >= maxIndex && j < ret.length) {
-				j++;
-			}
-
-			ret[j].add(indexes[i]);
-		}
-		return ret;
-	}
-
-	public static List<Integer>[] splitInOrder(List<Integer> indexList, double[] proportions) {
-		double[] fold_prop = copy(proportions);
-		ArrayMath.normalize(fold_prop);
-
-		double[] fold_maxIndex = copy(fold_prop);
-
-		ArrayMath.cumulate(fold_maxIndex, fold_maxIndex);
-
-		List<Integer>[] ret = new List[fold_prop.length];
-
-		for (int i = 0; i < 3; i++) {
-			Collections.shuffle(indexList);
-		}
-
-		for (int i = 0; i < fold_maxIndex.length; i++) {
-			ret[i] = new ArrayList<Integer>();
-			double value = fold_maxIndex[i];
-			double maxIndex = Math.rint(value * indexList.size());
-			fold_maxIndex[i] = maxIndex;
-		}
-
-		for (int i = 0, j = 0; i < indexList.size(); i++) {
-			// This gives a slight bias toward putting an extra instance in the
-			// last InstanceList.
-
-			double maxIndex = fold_maxIndex[j];
-
-			if (i >= maxIndex && j < ret.length) {
-				j++;
-			}
-
-			ret[j].add(indexList.get(i));
-		}
-		return ret;
-	}
-
-	public static List<Integer>[] splitInOrder(List<Integer> indexList, int[] counts) {
-		List<Integer>[] ret = new List[counts.length];
-		int idx = 0;
-		for (int num = 0; num < counts.length; num++) {
-			ret[num] = new ArrayList<Integer>();
-			for (int i = 0; i < counts[num]; i++) {
-				ret[num].add(indexList.get(idx)); // Transfer weights?
-				idx++;
-			}
-		}
-		return ret;
 	}
 
 	public static void swap(double[] x, int i, int j) {

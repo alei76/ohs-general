@@ -2,8 +2,13 @@ package ohs.ml.svm.wrapper;
 
 import java.util.List;
 
-import org.springframework.ui.Model;
-
+import de.bwaldvogel.liblinear.Feature;
+import de.bwaldvogel.liblinear.FeatureNode;
+import de.bwaldvogel.liblinear.Linear;
+import de.bwaldvogel.liblinear.Model;
+import de.bwaldvogel.liblinear.Parameter;
+import de.bwaldvogel.liblinear.Problem;
+import de.bwaldvogel.liblinear.SolverType;
 import ohs.matrix.SparseVector;
 import ohs.types.Indexer;
 
@@ -53,10 +58,10 @@ public class LibLinearTrainer {
 		this.param = param;
 	}
 
-	public LibLinearWrapper train(Indexer<String> labelIndexer, Indexer<String> featureIndexer, List<SparseVector> trainData) {
+	public LibLinearWrapper train(Indexer<String> labelIndexer, Indexer<String> featIndexer, List<SparseVector> xs) {
 		Problem prob = new Problem();
-		prob.l = trainData.size();
-		prob.n = featureIndexer.size() + 1;
+		prob.l = xs.size();
+		prob.n = featIndexer.size() + 1;
 		prob.y = new double[prob.l];
 		prob.x = new Feature[prob.l][];
 		prob.bias = -1;
@@ -65,30 +70,15 @@ public class LibLinearTrainer {
 			prob.n++;
 		}
 
-		for (int i = 0; i < trainData.size(); i++) {
-			SparseVector x = trainData.get(i);
-
-			Feature[] input = new Feature[prob.bias > 0 ? x.size() + 1 : x.size()];
-
-			for (int j = 0; j < x.size(); j++) {
-				int index = x.indexAtLoc(j) + 1;
-				double value = x.valueAtLoc(j);
-
-				assert index >= 0;
-
-				input[j] = new FeatureNode(index + 1, value);
-			}
-
-			if (prob.bias >= 0) {
-				input[input.length - 1] = new FeatureNode(prob.n, prob.bias);
-			}
-
-			prob.x[i] = input;
+		for (int i = 0; i < xs.size(); i++) {
+			SparseVector x = xs.get(i);
+			prob.x[i] = LibLinearWrapper.toFeatureNodes(x, prob.n, prob.bias);
 			prob.y[i] = x.label();
 		}
 
 		Model model = Linear.train(prob, param);
 
-		return new LibLinearWrapper(model, labelIndexer, featureIndexer);
+		return new LibLinearWrapper(model, labelIndexer, featIndexer);
 	}
+
 }

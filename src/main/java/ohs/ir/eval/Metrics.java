@@ -8,12 +8,12 @@ import ohs.types.Counter;
 
 public class Metrics {
 
-	public static double averagePrecisionAtN(List<String> docIds, int n, Counter<String> docRels) {
+	public static <E> double averagePrecisionAtN(List<E> docIds, int n, Counter<E> docRels) {
 		double num_relevant_docs = 0;
 		double ret = 0;
 
 		for (int i = 0; i < docIds.size() && i < n; i++) {
-			String docId = docIds.get(i);
+			E docId = docIds.get(i);
 			double relevance = docRels.getCount(docId);
 
 			if (relevance > 0) {
@@ -30,7 +30,7 @@ public class Metrics {
 		return ret;
 	}
 
-	public static double binaryPreference(List<String> docIds, Counter<String> docRels) {
+	public static <E> double binaryPreference(List<E> docIds, Counter<E> docRels) {
 		return binaryPreference(docIds, docRels, 0);
 	}
 
@@ -40,17 +40,19 @@ public class Metrics {
 	 * international conference on Research and development in information retrieval - SIGIR ’04 (p. 25). New York, New York, USA: ACM
 	 * Press. doi:10.1145/1008992.1009000
 	 * 
+	 * @param <E>
+	 * 
 	 * @param docIds
 	 * @param docRels
 	 * @param num_pseudo_irrelevant
 	 * @return
 	 */
-	private static double binaryPreference(List<String> docIds, Counter<String> docRels, double num_pseudo_irrelevant) {
+	private static <E> double binaryPreference(List<E> docIds, Counter<E> docRels, double num_pseudo_irrelevant) {
 		double num_relevant = 0;
 		Counter<Integer> irrelevantCounts = new Counter<Integer>();
 
 		for (int r = 0; r < docIds.size(); r++) {
-			String docId = docIds.get(r);
+			E docId = docIds.get(r);
 			double relevance = docRels.getCount(docId);
 			if (relevance > 0) {
 				irrelevantCounts.setCount(r, num_relevant);
@@ -68,7 +70,7 @@ public class Metrics {
 		return ret;
 	}
 
-	public static double binaryPreference10(List<String> docIds, Counter<String> docRels) {
+	public static <E> double binaryPreference10(List<E> docIds, Counter<E> docRels) {
 		return binaryPreference(docIds, docRels, 10);
 	}
 
@@ -95,7 +97,7 @@ public class Metrics {
 		return ret;
 	}
 
-	public static double f1(List<String> docIds, int n, Counter<String> docRels) {
+	public static <E> double f1(List<E> docIds, int n, Counter<E> docRels) {
 		double precision = precisionAtN(docIds, n, docRels);
 		double recall = recallAtN(docIds, n, docRels);
 		return f1(precision, recall);
@@ -224,14 +226,14 @@ public class Metrics {
 		// System.out.println();
 	}
 
-	public static double normalizedDiscountedCumulativeGainAtN(List<String> docIds, int n, Counter<String> docRels) {
+	public static <E> double normalizedDiscountedCumulativeGainAtN(List<E> docIds, int n, Counter<E> docRels) {
 		n = docIds.size() < n ? docIds.size() : n;
 
 		double[] gains = new double[n];
 		double[] max_gains = new double[n];
 
 		for (int i = 0; i < n; i++) {
-			String docId = docIds.get(i);
+			E docId = docIds.get(i);
 			double relevance = docRels.getCount(docId);
 			double gain = Math.pow(2, relevance) - 1;
 			gains[i] = gain;
@@ -264,7 +266,7 @@ public class Metrics {
 		return ndcg_at_n;
 	}
 
-	public static double precisionAtN(List<String> docIds, int n, Counter<String> docRels) {
+	public static <E> double precisionAtN(List<E> docIds, int n, Counter<E> docRels) {
 		double num_correct = relevantAtN(docIds, n, docRels);
 		double ret = num_correct / n;
 		return ret;
@@ -273,17 +275,19 @@ public class Metrics {
 	/**
 	 * "Rank-Biased Precision for Measurement of Retrieval Effectiveness" at ACM TOIS' 2008.
 	 * 
+	 * @param <E>
+	 * 
 	 * @param docIds
 	 * @param n
 	 * @param docRels
 	 * @param p
 	 * @return
 	 */
-	public static double rankBiasedPrecisionAtN(List<String> docIds, int n, Counter<String> docRels, double p) {
+	public static <E> double rankBiasedPrecisionAtN(List<E> docIds, int n, Counter<E> docRels, double p) {
 		double ret = 0;
 
 		for (int i = 0; i < docIds.size() && i < n; i++) {
-			String docId = docIds.get(i);
+			E docId = docIds.get(i);
 			double relevance = docRels.getCount(docId);
 			if (relevance > 1) {
 				relevance = 1;
@@ -294,7 +298,7 @@ public class Metrics {
 		return ret;
 	}
 
-	public static double recallAtN(List<String> docIds, int n, Counter<String> docRels) {
+	public static <E> double recallAtN(List<E> docIds, int n, Counter<E> docRels) {
 		double num_relevant_docs = relevant(docRels);
 		double num_relevant_at_n = relevantAtN(docIds, n, docRels);
 		double ret = 0;
@@ -304,10 +308,10 @@ public class Metrics {
 		return ret;
 	}
 
-	public static double reciprocalRank(List<String> docIds, int n, Counter<String> docRels) {
+	public static <E> double reciprocalRank(List<E> docIds, int n, Counter<E> docRels) {
 		double ret = 0;
 		for (int i = 0; i < docIds.size() && i < n; i++) {
-			String docId = docIds.get(i);
+			E docId = docIds.get(i);
 			if (docRels.getCount(docId) > 0) {
 				double rank = i + 1;
 				ret = 1f / rank;
@@ -317,9 +321,9 @@ public class Metrics {
 		return ret;
 	}
 
-	public static double relevant(Counter<String> docRels) {
+	public static <E> double relevant(Counter<E> docRels) {
 		double ret = 0;
-		for (String docId : docRels.keySet()) {
+		for (E docId : docRels.keySet()) {
 			double relevance = docRels.getCount(docId);
 			if (relevance > 0) {
 				ret++;
@@ -328,7 +332,7 @@ public class Metrics {
 		return ret;
 	}
 
-	public static double relevantAtN(List<String> docIds, int n, Counter<String> docRels) {
+	public static <E> double relevantAtN(List<E> docIds, int n, Counter<E> docRels) {
 		double ret = 0;
 		for (int i = 0; i < docIds.size() && i < n; i++) {
 			if (docRels.getCount(docIds.get(i)) > 0) {
@@ -338,11 +342,11 @@ public class Metrics {
 		return ret;
 	}
 
-	public static double[] riskRewardFunction(Counter<String> baselines, Counter<String> targets) {
+	public static <E> double[] riskRewardFunction(Counter<E> baselines, Counter<E> targets) {
 		double risk = 0;
 		double reward = 0;
 
-		for (String qId : baselines.keySet()) {
+		for (E qId : baselines.keySet()) {
 			double score1 = baselines.getCount(qId);
 			double score2 = targets.getCount(qId);
 			risk += Math.max(0, score1 - score2);
@@ -360,6 +364,8 @@ public class Metrics {
 	 * international ACM SIGIR conference on Research and development in information retrieval - SIGIR ’12. p. 761. ACM Press, New York, New
 	 * York, USA (2012).
 	 * 
+	 * @param <E>
+	 * 
 	 * 
 	 * @param baselines
 	 * @param targets
@@ -367,26 +373,15 @@ public class Metrics {
 	 * @return
 	 */
 
-	public static double riskRewardTradeoff(Counter<String> baselines, Counter<String> targets) {
+	public static <E> double riskRewardTradeoff(Counter<E> baselines, Counter<E> targets) {
 		return riskRewardTradeoff(baselines, targets, 5);
 	}
 
-	public static double riskRewardTradeoff(Counter<String> baselines, Counter<String> targets, double alpha) {
+	public static <E> double riskRewardTradeoff(Counter<E> baselines, Counter<E> targets, double alpha) {
 		double[] rr = riskRewardFunction(baselines, targets);
 		double risk = rr[0];
 		double reward = rr[1];
 		double ret = reward - (1 + alpha) * risk;
-		return ret;
-	}
-
-	private double[] getDocRelevances(List<String> docIds, int n, Counter<String> docRels) {
-		int num_docs = docIds.size() < n ? docIds.size() : n;
-		double[] ret = new double[num_docs];
-		for (int i = 0; i < docIds.size() && i < n; i++) {
-			String docId = docIds.get(i);
-			double relevance = docRels.getCount(docId);
-			ret[i] = relevance;
-		}
 		return ret;
 	}
 

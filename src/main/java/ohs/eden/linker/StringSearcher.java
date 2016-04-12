@@ -15,13 +15,13 @@ import ohs.io.FileUtils;
 import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.GramGenerator;
 import ohs.string.search.ppss.StringRecord;
-import ohs.string.sim.CharSequence;
 import ohs.string.sim.EditDistance;
 import ohs.string.sim.Jaccard;
 import ohs.string.sim.Jaro;
 import ohs.string.sim.Sequence;
-import ohs.string.sim.StringScorer;
+import ohs.string.sim.SequenceFactory;
 import ohs.string.sim.SmithWaterman;
+import ohs.string.sim.StringScorer;
 import ohs.types.Counter;
 import ohs.types.DeepMap;
 import ohs.types.Indexer;
@@ -64,7 +64,7 @@ public class StringSearcher implements Serializable {
 
 	private int[] gram_cnts;
 
-	private List<StringScorer> stringScorers;
+	private List<StringScorer<Character>> stringScorers;
 
 	private Map<Integer, Double[]> simScores;
 
@@ -86,10 +86,10 @@ public class StringSearcher implements Serializable {
 
 		stringScorers = Generics.newArrayList();
 
-		stringScorers.add(new EditDistance());
-		stringScorers.add(new SmithWaterman());
-		stringScorers.add(new Jaro());
-		stringScorers.add(new Jaccard());
+		stringScorers.add(new EditDistance<Character>());
+		stringScorers.add(new SmithWaterman<Character>());
+		stringScorers.add(new Jaro<Character>());
+		stringScorers.add(new Jaccard<Character>());
 		simScores = Generics.newHashMap();
 
 	}
@@ -166,7 +166,7 @@ public class StringSearcher implements Serializable {
 		return logBuff;
 	}
 
-	public List<StringScorer> getSimScorers() {
+	public List<StringScorer<Character>> getSimScorers() {
 		return stringScorers;
 	}
 
@@ -361,7 +361,7 @@ public class StringSearcher implements Serializable {
 		Counter<StringRecord> ret = Generics.newCounter();
 		simScores = Generics.newHashMap(top_k);
 
-		Sequence ss = new CharSequence(s.toLowerCase());
+		Sequence<Character> ss = SequenceFactory.newCharSequence(s.toLowerCase());
 
 		List<Integer> rids = candidates.getSortedKeys();
 
@@ -370,7 +370,7 @@ public class StringSearcher implements Serializable {
 			StringRecord sr = srs.get(rid);
 			double idf_sum = candidates.getCount(rid);
 
-			Sequence tt = new CharSequence(sr.getString().toLowerCase());
+			Sequence<Character> tt = SequenceFactory.newCharSequence(sr.getString().toLowerCase());
 
 			Double[] scores = cache.get(s, sr.getId(), false);
 
