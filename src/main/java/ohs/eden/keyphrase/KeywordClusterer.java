@@ -368,30 +368,39 @@ public class KeywordClusterer {
 			for (Entry<Integer, Set<Integer>> e : clusterToKwds.getEntrySet()) {
 				int cid = e.getKey();
 				Set<Integer> kwdids = e.getValue();
-				Counter<String> engWordCnts = Generics.newCounter();
+				Counter<String> engFeatCnts = Generics.newCounter();
+				// Counter<String> korCharCnts = Generics.newCounter();
 
 				for (int kwdid : kwdids) {
 					String kwdStr = kwdIndexer.get(kwdid);
 					String[] two = kwdStr.split("\t");
-					String korKwd = normalize(two[0]);
-					String engKwd = normalizeEnglish(two[1].replaceAll("[\\p{Punct}\\s]+", ""));
+					String korKey = normalize(two[0]);
+					String engKey = normalizeEnglish(two[1].replaceAll("[\\p{Punct}\\s]+", ""));
 
 					int kwd_freq = kwdData.getKeywordFreqs()[kwdid];
 
-					for (String word : engKwd.split(" ")) {
-						engWordCnts.incrementCount(word, kwd_freq);
+					// for (String word : engKey.split(" ")) {
+					// engFeatCnts.incrementCount(word, kwd_freq);
+					// }
+
+					for (char c : engKey.toCharArray()) {
+						engFeatCnts.incrementCount(c + "", kwd_freq);
 					}
+
+					// for (char c : korKey.toCharArray()) {
+					// korCharCnts.incrementCount(c + "", kwd_freq);
+					// }
 				}
 
-				if (engWordCnts.size() > 1) {
+				if (engFeatCnts.size() > 1) {
 					Set<Integer> ws = Generics.newHashSet();
 
-					for (int w : wordIndexer.getIndexes(engWordCnts.keySet())) {
+					for (int w : wordIndexer.getIndexes(engFeatCnts.keySet())) {
 						wordToClusters.put(w, cid);
 						ws.add(w);
 					}
 
-					cents.put(cid, VectorUtils.toSparseVector(engWordCnts, wordIndexer, true));
+					cents.put(cid, VectorUtils.toSparseVector(engFeatCnts, wordIndexer, true));
 				}
 			}
 
