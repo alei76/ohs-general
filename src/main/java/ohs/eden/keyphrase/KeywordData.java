@@ -5,8 +5,6 @@ import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.base.Stopwatch;
-
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.types.Counter;
@@ -15,7 +13,6 @@ import ohs.types.ListMap;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
 import ohs.utils.StopWatch;
-import ohs.utils.StrUtils;
 
 public class KeywordData {
 
@@ -31,7 +28,7 @@ public class KeywordData {
 
 	private SetMap<Integer, Integer> clusters;
 
-	private Map<Integer, String> clusterToLabel;
+	private Map<Integer, Integer> clusterToLabel;
 
 	public ListMap<Integer, Integer> getDocIdsList() {
 		return kwdToDocs;
@@ -73,7 +70,7 @@ public class KeywordData {
 		kwdToDocs = FileUtils.readIntListMap(ois);
 
 		clusters = FileUtils.readIntSetMap(ois);
-		clusterToLabel = FileUtils.readIntStrMap(ois);
+		clusterToLabel = FileUtils.readIntMap(ois);
 
 		ois.close();
 
@@ -137,7 +134,7 @@ public class KeywordData {
 		System.out.printf("read [%s] at [%s] - [%s]\n", getClass().getName(), fileName, stopWatch.stop());
 	}
 
-	public void setClusterLabel(Map<Integer, String> clusterToLabel) {
+	public void setClusterLabel(Map<Integer, Integer> clusterToLabel) {
 		this.clusterToLabel = clusterToLabel;
 	}
 
@@ -158,7 +155,7 @@ public class KeywordData {
 		FileUtils.writeIntListMap(oos, kwdToDocs);
 
 		FileUtils.writeIntSetMap(oos, clusters);
-		FileUtils.writeIntStrMap(oos, clusterToLabel);
+		FileUtils.writeIntMap(oos, clusterToLabel);
 
 		oos.close();
 	}

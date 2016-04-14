@@ -91,31 +91,36 @@ public class KeywordClusterer {
 		selectClusterLabels();
 		writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-01.txt.gz"));
 
-		matchExactKoreanLanguage();
+		matchExactKorean();
 
 		selectClusterLabels();
 		writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-02.txt.gz"));
 
-		matchKoreanGrams();
+		matchExactEnglish();
 
 		selectClusterLabels();
 		writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-03.txt.gz"));
 
-		matchEnglishWords();
+		matchKoreanGrams();
 
 		selectClusterLabels();
 		writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-04.txt.gz"));
 
+		matchEnglishWords();
+
+		selectClusterLabels();
+		writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-05.txt.gz"));
+
 		selectClusterLabels();
 
-		// SetMap<Integer, Integer> t = Generics.newSetMap(clusterToKwds.size());
-		//
-		// for (int cid : clusterToKwds.keySet()) {
-		// t.put(cid, clusterToKwds.get(cid));
-		// }
-		//
-		// kwdData.setClusterLabel(clusterToLabel);
-		// kwdData.setClusters(t);
+		SetMap<Integer, Integer> t = Generics.newSetMap(clusterToKwds.size());
+
+		for (int cid : clusterToKwds.keySet()) {
+			t.put(cid, clusterToKwds.get(cid));
+		}
+
+		kwdData.setClusterLabel(clusterToLabel);
+		kwdData.setClusters(t);
 	}
 
 	private Counter<Integer> computeKeywordScores(Set<Integer> kwdids) {
@@ -521,7 +526,7 @@ public class KeywordClusterer {
 		}
 	}
 
-	private void matchExactKoreanLanguage() {
+	private void matchExactKorean() {
 		System.out.println("match exact Korean language.");
 
 		int old_size = clusterToKwds.size();
@@ -532,14 +537,12 @@ public class KeywordClusterer {
 			int cid = e.getKey();
 			Set<Integer> kwdids = e.getValue();
 
-			for (int kwdid : kwdids) {
-				String kwdStr = kwdIndexer.getObject(kwdid);
-				String[] two = kwdStr.split("\t");
-				String korKey = normalize(two[0]);
+			String kwdStr = kwdIndexer.getObject(cid);
+			String[] two = kwdStr.split("\t");
+			String korKey = normalize(two[0]);
 
-				if (korKey.length() > 0) {
-					keyToClusters.put(korKey, cid);
-				}
+			if (korKey.length() > 0) {
+				keyToClusters.put(korKey, cid);
 			}
 		}
 
@@ -547,6 +550,65 @@ public class KeywordClusterer {
 			Set<Integer> cids = keyToClusters.get(key);
 
 			if (cids.size() > 1) {
+				merge(cids);
+			}
+		}
+
+		int new_size = clusterToKwds.size();
+
+		System.out.printf("[%d -> %d clusters]\n", old_size, new_size);
+	}
+
+	private void matchExactEnglish() {
+		System.out.println("match exact English language.");
+
+		int old_size = clusterToKwds.size();
+
+		SetMap<String, Integer> keyToClusters = Generics.newSetMap();
+
+		for (Entry<Integer, Set<Integer>> e : clusterToKwds.getEntrySet()) {
+			int cid = e.getKey();
+			Set<Integer> kwdids = e.getValue();
+
+			boolean isCandidate = true;
+
+			for (int kwdid : kwdids) {
+				String kwdStr = kwdIndexer.getObject(kwdid);
+				String[] two = kwdStr.split("\t");
+				String korKey = normalize(two[0]);
+				String engKey = normalize(two[1]);
+
+				if (korKey.length() == 0 && engKey.length() > 0) {
+
+				} else {
+					isCandidate = false;
+					break;
+				}
+			}
+
+			if (isCandidate) {
+				String kwdStr = kwdIndexer.getObject(cid);
+				String[] two = kwdStr.split("\t");
+				String korKey = normalize(two[0]);
+				String engKey = normalize(two[1]);
+				keyToClusters.put(engKey, cid);
+			}
+		}
+
+		for (String key : keyToClusters.keySet()) {
+			Set<Integer> cids = keyToClusters.get(key);
+
+			if (cids.size() > 1) {
+				//
+				// for (int cid : cids) {
+				// String kwdStr = kwdIndexer.getObject(cid);
+				// String[] two = kwdStr.split("\t");
+				// String korKey = normalize(two[0]);
+				// String engKey = normalize(two[1]);
+				//
+				// System.out.println(cid + "\t" + kwdStr);
+				// }
+				// System.out.println("-------------------");
 				merge(cids);
 			}
 		}
@@ -569,15 +631,20 @@ public class KeywordClusterer {
 				String[] two = kwdStr.split("\t");
 
 				two[0] = normalize(two[0]);
-				two[1] = normalizeEnglish(two[1]);
+				two[1] = normalizeEnglish(two[1]).replace(" ", "");
 
 				String key = StrUtils.join("\t", two);
 				keyToClusters.put(key, cid);
 			}
 		}
 
-		for (String kid : keyToClusters.keySet()) {
-			Set<Integer> cids = keyToClusters.get(kid);
+		for (String key : keyToClusters.keySet()) {
+			Set<Integer> cids = keyToClusters.get(key);
+
+			// if (cids.contains(178819) || cids.contains(489840)) {
+			// System.out.printf(String.format("[%s, %d]\n", key, cids.size()));
+			// }
+
 			if (cids.size() > 1) {
 				merge(cids);
 			}
@@ -805,7 +872,7 @@ public class KeywordClusterer {
 	}
 
 	private String normalize(String s) {
-		return s.replaceAll("[\\p{Punct}\\s]+", "").toLowerCase();
+		return s.replaceAll("[\\p{Punct}\\s]+", "").toLowerCase().trim();
 	}
 
 	private String[] normalize(String[] s) {
@@ -820,9 +887,9 @@ public class KeywordClusterer {
 		PorterStemmer stemmer = new PorterStemmer();
 		StringBuffer sb = new StringBuffer();
 		for (String word : StrUtils.splitPunctuations(s)) {
-			stemmer.setCurrent(word);
+			stemmer.setCurrent(word.toLowerCase());
 			stemmer.stem();
-			sb.append(stemmer.getCurrent().toLowerCase() + " ");
+			sb.append(stemmer.getCurrent() + " ");
 		}
 		return sb.toString().trim();
 	}

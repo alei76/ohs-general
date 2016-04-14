@@ -9,6 +9,7 @@ import ohs.ml.svm.wrapper.LibLinearTrainer;
 import ohs.ml.svm.wrapper.LibLinearWrapper;
 import ohs.types.Counter;
 import ohs.types.Indexer;
+import ohs.types.ListMap;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 import ohs.utils.TermWeighting;
@@ -27,38 +28,14 @@ public class NameClassifier {
 			nc.write(NamePath.SVM_MODEL_FILE);
 		}
 
-		System.out.println(nc.classifyKorean("오흥선"));
-		System.out.println(nc.classifyKorean("김진영"));
-		System.out.println(nc.classifyKorean("엘지"));
-		System.out.println(nc.classifyKorean("한국과학기술"));
-		System.out.println(nc.classifyEnglish("samsun"));
-		System.out.println(nc.classifyKorean("마이크로소프트"));
+		System.out.println(nc.scorePerOrg("오흥선", ""));
+		System.out.println(nc.scorePerOrg("김진영", ""));
+		System.out.println(nc.scorePerOrg("LG전자", ""));
+		System.out.println(nc.scorePerOrg("한국과학기술", ""));
+		System.out.println(nc.scorePerOrg("", "samsun"));
+		System.out.println(nc.scorePerOrg("마이크로소프트", ""));
 
 		System.out.println("process ends.");
-	}
-
-	private LibLinearWrapper wrapper = new LibLinearWrapper();
-
-	private NameFeatureExtractor extractor = new NameFeatureExtractor();
-
-	public NameClassifier() {
-
-	}
-
-	public NameClassifier(LibLinearWrapper wrapper) {
-		this.wrapper = wrapper;
-	}
-
-	public Counter<String> classifyKorean(String s) {
-		return classify(s, "");
-	}
-
-	public Counter<String> classifyEnglish(String s) {
-		return classify("", s);
-	}
-
-	public Counter<String> classify(String kor, String eng) {
-		return wrapper.score(extractor.extract(kor, eng));
 	}
 
 	public static NameClassifier train() throws Exception {
@@ -74,14 +51,16 @@ public class NameClassifier {
 		labelIndexer.add("ORG_KOR");
 		labelIndexer.add("ORG_ENG");
 
-		List<SparseVector>[] datasets = new List[fileNames.length];
+		// List<SparseVector>[] datasets = new List[fileNames.length];
+
+		ListMap<Integer, SparseVector> lm = Generics.newListMap();
 
 		NameFeatureExtractor ext = new NameFeatureExtractor();
 
 		for (int i = 0; i < fileNames.length; i++) {
-			List<SparseVector> data = Generics.newArrayList();
+			// List<SparseVector> data = Generics.newArrayList();
 
-			datasets[i] = data;
+			// datasets[i] = data;
 
 			Counter<String> c = FileUtils.readStrCounter(fileNames[i]);
 
@@ -113,17 +92,18 @@ public class NameClassifier {
 					sv.setLabel(i);
 					sv.scale(cnt);
 
-					data.add(sv);
+					// data.add(sv);
+
+					lm.put(i, sv);
 				}
 			}
 		}
 
 		List<SparseVector> data = Generics.newArrayList();
 
-		for (List<SparseVector> d : datasets) {
-			data.addAll(d);
+		for (int label : lm.keySet()) {
+			data.addAll(lm.get(label));
 		}
-
 		TermWeighting.computeTFIDFs(data);
 
 		// List<SparseVector>[] two = DataSplitter.splitInOrder(data, ArrayUtils.array(0.8, 0.2));
@@ -136,12 +116,52 @@ public class NameClassifier {
 		return new NameClassifier(wrapper);
 	}
 
-	public void write(String fileName) throws Exception {
-		wrapper.write(fileName);
+	private LibLinearWrapper wrapper = new LibLinearWrapper();
+
+	private NameFeatureExtractor extractor = new NameFeatureExtractor();
+
+	public NameClassifier() {
+
+	}
+
+	// public Counter<String> classifyKorean(String s) {
+	// return classify(s, "");
+	// }
+	//
+	// public Counter<String> classifyEnglish(String s) {
+	// return classify("", s);
+	// }
+
+	public NameClassifier(LibLinearWrapper wrapper) {
+		this.wrapper = wrapper;
+	}
+
+	public Counter<String> classifyPerson(String kor, String eng) {
+		return wrapper.score(extractor.extract(kor, eng));
 	}
 
 	public void read(String fileName) throws Exception {
 		wrapper.read(fileName);
+	}
+
+	public Counter<String> score(String kor, String eng) {
+		return wrapper.score(extractor.extract(kor, eng));
+	}
+
+	public Counter<String> scorePerOrg(Counter<String> scores) {
+		Counter<String> ret = Generics.newCounter();
+		for (String label : scores.keySet()) {
+			ret.incrementCount(label.split("_")[0], scores.getCount(label));
+		}
+		return ret;
+	}
+
+	public Counter<String> scorePerOrg(String kor, String eng) {
+		return scorePerOrg(score(kor, eng));
+	}
+
+	public void write(String fileName) throws Exception {
+		wrapper.write(fileName);
 	}
 
 }

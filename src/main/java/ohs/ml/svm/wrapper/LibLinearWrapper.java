@@ -11,7 +11,6 @@ import de.bwaldvogel.liblinear.FeatureNode;
 import de.bwaldvogel.liblinear.Linear;
 import de.bwaldvogel.liblinear.Model;
 import ohs.io.FileUtils;
-import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
@@ -22,19 +21,6 @@ import ohs.types.Indexer;
 public class LibLinearWrapper implements Serializable {
 
 	private static final long serialVersionUID = -3273222430839071709L;
-
-	public void read(String fileName) throws Exception {
-		System.out.printf("read [%s]\n", fileName);
-
-		BufferedReader br = FileUtils.openBufferedReader(fileName);
-
-		labelIndexer = FileUtils.readStrIndexer(br);
-		featIndexer = FileUtils.readStrIndexer(br);
-		model = Linear.loadModel(br);
-
-		br.close();
-
-	}
 
 	public static Feature[] toFeatureNodes(SparseVector x, int num_feats, double bias) {
 		Feature[] fs = new Feature[bias >= 0 ? x.size() + 1 : x.size()];
@@ -49,6 +35,10 @@ public class LibLinearWrapper implements Serializable {
 			fs[fs.length - 1] = new FeatureNode(num_feats, bias);
 		}
 		return fs;
+	}
+
+	public Model getModel() {
+		return model;
 	}
 
 	private Model model;
@@ -97,6 +87,19 @@ public class LibLinearWrapper implements Serializable {
 
 	public Indexer<String> labelIndexer() {
 		return labelIndexer;
+	}
+
+	public void read(String fileName) throws Exception {
+		System.out.printf("read [%s]\n", fileName);
+
+		BufferedReader br = FileUtils.openBufferedReader(fileName);
+
+		labelIndexer = FileUtils.readStrIndexer(br);
+		featIndexer = FileUtils.readStrIndexer(br);
+		model = Linear.loadModel(br);
+
+		br.close();
+
 	}
 
 	public Counter<String> score(Counter<String> x) {
