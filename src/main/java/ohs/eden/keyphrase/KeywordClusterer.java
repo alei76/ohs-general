@@ -113,14 +113,8 @@ public class KeywordClusterer {
 
 		selectClusterLabels();
 
-		SetMap<Integer, Integer> t = Generics.newSetMap(clusterToKwds.size());
-
-		for (int cid : clusterToKwds.keySet()) {
-			t.put(cid, clusterToKwds.get(cid));
-		}
-
 		kwdData.setClusterLabel(clusterToLabel);
-		kwdData.setClusters(t);
+		kwdData.setClusters(clusterToKwds);
 	}
 
 	private Counter<Integer> computeKeywordScores(Set<Integer> kwdids) {
@@ -526,39 +520,6 @@ public class KeywordClusterer {
 		}
 	}
 
-	private void matchExactKorean() {
-		System.out.println("match exact Korean language.");
-
-		int old_size = clusterToKwds.size();
-
-		SetMap<String, Integer> keyToClusters = Generics.newSetMap();
-
-		for (Entry<Integer, Set<Integer>> e : clusterToKwds.getEntrySet()) {
-			int cid = e.getKey();
-			Set<Integer> kwdids = e.getValue();
-
-			String kwdStr = kwdIndexer.getObject(cid);
-			String[] two = kwdStr.split("\t");
-			String korKey = normalize(two[0]);
-
-			if (korKey.length() > 0) {
-				keyToClusters.put(korKey, cid);
-			}
-		}
-
-		for (String key : keyToClusters.keySet()) {
-			Set<Integer> cids = keyToClusters.get(key);
-
-			if (cids.size() > 1) {
-				merge(cids);
-			}
-		}
-
-		int new_size = clusterToKwds.size();
-
-		System.out.printf("[%d -> %d clusters]\n", old_size, new_size);
-	}
-
 	private void matchExactEnglish() {
 		System.out.println("match exact English language.");
 
@@ -609,6 +570,39 @@ public class KeywordClusterer {
 				// System.out.println(cid + "\t" + kwdStr);
 				// }
 				// System.out.println("-------------------");
+				merge(cids);
+			}
+		}
+
+		int new_size = clusterToKwds.size();
+
+		System.out.printf("[%d -> %d clusters]\n", old_size, new_size);
+	}
+
+	private void matchExactKorean() {
+		System.out.println("match exact Korean language.");
+
+		int old_size = clusterToKwds.size();
+
+		SetMap<String, Integer> keyToClusters = Generics.newSetMap();
+
+		for (Entry<Integer, Set<Integer>> e : clusterToKwds.getEntrySet()) {
+			int cid = e.getKey();
+			Set<Integer> kwdids = e.getValue();
+
+			String kwdStr = kwdIndexer.getObject(cid);
+			String[] two = kwdStr.split("\t");
+			String korKey = normalize(two[0]);
+
+			if (korKey.length() > 0) {
+				keyToClusters.put(korKey, cid);
+			}
+		}
+
+		for (String key : keyToClusters.keySet()) {
+			Set<Integer> cids = keyToClusters.get(key);
+
+			if (cids.size() > 1) {
 				merge(cids);
 			}
 		}
