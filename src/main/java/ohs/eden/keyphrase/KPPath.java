@@ -36,4 +36,6 @@ public class KPPath {
 
 	public static final String VOCAB_FILE = KEYPHRASE_DIR + "vocab.ser.gz";
 
+	public static final String DB_ACCOUNT_FILE = DATA_DIR + "db_account.txt";
+
 }

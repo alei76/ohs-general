@@ -147,6 +147,18 @@ public class StrUtils {
 		return extract(text, tagNames, false);
 	}
 
+	public static void trim(String[] a, String[] b) {
+		for (int i = 0; i < a.length; i++) {
+			b[i] = a[i].trim();
+		}
+	}
+
+	public static String[] trim(String[] a) {
+		String[] b = new String[a.length];
+		trim(a, b);
+		return b;
+	}
+
 	public static List<TextSpan> extract(String t, Set<String> tagNames, boolean get_start_at_plain) throws Exception {
 		List<TextSpan> ret = Generics.newArrayList();
 

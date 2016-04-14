@@ -18,10 +18,6 @@ import ohs.matrix.DenseVector;
 import ohs.matrix.SparseVector;
 import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.GramGenerator;
-import ohs.string.sim.EditDistance;
-import ohs.string.sim.SequenceFactory;
-import ohs.tree.trie.hash.Node;
-import ohs.tree.trie.hash.Trie;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
@@ -51,7 +47,7 @@ public class KeywordClusterer {
 		kc.cluster();
 		kc.writeClusters(KPPath.KEYWORD_CLUSTER_FILE);
 
-		// data.write(KPPath.KEYWORD_DATA_FILE.replace("txt", "ser"));
+		data.write(KPPath.KEYWORD_DATA_SER_FILE.replace("_data", "_data_clusters"));
 
 		System.out.println("process ends.");
 	}
@@ -115,6 +111,7 @@ public class KeywordClusterer {
 
 		kwdData.setClusterLabel(clusterToLabel);
 		kwdData.setClusters(clusterToKwds);
+
 	}
 
 	private Counter<Integer> computeKeywordScores(Set<Integer> kwdids) {
@@ -932,9 +929,9 @@ public class KeywordClusterer {
 		kwdToWords = Generics.newHashMap();
 		wordIndexer = Generics.newIndexer();
 
-		for (int kwdid : kwdData.getKeywordDocs().keySet()) {
+		for (int kwdid : kwdData.getKeywordToDocs().keySet()) {
 			Counter<String> c = Generics.newCounter();
-			for (int docid : kwdData.getKeywordDocs().get(kwdid)) {
+			for (int docid : kwdData.getKeywordToDocs().get(kwdid)) {
 				String cn = kwdData.getDocIndexer().getObject(docid);
 				c.incrementAll(cm.getCounter(cn));
 			}

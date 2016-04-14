@@ -1194,9 +1194,9 @@ public class KeywordClusterer2 {
 		kwdToWords = Generics.newHashMap();
 		wordIndexer = Generics.newIndexer();
 
-		for (int kwdid : kwdData.getKeywordDocs().keySet()) {
+		for (int kwdid : kwdData.getKeywordToDocs().keySet()) {
 			Counter<String> c = Generics.newCounter();
-			for (int docid : kwdData.getKeywordDocs().get(kwdid)) {
+			for (int docid : kwdData.getKeywordToDocs().get(kwdid)) {
 				String cn = kwdData.getDocIndexer().getObject(docid);
 				c.incrementAll(cm.getCounter(cn));
 			}

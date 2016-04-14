@@ -26,12 +26,16 @@ public class KeywordData {
 
 	private int[] kwd_freqs;
 
-	private SetMap<Integer, Integer> clusters;
+	private SetMap<Integer, Integer> clusterToKwds;
 
 	private Map<Integer, Integer> clusterToLabel;
 
-	public ListMap<Integer, Integer> getDocIdsList() {
-		return kwdToDocs;
+	public SetMap<Integer, Integer> getClusterToKeywords() {
+		return clusterToKwds;
+	}
+
+	public Map<Integer, Integer> getClusterToLabel() {
+		return clusterToLabel;
 	}
 
 	public Indexer<String> getDocIndexer() {
@@ -40,10 +44,6 @@ public class KeywordData {
 
 	public Indexer<String> getDocumentIndxer() {
 		return docIndxer;
-	}
-
-	public ListMap<Integer, Integer> getKeywordDocs() {
-		return kwdToDocs;
 	}
 
 	public int[] getKeywordFreqs() {
@@ -58,6 +58,10 @@ public class KeywordData {
 		return kwdids;
 	}
 
+	public ListMap<Integer, Integer> getKeywordToDocs() {
+		return kwdToDocs;
+	}
+
 	public void read(String fileName) throws Exception {
 		StopWatch stopWatch = StopWatch.newStopWatch();
 
@@ -69,7 +73,7 @@ public class KeywordData {
 		docIndxer = FileUtils.readStrIndexer(ois);
 		kwdToDocs = FileUtils.readIntListMap(ois);
 
-		clusters = FileUtils.readIntSetMap(ois);
+		clusterToKwds = FileUtils.readIntSetMap(ois);
 		clusterToLabel = FileUtils.readIntMap(ois);
 
 		ois.close();
@@ -86,7 +90,7 @@ public class KeywordData {
 		kwdids = Generics.newArrayList();
 		kwdToDocs = Generics.newListMap();
 
-		clusters = Generics.newSetMap();
+		clusterToKwds = Generics.newSetMap();
 		clusterToLabel = Generics.newHashMap();
 
 		Counter<Integer> kwdFreqs = Generics.newCounter();
@@ -139,7 +143,7 @@ public class KeywordData {
 	}
 
 	public void setClusters(SetMap<Integer, Integer> clusters) {
-		this.clusters = clusters;
+		this.clusterToKwds = clusters;
 	}
 
 	public void write(String fileName) throws Exception {
@@ -154,7 +158,7 @@ public class KeywordData {
 		FileUtils.writeStrIndexer(oos, docIndxer);
 		FileUtils.writeIntListMap(oos, kwdToDocs);
 
-		FileUtils.writeIntSetMap(oos, clusters);
+		FileUtils.writeIntSetMap(oos, clusterToKwds);
 		FileUtils.writeIntMap(oos, clusterToLabel);
 
 		oos.close();

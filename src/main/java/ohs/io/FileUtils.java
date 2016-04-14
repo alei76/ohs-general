@@ -600,7 +600,7 @@ public class FileUtils {
 			int value = ois.readInt();
 			ret.put(key, value);
 		}
-		System.out.printf("read [%d] entries.\n", ret.size());
+		// System.out.printf("read [%d] entries.\n", ret.size());
 		return ret;
 	}
 
