@@ -378,12 +378,9 @@ public class UnicodeUtils {
 
 	public static String decomposeToJamo(String word) {
 		StringBuffer sb = new StringBuffer();
-
 		for (int i = 0; i < word.length(); i++) {
-			char c = word.charAt(i);
-
-			for (char cs : decomposeToJamo(c)) {
-				sb.append(cs);
+			for (char c : decomposeToJamo(word.charAt(i))) {
+				sb.append(c);
 			}
 
 			// if (isInRange(HANGUL_SYLLABLES_RANGE, cp)) {
@@ -512,13 +509,13 @@ public class UnicodeUtils {
 
 	public static final char[] toJamo(char c) {
 		int[] cps = toJamo((int) c);
-		StringBuffer sb = new StringBuffer();
+		char[] ret = new char[3];
 		for (int i = 0; i < cps.length; i++) {
 			if (cps[i] != 0) {
-				sb.append((char) cps[i]);
+				ret[i] = (char) cps[i];
 			}
 		}
-		return sb.toString().toCharArray();
+		return ret;
 	}
 
 	public static final int[] toJamo(int cp) {

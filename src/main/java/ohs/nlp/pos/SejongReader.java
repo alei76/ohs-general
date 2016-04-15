@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.nlp.ling.types.KDocument;
 import ohs.nlp.ling.types.KSentence;
@@ -18,7 +17,7 @@ public class SejongReader implements Iterator<KDocument> {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		SejongReader r = new SejongReader(NLPPath.POS_DATA_FILE, NLPPath.POS_TAG_SET_FILE);
+		SejongReader r = new SejongReader(NLPPath.POS_DATA_FILE);
 		while (r.hasNext()) {
 			KDocument doc = r.next();
 		}
@@ -35,10 +34,15 @@ public class SejongReader implements Iterator<KDocument> {
 
 	private Set<String> posSet;
 
-	public SejongReader(String dataFileName, String posFileName) throws Exception {
+	public SejongReader(String dataFileName) throws Exception {
 		reader = new TextFileReader(dataFileName);
 
-		readPosSet(posFileName);
+		posSet = Generics.newHashSet();
+
+		for (SJTag tag : SJTag.values()) {
+			posSet.add(tag.toString());
+		}
+
 	}
 
 	public void close() {
@@ -110,15 +114,6 @@ public class SejongReader implements Iterator<KDocument> {
 	@Override
 	public KDocument next() {
 		return doc;
-	}
-
-	private void readPosSet(String posFileName) throws Exception {
-		posSet = Generics.newHashSet();
-
-		for (String line : FileUtils.readLines(posFileName)) {
-			String[] parts = line.split("\t");
-			posSet.add(parts[0]);
-		}
 	}
 
 }

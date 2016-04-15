@@ -21,8 +21,8 @@ import ohs.tree.trie.hash.Trie;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.utils.Generics;
-import ohs.utils.UnicodeUtils;
 import ohs.utils.StrUtils;
+import ohs.utils.UnicodeUtils;
 
 public class SejongDataHandler {
 
@@ -32,9 +32,10 @@ public class SejongDataHandler {
 		SejongDataHandler sdh = new SejongDataHandler();
 		// sdh.extractPosData();
 		// sdh.extractCounts();
-		// sdh.buildSystemDict();
 		// sdh.buildAnalyzedDict();
-		sdh.buildTrie();
+		// sdh.buildSystemDict();
+
+		// sdh.buildTrie();
 		// sdh.build();
 
 		System.out.println("process ends.");
@@ -59,7 +60,7 @@ public class SejongDataHandler {
 	public void build() throws Exception {
 		CounterMap<String, String> cm = Generics.newCounterMap();
 
-		SejongReader reader = new SejongReader(NLPPath.POS_DATA_FILE, NLPPath.POS_TAG_SET_FILE);
+		SejongReader reader = new SejongReader(NLPPath.POS_DATA_FILE);
 		while (reader.hasNext()) {
 			KDocument doc = reader.next();
 
@@ -102,7 +103,7 @@ public class SejongDataHandler {
 	public void buildAnalyzedDict() throws Exception {
 		CounterMap<String, String> cm = Generics.newCounterMap();
 
-		SejongReader reader = new SejongReader(NLPPath.POS_DATA_FILE, NLPPath.POS_TAG_SET_FILE);
+		SejongReader reader = new SejongReader(NLPPath.POS_DATA_FILE);
 		while (reader.hasNext()) {
 			KDocument doc = reader.next();
 
@@ -116,26 +117,26 @@ public class SejongDataHandler {
 		}
 		reader.close();
 
-		List<String> words = Generics.newArrayList(cm.keySet());
-		Collections.sort(words);
+		List<String> eojeols = Generics.newArrayList(cm.keySet());
+		Collections.sort(eojeols);
 
-		for (int i = 0; i < words.size(); i++) {
-			String word = words.get(i);
-			Counter<String> c = cm.getCounter(word);
+		for (int i = 0; i < eojeols.size(); i++) {
+			String eojeol = eojeols.get(i);
+			Counter<String> morphemes = cm.getCounter(eojeol);
 
 			List<String> res = Generics.newArrayList();
-			res.add(word);
-			res.addAll(c.keySet());
-			words.set(i, String.join("\t", res));
+			res.add(eojeol);
+			res.addAll(morphemes.keySet());
+			eojeols.set(i, String.join("\t", res));
 		}
 
-		FileUtils.writeStrCollection(NLPPath.DICT_ANALYZED_FILE, words);
+		FileUtils.writeStrCollection(NLPPath.DICT_ANALYZED_FILE, eojeols);
 	}
 
 	public void buildSystemDict() throws Exception {
 		CounterMap<String, String> cm = Generics.newCounterMap();
 
-		SejongReader reader = new SejongReader(NLPPath.POS_DATA_FILE, NLPPath.POS_TAG_SET_FILE);
+		SejongReader reader = new SejongReader(NLPPath.POS_DATA_FILE);
 		while (reader.hasNext()) {
 			KDocument doc = reader.next();
 
@@ -151,19 +152,22 @@ public class SejongDataHandler {
 		}
 		reader.close();
 
-		List<String> dict = Generics.newArrayList();
+		List<String> res = Generics.newArrayList();
 
-		for (String word : cm.keySet()) {
-			Counter<String> c = cm.getCounter(word);
+		List<String> keys1 = Generics.newArrayList(cm.keySet());
+		Collections.sort(keys1);
 
-			if (c.size() == 1) {
-				dict.add(word + "\t" + c.argMax());
+		for (int i = 0; i < keys1.size(); i++) {
+			String key = keys1.get(i);
+			List<String> keys2 = Generics.newArrayList(cm.keySetOfCounter(key));
+			Collections.sort(keys2);
+
+			for (int j = 0; j < keys2.size(); j++) {
+				res.add(key + "\t" + keys2.get(j));
 			}
 		}
 
-		Collections.sort(dict);
-
-		FileUtils.writeStrCollection(NLPPath.DICT_SYSTEM_FILE, dict);
+		FileUtils.writeStrCollection(NLPPath.DICT_SYSTEM_FILE, res);
 	}
 
 	public void buildTrie() throws Exception {
@@ -213,7 +217,7 @@ public class SejongDataHandler {
 		CounterMap<String, String> cm2 = Generics.newCounterMap();
 		CounterMap<String, String> cm3 = Generics.newCounterMap();
 
-		SejongReader reader = new SejongReader(NLPPath.POS_DATA_FILE, NLPPath.POS_TAG_SET_FILE);
+		SejongReader reader = new SejongReader(NLPPath.POS_DATA_FILE);
 		while (reader.hasNext()) {
 			KDocument doc = reader.next();
 

@@ -3,20 +3,15 @@ package ohs.nlp.pos;
 import java.util.List;
 import java.util.Set;
 
-import org.hibernate.engine.spi.ExecuteUpdateResultCheckStyle;
-
-import ohs.eden.keyphrase.TaggedTextParser;
 import ohs.io.FileUtils;
 import ohs.nlp.ling.types.KDocument;
 import ohs.nlp.ling.types.KSentence;
 import ohs.nlp.ling.types.MultiToken;
-import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
 import ohs.tree.trie.hash.Node;
 import ohs.tree.trie.hash.Trie;
 import ohs.tree.trie.hash.Trie.SearchResult;
 import ohs.tree.trie.hash.Trie.SearchResult.MatchType;
-import ohs.types.Counter;
 import ohs.types.Indexer;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
@@ -104,11 +99,23 @@ public class MorphemeAnalyzer {
 	public Set<String> analyze(String eojeol) {
 		Set<String> ret = Generics.newHashSet();
 
-		String s = UnicodeUtils.decomposeToJamo(eojeol);
+		int L = eojeol.length();
 
-		Character[] cs = StrUtils.asCharacters(s.toCharArray());
+		Character[] chs = StrUtils.asCharacters(eojeol);
+		int[] status = new int[L];
+		char[][] jasos = new char[L][];
 
-		search(cs, 0, 1);
+		for (int i = 0; i < L; i++) {
+			jasos[i] = UnicodeUtils.decomposeToJamo(eojeol.charAt(i));
+		}
+
+		List<Integer> locs = Generics.newArrayList();
+
+		for (int i = L - 1; i >= 0; i--) {
+			if (josaSet1.contains(eojeol.charAt(i))) {
+				locs.add(i);
+			}
+		}
 
 		// for (int i = 0; i < cs.length; i++) {
 		//
@@ -135,7 +142,6 @@ public class MorphemeAnalyzer {
 			} else {
 				search(cs, end - 1, end);
 				System.out.println();
-
 			}
 		}
 
@@ -153,62 +159,90 @@ public class MorphemeAnalyzer {
 
 	private Trie<Character> trie;
 
+	private Set<Character> josaSet1;
+
 	private void readAnalyzedDict(String fileName) throws Exception {
-		List<String> lines = FileUtils.readLines(fileName);
 
-		analDict = Generics.newSetMap(lines.size());
-
-		posIndexer = Generics.newIndexer();
+		analDict = Generics.newSetMap();
 
 		trie = Trie.newTrie();
-
-		for (String line : lines) {
-			String[] parts = line.split("\t");
-			for (int i = 1; i < parts.length; i++) {
-				analDict.put(parts[0], parts[i]);
-
-				String[] subParts = parts[i].split(MultiToken.DELIM_MULTI_TOKEN.replace("+", "\\+"));
-
-				for (int j = 0; j < subParts.length; j++) {
-					String[] two = subParts[j].split(Token.DELIM_TOKEN);
-					String word = two[0];
-					String pos = two[1];
-
-					StringBuffer sb = new StringBuffer();
-					for (int k = 0; k < word.length(); k++) {
-						sb.append(UnicodeUtils.decomposeToJamo(word.charAt(k)));
-					}
-
-					Node<Character> node = trie.insert(StrUtils.asCharacters(sb.toString().toCharArray()));
-
-					Counter<Integer> c = (Counter<Integer>) node.getData();
-
-					if (c == null) {
-						c = Generics.newCounter();
-						node.setData(c);
-					}
-
-					c.incrementCount(posIndexer.getIndex(pos), 1);
-				}
-			}
-		}
-
-		trie.trimToSize();
+		//
+		// TextFileReader reader = new TextFileReader(fileName);
+		//
+		// while (reader.hasNext()) {
+		// String line = reader.next();
+		//
+		// if (reader.getNumLines() == 1) {
+		// continue;
+		// }
+		//
+		// String[] parts = line.split("\t");
+		// for (int i = 1; i < parts.length; i++) {
+		// analDict.put(parts[0], parts[i]);
+		//
+		// String[] subParts = parts[i].split(MultiToken.DELIM_MULTI_TOKEN.replace("+", "\\+"));
+		//
+		// for (int j = 0; j < subParts.length; j++) {
+		// String[] two = subParts[j].split(Token.DELIM_TOKEN);
+		// String word = two[0];
+		// SJTag pos = SJTag.valueOf(two[1]);
+		//
+		// StringBuffer sb = new StringBuffer();
+		// for (int k = 0; k < word.length(); k++) {
+		// // sb.append(UnicodeUtils.decomposeToJamo(word.charAt(k)));
+		// sb.append(word.charAt(k));
+		// }
+		//
+		// Node<Character> node = trie.insert(StrUtils.asCharacters(sb.toString().toCharArray()));
+		//
+		// Counter<SJTag> c = (Counter<SJTag>) node.getData();
+		//
+		// if (c == null) {
+		// c = Generics.newCounter();
+		// node.setData(c);
+		// }
+		//
+		// c.incrementCount(pos, 1);
+		// }
+		// }
+		// }
+		// reader.close();
+		//
+		// trie.trimToSize();
 	}
+
+	private Set<Character> josaSet2;
 
 	private void readSystemDict(String fileName) throws Exception {
 		List<String> lines = FileUtils.readLines(fileName);
+
+		josaSet1 = Generics.newHashSet();
+
+		josaSet2 = Generics.newHashSet();
 
 		sysDict = Trie.newTrie();
 
 		for (String line : lines) {
 			String[] parts = line.split("\t");
 			String word = parts[0];
-			String pos = parts[1];
 
-			String word2 = UnicodeUtils.decomposeToJamo(word);
+			SJTag pos = SJTag.valueOf(parts[1]);
 
-			sysDict.insert(StrUtils.asCharacters(word2.toCharArray()));
+			word = UnicodeUtils.decomposeToJamo(word);
+
+			StringBuffer sb = new StringBuffer(word);
+			sb.reverse();
+
+			Node<Character> node = sysDict.insert(StrUtils.asCharacters(sb.toString()));
+
+			Set<SJTag> tags = (Set<SJTag>) node.getData();
+
+			if (tags == null) {
+				tags = Generics.newHashSet();
+				node.setData(tags);
+			}
+
+			tags.add(pos);
 		}
 
 		sysDict.trimToSize();
