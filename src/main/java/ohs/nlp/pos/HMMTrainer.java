@@ -91,7 +91,7 @@ public class HMMTrainer {
 			for (KSentence sent : doc.getSentences()) {
 				for (MultiToken mt : sent.toMultiTokens()) {
 					String text = mt.getText();
-					String text2 = UnicodeUtils.decomposeToJamo(text);
+					String text2 = UnicodeUtils.decomposeToJamoStr(text);
 
 					System.out.println(text + "\t" + text2 + "\t" + String.valueOf(text2.getBytes()));
 					// char[][] phomenes = UnicodeUtils.decomposeKoreanWordToPhonemes(word);

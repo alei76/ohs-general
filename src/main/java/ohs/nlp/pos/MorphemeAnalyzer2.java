@@ -6,10 +6,7 @@ import java.util.Set;
 
 import org.apache.commons.math.stat.descriptive.SynchronizedMultivariateSummaryStatistics;
 
-import com.mysql.fabric.xmlrpc.base.Struct;
-
 import ohs.io.FileUtils;
-import ohs.math.ArrayUtils;
 import ohs.nlp.ling.types.KDocument;
 import ohs.nlp.ling.types.KSentence;
 import ohs.nlp.ling.types.MultiToken;
@@ -24,13 +21,13 @@ import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 import ohs.utils.UnicodeUtils;
 
-public class MorphemeAnalyzer {
+public class MorphemeAnalyzer2 {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("proces begins.");
 
 		TextTokenizer t = new TextTokenizer();
-		MorphemeAnalyzer a = new MorphemeAnalyzer();
+		MorphemeAnalyzer2 a = new MorphemeAnalyzer2();
 
 		{
 			String document = "프랑스의 세계적인 의상 디자이너 엠마누엘 웅가로가 실내 장식용 직물 디자이너로 나섰다.\n";
@@ -73,9 +70,9 @@ public class MorphemeAnalyzer {
 
 	private Trie<Character> userDict;
 
-	private Trie<Character> trie;
+	private Trie<Character> sysDict;
 
-	public MorphemeAnalyzer() throws Exception {
+	public MorphemeAnalyzer2() throws Exception {
 		readAnalyzedDict(NLPPath.DICT_ANALYZED_FILE);
 		readSystemDict(NLPPath.DICT_SYSTEM_FILE);
 	}
@@ -122,26 +119,21 @@ public class MorphemeAnalyzer {
 	private List<Integer> getJosaStartLocs(String word) {
 		int L = word.length();
 		List<Integer> ret = Generics.newArrayList();
-		Character[] cs = StrUtils.asCharacters(word);
 
 		for (int i = L - 1; i >= 0; i--) {
-			SearchResult<Character> sr = trie.search(cs, i, L);
+			char c = word.charAt(i);
 
-			if (sr.getMatchType() == MatchType.EXACT) {
-				Set<SJTag> tags = (Set<SJTag>) sr.getNode().getData();
+			if (i == L - 1 && locToJosaChar.contains(0, word.charAt(L - 1))) {
+				ret.add(i);
+			}
 
-				if (tags != null) {
-					for (SJTag tag : SJTag.JO_SA) {
-						if (tags.contains(tag)) {
-							ret.add(i);
-							break;
-						}
-					}
+			if (locToJosaChar.contains(1, c)) {
+				if (i > 0 && locToJosaChar.contains(0, word.charAt(i - 1))) {
+					ret.add(i - 1);
 				}
 			} else {
 				break;
 			}
-
 		}
 		return ret;
 	}
@@ -149,26 +141,21 @@ public class MorphemeAnalyzer {
 	private List<Integer> getEoMalEoMiStartLocs(String word) {
 		int L = word.length();
 		List<Integer> ret = Generics.newArrayList();
-		Character[] cs = StrUtils.asCharacters(word);
 
 		for (int i = L - 1; i >= 0; i--) {
-			SearchResult<Character> sr = trie.search(cs, i, L);
+			char c = word.charAt(i);
 
-			if (sr.getMatchType() == MatchType.EXACT) {
-				Set<SJTag> tags = (Set<SJTag>) sr.getNode().getData();
+			if (i == L - 1 && locToEoMalEomiChar.contains(0, word.charAt(L - 1))) {
+				ret.add(i);
+			}
 
-				if (tags != null) {
-					for (SJTag tag : SJTag.EO_MAL_EO_MI) {
-						if (tags.contains(tag)) {
-							ret.add(i);
-							break;
-						}
-					}
+			if (locToEoMalEomiChar.contains(1, c)) {
+				if (i > 0 && locToEoMalEomiChar.contains(0, word.charAt(i - 1))) {
+					ret.add(i - 1);
 				}
 			} else {
 				break;
 			}
-
 		}
 		return ret;
 	}
@@ -196,13 +183,13 @@ public class MorphemeAnalyzer {
 
 	private Indexer<String> posIndexer;
 
-	// private Trie<Character> trie;
+	private Trie<Character> trie;
 
 	private void readAnalyzedDict(String fileName) throws Exception {
 
 		analDict = Generics.newSetMap();
 
-		// trie = Trie.newTrie();
+		trie = Trie.newTrie();
 		//
 		// TextFileReader reader = new TextFileReader(fileName);
 		//
@@ -248,21 +235,27 @@ public class MorphemeAnalyzer {
 		// trie.trimToSize();
 	}
 
+	private SetMap<Integer, Character> locToJosaChar;
+
+	private SetMap<Integer, Character> locToEoMalEomiChar;
+
 	private void readSystemDict(String fileName) throws Exception {
 		List<String> lines = FileUtils.readLines(fileName);
 
-		trie = Trie.newTrie();
+		Set<String> josaSet = Generics.newHashSet();
+
+		sysDict = Trie.newTrie();
+
+		locToJosaChar = Generics.newSetMap();
+
+		locToEoMalEomiChar = Generics.newSetMap();
 
 		for (String line : lines) {
 			String[] parts = line.split("\t");
 			String word = parts[0];
 			SJTag pos = SJTag.valueOf(parts[1]);
 
-			if (word.equals("의")) {
-				System.out.println();
-			}
-
-			Node<Character> node = trie.insert(StrUtils.asCharacters(word));
+			Node<Character> node = sysDict.insert(StrUtils.asCharacters(word));
 
 			Set<SJTag> tags = (Set<SJTag>) node.getData();
 
@@ -273,9 +266,61 @@ public class MorphemeAnalyzer {
 
 			tags.add(pos);
 
+			if (pos.toString().startsWith("J")) {
+				josaSet.add(word);
+			}
+
+			switch (pos) {
+			case JKS:
+			case JKC:
+			case JKG:
+			case JKO:
+			case JKB:
+			case JKV:
+			case JKQ:
+			case JX:
+			case JC:
+				for (int i = 0, j = 0; i < word.length(); i++) {
+					char c = word.charAt(i);
+
+					if (!UnicodeUtils.isInRange(UnicodeUtils.HANGUL_SYLLABLES_RANGE, c)) {
+						continue;
+					}
+
+					if (j == 0) {
+						locToJosaChar.put(0, c);
+					} else {
+						locToJosaChar.put(1, c);
+					}
+					j++;
+				}
+				break;
+			case EF:
+			case EC:
+			case ETN:
+			case ETM:
+				for (int i = 0, j = 0; i < word.length(); i++) {
+					char c = word.charAt(i);
+
+					if (!UnicodeUtils.isInRange(UnicodeUtils.HANGUL_SYLLABLES_RANGE, c)) {
+						continue;
+					}
+
+					if (j == 0) {
+						locToEoMalEomiChar.put(0, c);
+					} else {
+						locToEoMalEomiChar.put(1, c);
+					}
+					j++;
+				}
+				break;
+
+			default:
+				break;
+			}
 		}
 
-		trie.trimToSize();
+		sysDict.trimToSize();
 
 	}
 

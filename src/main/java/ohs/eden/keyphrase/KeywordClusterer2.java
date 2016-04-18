@@ -298,7 +298,7 @@ public class KeywordClusterer2 {
 				String korKey = two[0];
 				String engKey = two[1];
 
-				korKey = UnicodeUtils.decomposeToJamo(korKey);
+				korKey = UnicodeUtils.decomposeToJamoStr(korKey);
 				engKey = normalizeEnglish(engKey).replace(" ", "");
 
 				for (int j = 0; j < korKey.length(); j++) {
@@ -957,7 +957,7 @@ public class KeywordClusterer2 {
 					continue;
 				}
 
-				String newKorKey = UnicodeUtils.decomposeToJamo(korKey);
+				String newKorKey = UnicodeUtils.decomposeToJamoStr(korKey);
 				int kid = keyIndexer.getIndex(newKorKey + "\t" + engKey);
 
 				Character[] cs = StrUtils.asCharacters(korKey);

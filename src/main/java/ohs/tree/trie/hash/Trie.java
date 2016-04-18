@@ -71,7 +71,7 @@ public class Trie<K> implements Serializable {
 				String word = parts[0];
 				String pos = parts[1];
 
-				String word2 = UnicodeUtils.decomposeToJamo(word);
+				String word2 = UnicodeUtils.decomposeToJamoStr(word);
 
 				sysDict1.insert(StrUtils.asCharacters(word2.toCharArray()));
 			}
@@ -182,7 +182,6 @@ public class Trie<K> implements Serializable {
 				node.addChild(child);
 			}
 			node = child;
-			node.incrementCount();
 		}
 		node.incrementCount();
 

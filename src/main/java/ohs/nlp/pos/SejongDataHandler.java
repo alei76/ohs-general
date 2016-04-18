@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import edu.stanford.nlp.ling.Word;
 import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
 import ohs.nlp.ling.types.KDocument;
@@ -65,21 +66,11 @@ public class SejongDataHandler {
 			KDocument doc = reader.next();
 
 			for (KSentence sent : doc.getSentences()) {
-				String[][] words = sent.getSubValues(TokenAttr.WORD);
-				String[][] poss = sent.getSubValues(TokenAttr.POS);
+				System.out.println(sent.toString());
+				String[] words = sent.getValues(TokenAttr.WORD);
+				System.out.println(StrUtils.join(" ", words));
+				System.out.println();
 
-				for (MultiToken mt : sent.toMultiTokens()) {
-					for (Token t : mt.getTokens()) {
-						String word = t.getValue(TokenAttr.WORD);
-						String pos = t.getValue(TokenAttr.POS);
-
-						if (pos.startsWith("N") || pos.startsWith("V") || pos.startsWith("S")) {
-							continue;
-						}
-
-						cm.incrementCount(pos, word, 1);
-					}
-				}
 			}
 		}
 		reader.close();
@@ -97,7 +88,6 @@ public class SejongDataHandler {
 		// words.set(i, String.join("\t", res));
 		// }
 
-		FileUtils.writeStrCounterMap(NLPPath.POS_TAG_CHECK_FILE, cm, null, true);
 	}
 
 	public void buildAnalyzedDict() throws Exception {
