@@ -147,18 +147,6 @@ public class StrUtils {
 		return extract(text, tagNames, false);
 	}
 
-	public static void trim(String[] a, String[] b) {
-		for (int i = 0; i < a.length; i++) {
-			b[i] = a[i].trim();
-		}
-	}
-
-	public static String[] trim(String[] a) {
-		String[] b = new String[a.length];
-		trim(a, b);
-		return b;
-	}
-
 	public static List<TextSpan> extract(String t, Set<String> tagNames, boolean get_start_at_plain) throws Exception {
 		List<TextSpan> ret = Generics.newArrayList();
 
@@ -295,10 +283,6 @@ public class StrUtils {
 		return true;
 	}
 
-	// public static String join(String glue, Collection<String> c, int start, int end) {
-	// return join(glue, c, start, end);
-	// }
-
 	public static String join(String glue, Iterable<String> a) {
 		return join(glue, a, 0, Integer.MAX_VALUE);
 	}
@@ -333,6 +317,10 @@ public class StrUtils {
 
 		return sb.toString();
 	}
+
+	// public static String join(String glue, Collection<String> c, int start, int end) {
+	// return join(glue, c, start, end);
+	// }
 
 	public static String join(String inGlue, String midGlue, String outGlue, String[][][] a) {
 		StringBuffer sb = new StringBuffer();
@@ -762,6 +750,18 @@ public class StrUtils {
 			}
 		}
 		return sb.toString();
+	}
+
+	public static String[] trim(String[] a) {
+		String[] b = new String[a.length];
+		trim(a, b);
+		return b;
+	}
+
+	public static void trim(String[] a, String[] b) {
+		for (int i = 0; i < a.length; i++) {
+			b[i] = a[i].trim();
+		}
 	}
 
 	public static String unwrap(String a) {

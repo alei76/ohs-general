@@ -42,22 +42,6 @@ public class SejongDataHandler {
 		System.out.println("process ends.");
 	}
 
-	public static void write(ObjectOutputStream oos, Node<Character> node) throws Exception {
-		for (Node<Character> child : node.getChildren().values()) {
-			write(oos, child);
-
-			char key = child.getKey();
-			int cnt = child.getCount();
-			int depth = child.getDepth();
-			int id = child.getID();
-
-			oos.writeChar(key);
-			oos.writeInt(cnt);
-			oos.writeInt(depth);
-			oos.writeInt(id);
-		}
-	}
-
 	public void build() throws Exception {
 		CounterMap<String, String> cm = Generics.newCounterMap();
 
@@ -157,7 +141,7 @@ public class SejongDataHandler {
 			}
 		}
 
-		FileUtils.writeStrCollection(NLPPath.DICT_SYSTEM_FILE, res);
+//		FileUtils.writeStrCollection(NLPPath.DICT_SYSTEM_FILE, res);
 	}
 
 	public void buildTrie() throws Exception {

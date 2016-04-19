@@ -354,8 +354,15 @@ public class UnicodeUtils {
 		return sb.toString();
 	}
 
+	/**
+	 * 
+	 * @param c
+	 * @return chosung, jungsung, jongsung - char[3]
+	 */
 	public static char[] decomposeToJamo(char c) {
-		char[] ret = new char[] { c };
+		char[] ret = new char[3];
+		ret[0] = c;
+
 		int cp = (int) c;
 
 		if (isInRange(HANGUL_SYLLABLES_RANGE, cp)) {
@@ -495,34 +502,31 @@ public class UnicodeUtils {
 	}
 
 	public static final char[] toJamo(char c) {
-		int[] cps = toJamo((int) c);
 		char[] ret = new char[3];
-		for (int i = 0; i < cps.length; i++) {
-			if (cps[i] != 0) {
-				ret[i] = (char) cps[i];
-			}
+		int loc = 0;
+		for (int cp : toJamo((int) c)) {
+			ret[loc++] = (char) cp;
 		}
 		return ret;
 	}
 
 	public static final int[] toJamo(int cp) {
+		int[] ret = new int[3];
 		cp = cp - HANGUL_SYLLABLES_RANGE[0]; // korean 0~11,171
 
-		int[] locs = new int[3];
-
-		locs[0] = cp / DENOM_CHOSUNG; // chosung 0~18
+		ret[0] = cp / DENOM_CHOSUNG; // chosung 0~18
 		cp = cp % DENOM_CHOSUNG;
-		locs[1] = cp / DENOM_JONGSUNG; // jungsung 0~20
-		locs[2] = cp % DENOM_JONGSUNG; // josung 0~27
+		ret[1] = cp / DENOM_JONGSUNG; // jungsung 0~20
+		ret[2] = cp % DENOM_JONGSUNG; // josung 0~27
 
-		locs[0] += HANGUL_JAMO_CHOSUNG_RANGE[0]; // [4352, 4371]
-		locs[1] += HANGUL_JAMO_JUNGSUNG_RANGE[0]; // [4449, 4470]
+		ret[0] += HANGUL_JAMO_CHOSUNG_RANGE[0]; // [4352, 4371]
+		ret[1] += HANGUL_JAMO_JUNGSUNG_RANGE[0]; // [4449, 4470]
 
-		if (locs[2] != 0) {
-			locs[2] += HANGUL_JAMO_JONGSUNG_RANGE[0]; // [4519, 4547]
+		if (ret[2] != 0) {
+			ret[2] += HANGUL_JAMO_JONGSUNG_RANGE[0]; // [4519, 4547]
 		}
 
-		return locs;
+		return ret;
 	}
 
 	public static void writeMaps() {

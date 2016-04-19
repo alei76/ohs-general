@@ -1,24 +1,21 @@
 package ohs.nlp.pos;
 
-import java.util.Arrays;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.math.stat.descriptive.SynchronizedMultivariateSummaryStatistics;
-
-import com.mysql.fabric.xmlrpc.base.Struct;
-
 import ohs.io.FileUtils;
-import ohs.math.ArrayUtils;
+import ohs.io.TextFileReader;
 import ohs.nlp.ling.types.KDocument;
 import ohs.nlp.ling.types.KSentence;
 import ohs.nlp.ling.types.MultiToken;
+import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
 import ohs.tree.trie.hash.Node;
 import ohs.tree.trie.hash.Trie;
 import ohs.tree.trie.hash.Trie.SearchResult;
 import ohs.tree.trie.hash.Trie.SearchResult.MatchType;
-import ohs.types.Indexer;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
@@ -33,7 +30,8 @@ public class MorphemeAnalyzer {
 		MorphemeAnalyzer a = new MorphemeAnalyzer();
 
 		{
-			String document = "프랑스의 세계적인 의상 디자이너 엠마누엘 웅가로가 실내 장식용 직물 디자이너로 나섰다.\n";
+			// String document = "프랑스의 세계적인 의상 디자이너 엠마누엘 웅가로가 실내 장식용 직물 디자이너로 나섰다.\n";
+			String document = "프랑스의\n";
 
 			KDocument doc = t.tokenize(document);
 			a.analyze(doc);
@@ -69,15 +67,58 @@ public class MorphemeAnalyzer {
 		System.out.println("proces ends.");
 	}
 
-	private SetMap<String, String> analDict;
+	private Trie<Character> wordDict;
 
-	private Trie<Character> userDict;
+	private void writeConnectionRules(ObjectOutputStream oos) throws Exception {
+		oos.writeInt(conRules.size());
 
-	private Trie<Character> trie;
+		for (SJTag t1 : conRules.keySet()) {
+			oos.writeInt(t1.ordinal());
+			Set<SJTag> tags = conRules.get(t1);
+			oos.writeInt(tags.size());
+			for (SJTag t2 : tags) {
+				oos.writeInt(t2.ordinal());
+			}
+		}
+	}
+
+	private void readConnectionRules(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+
+		conRules = Generics.newSetMap(size);
+
+		for (int i = 0; i < size; i++) {
+			SJTag t1 = SJTag.values()[ois.readInt()];
+			int size2 = ois.readInt();
+			Set<SJTag> tags = Generics.newHashSet(size2);
+
+			for (int j = 0; j < size2; j++) {
+				SJTag t2 = SJTag.values()[ois.readInt()];
+				tags.add(t2);
+			}
+			conRules.put(t1, tags);
+		}
+	}
 
 	public MorphemeAnalyzer() throws Exception {
-		readAnalyzedDict(NLPPath.DICT_ANALYZED_FILE);
-		readSystemDict(NLPPath.DICT_SYSTEM_FILE);
+		if (FileUtils.exists(NLPPath.DICT_SER_FILE)) {
+			ObjectInputStream ois = FileUtils.openObjectInputStream(NLPPath.DICT_SER_FILE);
+			wordDict = new Trie<Character>();
+			wordDict.read(ois);
+
+			readConnectionRules(ois);
+
+			ois.close();
+		} else {
+			buildDict(NLPPath.DICT_ANALYZED_FILE);
+
+			ObjectOutputStream oos = FileUtils.openObjectOutputStream(NLPPath.DICT_SER_FILE);
+			wordDict.write(oos);
+			writeConnectionRules(oos);
+			oos.close();
+		}
+
+		// readSystemDict(NLPPath.DICT_SYSTEM_FILE);
 	}
 
 	public void analyze(KDocument doc) {
@@ -99,91 +140,80 @@ public class MorphemeAnalyzer {
 			}
 		}
 
-		System.out.println();
 	}
 
 	public Set<String> analyze(String word) {
 		Set<String> ret = Generics.newHashSet();
 
-		int L = word.length();
+		List<Character> cs = Generics.newArrayList();
 
-		Character[] chs = StrUtils.asCharacters(word);
-		char[][] jasos = UnicodeUtils.decomposeToJamo(word);
-		List<Integer> tmpStarts = getJosaStartLocs(word);
-		List<Integer> tmpStarts2 = getEoMalEoMiStartLocs(word);
+		for (int i = 0; i < word.length(); i++) {
+			for (char c : UnicodeUtils.decomposeToJamo(word.charAt(i))) {
+				if ((int) c != 0) {
+					cs.add(c);
+				}
+			}
+		}
 
-		System.out.println(word);
-		System.out.println(tmpStarts);
-		System.out.println(tmpStarts2);
+		Set<SJTag> tags = Generics.newHashSet();
+
+		find(cs, 0, tags);
 
 		return ret;
 	}
 
-	private List<Integer> getJosaStartLocs(String word) {
-		int L = word.length();
-		List<Integer> ret = Generics.newArrayList();
-		Character[] cs = StrUtils.asCharacters(word);
+	private void find(List<Character> cs, int i, Set<SJTag> prevTags) {
 
-		for (int i = L - 1; i >= 0; i--) {
-			SearchResult<Character> sr = trie.search(cs, i, L);
+		for (int j = i + 1; j <= cs.size(); j++) {
+			String str = getString(cs, i, j);
+			SearchResult<Character> sr = wordDict.search(cs, i, j);
+			Set<SJTag> tags = (Set<SJTag>) sr.getNode().getData();
 
 			if (sr.getMatchType() == MatchType.EXACT) {
-				Set<SJTag> tags = (Set<SJTag>) sr.getNode().getData();
-
 				if (tags != null) {
-					for (SJTag tag : SJTag.JO_SA) {
-						if (tags.contains(tag)) {
-							ret.add(i);
-							break;
+					Set<SJTag> nextTags = Generics.newHashSet();
+
+					if (i == 0) {
+						nextTags = Generics.newHashSet(tags);
+
+						System.out.printf("[%s, %d, %d, %s]\n", str, i, j, nextTags);
+
+						find(cs, j, nextTags);
+					} else {
+						if (prevTags.size() > 0) {
+							for (SJTag prevTag : prevTags) {
+								for (SJTag tag : tags) {
+									if (conRules.contains(prevTag, tag)) {
+										nextTags.add(tag);
+									}
+								}
+							}
+
+							if (nextTags.size() > 0) {
+								System.out.printf("[%s, %d, %d, %s]\n", getString(cs, i, j), i, j, nextTags);
+
+								find(cs, j, nextTags);
+							}
 						}
 					}
+
+				} else {
+					// System.out.println();
 				}
 			} else {
-				break;
-			}
-
-		}
-		return ret;
-	}
-
-	private List<Integer> getEoMalEoMiStartLocs(String word) {
-		int L = word.length();
-		List<Integer> ret = Generics.newArrayList();
-		Character[] cs = StrUtils.asCharacters(word);
-
-		for (int i = L - 1; i >= 0; i--) {
-			SearchResult<Character> sr = trie.search(cs, i, L);
-
-			if (sr.getMatchType() == MatchType.EXACT) {
-				Set<SJTag> tags = (Set<SJTag>) sr.getNode().getData();
-
-				if (tags != null) {
-					for (SJTag tag : SJTag.EO_MAL_EO_MI) {
-						if (tags.contains(tag)) {
-							ret.add(i);
-							break;
-						}
-					}
+				if (i != 0) {
+					break;
 				}
-			} else {
-				break;
 			}
-
 		}
-		return ret;
 	}
 
-	private void search(Character[] cs, int start, int end) {
-		if (start >= 0 && end <= cs.length) {
-			SearchResult<Character> sr = trie.search(cs, start, end);
-
-			if (sr.getMatchType() == MatchType.EXACT) {
-				search(cs, start, end + 1);
-			} else {
-				search(cs, end - 1, end);
-				System.out.println();
-			}
+	public String getString(List<Character> s, int start, int end) {
+		StringBuffer sb = new StringBuffer();
+		for (int i = start; i < end; i++) {
+			sb.append(s.get(i).charValue());
 		}
+		return sb.toString();
 	}
 
 	public void analyze(String[] words) {
@@ -194,89 +224,93 @@ public class MorphemeAnalyzer {
 		}
 	}
 
-	private Indexer<String> posIndexer;
+	private List<Integer> getStartLocs(String word, SetMap<Integer, Character> locToChars) {
+		List<Integer> ret = Generics.newArrayList();
+		int L = word.length();
 
-	// private Trie<Character> trie;
+		for (int i = L - 1; i >= 0; i--) {
+			if (i == L - 1 && locToChars.contains(0, word.charAt(i))) {
+				ret.add(i);
+			}
 
-	private void readAnalyzedDict(String fileName) throws Exception {
-
-		analDict = Generics.newSetMap();
-
-		// trie = Trie.newTrie();
-		//
-		// TextFileReader reader = new TextFileReader(fileName);
-		//
-		// while (reader.hasNext()) {
-		// String line = reader.next();
-		//
-		// if (reader.getNumLines() == 1) {
-		// continue;
-		// }
-		//
-		// String[] parts = line.split("\t");
-		// for (int i = 1; i < parts.length; i++) {
-		// analDict.put(parts[0], parts[i]);
-		//
-		// String[] subParts = parts[i].split(MultiToken.DELIM_MULTI_TOKEN.replace("+", "\\+"));
-		//
-		// for (int j = 0; j < subParts.length; j++) {
-		// String[] two = subParts[j].split(Token.DELIM_TOKEN);
-		// String word = two[0];
-		// SJTag pos = SJTag.valueOf(two[1]);
-		//
-		// StringBuffer sb = new StringBuffer();
-		// for (int k = 0; k < word.length(); k++) {
-		// // sb.append(UnicodeUtils.decomposeToJamo(word.charAt(k)));
-		// sb.append(word.charAt(k));
-		// }
-		//
-		// Node<Character> node = trie.insert(StrUtils.asCharacters(sb.toString().toCharArray()));
-		//
-		// Counter<SJTag> c = (Counter<SJTag>) node.getData();
-		//
-		// if (c == null) {
-		// c = Generics.newCounter();
-		// node.setData(c);
-		// }
-		//
-		// c.incrementCount(pos, 1);
-		// }
-		// }
-		// }
-		// reader.close();
-		//
-		// trie.trimToSize();
+			if (locToChars.contains(1, word.charAt(i))) {
+				if (i >= 0 && locToChars.contains(0, word.charAt(i - 1))) {
+					ret.add(i);
+				}
+			} else {
+				break;
+			}
+		}
+		return ret;
 	}
 
-	private void readSystemDict(String fileName) throws Exception {
-		List<String> lines = FileUtils.readLines(fileName);
+	private SetMap<SJTag, SJTag> conRules;
 
-		trie = Trie.newTrie();
+	private void buildDict(String fileName) throws Exception {
 
-		for (String line : lines) {
+		wordDict = Trie.newTrie();
+
+		conRules = Generics.newSetMap();
+
+		TextFileReader reader = new TextFileReader(fileName);
+
+		while (reader.hasNext()) {
+			String line = reader.next();
+
+			if (reader.getNumLines() == 1) {
+				continue;
+			}
+
 			String[] parts = line.split("\t");
-			String word = parts[0];
-			SJTag pos = SJTag.valueOf(parts[1]);
+			for (int i = 1; i < parts.length; i++) {
+				String[] subParts = parts[i].split(MultiToken.DELIM_MULTI_TOKEN.replace("+", "\\+"));
+				String[] words = new String[subParts.length];
+				SJTag[] poss = new SJTag[subParts.length];
 
-			if (word.equals("의")) {
-				System.out.println();
+				for (int j = 0; j < subParts.length; j++) {
+					String[] two = subParts[j].split(Token.DELIM_TOKEN);
+					words[j] = two[0];
+					poss[j] = SJTag.valueOf(two[1]);
+				}
+
+				for (int j = 0; j < words.length; j++) {
+					// if (words[j].contains("프랑스")) {
+					// System.out.println();
+					// }
+					char[][] jasos = UnicodeUtils.decomposeToJamo(words[j]);
+
+					StringBuffer sb = new StringBuffer();
+
+					for (int m = 0; m < jasos.length; m++) {
+						for (int n = 0; n < jasos[m].length; n++) {
+							if ((int) jasos[m][n] != 0) {
+								sb.append(jasos[m][n]);
+							}
+						}
+					}
+
+					Node<Character> node = wordDict.insert(StrUtils.asCharacters(sb.toString()));
+
+					Set<SJTag> tags = (Set<SJTag>) node.getData();
+
+					if (tags == null) {
+						tags = Generics.newHashSet();
+						node.setData(tags);
+					}
+					tags.add(poss[j]);
+				}
+
+				if (poss.length > 1) {
+					for (int j = 1; j < poss.length; j++) {
+						conRules.put(poss[j - 1], poss[j]);
+					}
+				}
+
 			}
-
-			Node<Character> node = trie.insert(StrUtils.asCharacters(word));
-
-			Set<SJTag> tags = (Set<SJTag>) node.getData();
-
-			if (tags == null) {
-				tags = Generics.newHashSet();
-				node.setData(tags);
-			}
-
-			tags.add(pos);
-
 		}
+		reader.close();
 
-		trie.trimToSize();
-
+		wordDict.trimToSize();
 	}
 
 }

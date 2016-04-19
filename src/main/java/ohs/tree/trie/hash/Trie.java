@@ -316,7 +316,6 @@ public class Trie<K> implements Serializable {
 	public void write(ObjectOutputStream oos) throws Exception {
 		oos.writeInt(depth);
 		oos.writeInt(size);
-
 		write(oos, root);
 	}
 

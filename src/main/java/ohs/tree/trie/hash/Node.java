@@ -35,35 +35,20 @@ public class Node<K> implements Serializable {
 	protected Node<K> parent;
 	protected Object data;
 
-	public void write(ObjectOutputStream oos) throws Exception {
-		oos.writeInt(id);
-		oos.writeObject(key);
-		oos.writeInt(cnt);
-		oos.writeObject(data);
-		oos.flush();
-	}
-
-	public void setParent(Node<K> parent) {
-		this.parent = parent;
-	}
-
-	public void read(ObjectInputStream ois) throws Exception {
-		id = ois.readInt();
-		key = (K) ois.readObject();
-		cnt = ois.readInt();
-		data = ois.readObject();
-	}
-
-	// public Node(Node<K> parent, K key, int depth, int id) {
-	// this(parent, key, depth, null, id);
-	// }
-
-	// public void write(ObjectOutputStream ois) {
-	//
-	// }
-
 	public Node() {
 
+	}
+
+	public void setKey(K key) {
+		this.key = key;
+	}
+
+	public void setCount(int cnt) {
+		this.cnt = cnt;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 	public Node(Node<K> parent, K key, Object data, int id) {
@@ -81,6 +66,14 @@ public class Node<K> implements Serializable {
 		}
 		children.put(node.getKey(), node);
 	}
+
+	// public Node(Node<K> parent, K key, int depth, int id) {
+	// this(parent, key, depth, null, id);
+	// }
+
+	// public void write(ObjectOutputStream ois) {
+	//
+	// }
 
 	@Override
 	public boolean equals(Object obj) {
@@ -231,10 +224,6 @@ public class Node<K> implements Serializable {
 		return ret;
 	}
 
-	public int sizeOfChildren() {
-		return children == null ? 0 : children.size();
-	}
-
 	public Type getType() {
 		Type ret = Type.NON_LEAF;
 		if (parent == null) {
@@ -278,6 +267,25 @@ public class Node<K> implements Serializable {
 		return getType() == Type.ROOT ? true : false;
 	}
 
+	public void read(ObjectInputStream ois) throws Exception {
+		id = ois.readInt();
+		key = (K) ois.readObject();
+		cnt = ois.readInt();
+		data = ois.readObject();
+	}
+
+	public void setChildren(Map<K, Node<K>> children) {
+		this.children = children;
+	}
+
+	public void setData(Object data) {
+		this.data = data;
+	}
+
+	public void setParent(Node<K> parent) {
+		this.parent = parent;
+	}
+
 	// public boolean isLeaf() {
 	// return children == null ? true : false;
 	// }
@@ -286,12 +294,8 @@ public class Node<K> implements Serializable {
 	// return depth == 1 ? true : false;
 	// }
 
-	public void setChildren(Map<K, Node<K>> children) {
-		this.children = children;
-	}
-
-	public void setData(Object data) {
-		this.data = data;
+	public int sizeOfChildren() {
+		return children == null ? 0 : children.size();
 	}
 
 	@Override
@@ -324,6 +328,14 @@ public class Node<K> implements Serializable {
 			}
 			children = temp;
 		}
+	}
+
+	public void write(ObjectOutputStream oos) throws Exception {
+		oos.writeInt(id);
+		oos.writeObject(key);
+		oos.writeInt(cnt);
+		oos.writeObject(data);
+		oos.flush();
 	}
 
 }

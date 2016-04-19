@@ -20,12 +20,12 @@ public class NLPPath {
 
 	public static final String WORD_CNT_ILE = DATA_DIR + "word_cnt.txt";
 
-	public static final String DICT_SYSTEM_FILE = DATA_DIR + "dic_sys.txt.gz";
+	public static final String DICT_ANALYZED_FILE = DATA_DIR + "dict_anal.txt.gz";
+	
+	public static final String DICT_SYSTEM_FILE = DATA_DIR + "dict_sys.txt.gz";
 
-	public static final String DICT_SYSTEM_TRIE_FILE = DATA_DIR + "dic_sys_trie.ser.gz";
+	public static final String DICT_SER_FILE = DATA_DIR + "dict_trie.ser.gz";
 
-	public static final String DICT_ANALYZED_FILE = DATA_DIR + "dic_anal.txt.gz";
-
-	public static final String POS_TAG_CHECK_FILE = DATA_DIR + "pos_tag_check.txt";
+	public static final String CONNECTION_RULE_FILE = DATA_DIR + "conn_trie.ser.gz";
 
 }
