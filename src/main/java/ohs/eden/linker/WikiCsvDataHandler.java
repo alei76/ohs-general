@@ -10,10 +10,15 @@ import java.util.Stack;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
+import ohs.tree.trie.hash.Trie;
+import ohs.tree.trie.hash.Trie.SearchResult;
+import ohs.tree.trie.hash.Trie.SearchResult.MatchType;
 import ohs.types.BidMap;
 import ohs.types.Counter;
+import ohs.types.CounterMap;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
+import ohs.utils.StrUtils;
 
 public class WikiCsvDataHandler {
 
@@ -31,25 +36,37 @@ public class WikiCsvDataHandler {
 	}
 
 	public void encodeCategories() throws Exception {
-		BidMap<Integer, String> idPageMap = Generics.newBidMap();
+		List<Integer> ids = Generics.newArrayList();
+		List<String> titles = Generics.newArrayList();
+		List<Integer> catPages = Generics.newArrayList();
+		List<Integer> catSubcats = Generics.newArrayList();
 
-		TextFileReader reader = new TextFileReader(ELPath.WIKI_DIR + "wiki_category.csv");
+		TextFileReader reader = new TextFileReader(ELPath.WIKI_DIR + "wiki_category.csv.gz");
 		while (reader.hasNext()) {
 			/*
 			 * "id"\t"title"
 			 */
 			String[] parts = reader.next().split("\t");
-			parts = normalize(parts);
+			parts = StrUtils.unwrap(parts);
 
 			int id = Integer.parseInt(parts[0]);
 			String cat_title = parts[1];
 			int cat_pages = Integer.parseInt(parts[2]);
 			int cat_subcats = Integer.parseInt(parts[3]);
-			idPageMap.put(id, cat_title);
+
+			ids.add(id);
+			titles.add(cat_title);
+			catPages.add(cat_pages);
+			catSubcats.add(cat_subcats);
+
 		}
 		reader.close();
-		ObjectOutputStream oos = FileUtils.openObjectOutputStream(ELPath.WIKI_DIR + "wiki_category_encoded.ser.gz");
-		FileUtils.writeIntStrBidMap(oos, idPageMap);
+
+		ObjectOutputStream oos = FileUtils.openObjectOutputStream(ELPath.WIKI_DIR + "encoded_wiki_category.ser.gz");
+		FileUtils.writeIntCollection(oos, ids);
+		FileUtils.writeStrCollection(oos, titles);
+		FileUtils.writeIntCollection(oos, catPages);
+		FileUtils.writeIntCollection(oos, catSubcats);
 		oos.close();
 	}
 
@@ -57,7 +74,7 @@ public class WikiCsvDataHandler {
 		BidMap<Integer, String> idTitleMap = null;
 
 		{
-			ObjectInputStream ois = FileUtils.openObjectInputStream(ELPath.WIKI_DIR + "wiki_title_encoded.ser.gz");
+			ObjectInputStream ois = FileUtils.openObjectInputStream(ELPath.WIKI_DIR + "encoded_wiki_title.ser.gz");
 			idTitleMap = FileUtils.readIntStrBidMap(ois);
 			ois.close();
 		}
@@ -65,18 +82,18 @@ public class WikiCsvDataHandler {
 		BidMap<Integer, String> idCatMap = null;
 
 		{
-			ObjectInputStream ois = FileUtils.openObjectInputStream(ELPath.WIKI_DIR + "wiki_category_encoded.ser.gz");
+			ObjectInputStream ois = FileUtils.openObjectInputStream(ELPath.WIKI_DIR + "encoded_wiki_category.ser.gz");
 			idCatMap = FileUtils.readIntStrBidMap(ois);
 			ois.close();
 		}
 
 		SetMap<Integer, Integer> sm = Generics.newSetMap();
 
-		TextFileReader reader = new TextFileReader(ELPath.WIKI_DIR + "wiki_categorylink.csv");
+		TextFileReader reader = new TextFileReader(ELPath.WIKI_DIR + "wiki_categorylink.csv.gz");
 		while (reader.hasNext()) {
 			String line = reader.next();
-			String[] parts = line.split("\t");
-			parts = normalize(parts);
+			String[] parts = StrUtils.unwrap(line.split("\t"));
+
 			int cl_from = Integer.parseInt(parts[0]);
 			String cl_to = parts[1];
 			String cl_type = parts[2];
@@ -96,7 +113,7 @@ public class WikiCsvDataHandler {
 		}
 		reader.close();
 
-		ObjectOutputStream oos = FileUtils.openObjectOutputStream(ELPath.WIKI_DIR + "wiki_categorylink_encoded.ser.gz");
+		ObjectOutputStream oos = FileUtils.openObjectOutputStream(ELPath.WIKI_DIR + "encoded_wiki_categorylink.ser.gz");
 		FileUtils.writeIntSetMap(oos, sm);
 		oos.close();
 	}
@@ -143,7 +160,7 @@ public class WikiCsvDataHandler {
 	public void encodeTitles() throws Exception {
 		BidMap<Integer, String> idPageMap = Generics.newBidMap();
 
-		TextFileReader reader = new TextFileReader(ELPath.WIKI_DIR + "wiki_title.csv");
+		TextFileReader reader = new TextFileReader(ELPath.WIKI_DIR + "wiki_title.csv.gz");
 		while (reader.hasNext()) {
 			/*
 			 * "id"\t"title"
@@ -156,93 +173,149 @@ public class WikiCsvDataHandler {
 		}
 		reader.close();
 
-		ObjectOutputStream oos = FileUtils.openObjectOutputStream(ELPath.WIKI_DIR + "wiki_title_encoded.ser.gz");
+		ObjectOutputStream oos = FileUtils.openObjectOutputStream(ELPath.WIKI_DIR + "encoded_wiki_title.ser.gz");
 		FileUtils.writeIntStrBidMap(oos, idPageMap);
 		oos.close();
 	}
 
 	public void getMedicalCategories() throws Exception {
 
-		SetMap<Integer, Integer> parentChildMap = null;
+		SetMap<Integer, Integer> parentToChilds = null;
+		SetMap<Integer, Integer> childToParents = null;
 
 		{
-			ObjectInputStream ois = FileUtils.openObjectInputStream(ELPath.WIKI_DIR + "wiki_categorylink_encoded.ser.gz");
-			parentChildMap = FileUtils.readIntSetMap(ois);
+			ObjectInputStream ois = FileUtils.openObjectInputStream(ELPath.WIKI_DIR + "encoded_wiki_categorylink.ser.gz");
+			parentToChilds = FileUtils.readIntSetMap(ois);
 			ois.close();
+
+			childToParents = Generics.newSetMap();
+
+			for (int p : parentToChilds.keySet()) {
+				for (int c : parentToChilds.get(p)) {
+					childToParents.put(c, p);
+				}
+			}
 		}
 
-		BidMap<Integer, String> idCatMap = null;
+		BidMap<Integer, String> idToCat = null;
+		Counter<Integer> catPageCnts = Generics.newCounter();
 
 		{
-			ObjectInputStream ois = FileUtils.openObjectInputStream(ELPath.WIKI_DIR + "wiki_category_encoded.ser.gz");
-			idCatMap = FileUtils.readIntStrBidMap(ois);
+			ObjectInputStream ois = FileUtils.openObjectInputStream(ELPath.WIKI_DIR + "encoded_wiki_category.ser.gz");
+			List<Integer> ids = FileUtils.readIntList(ois);
+			List<String> titles = FileUtils.readStrList(ois);
+			List<Integer> catPages = FileUtils.readIntList(ois);
+			List<Integer> catSubcats = FileUtils.readIntList(ois);
 			ois.close();
+
+			idToCat = Generics.newBidMap(ids.size());
+
+			for (int i = 0; i < ids.size(); i++) {
+				idToCat.put(ids.get(i), titles.get(i));
+				catPageCnts.setCount(ids.get(i), catPageCnts.getCount(i));
+			}
+		}
+
+		{
+			for (int c : childToParents.keySet()) {
+				String child = idToCat.getValue(c);
+				Set<Integer> ps = childToParents.get(c);
+
+				if (ps.size() > 1) {
+					StringBuffer sb = new StringBuffer();
+					sb.append("# " + child + "\n");
+					for (int p : ps) {
+						int cat_pages = (int) catPageCnts.getCount(p);
+						String parent = idToCat.getValue(p);
+						sb.append(String.format("-> %s, %d\n", parent, cat_pages));
+					}
+
+					System.out.println(sb.toString());
+				}
+			}
 		}
 
 		int root_id = 192834;
 		int health_id = 153550;
 
-		System.out.println(parentChildMap.get(health_id));
+		// System.out.println(parentToChilds.get(health_id));
 
-		Set<Integer> mainTopicIds = parentChildMap.get(root_id);
+		Set<Integer> mainCats = Generics.newHashSet(parentToChilds.get(root_id));
+		mainCats.add(root_id);
 
-		for (int id : mainTopicIds) {
-			System.out.println(idCatMap.getValue(id));
-		}
+		// for (int id : mainTopics) {
+		// System.out.println(idToCat.getValue(id));
+		// }
 
 		Stack<Integer> path = new Stack<Integer>();
 		path.push(health_id);
 
 		TextFileWriter writer = new TextFileWriter(ELPath.WIKI_DIR + "wiki_cat_tree.txt");
 
-		Counter<String> pathCnts = Generics.newCounter();
+		Trie<String> trie = Trie.newTrie();
 
-		getMedicalConcepts(path, parentChildMap, idCatMap, pathCnts);
+		SetMap<Integer, Integer> levelToCats = Generics.newSetMap();
+
+		getMedicalConcepts(path, mainCats, parentToChilds, idToCat, levelToCats, trie);
 
 		writer.close();
+
+		// FileUtils.writeStrCounter(ELPath.WIKI_DIR + "wiki_cat_tree.txt", leaves);
 	}
 
-	private List<Integer> getMedicalConcepts(Stack<Integer> idPath, SetMap<Integer, Integer> parentChildMap,
-			BidMap<Integer, String> idCatMap, Counter<String> visited) {
+	private void getMedicalConcepts(Stack<Integer> path, Set<Integer> mainCats,
 
-		int parent_id = idPath.peek();
+			SetMap<Integer, Integer> parentToChilds, BidMap<Integer, String> idToCat, SetMap<Integer, Integer> levelToCats,
+			Trie<String> trie) {
 
-		StringBuffer sb = new StringBuffer();
+		int parent_id = path.peek();
+		int level = path.size();
 
-		for (int i = 0; i < idPath.size(); i++) {
-			sb.append(idCatMap.getValue(idPath.get(i)));
-			if (i != idPath.size() - 1) {
-				sb.append("->");
+		Counter<String> catCnts = Generics.newCounter();
+		Counter<String> mainCatCnts = Generics.newCounter();
+
+		String[] catPath = new String[path.size()];
+
+		for (int i = 0; i < path.size(); i++) {
+			int catid = path.get(i);
+			String cat = idToCat.getValue(catid);
+			catPath[i] = cat;
+
+			catCnts.incrementCount(cat, 1);
+
+			if (mainCats.contains(catid)) {
+				mainCatCnts.incrementCount(cat, 1);
 			}
 		}
 
-		sb.append(idCatMap.getValue(parent_id));
-
-		List<Integer> ret = Generics.newArrayList();
-
-		String catPath = sb.toString();
-
-		if (visited.containsKey(catPath)) {
-			return ret;
+		if (catCnts.max() > 1) {
+			return;
 		}
 
-		visited.incrementCount(catPath, 1);
+		if (mainCatCnts.size() > 1) {
+			return;
+		}
 
-		Set<Integer> children = parentChildMap.get(parent_id, true);
+		Set<Integer> children = parentToChilds.get(parent_id, false);
 
-		if (children.size() == 0) {
-			for (int i = 0; i < idPath.size(); i++) {
-				ret.add(idPath.get(i));
-			}
-			idPath.pop();
+		if (children == null) {
+			trie.insert(catPath);
+
 		} else {
 			for (int child_id : children) {
-				String child = idCatMap.getValue(child_id);
+				String child = idToCat.getValue(child_id);
+
+				if (levelToCats.contains(catPath.length + 1, child_id)) {
+					continue;
+				}
+
+				levelToCats.put(catPath.length + 1, child_id);
+
+				path.push(child_id);
+				getMedicalConcepts(path, mainCats, parentToChilds, idToCat, levelToCats, trie);
+				path.pop();
 			}
 		}
-
-		return ret;
-
 	}
 
 	private String[] normalize(String[] parts) {

@@ -169,7 +169,7 @@ public class MorphemeAnalyzer {
 			SearchResult<Character> sr = wordDict.search(cs, i, j);
 			Set<SJTag> tags = (Set<SJTag>) sr.getNode().getData();
 
-			if (sr.getMatchType() == MatchType.EXACT) {
+			if (sr.getMatchType() == MatchType.EXACT_KEYS_WITH_DATA) {
 				if (tags != null) {
 					Set<SJTag> nextTags = Generics.newHashSet();
 

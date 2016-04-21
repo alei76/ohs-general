@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 import ohs.math.ArrayMath;
 import ohs.nlp.ling.types.TextSpan;
 import ohs.types.Counter;
+import ohs.types.Indexer;
 
 /**
  * 
@@ -285,6 +286,45 @@ public class StrUtils {
 
 	public static String join(String glue, Iterable<String> a) {
 		return join(glue, a, 0, Integer.MAX_VALUE);
+	}
+
+	public static String join(String glue, Iterable<Integer> a, Indexer<String> b) {
+		return join(glue, a, 0, Integer.MAX_VALUE, b);
+	}
+
+	public static String join(String glue, Iterable<Integer> a, int start, int end, Indexer<String> b) {
+		StringBuffer sb = new StringBuffer();
+
+		if (a instanceof List) {
+			List<Integer> t = (List<Integer>) a;
+			for (int i = start; i < end; i++) {
+				int id = t.get(i);
+				String obj = b.getObject(id);
+				sb.append(obj);
+				if (i != end - 1) {
+					sb.append(glue);
+				}
+			}
+		} else {
+			Iterator<Integer> iter = a.iterator();
+			int loc = 0;
+
+			while (iter.hasNext()) {
+				if (loc == end) {
+					break;
+				} else if (loc >= start && loc < end) {
+					if (loc > start) {
+						sb.append(glue);
+					}
+					int id = iter.next();
+					String obj = b.getObject(id);
+					sb.append(obj);
+				}
+				loc++;
+			}
+		}
+
+		return sb.toString();
 	}
 
 	public static String join(String glue, Iterable<String> a, int start, int end) {

@@ -298,7 +298,7 @@ public class MorphemeAnalyzer2 {
 		if (start >= 0 && end <= cs.length) {
 			SearchResult<Character> sr = wordDict.search(cs, start, end);
 
-			if (sr.getMatchType() == MatchType.EXACT) {
+			if (sr.getMatchType() == MatchType.EXACT_KEYS_WITH_DATA) {
 				search(cs, start, end + 1);
 			} else {
 				search(cs, end - 1, end);

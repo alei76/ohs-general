@@ -139,7 +139,7 @@ public class CandidateSearcher {
 					if (sr.getMatchType() == MatchType.FAIL) {
 						break;
 					} else {
-						if (sr.getMatchType() == MatchType.EXACT && sr.getNode().getCount() > 0) {
+						if (sr.getMatchType() == MatchType.EXACT_KEYS_WITH_DATA && sr.getNode().getCount() > 0) {
 							found = e;
 						}
 					}

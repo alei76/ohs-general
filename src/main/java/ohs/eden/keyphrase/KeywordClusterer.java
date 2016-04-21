@@ -464,23 +464,23 @@ public class KeywordClusterer {
 					SparseVector tKorCent = korCents.get(tcid);
 					SparseVector tEngCent = engCents.get(tcid);
 
-					if (tKorCent.size() > 0) {
-						double kor_cosine = VectorMath.dotProduct(qKorCent, tKorCent);
-						double eng_cosine = VectorMath.dotProduct(qEngCent, tEngCent);
-						double cosine = ArrayMath.addAfterScale(kor_cosine, 0.5, eng_cosine);
+					// if (tKorCent.size() > 0) {
+					// double kor_cosine = VectorMath.dotProduct(qKorCent, tKorCent);
+					// double eng_cosine = VectorMath.dotProduct(qEngCent, tEngCent);
+					// double cosine = ArrayMath.addAfterScale(kor_cosine, 0.5, eng_cosine);
+					//
+					// if (cosine >= 0.9) {
+					// queryToTargets.incrementCount(qcid, tcid, cosine);
+					// queryToTargets.incrementCount(tcid, qcid, cosine);
+					// }
+					// } else {
+					double eng_cosine = VectorMath.dotProduct(qEngCent, tEngCent);
 
-						if (cosine >= 0.9) {
-							queryToTargets.incrementCount(qcid, tcid, cosine);
-							queryToTargets.incrementCount(tcid, qcid, cosine);
-						}
-					} else {
-						double eng_cosine = VectorMath.dotProduct(qEngCent, tEngCent);
-
-						if (eng_cosine >= 0.9) {
-							queryToTargets.incrementCount(qcid, tcid, eng_cosine);
-							queryToTargets.incrementCount(tcid, qcid, eng_cosine);
-						}
+					if (eng_cosine >= 0.9) {
+						queryToTargets.incrementCount(qcid, tcid, eng_cosine);
+						queryToTargets.incrementCount(tcid, qcid, eng_cosine);
 					}
+					// }
 				}
 			}
 

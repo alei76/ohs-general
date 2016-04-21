@@ -6,257 +6,277 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.math.stat.descriptive.SynchronizedMultivariateSummaryStatistics;
-
 import ohs.io.FileUtils;
-import ohs.io.TextFileWriter;
+import ohs.string.sim.EditDistance;
+import ohs.string.sim.SequenceFactory;
+import ohs.tree.trie.hash.Node;
 import ohs.tree.trie.hash.Trie;
 import ohs.types.BidMap;
 import ohs.types.Counter;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
-import ohs.utils.StrUtils;
 
 public class CategoryTreeBuilder {
 
 	public static void main(String[] args) throws Exception {
 		System.out.printf("[%s] begins.\n", CategoryTreeBuilder.class.getName());
 
-		CategoryTreeBuilder d = new CategoryTreeBuilder();
-		d.readData();
-		d.build();
+		CategoryTreeBuilder ctb = new CategoryTreeBuilder();
+		ctb.build();
 
 		System.out.printf("[%s] ends.\n", CategoryTreeBuilder.class.getName());
 	}
 
-	private SetMap<Integer, Integer> parentChildMap;
+	private BidMap<Integer, String> idToCat = null;
 
-	private BidMap<Integer, String> idCatMap;
+	private Counter<Integer> catPageCnts = null;
+
+	private SetMap<Integer, Integer> parentToChilds = null;
+
+	private SetMap<Integer, Integer> childToParents = null;
 
 	private int root_id = 192834;
 
 	private int health_id = 153550;
 
-	private SetMap<Integer, Integer> childParentMap;
-
 	private Trie<String> trie;
 
-	private TextFileWriter writer;
+	private Set<Integer> mainCats;
 
-	private Set<Integer> mainTopics;
+	private EditDistance<Character> ed = new EditDistance<Character>();
+
+	private Set<Integer> leaves;
+
+	private boolean bottomUp(Stack<Integer> path) {
+		int c = path.peek();
+		String cat = idToCat.getValue(c);
+
+		Set<Integer> parents = childToParents.get(c, false);
+
+		if (mainCats.contains(c) || parents == null) {
+			if (c == health_id) {
+				List<String> catPath = Generics.newArrayList();
+				for (int i = 0; i < path.size(); i++) {
+					catPath.add(idToCat.getValue(path.get(i)));
+				}
+				Collections.reverse(catPath);
+
+				trie.insert(catPath);
+
+				return true;
+			} else {
+				return false;
+			}
+		}
+
+		// int p = -1;
+		//
+		// if (parents.size() == 0) {
+		// p = parents.iterator().next();
+		// } else {
+		// Counter<Integer> pageScores = Generics.newCounter();
+		//
+		// for (int nc : parents) {
+		// String nCat = idToCat.getValue(nc);
+		//
+		// if (nCat.startsWith("Commons_category_") || nCat.startsWith("Hidden_")) {
+		// continue;
+		// }
+		// pageScores.setCount(nc, 0);
+		// }
+		//
+		// if (pageScores.size() > 0) {
+		// for (int nc : pageScores.keySet()) {
+		// pageScores.setCount(nc, catPageCnts.getCount(nc));
+		// }
+		//
+		// if (pageScores.max() > 0) {
+		// p = pageScores.argMax();
+		// }
+		//
+		// if (p == -1) {
+		// for (int nc : pageScores.keySet()) {
+		// double sim = ed.getSimilarity(SequenceFactory.newCharSequences(cat, idToCat.getValue(nc)));
+		// pageScores.setCount(nc, sim);
+		// }
+		//
+		// p = pageScores.argMax();
+		// }
+		// }
+		// }
+
+		Counter<Integer> catCnts = Generics.newCounter();
+
+		for (int catid : path) {
+			catCnts.incrementCount(catid, 1);
+		}
+
+		Counter<Integer> pageCnts = Generics.newCounter();
+
+		for (int p : parents) {
+			pageCnts.setCount(p, catPageCnts.getCount(p));
+		}
+
+		for (int p : pageCnts.getSortedKeys()) {
+			if (catCnts.containsKey(p)) {
+				continue;
+			}
+
+			String nCat = idToCat.getValue(p);
+			if (nCat.startsWith("Commons_category_") || nCat.startsWith("Hidden_")) {
+				continue;
+			}
+
+			path.push(p);
+
+			if (bottomUp(path)) {
+				return true;
+			}
+
+			path.pop();
+		}
+
+		return false;
+	}
 
 	public void build() throws Exception {
 
-		writer = new TextFileWriter(ELPath.WIKI_DIR + "wiki_cat_tree.txt");
+		read();
 
-		// for (int c : childParentMap.keySet()) {
-		// goUp(c);
+		// for (int id : mainTopics) {
+		// System.out.println(idToCat.getValue(id));
 		// }
-
-		// trie = KTrie.newTrie();
 
 		// Stack<Integer> path = new Stack<Integer>();
 		// path.push(health_id);
-		//
-		// goDown(path);
+
+		// TextFileWriter writer = new TextFileWriter(ELPath.WIKI_DIR + "wiki_cat_tree.txt");
+
+		trie = Trie.newTrie();
+		int num_nodes = 0;
+		for (int c : leaves) {
+			if (++num_nodes % 100 == 0) {
+				System.out.printf("\r[%d/%d]", num_nodes, leaves.size());
+			}
+
+			Stack<Integer> path = new Stack<Integer>();
+			path.push(c);
+
+			bottomUp(path);
+		}
+
+		System.out.printf("\r[%d/%d]\n", num_nodes, leaves.size());
+
+		// topDown(path);
 
 		// writer.close();
 
-		// FileUtils.writeStrCounter(ELPath.WIKI_DIR + "wiki_cat_tree.txt", catPathCnts);
+		// FileUtils.writeStrCounter(ELPath.WIKI_DIR + "wiki_cat_tree.txt", leaves);
 
-		// goDown(idPath);
+		List<String> catPaths = Generics.newArrayList();
 
-		// mainTopics = parentChildMap.get(root_id);
-		// mainTopics.remove(health_id);
+		for (Node<String> node : trie.getLeafNodes()) {
+			catPaths.add(node.getKeyPath(" -> "));
+		}
 
-		goDown(health_id);
+		Collections.sort(catPaths);
 
+		FileUtils.writeStrCollection(ELPath.WIKI_DIR + "wiki_cat_tree.txt", catPaths);
 	}
 
-	private void goDown(int c) {
-		List<Integer> catPath = Generics.newArrayList();
-		catPath.add(c);
+	public void read() throws Exception {
+		{
+			ObjectInputStream ois = FileUtils.openObjectInputStream(ELPath.WIKI_DIR + "encoded_wiki_categorylink.ser.gz");
+			parentToChilds = FileUtils.readIntSetMap(ois);
+			ois.close();
 
-		Set<Integer> visited = Generics.newHashSet();
+			childToParents = Generics.newSetMap();
 
-		mainTopics = parentChildMap.get(root_id);
-
-		goDown(catPath, visited);
-
-		writer.close();
-	}
-
-	private void goDown(List<Integer> catPath, Set<Integer> visited) {
-		int c = catPath.get(catPath.size() - 1);
-
-		if (visited.contains(c)) {
-			List<String> list = Generics.newArrayList();
-
-			for (int cc : catPath) {
-				list.add(idCatMap.getValue(cc));
-			}
-			String catPathStr = StrUtils.join("->", list);
-			// System.out.println(catPathStr);
-		} else {
-			visited.add(c);
-
-			if (catPath.size() > 1 && mainTopics.contains(c)) {
-				List<String> list = Generics.newArrayList();
-
-				for (int cc : catPath) {
-					list.add(idCatMap.getValue(cc));
-				}
-				list.add(idCatMap.getValue(c));
-				Collections.reverse(list);
-				String catPathStr = StrUtils.join("->", list);
-				// writer.write(catPathStr + "\n");
-			} else {
-				Set<Integer> children = parentChildMap.get(c);
-
-				if (children.size() == 0) {
-					List<String> list = Generics.newArrayList();
-
-					for (int cc : catPath) {
-						list.add(idCatMap.getValue(cc));
-					}
-					// Collections.reverse(list);
-
-					StringBuffer sb = new StringBuffer();
-
-					for (int i = 0; i < catPath.size() - 1; i++) {
-						sb.append("-");
-					}
-					sb.append(idCatMap.getValue(catPath.get(catPath.size() - 1)));
-
-					// String catPathStr = StrUtils.join("->", list);
-					writer.write(sb.toString() + "\n");
-				} else {
-					for (int child_id : children) {
-						List<Integer> catPath2 = Generics.newArrayList(catPath);
-						Set<Integer> visited2 = Generics.newHashSet(visited);
-						catPath2.add(child_id);
-
-						goDown(catPath2, visited2);
-					}
+			for (int p : parentToChilds.keySet()) {
+				for (int c : parentToChilds.get(p)) {
+					childToParents.put(c, p);
 				}
 			}
 		}
 
-	}
+		catPageCnts = Generics.newCounter();
 
-	private void goDown(Stack<Integer> idPath) {
+		{
+			ObjectInputStream ois = FileUtils.openObjectInputStream(ELPath.WIKI_DIR + "encoded_wiki_category.ser.gz");
+			List<Integer> ids = FileUtils.readIntList(ois);
+			List<String> titles = FileUtils.readStrList(ois);
+			List<Integer> catPages = FileUtils.readIntList(ois);
+			List<Integer> catSubcats = FileUtils.readIntList(ois);
+			ois.close();
 
-		int parent_id = idPath.peek();
+			idToCat = Generics.newBidMap(ids.size());
 
-		Set<Integer> children = parentChildMap.get(parent_id, true);
-
-		if (children.size() == 0) {
-			StringBuffer sb = new StringBuffer();
-
-			List<String> list = Generics.newArrayList();
-			for (int i = 0; i < idPath.size(); i++) {
-				int id = idPath.get(i);
-				list.add(idCatMap.getValue(id));
-			}
-
-			trie.insert(list);
-
-		} else {
-			Set<Integer> mainToipcs = parentChildMap.get(root_id, false);
-
-			for (int child_id : children) {
-				if (idPath.contains(child_id)) {
-					continue;
-				}
-
-				if (mainToipcs.contains(child_id)) {
-					continue;
-				}
-
-				String child = idCatMap.getValue(child_id);
-
-				idPath.push(child_id);
-
-				goDown(idPath);
-
-				idPath.pop();
+			for (int i = 0; i < ids.size(); i++) {
+				idToCat.put(ids.get(i), titles.get(i));
+				catPageCnts.setCount(ids.get(i), catPages.get(i));
 			}
 		}
-	}
 
-	private void goUp(int c) {
-		System.out.printf("Cat:\t%s\n", idCatMap.getValue(c));
-		List<Integer> catPath = Generics.newArrayList();
-		catPath.add(c);
+		mainCats = Generics.newHashSet(parentToChilds.get(root_id));
+		mainCats.add(root_id);
 
-		Set<Integer> visited = Generics.newHashSet();
-		// visited.add(c);
+		{
+			leaves = Generics.newHashSet();
 
-		goUp(catPath, visited);
-	}
+			for (int c : idToCat.getKeys()) {
+				int cnt = (int) catPageCnts.getCount(c);
+				if (parentToChilds.get(c, false) == null && childToParents.get(c, false) != null && cnt > 0) {
+					leaves.add(c);
+				}
+			}
 
-	private void goUp(List<Integer> catPath, Set<Integer> visited) {
-		int c = catPath.get(catPath.size() - 1);
-
-		if (visited.contains(c)) {
-			// List<String> list = Generics.newArrayList();
-			// for (int cc : catPath) {
-			// list.add(idCatMap.getValue(cc));
+			// for (int c : leaves) {
+			// System.out.println(idToCat.getValue(c));
 			// }
-			// String catPathStr = StrUtils.join("->", list);
-			// System.out.println(catPathStr);
-		} else {
-			visited.add(c);
+		}
+	}
 
-			Set<Integer> parents = childParentMap.get(c);
+	private void topDown(Stack<Integer> path) {
 
-			if (parentChildMap.get(root_id).contains(c)) {
-				if (c == health_id) {
-					List<String> list = Generics.newArrayList();
+		int parent_id = path.peek();
 
-					for (int cc : catPath) {
-						list.add(idCatMap.getValue(cc));
-					}
-					String catPathStr = StrUtils.join("->", list);
-					// System.out.println(catPathStr);
+		Counter<String> catCnts = Generics.newCounter();
+		Counter<String> mainCatCnts = Generics.newCounter();
 
-					writer.write(catPathStr + "\n");
-				}
-			} else {
-				if (parents.size() > 0) {
-					for (int p : parents) {
-						List<Integer> catPath2 = Generics.newArrayList(catPath);
-						catPath2.add(p);
+		String[] catPath = new String[path.size()];
 
-						Set<Integer> visited2 = Generics.newHashSet(visited);
+		for (int i = 0; i < path.size(); i++) {
+			int catid = path.get(i);
+			String cat = idToCat.getValue(catid);
+			catPath[i] = cat;
 
-						goUp(catPath2, visited2);
+			catCnts.incrementCount(cat, 1);
 
-					}
-				}
+			if (mainCats.contains(catid)) {
+				mainCatCnts.incrementCount(cat, 1);
 			}
 		}
 
-	}
-
-	public void readData() throws Exception {
-
-		{
-			ObjectInputStream ois = FileUtils.openObjectInputStream(ELPath.WIKI_DIR + "wiki_categorylink_encoded.ser.gz");
-			parentChildMap = FileUtils.readIntSetMap(ois);
-			ois.close();
-		}
-		{
-			ObjectInputStream ois = FileUtils.openObjectInputStream(ELPath.WIKI_DIR + "wiki_category_encoded.ser.gz");
-			idCatMap = FileUtils.readIntStrBidMap(ois);
-			ois.close();
+		if (catCnts.max() > 1) {
+			return;
 		}
 
-		childParentMap = Generics.newSetMap();
+		if (mainCatCnts.size() > 1) {
+			return;
+		}
 
-		for (int p : parentChildMap.keySet()) {
-			for (int c : parentChildMap.get(p)) {
-				childParentMap.put(c, p);
+		Set<Integer> children = parentToChilds.get(parent_id, false);
+
+		if (children == null) {
+			trie.insert(catPath);
+
+		} else {
+			for (int child_id : children) {
+				String child = idToCat.getValue(child_id);
+
+				path.push(child_id);
+				topDown(path);
+				path.pop();
 			}
 		}
 	}

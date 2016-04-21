@@ -25,7 +25,7 @@ public class Trie<K> implements Serializable {
 	public static class SearchResult<K> {
 
 		public enum MatchType {
-			EXACT, PARTIAL, FAIL
+			EXACT_KEYS_WITH_DATA, PARTIAL_KEYS_WITHOUT_DATA, EXACT_KEYS_WITHOUT_DATA, PARTIAL_KEYS_WITH_DATA, FAIL
 		}
 
 		private Node<K> node;
@@ -58,36 +58,6 @@ public class Trie<K> implements Serializable {
 	 */
 	public static void main(String[] args) throws Exception {
 		System.out.println("Process begins.");
-
-		Trie<Character> sysDict1 = Trie.newTrie();
-		Trie<Character> sysDict2 = Trie.newTrie();
-
-		{
-
-			List<String> lines = FileUtils.readLines(NLPPath.DICT_SYSTEM_FILE);
-
-			for (String line : lines) {
-				String[] parts = line.split("\t");
-				String word = parts[0];
-				String pos = parts[1];
-
-				String word2 = UnicodeUtils.decomposeToJamoStr(word);
-
-				sysDict1.insert(StrUtils.asCharacters(word2.toCharArray()));
-			}
-
-			sysDict1.trimToSize();
-
-			sysDict1.write(NLPPath.DICT_SYSTEM_TRIE_FILE);
-		}
-
-		{
-			sysDict2 = new Trie<Character>();
-
-			sysDict2.read(NLPPath.DICT_SYSTEM_TRIE_FILE);
-
-			System.out.println(sysDict2.toString());
-		}
 
 		System.out.println("Process ends.");
 	}
@@ -262,9 +232,17 @@ public class Trie<K> implements Serializable {
 		MatchType type = MatchType.FAIL;
 
 		if (num_matches == max_matches) {
-			type = MatchType.EXACT;
+			if (node.getData() == null) {
+				type = MatchType.EXACT_KEYS_WITHOUT_DATA;
+			} else {
+				type = MatchType.EXACT_KEYS_WITH_DATA;
+			}
 		} else if (num_matches > 0 && num_matches < max_matches) {
-			type = MatchType.PARTIAL;
+			if (node.getData() == null) {
+				type = MatchType.PARTIAL_KEYS_WITHOUT_DATA;
+			} else {
+				type = MatchType.PARTIAL_KEYS_WITH_DATA;
+			}
 		}
 
 		return new SearchResult<K>(node, type);
