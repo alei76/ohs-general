@@ -14,11 +14,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import ohs.io.FileUtils;
-import ohs.nlp.pos.NLPPath;
 import ohs.tree.trie.hash.Node.Type;
 import ohs.tree.trie.hash.Trie.SearchResult.MatchType;
-import ohs.utils.UnicodeUtils;
-import ohs.utils.StrUtils;
 
 public class Trie<K> implements Serializable {
 

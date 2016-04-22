@@ -70,7 +70,7 @@ public class DataHandler {
 		File[] dirs = new File(NSPath.CONTENT_NLP_DIR).listFiles();
 
 		for (int i = 0; i < dirs.length; i++) {
-			List<File> files = FileUtils.getFilesUnder(dirs[i]);
+			List<File> files = FileUtils.getFilesUnder(dirs[i].getPath());
 
 			for (int j = 0; j < files.size(); j++) {
 				File file = files.get(j);
@@ -102,7 +102,7 @@ public class DataHandler {
 		TextFileWriter writer = new TextFileWriter(NSPath.NEWS_NER_FILE);
 
 		for (int i = 0; i < dirs.length; i++) {
-			List<File> files = FileUtils.getFilesUnder(dirs[i]);
+			List<File> files = FileUtils.getFilesUnder(dirs[i].getPath());
 
 			for (int j = 0; j < files.size(); j++) {
 				File file = files.get(j);
@@ -298,7 +298,7 @@ public class DataHandler {
 
 				List<File> files = Generics.newArrayList();
 
-				for (File srcFile : FileUtils.getFilesUnder(srcDir)) {
+				for (File srcFile : FileUtils.getFilesUnder(srcDir.getPath())) {
 					String fileName = FileUtils.getFileName(srcFile);
 
 					File desFile = new File(srcFile.getPath().replace("content", "content_nlp"));
@@ -319,7 +319,7 @@ public class DataHandler {
 				nlp.getProperties().setProperty("outputDirectory", outputDir);
 
 				try {
-					nlp.processFiles(FileUtils.getFilesUnder(srcDir), 100);
+					nlp.processFiles(FileUtils.getFilesUnder(srcDir.getPath()), 100);
 				} catch (Exception e) {
 					e.printStackTrace();
 					FileUtils.writeStrCounter(visitFileName, c);

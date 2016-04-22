@@ -3,6 +3,7 @@ package ohs.eden.name;
 import java.util.List;
 
 import ohs.io.FileUtils;
+import ohs.ir.weight.TermWeighting;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
 import ohs.ml.svm.wrapper.LibLinearTrainer;
@@ -12,7 +13,6 @@ import ohs.types.Indexer;
 import ohs.types.ListMap;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
-import ohs.utils.TermWeighting;
 
 public class NameClassifier {
 

@@ -27,7 +27,6 @@ public class AnalyzerUtils {
 			String word = words.get(i);
 			double cnt = wordCounts.getCount(word);
 			TermQuery tq = new TermQuery(new Term(field, word));
-			tq.setBoost((float) cnt);
 			builder.add(tq, Occur.SHOULD);
 		}
 		return builder.build();
@@ -62,7 +61,6 @@ public class AnalyzerUtils {
 			String word = words.get(i);
 			double cnt = c.getProbability(word);
 			TermQuery tq = new TermQuery(new Term(field, word));
-			tq.setBoost((float) cnt);
 			builder.add(tq, Occur.SHOULD);
 		}
 		return builder.build();

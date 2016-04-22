@@ -6,6 +6,7 @@ import java.util.Map;
 
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
+import ohs.ir.weight.TermWeighting;
 import ohs.math.ArrayUtils;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
@@ -18,7 +19,6 @@ import ohs.types.Indexer;
 import ohs.utils.DataSplitter;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
-import ohs.utils.TermWeighting;
 
 public class DataHandler {
 

@@ -34,6 +34,12 @@ public class MIRPath {
 
 	public static final String WIKI_XML_DUMP_FILE = WIKI_DIR + "enwiki-20150304-pages-articles.xml.bz2";
 
+	public static final String WIKI_PAGE_FILE = WIKI_DIR + "wiki_page.csv.gz";
+
+	public static final String WIKI_CATEGORY_FILE = WIKI_DIR + "wiki_category.csv.gz";
+
+	public static final String WIKI_CATEGORYLINK_FILE = WIKI_DIR + "wiki_categorylink.csv.gz";
+
 	public static final String WIKI_VOCAB_FILE = WIKI_DIR + "vocab.txt";
 
 	public static final String WIKI_INDEX_DIR = WIKI_DIR + "index/";

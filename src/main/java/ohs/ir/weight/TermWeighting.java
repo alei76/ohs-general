@@ -1,4 +1,4 @@
-package ohs.utils;
+package ohs.ir.weight;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,6 +14,7 @@ import ohs.matrix.DenseVector;
 import ohs.matrix.SparseVector;
 import ohs.types.Counter;
 import ohs.types.ListMap;
+import ohs.utils.Generics;
 
 /**
  * This class provides well-known IR utilities.

@@ -332,6 +332,7 @@ public class StrUtils {
 
 		if (a instanceof List) {
 			List<String> b = (List<String>) a;
+			end = b.size();
 			for (int i = start; i < end; i++) {
 				sb.append(b.get(i));
 				if (i != end - 1) {

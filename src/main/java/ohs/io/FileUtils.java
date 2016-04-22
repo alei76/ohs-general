@@ -144,15 +144,15 @@ public class FileUtils {
 		}
 	}
 
-	public static void compress(String inputPath, String outputFileName) throws Exception {
+	public static void compress(String inPath, String outFileName) throws Exception {
 
-		if (!outputFileName.endsWith(".tar.gz")) {
-			outputFileName += ".tar.gz";
+		if (!outFileName.endsWith(".tar.gz")) {
+			outFileName += ".tar.gz";
 		}
 
 		/** Step: 1 ---> create a TarArchiveOutputStream object. **/
 		TarArchiveOutputStream taos = new TarArchiveOutputStream(
-				new GzipCompressorOutputStream(new BufferedOutputStream(new FileOutputStream(outputFileName))));
+				new GzipCompressorOutputStream(new BufferedOutputStream(new FileOutputStream(outFileName))));
 
 		// TAR has an 8 gig file limit by default, this gets around that
 		taos.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_STAR); // to get
@@ -168,7 +168,7 @@ public class FileUtils {
 		 * Step: 2 --->Open the source data and get a list of files from given directory recursively.
 		 **/
 
-		File input = new File(inputPath);
+		File input = new File(inPath);
 
 		compress(input.getParentFile(), input, taos);
 
@@ -196,10 +196,10 @@ public class FileUtils {
 		os.close();
 	}
 
-	public static void copyFolder(String srcDir, String desDir) throws Exception {
-		for (File inFile : getFilesUnder(srcDir)) {
+	public static void copyFolder(String inDir, String outDir) throws Exception {
+		for (File inFile : getFilesUnder(inDir)) {
 			String path = inFile.getPath();
-			path = path.replace(srcDir, desDir);
+			path = path.replace(inDir, outDir);
 			copy(inFile.getPath(), path);
 		}
 	}
@@ -220,9 +220,10 @@ public class FileUtils {
 		return numLines;
 	}
 
-	public static boolean create(File file) {
+	public static boolean create(String fileName) {
+		File file = new File(fileName);
 		if (file.exists()) {
-			deleteFilesUnder(file);
+			deleteFilesUnder(fileName);
 		}
 		return file.mkdirs();
 	}
@@ -260,13 +261,9 @@ public class FileUtils {
 		return numFiles;
 	}
 
-	public static void deleteFilesUnder(File dir) {
-		int numFiles = deleteFiles(dir);
-		System.out.println(String.format("delete [%d] files under [%s]", numFiles, dir.getPath()));
-	}
-
 	public static void deleteFilesUnder(String dirName) {
-		deleteFilesUnder(new File(dirName));
+		int numFiles = deleteFiles(new File(dirName));
+		System.out.println(String.format("delete [%d] files under [%s]", numFiles, dirName));
 	}
 
 	public static boolean exists(String fileName) {
@@ -296,10 +293,6 @@ public class FileUtils {
 		return removeExtension(file.getName());
 	}
 
-	public static List<File> getFilesUnder(File dir) {
-		return getFilesUnder(dir, true);
-	}
-
 	private static List<File> getFilesUnder(File dir, boolean recursive) {
 		List<File> files = new ArrayList<File>();
 		addFilesUnder(dir, files, recursive);
@@ -321,7 +314,7 @@ public class FileUtils {
 	}
 
 	public static List<File> getFilesUnder(String dirName) {
-		return getFilesUnder(new File(dirName));
+		return getFilesUnder(new File(dirName), true);
 	}
 
 	public static long length(String fileName) {
@@ -794,6 +787,17 @@ public class FileUtils {
 		return ret;
 	}
 
+	public static Indexer<String> readStrIndexer(BufferedReader br) throws Exception {
+		String[] two = br.readLine().split("\t");
+		int num_lines = Integer.parseInt(two[1]);
+		Indexer<String> ret = Generics.newIndexer();
+
+		for (int i = 0; i < num_lines; i++) {
+			ret.add(br.readLine());
+		}
+		return ret;
+	}
+
 	public static Indexer<String> readStrIndexer(ObjectInputStream ois) throws Exception {
 		int size = ois.readInt();
 		Indexer<String> ret = new Indexer<String>(size);
@@ -1170,14 +1174,6 @@ public class FileUtils {
 		System.out.printf("write [%d] entries at [%s] - [%s]\n", num_entries, fileName, stopWatch.stop());
 	}
 
-	public static void writeStrIndexer(ObjectOutputStream oos, Indexer<String> indexer) throws Exception {
-		oos.writeInt(indexer.size());
-		for (int i = 0; i < indexer.size(); i++) {
-			oos.writeUTF(indexer.getObject(i));
-		}
-		oos.flush();
-	}
-
 	public static void writeStrIndexer(BufferedWriter bw, Indexer<String> indexer) throws Exception {
 		bw.write(String.format("%s\t%d", LINE_SIZE, indexer.size()));
 
@@ -1188,15 +1184,12 @@ public class FileUtils {
 
 	}
 
-	public static Indexer<String> readStrIndexer(BufferedReader br) throws Exception {
-		String[] two = br.readLine().split("\t");
-		int num_lines = Integer.parseInt(two[1]);
-		Indexer<String> ret = Generics.newIndexer();
-
-		for (int i = 0; i < num_lines; i++) {
-			ret.add(br.readLine());
+	public static void writeStrIndexer(ObjectOutputStream oos, Indexer<String> indexer) throws Exception {
+		oos.writeInt(indexer.size());
+		for (int i = 0; i < indexer.size(); i++) {
+			oos.writeUTF(indexer.getObject(i));
 		}
-		return ret;
+		oos.flush();
 	}
 
 	public static void writeStrIndexer(String fileName, Indexer<String> indexer) throws Exception {

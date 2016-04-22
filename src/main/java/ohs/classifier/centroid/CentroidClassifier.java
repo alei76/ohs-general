@@ -6,13 +6,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import ohs.ir.weight.TermWeighting;
 import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
 import ohs.types.Counter;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
-import ohs.utils.TermWeighting;
 
 public class CentroidClassifier {
 

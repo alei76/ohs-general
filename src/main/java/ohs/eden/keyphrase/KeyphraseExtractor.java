@@ -7,6 +7,7 @@ import java.util.Set;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
+import ohs.ir.weight.TermWeighting;
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 import ohs.nlp.ling.types.KDocument;
@@ -21,7 +22,6 @@ import ohs.types.Indexer;
 import ohs.types.Vocab;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
-import ohs.utils.TermWeighting;
 
 public class KeyphraseExtractor {
 

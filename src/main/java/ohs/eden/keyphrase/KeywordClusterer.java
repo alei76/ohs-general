@@ -11,6 +11,7 @@ import org.tartarus.snowball.ext.PorterStemmer;
 
 import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
+import ohs.ir.weight.TermWeighting;
 import ohs.math.ArrayMath;
 import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
@@ -25,7 +26,6 @@ import ohs.types.SetMap;
 import ohs.utils.Generics;
 import ohs.utils.StopWatch;
 import ohs.utils.StrUtils;
-import ohs.utils.TermWeighting;
 import ohs.utils.UnicodeUtils;
 
 public class KeywordClusterer {

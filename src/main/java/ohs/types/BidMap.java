@@ -54,6 +54,14 @@ public class BidMap<K, V> implements Serializable {
 		return keyToValue.get(key);
 	}
 
+	public boolean containsKey(K key) {
+		return keyToValue.containsKey(key);
+	}
+
+	public boolean containsValue(V value) {
+		return valueToKey.containsKey(value);
+	}
+
 	public Set<V> getValues() {
 		return valueToKey.keySet();
 	}

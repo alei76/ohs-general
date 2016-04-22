@@ -1,8 +1,11 @@
 package ohs.ir.medical.general;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DocsAndPositionsEnum;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.PostingsEnum;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
@@ -101,25 +104,40 @@ public class DocumentPriorEstimator {
 				SparseVector[] collWordCountData = new SparseVector[num_colls];
 
 				{
-					TermsEnum reuse = null;
-					TermsEnum iterator = termVector.iterator();
-					BytesRef ref = null;
-					DocsAndPositionsEnum docsAndPositions = null;
-					Counter<Integer> counter = new Counter<Integer>();
+					TermsEnum termsEnum = null;
+					termsEnum = termVector.iterator();
 
-					while ((ref = iterator.next()) != null) {
-						docsAndPositions = iterator.docsAndPositions(null, docsAndPositions);
-						if (docsAndPositions.nextDoc() != 0) {
+					BytesRef bytesRef = null;
+					PostingsEnum postingsEnum = null;
+					Counter<Integer> wcs = new Counter<Integer>();
+					Map<Integer, Integer> locWords = new HashMap<Integer, Integer>();
+
+					while ((bytesRef = termsEnum.next()) != null) {
+						postingsEnum = termsEnum.postings(postingsEnum, PostingsEnum.ALL);
+
+						if (postingsEnum.nextDoc() != 0) {
 							throw new AssertionError();
 						}
 
-						String word = ref.utf8ToString();
-						int w = wordIndexer.getIndex(word);
-						int freq = docsAndPositions.freq();
+						String word = bytesRef.utf8ToString();
+						// if (word.startsWith("<N") && word.endsWith(">")) {
+						// continue;
+						// }
+						if (word.contains("<N")) {
+							continue;
+						}
 
-						counter.incrementCount(w, freq);
+						int w = wordIndexer.getIndex(word);
+						int freq = postingsEnum.freq();
+						wcs.incrementCount(w, freq);
+
+						for (int k = 0; k < freq; k++) {
+							final int position = postingsEnum.nextPosition();
+							locWords.put(position, w);
+						}
 					}
-					docWordCounts = VectorUtils.toSparseVector(counter);
+
+					docWordCounts = VectorUtils.toSparseVector(wcs);
 				}
 
 				for (int k = 0; k < num_colls; k++) {

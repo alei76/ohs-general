@@ -1,7 +1,5 @@
 package ohs.tree.trie.hash;
 
-import java.awt.geom.Area;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
