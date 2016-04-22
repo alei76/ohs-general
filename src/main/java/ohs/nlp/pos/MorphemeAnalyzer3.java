@@ -21,13 +21,13 @@ import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 import ohs.utils.UnicodeUtils;
 
-public class MorphemeAnalyzer {
+public class MorphemeAnalyzer3 {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("proces begins.");
 
 		TextTokenizer t = new TextTokenizer();
-		MorphemeAnalyzer a = new MorphemeAnalyzer();
+		MorphemeAnalyzer3 a = new MorphemeAnalyzer3();
 
 		{
 			// String document = "프랑스의 세계적인 의상 디자이너 엠마누엘 웅가로가 실내 장식용 직물 디자이너로 나섰다.\n";
@@ -82,24 +82,6 @@ public class MorphemeAnalyzer {
 		}
 	}
 
-	private Trie<String> fixDict;
-
-	private Trie<String> patDict;
-
-	public void readDicts() throws Exception {
-		// for (String line : FileUtils.readLines(NLPPath.DICT_ANALYZED_FILE)) {
-		//
-		// }
-
-		for (String line : FileUtils.readLines(NLPPath.DICT_FIX_FILE)) {
-			String[] parts = line.split("\t");
-		}
-
-		for (String line : FileUtils.readLines(NLPPath.DICT_PATTERN_FILE)) {
-
-		}
-	}
-
 	private void readConnectionRules(ObjectInputStream ois) throws Exception {
 		int size = ois.readInt();
 
@@ -118,7 +100,7 @@ public class MorphemeAnalyzer {
 		}
 	}
 
-	public MorphemeAnalyzer() throws Exception {
+	public MorphemeAnalyzer3() throws Exception {
 		if (FileUtils.exists(NLPPath.DICT_SER_FILE)) {
 			ObjectInputStream ois = FileUtils.openObjectInputStream(NLPPath.DICT_SER_FILE);
 			wordDict = new Trie<Character>();

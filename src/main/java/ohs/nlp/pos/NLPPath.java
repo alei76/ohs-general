@@ -21,7 +21,11 @@ public class NLPPath {
 	public static final String WORD_CNT_ILE = DATA_DIR + "word_cnt.txt";
 
 	public static final String DICT_ANALYZED_FILE = DATA_DIR + "dict_anal.txt.gz";
-	
+
+	public static final String DICT_PATTERN_FILE = DATA_DIR + "dict_pat.txt";
+
+	public static final String DICT_FIX_FILE = DATA_DIR + "dict_fix.txt";
+
 	public static final String DICT_SYSTEM_FILE = DATA_DIR + "dict_sys.txt.gz";
 
 	public static final String DICT_SER_FILE = DATA_DIR + "dict_trie.ser.gz";

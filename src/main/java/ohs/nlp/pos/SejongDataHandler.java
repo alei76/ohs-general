@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.print.DocFlavor.STRING;
+
 import edu.stanford.nlp.ling.Word;
 import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
@@ -35,47 +37,15 @@ public class SejongDataHandler {
 		// sdh.extractCounts();
 		// sdh.buildAnalyzedDict();
 		// sdh.buildSystemDict();
-
-		// sdh.buildTrie();
-		// sdh.build();
+		sdh.buildDicts();
 
 		System.out.println("process ends.");
 	}
 
-	public void build() throws Exception {
-		CounterMap<String, String> cm = Generics.newCounterMap();
-
-		SejongReader reader = new SejongReader(NLPPath.POS_DATA_FILE);
-		while (reader.hasNext()) {
-			KDocument doc = reader.next();
-
-			for (KSentence sent : doc.getSentences()) {
-				System.out.println(sent.toString());
-				String[] words = sent.getValues(TokenAttr.WORD);
-				System.out.println(StrUtils.join(" ", words));
-				System.out.println();
-
-			}
-		}
-		reader.close();
-
-		// List<String> words = Generics.newArrayList(cm.keySet());
-		// Collections.sort(words);
-		//
-		// for (int i = 0; i < words.size(); i++) {
-		// String word = words.get(i);
-		// Counter<String> c = cm.getCounter(word);
-		//
-		// List<String> res = Generics.newArrayList();
-		// res.add(word);
-		// res.addAll(c.keySet());
-		// words.set(i, String.join("\t", res));
-		// }
-
-	}
-
-	public void buildAnalyzedDict() throws Exception {
-		CounterMap<String, String> cm = Generics.newCounterMap();
+	public void buildDicts() throws Exception {
+		CounterMap<String, String> cm1 = Generics.newCounterMap();
+		CounterMap<String, String> cm2 = Generics.newCounterMap();
+		CounterMap<String, String> cm3 = Generics.newCounterMap();
 
 		SejongReader reader = new SejongReader(NLPPath.POS_DATA_FILE);
 		while (reader.hasNext()) {
@@ -83,28 +53,91 @@ public class SejongDataHandler {
 
 			for (KSentence sent : doc.getSentences()) {
 				for (MultiToken mt : sent.toMultiTokens()) {
-					String s = StrUtils.join(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, mt.getSubValues(TokenAttr.WORD),
-							mt.getSubValues(TokenAttr.POS));
-					cm.incrementCount(mt.getValue(TokenAttr.WORD), s, 1);
+					String[] words = mt.getSubValues(TokenAttr.WORD);
+					String[] poss = mt.getSubValues(TokenAttr.POS);
+
+					// StringBuffer sb = new StringBuffer();
+					//
+					// for (int i = 0; i < words.length; i++) {
+					// String word = words[i];
+					// String pos = poss[i];
+					//
+					// if (pos.startsWith("N")) {
+					// words[i] = "N";
+					// poss[i] = "N";
+					// }
+					// }
+
+					String original = mt.getValue(TokenAttr.WORD);
+
+					cm3.incrementCount(original, StrUtils.join(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, words, poss), 1);
+
+					if (!original.equals(StrUtils.join("", words))) {
+						// String s = StrUtils.join(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, words, poss);
+						String str = StrUtils.join(MultiToken.DELIM_MULTI_TOKEN, words);
+
+						int len = Math.min(str.length(), original.length());
+
+						StringBuffer sb1 = new StringBuffer(original);
+						StringBuffer sb2 = new StringBuffer(str);
+
+						for (int i = 0; i < len; i++) {
+							if (original.charAt(i) == str.charAt(i)) {
+								sb1.setCharAt(i, '#');
+								sb2.setCharAt(i, '#');
+							} else {
+								break;
+							}
+						}
+
+						String t1 = sb1.toString().replaceAll("[#]+", "~");
+						String t2 = sb2.toString().replaceAll("[#]+", "~");
+
+						if (t1.startsWith("~") && t1.length() > 1) {
+							cm1.incrementCount(t1, t2, 1);
+						} else {
+							cm2.incrementCount(original, str, 1);
+						}
+
+						// if (t1.equals("~")) {
+						//
+						// // System.out.println(original + "\t" + str);
+						// } else {
+						// cm1.incrementCount(t1, t2, 1);
+						// }
+					} else {
+						cm2.incrementCount(original, StrUtils.join(MultiToken.DELIM_MULTI_TOKEN, words), 1);
+					}
 				}
 			}
 		}
 		reader.close();
 
-		List<String> eojeols = Generics.newArrayList(cm.keySet());
-		Collections.sort(eojeols);
+		// FileUtils.writeStrCounterMap(NLPPath.DICT_PATTERN_FILE, cm1);
+		// FileUtils.writeStrCounterMap(NLPPath.DICT_FIX_FILE, cm2);
+		// FileUtils.writeStrCounterMap(NLPPath.DICT_ANALYZED_FILE, cm3);
 
-		for (int i = 0; i < eojeols.size(); i++) {
-			String eojeol = eojeols.get(i);
-			Counter<String> morphemes = cm.getCounter(eojeol);
+		writeDict(NLPPath.DICT_PATTERN_FILE, cm1);
+		writeDict(NLPPath.DICT_FIX_FILE, cm2);
+		writeDict(NLPPath.DICT_ANALYZED_FILE, cm3);
 
-			List<String> res = Generics.newArrayList();
-			res.add(eojeol);
-			res.addAll(morphemes.keySet());
-			eojeols.set(i, String.join("\t", res));
+	}
+
+	private void writeDict(String fileName, CounterMap<String, String> cm) throws Exception {
+		List<String> keys = Generics.newArrayList(cm.keySet());
+		Collections.sort(keys);
+
+		List<String> lines = Generics.newArrayList();
+
+		for (int i = 0; i < keys.size(); i++) {
+			String key = keys.get(i);
+			List<String> values = Generics.newArrayList(cm.keySetOfCounter(key));
+			Collections.sort(values);
+
+			keys.set(i, key + "\t" + StrUtils.join("\t", values));
 		}
 
-		FileUtils.writeStrCollection(NLPPath.DICT_ANALYZED_FILE, eojeols);
+		FileUtils.writeStrCollection(fileName, keys);
 	}
 
 	public void buildSystemDict() throws Exception {
@@ -141,49 +174,7 @@ public class SejongDataHandler {
 			}
 		}
 
-//		FileUtils.writeStrCollection(NLPPath.DICT_SYSTEM_FILE, res);
-	}
-
-	public void buildTrie() throws Exception {
-		CounterMap<String, String> cm = FileUtils.readStrCounterMap(NLPPath.WORD_POS_CNT_ILE);
-		Trie<Character> trie = new Trie<Character>();
-
-		List<String> keys = cm.getOutKeyCountSums().getSortedKeys();
-
-		for (int i = 0; i < keys.size(); i++) {
-			String word = keys.get(i);
-			Counter<String> posCnts = cm.getCounter(word);
-
-			StringBuffer sb = new StringBuffer();
-
-			for (int j = 0; j < word.length(); j++) {
-				char in = word.charAt(j);
-				sb.append(UnicodeUtils.decomposeToJamo(in));
-			}
-
-			Node<Character> node = trie.insert(StrUtils.asCharacters(sb.toString().toCharArray()));
-
-			Counter<String> c = (Counter<String>) node.getData();
-
-			if (c == null) {
-				c = Generics.newCounter();
-				node.setData(c);
-			}
-
-			c.incrementAll(posCnts);
-
-			// String str = UnicodeUtils.decomposeToJamo(word);
-
-			// System.out.println(str);
-
-			// System.out.println(s);
-		}
-
-		System.out.println(trie.toString());
-
-		trie.trimToSize();
-
-		System.out.println();
+		// FileUtils.writeStrCollection(NLPPath.DICT_SYSTEM_FILE, res);
 	}
 
 	public void extractCounts() throws Exception {
