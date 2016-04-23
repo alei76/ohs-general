@@ -1,25 +1,22 @@
 package ohs.nlp.pos;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 
 import ohs.io.FileUtils;
-import ohs.io.TextFileReader;
 import ohs.nlp.ling.types.KDocument;
 import ohs.nlp.ling.types.KSentence;
 import ohs.nlp.ling.types.MultiToken;
-import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
 import ohs.tree.trie.hash.Node;
 import ohs.tree.trie.hash.Trie;
-import ohs.tree.trie.hash.Trie.SearchResult;
-import ohs.tree.trie.hash.Trie.SearchResult.MatchType;
+import ohs.tree.trie.hash.Trie.TSResult;
+import ohs.tree.trie.hash.Trie.TSResult.MatchType;
 import ohs.types.SetMap;
+import ohs.types.Triple;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
-import ohs.utils.UnicodeUtils;
 
 public class MorphemeAnalyzer {
 
@@ -30,14 +27,16 @@ public class MorphemeAnalyzer {
 		MorphemeAnalyzer a = new MorphemeAnalyzer();
 
 		{
-			// String document = "프랑스의 세계적인 의상 디자이너 엠마누엘 웅가로가 실내 장식용 직물 디자이너로 나섰다.\n";
-			String document = "프랑스의\n";
+			// String document = "프랑스랑은 세계적인 의상 디자이너 엠마누엘 웅가로가 실내 장식용 직물 디자이너로
+			// 나섰다.\n";
+			String document = "우승은 프랑스일테니까!\n";
 
 			KDocument doc = t.tokenize(document);
 			a.analyze(doc);
 		}
 
-		// SejongReader r = new SejongReader(NLPPath.POS_DATA_FILE, NLPPath.POS_TAG_SET_FILE);
+		// SejongReader r = new SejongReader(NLPPath.POS_DATA_FILE,
+		// NLPPath.POS_TAG_SET_FILE);
 		// while (r.hasNext()) {
 		// KDocument doc = r.next();
 		//
@@ -67,76 +66,14 @@ public class MorphemeAnalyzer {
 		System.out.println("proces ends.");
 	}
 
-	private Trie<Character> wordDict;
+	private Trie<Character> fixDict;
 
-	private void writeConnectionRules(ObjectOutputStream oos) throws Exception {
-		oos.writeInt(conRules.size());
+	private Trie<Character> patDict;
 
-		for (SJTag t1 : conRules.keySet()) {
-			oos.writeInt(t1.ordinal());
-			Set<SJTag> tags = conRules.get(t1);
-			oos.writeInt(tags.size());
-			for (SJTag t2 : tags) {
-				oos.writeInt(t2.ordinal());
-			}
-		}
-	}
-
-	private Trie<String> fixDict;
-
-	private Trie<String> patDict;
-
-	public void readDicts() throws Exception {
-		// for (String line : FileUtils.readLines(NLPPath.DICT_ANALYZED_FILE)) {
-		//
-		// }
-
-		for (String line : FileUtils.readLines(NLPPath.DICT_FIX_FILE)) {
-			String[] parts = line.split("\t");
-		}
-
-		for (String line : FileUtils.readLines(NLPPath.DICT_PATTERN_FILE)) {
-
-		}
-	}
-
-	private void readConnectionRules(ObjectInputStream ois) throws Exception {
-		int size = ois.readInt();
-
-		conRules = Generics.newSetMap(size);
-
-		for (int i = 0; i < size; i++) {
-			SJTag t1 = SJTag.values()[ois.readInt()];
-			int size2 = ois.readInt();
-			Set<SJTag> tags = Generics.newHashSet(size2);
-
-			for (int j = 0; j < size2; j++) {
-				SJTag t2 = SJTag.values()[ois.readInt()];
-				tags.add(t2);
-			}
-			conRules.put(t1, tags);
-		}
-	}
+	private SetMap<String, String> analDict;
 
 	public MorphemeAnalyzer() throws Exception {
-		if (FileUtils.exists(NLPPath.DICT_SER_FILE)) {
-			ObjectInputStream ois = FileUtils.openObjectInputStream(NLPPath.DICT_SER_FILE);
-			wordDict = new Trie<Character>();
-			wordDict.read(ois);
-
-			readConnectionRules(ois);
-
-			ois.close();
-		} else {
-			buildDict(NLPPath.DICT_ANALYZED_FILE);
-
-			ObjectOutputStream oos = FileUtils.openObjectOutputStream(NLPPath.DICT_SER_FILE);
-			wordDict.write(oos);
-			writeConnectionRules(oos);
-			oos.close();
-		}
-
-		// readSystemDict(NLPPath.DICT_SYSTEM_FILE);
+		readDicts();
 	}
 
 	public void analyze(KDocument doc) {
@@ -146,11 +83,20 @@ public class MorphemeAnalyzer {
 
 			for (int j = 0; j < mts.length; j++) {
 				MultiToken mt = mts[j];
-				String eojeol = mt.getValue(TokenAttr.WORD);
+				String wp = mt.getValue(TokenAttr.WORD);
+
+				Set<String> res = analDict.get(wp, false);
+
+				if (res == null) {
+					analyze(wp);
+				} else {
+
+				}
+
 				// Set<String> morphemes = analDict.get(eojeol, false);
 
 				// if (morphemes == null) {
-				analyze(eojeol);
+
 				// } else {
 				// String s = StrUtils.join(" # ", morphemes);
 				// mt.setValue(TokenAttr.POS, s);
@@ -160,78 +106,57 @@ public class MorphemeAnalyzer {
 
 	}
 
-	public Set<String> analyze(String word) {
+	public Set<String> analyze(String wp) {
 		Set<String> ret = Generics.newHashSet();
 
-		List<Character> cs = Generics.newArrayList();
+		Character[] cs = StrUtils.asCharacters(wp);
 
-		for (int i = 0; i < word.length(); i++) {
-			for (char c : UnicodeUtils.decomposeToJamo(word.charAt(i))) {
-				if ((int) c != 0) {
-					cs.add(c);
+		List<Triple<Integer, Integer, Set<String>>> list1 = Generics.newArrayList();
+		int num_matches = 0;
+
+		{
+			int start = 0;
+
+			while (start < cs.length) {
+				TSResult<Character> sr = fixDict.find(cs, start);
+				if (sr.getMatchType() == MatchType.FAIL) {
+					start++;
+				} else {
+					int end = sr.getMatchLoc() + 1;
+					num_matches += (end - start);
+
+					Set<String> set = (Set<String>) sr.getMatchNode().getData();
+
+					list1.add(Generics.newTriple(start, end, set));
+
+					start = end;
 				}
 			}
 		}
 
-		Set<SJTag> tags = Generics.newHashSet();
+		System.out.println(wp.length());
+		System.out.println(num_matches);
 
-		find(cs, 0, tags);
+		List<Triple<Integer, Integer, Set<String>>> list2 = Generics.newArrayList();
+
+		{
+			int start = 0;
+			while (start < cs.length) {
+				TSResult<Character> sr = patDict.find(cs, start);
+				if (sr.getMatchType() == MatchType.FAIL) {
+					start++;
+				} else {
+					int end = sr.getMatchLoc() + 1;
+					Set<String> set = (Set<String>) sr.getMatchNode().getData();
+
+					list2.add(Generics.newTriple(start, end, set));
+
+					start = end;
+				}
+			}
+		}
 
 		return ret;
-	}
-
-	private void find(List<Character> cs, int i, Set<SJTag> prevTags) {
-
-		for (int j = i + 1; j <= cs.size(); j++) {
-			String str = getString(cs, i, j);
-			SearchResult<Character> sr = wordDict.search(cs, i, j);
-			Set<SJTag> tags = (Set<SJTag>) sr.getNode().getData();
-
-			if (sr.getMatchType() == MatchType.EXACT_KEYS_WITH_DATA) {
-				if (tags != null) {
-					Set<SJTag> nextTags = Generics.newHashSet();
-
-					if (i == 0) {
-						nextTags = Generics.newHashSet(tags);
-
-						System.out.printf("[%s, %d, %d, %s]\n", str, i, j, nextTags);
-
-						find(cs, j, nextTags);
-					} else {
-						if (prevTags.size() > 0) {
-							for (SJTag prevTag : prevTags) {
-								for (SJTag tag : tags) {
-									if (conRules.contains(prevTag, tag)) {
-										nextTags.add(tag);
-									}
-								}
-							}
-
-							if (nextTags.size() > 0) {
-								System.out.printf("[%s, %d, %d, %s]\n", getString(cs, i, j), i, j, nextTags);
-
-								find(cs, j, nextTags);
-							}
-						}
-					}
-
-				} else {
-					// System.out.println();
-				}
-			} else {
-				if (i != 0) {
-					break;
-				}
-			}
-		}
-	}
-
-	public String getString(List<Character> s, int start, int end) {
-		StringBuffer sb = new StringBuffer();
-		for (int i = start; i < end; i++) {
-			sb.append(s.get(i).charValue());
-		}
-		return sb.toString();
 	}
 
 	public void analyze(String[] words) {
@@ -262,73 +187,59 @@ public class MorphemeAnalyzer {
 		return ret;
 	}
 
-	private SetMap<SJTag, SJTag> conRules;
+	public String getString(List<Character> s, int start, int end) {
+		StringBuffer sb = new StringBuffer();
+		for (int i = start; i < end; i++) {
+			sb.append(s.get(i).charValue());
+		}
+		return sb.toString();
+	}
 
-	private void buildDict(String fileName) throws Exception {
+	public void readDicts() throws Exception {
+		// for (String line : FileUtils.readLines(NLPPath.DICT_ANALYZED_FILE)) {
+		//
+		// }
 
-		wordDict = Trie.newTrie();
+		analDict = Generics.newSetMap();
 
-		conRules = Generics.newSetMap();
+		fixDict = Trie.newTrie();
 
-		TextFileReader reader = new TextFileReader(fileName);
+		for (String line : FileUtils.readLines(NLPPath.DICT_FIX_FILE)) {
+			String[] parts = line.split("\t");
+			Character[] cs = StrUtils.asCharacters(parts[0]);
+			Node<Character> node = fixDict.insert(cs);
 
-		while (reader.hasNext()) {
-			String line = reader.next();
+			Set<String> set = (Set<String>) node.getData();
 
-			if (reader.getNumLines() == 1) {
-				continue;
+			if (set == null) {
+				set = Generics.newHashSet(parts.length - 1);
+				node.setData(set);
 			}
 
-			String[] parts = line.split("\t");
 			for (int i = 1; i < parts.length; i++) {
-				String[] subParts = parts[i].split(MultiToken.DELIM_MULTI_TOKEN.replace("+", "\\+"));
-				String[] words = new String[subParts.length];
-				SJTag[] poss = new SJTag[subParts.length];
-
-				for (int j = 0; j < subParts.length; j++) {
-					String[] two = subParts[j].split(Token.DELIM_TOKEN);
-					words[j] = two[0];
-					poss[j] = SJTag.valueOf(two[1]);
-				}
-
-				for (int j = 0; j < words.length; j++) {
-					// if (words[j].contains("프랑스")) {
-					// System.out.println();
-					// }
-					char[][] jasos = UnicodeUtils.decomposeToJamo(words[j]);
-
-					StringBuffer sb = new StringBuffer();
-
-					for (int m = 0; m < jasos.length; m++) {
-						for (int n = 0; n < jasos[m].length; n++) {
-							if ((int) jasos[m][n] != 0) {
-								sb.append(jasos[m][n]);
-							}
-						}
-					}
-
-					Node<Character> node = wordDict.insert(StrUtils.asCharacters(sb.toString()));
-
-					Set<SJTag> tags = (Set<SJTag>) node.getData();
-
-					if (tags == null) {
-						tags = Generics.newHashSet();
-						node.setData(tags);
-					}
-					tags.add(poss[j]);
-				}
-
-				if (poss.length > 1) {
-					for (int j = 1; j < poss.length; j++) {
-						conRules.put(poss[j - 1], poss[j]);
-					}
-				}
-
+				set.add(parts[i]);
 			}
 		}
-		reader.close();
 
-		wordDict.trimToSize();
+		patDict = Trie.newTrie();
+
+		for (String line : FileUtils.readLines(NLPPath.DICT_PATTERN_FILE)) {
+			String[] parts = line.split("\t");
+			Character[] cs = StrUtils.asCharacters(parts[0].substring(1));
+			Node<Character> node = patDict.insert(cs);
+
+			Set<String> set = (Set<String>) node.getData();
+
+			if (set == null) {
+				set = Generics.newHashSet(parts.length - 1);
+				node.setData(set);
+			}
+
+			for (int i = 1; i < parts.length; i++) {
+				String[] toks = parts[i].split(MultiToken.DELIM_MULTI_TOKEN.replace("+", "\\+"));
+				set.add(StrUtils.join(MultiToken.DELIM_MULTI_TOKEN, toks, 1, toks.length));
+			}
+		}
 	}
 
 }

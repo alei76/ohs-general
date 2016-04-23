@@ -236,6 +236,10 @@ public class Node<K> implements Serializable {
 		return children == null || !children.containsKey(key) ? false : true;
 	}
 
+	public boolean hasData() {
+		return data == null ? false : true;
+	}
+
 	public boolean hasChildren() {
 		return children == null || children.size() == 0 ? false : true;
 	}

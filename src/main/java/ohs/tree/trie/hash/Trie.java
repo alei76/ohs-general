@@ -15,11 +15,11 @@ import java.util.TreeSet;
 
 import ohs.io.FileUtils;
 import ohs.tree.trie.hash.Node.Type;
-import ohs.tree.trie.hash.Trie.SearchResult.MatchType;
+import ohs.tree.trie.hash.Trie.TSResult.MatchType;
 
 public class Trie<K> implements Serializable {
 
-	public static class SearchResult<K> {
+	public static class TSResult<K> {
 
 		public enum MatchType {
 			EXACT_KEYS_WITH_DATA, PARTIAL_KEYS_WITHOUT_DATA, EXACT_KEYS_WITHOUT_DATA, PARTIAL_KEYS_WITH_DATA, FAIL
@@ -29,17 +29,24 @@ public class Trie<K> implements Serializable {
 
 		private MatchType type;
 
-		public SearchResult(Node<K> node, MatchType type) {
+		private int loc;
+
+		public TSResult(Node<K> node, MatchType type, int loc) {
 			this.node = node;
 			this.type = type;
+			this.loc = loc;
+		}
+
+		public int getMatchLoc() {
+			return loc;
+		}
+
+		public Node<K> getMatchNode() {
+			return node;
 		}
 
 		public MatchType getMatchType() {
 			return type;
-		}
-
-		public Node<K> getNode() {
-			return node;
 		}
 
 	}
@@ -74,12 +81,68 @@ public class Trie<K> implements Serializable {
 	}
 
 	public void delete(K[] keys) {
-		SearchResult<K> sr = search(keys);
+		TSResult<K> sr = search(keys);
 		if (sr.getMatchType() != MatchType.FAIL) {
-			Node<K> node = sr.getNode();
+			Node<K> node = sr.getMatchNode();
 			Node<K> parent = node.getParent();
 			parent.getChildren().remove(parent.getKey());
 		}
+	}
+
+	public TSResult<K> find(K[] keys) {
+		return find(keys, 0, keys.length);
+	}
+
+	public TSResult<K> find(K[] keys, int start) {
+		return find(keys, start, keys.length);
+	}
+
+	public TSResult<K> find(K[] keys, int start, int end) {
+		return find(Arrays.asList(keys), start, end);
+	}
+
+	public TSResult<K> find(List<K> keys) {
+		return find(keys, 0, keys.size());
+	}
+
+	public TSResult<K> find(List<K> keys, int start) {
+		return find(keys, start, keys.size());
+	}
+
+	public TSResult<K> find(List<K> keys, int start, int end) {
+		Node<K> node = root;
+		int num_matches = 0;
+		int max_matches = end - start;
+		int loc = -1;
+		Node<K> tmp = null;
+
+		for (int i = start; i < end; i++) {
+			K key = keys.get(i);
+			if (node.hasChild(key)) {
+				node = node.getChild(key);
+				if (node.hasData()) {
+					tmp = node;
+				}
+				loc = i;
+				num_matches++;
+			} else {
+				break;
+			}
+		}
+
+		MatchType type = MatchType.FAIL;
+
+		if (num_matches == max_matches) {
+			if (tmp != null) {
+				type = MatchType.EXACT_KEYS_WITH_DATA;
+			}
+		} else if (num_matches > 0 && num_matches < max_matches) {
+			if (tmp != null) {
+				type = MatchType.PARTIAL_KEYS_WITH_DATA;
+			}
+		}
+
+		return new TSResult<K>(tmp, type, loc);
 	}
 
 	public Node<K> findLCA(Node<K> node1, Node<K> node2) {
@@ -203,23 +266,33 @@ public class Trie<K> implements Serializable {
 		ois.close();
 	}
 
-	public SearchResult<K> search(K[] keys) {
+	public TSResult<K> search(K[] keys) {
 		return search(keys, 0, keys.length);
 	}
 
-	public SearchResult<K> search(K[] keys, int start, int end) {
+	public TSResult<K> search(K[] keys, int start) {
+		return search(keys, start, keys.length);
+	}
+
+	public TSResult<K> search(K[] keys, int start, int end) {
 		return search(Arrays.asList(keys), start, end);
 	}
 
-	public SearchResult<K> search(List<K> keys, int start, int end) {
+	public TSResult<K> search(List<K> keys, int start) {
+		return search(keys, start, keys.size());
+	}
+
+	public TSResult<K> search(List<K> keys, int start, int end) {
 		Node<K> node = root;
 		int num_matches = 0;
 		int max_matches = end - start;
+		int loc = -1;
 
 		for (int i = start; i < end; i++) {
 			K key = keys.get(i);
 			if (node.hasChild(key)) {
 				node = node.getChild(key);
+				loc = i;
 				num_matches++;
 			} else {
 				break;
@@ -242,7 +315,7 @@ public class Trie<K> implements Serializable {
 			}
 		}
 
-		return new SearchResult<K>(node, type);
+		return new TSResult<K>(node, type, loc);
 	}
 
 	public int size() {

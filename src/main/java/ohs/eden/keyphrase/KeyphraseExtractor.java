@@ -14,8 +14,8 @@ import ohs.nlp.ling.types.KDocument;
 import ohs.nlp.ling.types.KSentence;
 import ohs.nlp.ling.types.TokenAttr;
 import ohs.tree.trie.hash.Trie;
-import ohs.tree.trie.hash.Trie.SearchResult;
-import ohs.tree.trie.hash.Trie.SearchResult.MatchType;
+import ohs.tree.trie.hash.Trie.TSResult;
+import ohs.tree.trie.hash.Trie.TSResult.MatchType;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
@@ -138,8 +138,8 @@ public class KeyphraseExtractor {
 						for (int j = 0; j < chs.length; j++) {
 							int found = -1;
 							for (int k = j + 1; k < j + max_kwd_len && k < chs.length; k++) {
-								SearchResult<Character> sr = korTrie.search(chs, j, k);
-								if (sr.getMatchType() != MatchType.FAIL && sr.getNode().getCount() > 0) {
+								TSResult<Character> sr = korTrie.search(chs, j, k);
+								if (sr.getMatchType() != MatchType.FAIL && sr.getMatchNode().getCount() > 0) {
 									found = k;
 								}
 							}
@@ -164,8 +164,8 @@ public class KeyphraseExtractor {
 						for (int j = 0; j < words.size(); j++) {
 							int found = -1;
 							for (int k = j + 1; k < j + max_kwd_len && k < words.size(); k++) {
-								SearchResult<String> sr = engTrie.search(words, j, k);
-								if (sr.getMatchType() != MatchType.FAIL && sr.getNode().getCount() > 0) {
+								TSResult<String> sr = engTrie.search(words, j, k);
+								if (sr.getMatchType() != MatchType.FAIL && sr.getMatchNode().getCount() > 0) {
 									found = k;
 								}
 							}

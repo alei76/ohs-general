@@ -1,5 +1,6 @@
 package ohs.nlp.pos;
 
+import java.awt.datatransfer.SystemFlavorMap;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
@@ -94,7 +95,12 @@ public class SejongDataHandler {
 						String t2 = sb2.toString().replaceAll("[#]+", "~");
 
 						if (t1.startsWith("~") && t1.length() > 1) {
+//							if(t1.equals("~의")){
+//								System.out.println();
+//							}
 							cm1.incrementCount(t1, t2, 1);
+							
+							System.out.println(String.format("%s -> %s", t1, t2));
 						} else {
 							cm2.incrementCount(original, str, 1);
 						}

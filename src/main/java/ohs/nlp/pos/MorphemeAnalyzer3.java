@@ -14,8 +14,8 @@ import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
 import ohs.tree.trie.hash.Node;
 import ohs.tree.trie.hash.Trie;
-import ohs.tree.trie.hash.Trie.SearchResult;
-import ohs.tree.trie.hash.Trie.SearchResult.MatchType;
+import ohs.tree.trie.hash.Trie.TSResult;
+import ohs.tree.trie.hash.Trie.TSResult.MatchType;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
@@ -166,8 +166,8 @@ public class MorphemeAnalyzer3 {
 
 		for (int j = i + 1; j <= cs.size(); j++) {
 			String str = getString(cs, i, j);
-			SearchResult<Character> sr = wordDict.search(cs, i, j);
-			Set<SJTag> tags = (Set<SJTag>) sr.getNode().getData();
+			TSResult<Character> sr = wordDict.search(cs, i, j);
+			Set<SJTag> tags = (Set<SJTag>) sr.getMatchNode().getData();
 
 			if (sr.getMatchType() == MatchType.EXACT_KEYS_WITH_DATA) {
 				if (tags != null) {

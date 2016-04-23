@@ -13,8 +13,8 @@ import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
 import ohs.tree.trie.hash.Node;
 import ohs.tree.trie.hash.Trie;
-import ohs.tree.trie.hash.Trie.SearchResult;
-import ohs.tree.trie.hash.Trie.SearchResult.MatchType;
+import ohs.tree.trie.hash.Trie.TSResult;
+import ohs.tree.trie.hash.Trie.TSResult.MatchType;
 import ohs.types.Counter;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
@@ -134,12 +134,12 @@ public class CandidateSearcher {
 			for (int s = 0; s < poss.length;) {
 				int found = -1;
 				for (int e = s + 1; e < poss.length; e++) {
-					SearchResult<String> sr = trie.search(poss, s, e);
+					TSResult<String> sr = trie.search(poss, s, e);
 
 					if (sr.getMatchType() == MatchType.FAIL) {
 						break;
 					} else {
-						if (sr.getMatchType() == MatchType.EXACT_KEYS_WITH_DATA && sr.getNode().getCount() > 0) {
+						if (sr.getMatchType() == MatchType.EXACT_KEYS_WITH_DATA && sr.getMatchNode().getCount() > 0) {
 							found = e;
 						}
 					}

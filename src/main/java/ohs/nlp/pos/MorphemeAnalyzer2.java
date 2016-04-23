@@ -13,8 +13,8 @@ import ohs.nlp.ling.types.MultiToken;
 import ohs.nlp.ling.types.TokenAttr;
 import ohs.tree.trie.hash.Node;
 import ohs.tree.trie.hash.Trie;
-import ohs.tree.trie.hash.Trie.SearchResult;
-import ohs.tree.trie.hash.Trie.SearchResult.MatchType;
+import ohs.tree.trie.hash.Trie.TSResult;
+import ohs.tree.trie.hash.Trie.TSResult.MatchType;
 import ohs.types.Indexer;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
@@ -296,7 +296,7 @@ public class MorphemeAnalyzer2 {
 
 	private void search(Character[] cs, int start, int end) {
 		if (start >= 0 && end <= cs.length) {
-			SearchResult<Character> sr = wordDict.search(cs, start, end);
+			TSResult<Character> sr = wordDict.search(cs, start, end);
 
 			if (sr.getMatchType() == MatchType.EXACT_KEYS_WITH_DATA) {
 				search(cs, start, end + 1);
