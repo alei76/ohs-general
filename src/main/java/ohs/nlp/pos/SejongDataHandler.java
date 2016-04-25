@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -17,10 +16,12 @@ import ohs.nlp.ling.types.KSentence;
 import ohs.nlp.ling.types.MultiToken;
 import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
+import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Triple;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
+import ohs.utils.UnicodeUtils;
 
 public class SejongDataHandler {
 
@@ -40,7 +41,7 @@ public class SejongDataHandler {
 	public void buildDicts() throws Exception {
 		CounterMap<String, String> cm1 = Generics.newCounterMap();
 		CounterMap<String, String> cm2 = Generics.newCounterMap();
-		// CounterMap<String, String> cm3 = Generics.newCounterMap();
+		CounterMap<String, String> cm3 = Generics.newCounterMap();
 
 		SejongReader reader = new SejongReader(NLPPath.POS_DATA_FILE);
 		while (reader.hasNext()) {
@@ -52,9 +53,11 @@ public class SejongDataHandler {
 					String[] words = mt.getSubValues(TokenAttr.WORD);
 					String[] poss = mt.getSubValues(TokenAttr.POS);
 
+					// cm3.incrementCount(ot, StrUtils.join(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, words, poss), 1);
+
 					if (ot.equals(StrUtils.join("", words))) {
 						for (int i = 0; i < words.length; i++) {
-							cm2.incrementCount(words[i], poss[i], 1);
+							// cm2.incrementCount(words[i], poss[i], 1);
 						}
 					} else {
 						Map<Integer, Triple<Integer, Integer, String>> ts = Generics.newHashMap();
@@ -82,7 +85,9 @@ public class SejongDataHandler {
 
 						ot = sb.toString();
 
-						String str = null;
+						if (ot.matches("^[#]+$")) {
+							continue;
+						}
 
 						int end = -1;
 
@@ -112,44 +117,93 @@ public class SejongDataHandler {
 								String p2 = poss[i];
 
 								if (p2.startsWith("S")) {
-									start = i;
+									start = i + 1;
 									break;
 								}
 
 								if (w2.equals(p2)) {
-									start = i;
+									start = i + 1;
 									break;
 								}
 							}
 
-							if (start > -1) {
-								str = StrUtils.join(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, words, poss, start, end + 1);
-								int cnt = ts.size();
+							if (start > -1 && end - start != 0) {
+								String str = StrUtils.join(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, words, poss, start, end + 1);
+								int size = ts.size();
 
-								if (cnt == 0) {
+								if (size == 0) {
 									// System.out.println(ot);
-								} else if (cnt == 1) {
+								} else if (size == 1) {
 									if (ot.startsWith("#")) {
 										ot = ot.replaceAll("[\\#]+", "~");
-										// System.out.println(ot);
 										cm1.incrementCount(ot, str, 1);
-									}
 
-								} else if (cnt > 1) {
-									ot = ot.replaceAll("[\\#]+", "~");
-									if (ot.endsWith("~")) {
-										ot = ot.substring(0, ot.length() - 1);
-									}
+										int cnt1 = 0;
+										int cnt2 = 0;
 
-									// System.out.println(ot);
-									// cm1.incrementCount(ot, str, 1);
+										for (int i = 0; i < ot.length(); i++) {
+											char ch = ot.charAt(i);
+											if (UnicodeUtils.isInRange(UnicodeUtils.HANGUL_SYLLABLES_RANGE, ch)) {
+												cnt1++;
+											} else {
+												cnt2++;
+											}
+										}
+
+										if (cnt1 > 0 && cnt2 == 1) {
+											cm1.incrementCount(ot, str, 1);
+										}
+									}
+								} else if (size > 1) {
+									if (!ot.endsWith("#")) {
+										int loc = 0;
+										for (int i = ot.length() - 1; i >= 0; i--) {
+											char ch = ot.charAt(i);
+											if (ch != '#' && UnicodeUtils.isInRange(UnicodeUtils.HANGUL_SYLLABLES_RANGE, ch)) {
+												loc = i;
+												break;
+											}
+										}
+
+										if (loc > 0) {
+											ot.substring(0, ot.length() - loc);
+										}
+
+										ot = ot.replaceAll("[\\#]+", "~");
+										ot = ot.replaceAll("[`'\"]+", "");
+
+										loc = 0;
+
+										for (int i = ot.length() - 1; i >= 0; i--) {
+											if (ot.charAt(i) == '~') {
+												loc = i;
+												break;
+											}
+										}
+
+										if (loc > 0) {
+											ot = ot.substring(loc);
+										}
+
+										int cnt1 = 0;
+										int cnt2 = 0;
+
+										for (int i = 0; i < ot.length(); i++) {
+											char ch = ot.charAt(i);
+											if (UnicodeUtils.isInRange(UnicodeUtils.HANGUL_SYLLABLES_RANGE, ch)) {
+												cnt1++;
+											} else {
+												cnt2++;
+											}
+										}
+
+										if (cnt1 > 0 && cnt2 == 1) {
+											cm1.incrementCount(ot, str, 1);
+										}
+									}
 								} else {
 									System.out.println();
 								}
-
-								// if (str.startsWith("#") && !str.endsWith("#")) {
-								//
-								// }
 							}
 						}
 					}
@@ -158,24 +212,11 @@ public class SejongDataHandler {
 		}
 		reader.close();
 
-		writeDict(NLPPath.DICT_PATTERN_FILE, cm1);
-		// writeDict(NLPPath.DICT_FIX_FILE, cm2);
+		// FileUtils.writeStrCounterMap(NLPPath.DICT_SUFFIX_FILE, cm1);
+
+		writeDict(NLPPath.DICT_SUFFIX_FILE, cm1);
+		// writeDict(NLPPath.DICT_WORD_FILE, cm2);
 		// writeDict(NLPPath.DICT_ANALYZED_FILE, cm3);
-	}
-
-	private void writeDict(String fileName, CounterMap<String, String> cm) throws Exception {
-		List<String> keys = Generics.newArrayList(cm.keySet());
-		Collections.sort(keys);
-
-		for (int i = 0; i < keys.size(); i++) {
-			String key = keys.get(i);
-			List<String> values = Generics.newArrayList(cm.keySetOfCounter(key));
-			Collections.sort(values);
-
-			keys.set(i, key + "\t" + StrUtils.join("\t", values));
-		}
-
-		FileUtils.writeStrCollection(fileName, keys);
 	}
 
 	public void buildSystemDict() throws Exception {
@@ -329,6 +370,21 @@ public class SejongDataHandler {
 		}
 		br.close();
 		writer.close();
+	}
+
+	private void writeDict(String fileName, CounterMap<String, String> cm) throws Exception {
+		List<String> keys = Generics.newArrayList(cm.keySet());
+		Collections.sort(keys);
+
+		for (int i = 0; i < keys.size(); i++) {
+			String key = keys.get(i);
+			List<String> values = Generics.newArrayList(cm.keySetOfCounter(key));
+			Collections.sort(values);
+
+			keys.set(i, key + "\t" + StrUtils.join("\t", values));
+		}
+
+		FileUtils.writeStrCollection(fileName, keys);
 	}
 
 }

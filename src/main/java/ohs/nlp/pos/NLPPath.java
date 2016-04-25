@@ -22,9 +22,9 @@ public class NLPPath {
 
 	public static final String DICT_ANALYZED_FILE = DATA_DIR + "dict_anal.txt.gz";
 
-	public static final String DICT_PATTERN_FILE = DATA_DIR + "dict_pat.txt";
+	public static final String DICT_SUFFIX_FILE = DATA_DIR + "dict_suffixes.txt";
 
-	public static final String DICT_FIX_FILE = DATA_DIR + "dict_fix.txt";
+	public static final String DICT_WORD_FILE = DATA_DIR + "dict_words.txt";
 
 	public static final String DICT_SYSTEM_FILE = DATA_DIR + "dict_sys.txt.gz";
 

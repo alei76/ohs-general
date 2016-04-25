@@ -196,15 +196,19 @@ public class MorphemeAnalyzer {
 	}
 
 	public void readDicts() throws Exception {
-		// for (String line : FileUtils.readLines(NLPPath.DICT_ANALYZED_FILE)) {
-		//
-		// }
-
 		analDict = Generics.newSetMap();
+
+		for (String line : FileUtils.readLines(NLPPath.DICT_ANALYZED_FILE)) {
+			String[] parts = line.split("\t");
+
+			for (int i = 1; i < parts.length; i++) {
+				analDict.put(parts[0], parts[1]);
+			}
+		}
 
 		fixDict = Trie.newTrie();
 
-		for (String line : FileUtils.readLines(NLPPath.DICT_FIX_FILE)) {
+		for (String line : FileUtils.readLines(NLPPath.DICT_WORD_FILE)) {
 			String[] parts = line.split("\t");
 			Character[] cs = StrUtils.asCharacters(parts[0]);
 			Node<Character> node = fixDict.insert(cs);
@@ -223,7 +227,7 @@ public class MorphemeAnalyzer {
 
 		patDict = Trie.newTrie();
 
-		for (String line : FileUtils.readLines(NLPPath.DICT_PATTERN_FILE)) {
+		for (String line : FileUtils.readLines(NLPPath.DICT_SUFFIX_FILE)) {
 			String[] parts = line.split("\t");
 			Character[] cs = StrUtils.asCharacters(parts[0].substring(1));
 			Node<Character> node = patDict.insert(cs);
