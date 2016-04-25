@@ -63,7 +63,7 @@ public class MultiToken extends Token {
 	public String joinSubValues() {
 		String[] s = getSubValues(TokenAttr.values()[0]);
 		for (int i = 1; i < TokenAttr.size(); i++) {
-			StrUtils.join(Token.DELIM_TOKEN, s, getSubValues(TokenAttr.values()[i]));
+			StrUtils.join(Token.DELIM_TOKEN, s, getSubValues(TokenAttr.values()[i]), 0, s.length);
 		}
 		StrUtils.wrap(s);
 		return StrUtils.join(DELIM_MULTI_TOKEN, s);

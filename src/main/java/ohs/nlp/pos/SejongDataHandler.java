@@ -1,18 +1,15 @@
 package ohs.nlp.pos;
 
-import java.awt.datatransfer.SystemFlavorMap;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectOutputStream;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.print.DocFlavor.STRING;
-
-import edu.stanford.nlp.ling.Word;
 import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
 import ohs.nlp.ling.types.KDocument;
@@ -20,13 +17,10 @@ import ohs.nlp.ling.types.KSentence;
 import ohs.nlp.ling.types.MultiToken;
 import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
-import ohs.tree.trie.hash.Node;
-import ohs.tree.trie.hash.Trie;
-import ohs.types.Counter;
 import ohs.types.CounterMap;
+import ohs.types.Triple;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
-import ohs.utils.UnicodeUtils;
 
 public class SejongDataHandler {
 
@@ -46,7 +40,7 @@ public class SejongDataHandler {
 	public void buildDicts() throws Exception {
 		CounterMap<String, String> cm1 = Generics.newCounterMap();
 		CounterMap<String, String> cm2 = Generics.newCounterMap();
-		CounterMap<String, String> cm3 = Generics.newCounterMap();
+		// CounterMap<String, String> cm3 = Generics.newCounterMap();
 
 		SejongReader reader = new SejongReader(NLPPath.POS_DATA_FILE);
 		while (reader.hasNext()) {
@@ -54,86 +48,124 @@ public class SejongDataHandler {
 
 			for (KSentence sent : doc.getSentences()) {
 				for (MultiToken mt : sent.toMultiTokens()) {
+					String ot = mt.getValue(TokenAttr.WORD);
 					String[] words = mt.getSubValues(TokenAttr.WORD);
 					String[] poss = mt.getSubValues(TokenAttr.POS);
 
-					// StringBuffer sb = new StringBuffer();
-					//
-					// for (int i = 0; i < words.length; i++) {
-					// String word = words[i];
-					// String pos = poss[i];
-					//
-					// if (pos.startsWith("N")) {
-					// words[i] = "N";
-					// poss[i] = "N";
-					// }
-					// }
+					if (ot.equals(StrUtils.join("", words))) {
+						for (int i = 0; i < words.length; i++) {
+							cm2.incrementCount(words[i], poss[i], 1);
+						}
+					} else {
+						Map<Integer, Triple<Integer, Integer, String>> ts = Generics.newHashMap();
 
-					String original = mt.getValue(TokenAttr.WORD);
+						StringBuffer sb = new StringBuffer(ot);
 
-					cm3.incrementCount(original, StrUtils.join(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, words, poss), 1);
+						for (int i = 0; i < words.length; i++) {
+							String word = words[i];
+							String pos = poss[i];
 
-					if (!original.equals(StrUtils.join("", words))) {
-						// String s = StrUtils.join(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, words, poss);
-						String str = StrUtils.join(MultiToken.DELIM_MULTI_TOKEN, words);
+							if (pos.startsWith("N") || pos.startsWith("S")) {
+								int start = sb.indexOf(word);
 
-						int len = Math.min(str.length(), original.length());
+								if (start > -1) {
+									int end = start + word.length();
+									ts.put(i, Generics.newTriple(start, end, sb.substring(start, end)));
 
-						StringBuffer sb1 = new StringBuffer(original);
-						StringBuffer sb2 = new StringBuffer(str);
+									for (int j = start; j < end; j++) {
+										sb.setCharAt(j, '#');
+									}
+									words[i] = pos;
+								}
+							}
+						}
 
-						for (int i = 0; i < len; i++) {
-							if (original.charAt(i) == str.charAt(i)) {
-								sb1.setCharAt(i, '#');
-								sb2.setCharAt(i, '#');
+						ot = sb.toString();
+
+						String str = null;
+
+						int end = -1;
+
+						for (int i = words.length - 1; i >= 0; i--) {
+							String w1 = words[i];
+							String p1 = poss[i];
+
+							if (p1.startsWith("S") || w1.equals(p1)) {
+
 							} else {
+								end = i;
 								break;
 							}
 						}
 
-						String t1 = sb1.toString().replaceAll("[#]+", "~");
-						String t2 = sb2.toString().replaceAll("[#]+", "~");
-
-						if (t1.startsWith("~") && t1.length() > 1) {
-//							if(t1.equals("~의")){
-//								System.out.println();
-//							}
-							cm1.incrementCount(t1, t2, 1);
-							
-							System.out.println(String.format("%s -> %s", t1, t2));
+						if (end == -1) {
+							// System.out.println(ot);
+							// String s = StrUtils.join(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, words, poss);
+							// cm1.incrementCount(ot, s, 2);
+						} else if (end == 0) {
+							// String s = StrUtils.join(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, words, poss);
+							// cm1.incrementCount(ot, s, 2);
 						} else {
-							cm2.incrementCount(original, str, 1);
-						}
+							int start = -1;
+							for (int i = end - 1; i >= 0; i--) {
+								String w2 = words[i];
+								String p2 = poss[i];
 
-						// if (t1.equals("~")) {
-						//
-						// // System.out.println(original + "\t" + str);
-						// } else {
-						// cm1.incrementCount(t1, t2, 1);
-						// }
-					} else {
-						cm2.incrementCount(original, StrUtils.join(MultiToken.DELIM_MULTI_TOKEN, words), 1);
+								if (p2.startsWith("S")) {
+									start = i;
+									break;
+								}
+
+								if (w2.equals(p2)) {
+									start = i;
+									break;
+								}
+							}
+
+							if (start > -1) {
+								str = StrUtils.join(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, words, poss, start, end + 1);
+								int cnt = ts.size();
+
+								if (cnt == 0) {
+									// System.out.println(ot);
+								} else if (cnt == 1) {
+									if (ot.startsWith("#")) {
+										ot = ot.replaceAll("[\\#]+", "~");
+										// System.out.println(ot);
+										cm1.incrementCount(ot, str, 1);
+									}
+
+								} else if (cnt > 1) {
+									ot = ot.replaceAll("[\\#]+", "~");
+									if (ot.endsWith("~")) {
+										ot = ot.substring(0, ot.length() - 1);
+									}
+
+									// System.out.println(ot);
+									// cm1.incrementCount(ot, str, 1);
+								} else {
+									System.out.println();
+								}
+
+								// if (str.startsWith("#") && !str.endsWith("#")) {
+								//
+								// }
+							}
+						}
 					}
 				}
 			}
 		}
 		reader.close();
 
-		// FileUtils.writeStrCounterMap(NLPPath.DICT_PATTERN_FILE, cm1);
-		// FileUtils.writeStrCounterMap(NLPPath.DICT_FIX_FILE, cm2);
-		// FileUtils.writeStrCounterMap(NLPPath.DICT_ANALYZED_FILE, cm3);
-
 		writeDict(NLPPath.DICT_PATTERN_FILE, cm1);
-		writeDict(NLPPath.DICT_FIX_FILE, cm2);
-		writeDict(NLPPath.DICT_ANALYZED_FILE, cm3);
-
+		// writeDict(NLPPath.DICT_FIX_FILE, cm2);
+		// writeDict(NLPPath.DICT_ANALYZED_FILE, cm3);
 	}
 
 	private void writeDict(String fileName, CounterMap<String, String> cm) throws Exception {
 		List<String> keys = Generics.newArrayList(cm.keySet());
 		Collections.sort(keys);
-
-		List<String> lines = Generics.newArrayList();
 
 		for (int i = 0; i < keys.size(); i++) {
 			String key = keys.get(i);

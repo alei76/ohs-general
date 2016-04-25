@@ -9,10 +9,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ohs.math.ArrayMath;
+import ohs.math.ArrayUtils;
 import ohs.nlp.ling.types.TextSpan;
 import ohs.types.Counter;
 import ohs.types.Indexer;
@@ -260,6 +262,27 @@ public class StrUtils {
 		return p;
 	}
 
+	public static int indexOf(String[] a, String b) {
+		int ret = -1;
+		for (int i = 0; i < a.length; i++) {
+			if (a[i].equals(b)) {
+				ret = i;
+				break;
+			}
+		}
+		return ret;
+	}
+
+	public static int[] indexesOf(String[] a, String b) {
+		List<Integer> c = Generics.newArrayList();
+		for (int i = 0; i < a.length; i++) {
+			if (a[i].equals(b)) {
+				c.add(i);
+			}
+		}
+		return ArrayUtils.copy(c);
+	}
+
 	public static void init(String[] s) {
 		for (int i = 0; i < s.length; i++) {
 			s[i] = "";
@@ -282,10 +305,6 @@ public class StrUtils {
 			}
 		}
 		return true;
-	}
-
-	public static String join(String glue, Iterable<String> a) {
-		return join(glue, a, 0, Integer.MAX_VALUE);
 	}
 
 	public static String join(String glue, Iterable<Integer> a, Indexer<String> b) {
@@ -327,6 +346,10 @@ public class StrUtils {
 		return sb.toString();
 	}
 
+	public static String join(String glue, Iterable<String> a) {
+		return join(glue, a, 0, Integer.MAX_VALUE);
+	}
+
 	public static String join(String glue, Iterable<String> a, int start, int end) {
 		StringBuffer sb = new StringBuffer();
 
@@ -363,34 +386,38 @@ public class StrUtils {
 	// return join(glue, c, start, end);
 	// }
 
-	public static String join(String inGlue, String midGlue, String outGlue, String[][][] a) {
+	public static String join(String glue1, String glue2, String glue3, String[][][] a) {
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < a.length; i++) {
-			sb.append(join(inGlue, midGlue, a[i]));
+			sb.append(join(glue1, glue2, a[i]));
 			if (i != a.length - 1) {
-				sb.append(outGlue);
+				sb.append(glue3);
 			}
 		}
 		return sb.toString();
 	}
 
-	public static String join(String inGlue, String outGlue, String[] a, String[] b) {
+	public static String join(String glue1, String glue2, String[] a, String[] b) {
+		return join(glue1, glue2, a, b, 0, a.length);
+	}
+
+	public static String join(String glue1, String glue2, String[] a, String[] b, int start, int end) {
 		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < a.length; i++) {
-			sb.append(String.format("%s%s%s", a[i], inGlue, b[i]));
-			if (i != a.length - 1) {
-				sb.append(outGlue);
+		for (int i = start; i < end; i++) {
+			sb.append(String.format("%s%s%s", a[i], glue1, b[i]));
+			if (i != end - 1) {
+				sb.append(glue2);
 			}
 		}
 		return sb.toString();
 	}
 
-	public static String join(String inGlue, String outGlue, String[][] a) {
+	public static String join(String glue1, String glue2, String[][] a) {
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < a.length; i++) {
-			sb.append(join(inGlue, a[i]));
+			sb.append(join(glue1, a[i]));
 			if (i != a.length - 1) {
-				sb.append(outGlue);
+				sb.append(glue2);
 			}
 		}
 		return sb.toString();
@@ -423,23 +450,23 @@ public class StrUtils {
 		return sb.toString();
 	}
 
-	public static String join(String glue, String[] a, int[] is) {
+	public static String join(String glue, String[] a, int[] locs) {
 		List<String> b = Generics.newArrayList();
-		for (int i : is) {
+		for (int i : locs) {
 			b.add(a[i]);
 		}
 		return join(glue, b, 0, b.size());
 	}
 
-	public static String[] join(String glue, String[] a, String[] b) {
-		String[] c = new String[a.length];
-		join(glue, a, b, c);
+	public static String[] join(String glue, String[] a, String[] b, int start, int end) {
+		String[] c = new String[end - start];
+		join(glue, a, b, start, end, c);
 		return c;
 	}
 
-	public static void join(String glue, String[] a, String[] b, String[] c) {
-		for (int i = 0; i < a.length; i++) {
-			c[i] = a[i] + glue + b[i];
+	public static void join(String glue, String[] a, String[] b, int start, int end, String[] c) {
+		for (int i = start, j = 0; i < end; i++, j++) {
+			c[j] = a[i] + glue + b[i];
 		}
 	}
 
@@ -724,9 +751,9 @@ public class StrUtils {
 		return text.substring(start, end);
 	}
 
-	public static String[] subTokens(String[] toks, int start, int end) {
+	public static String[] subArray(String[] toks, int start, int end) {
 		String[] ret = new String[end - start];
-		for (int i = start, j = 0; i < toks.length && i < end; i++) {
+		for (int i = start, j = 0; i < toks.length && i < end; i++, j++) {
 			ret[j] = toks[i];
 		}
 		return ret;

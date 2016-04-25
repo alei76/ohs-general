@@ -61,7 +61,7 @@ public class SearchLogAnalyzer {
 				String modelName = parts[0];
 
 				HyperParameter hyperParameter = new HyperParameter();
-				hyperParameter = HyperParameter.parse(StrUtils.subTokens(parts, 1, parts.length));
+				hyperParameter = HyperParameter.parse(StrUtils.subArray(parts, 1, parts.length));
 				List<String> lines = new ArrayList<String>();
 
 				TextFileReader reader = new TextFileReader(file.getPath());
@@ -149,7 +149,7 @@ public class SearchLogAnalyzer {
 				String modelName = parts[0];
 
 				HyperParameter hyperParameter = new HyperParameter();
-				hyperParameter = HyperParameter.parse(StrUtils.subTokens(parts, 1, parts.length));
+				hyperParameter = HyperParameter.parse(StrUtils.subArray(parts, 1, parts.length));
 				List<String> lines = new ArrayList<String>();
 
 				if (!hyperParameter.isUseWiki()) {

@@ -90,7 +90,7 @@ public class SearchResultEvaluator {
 				if (fileName.equals("init")) {
 					ql_index = i;
 				} else {
-					HyperParameter hp = HyperParameter.parse(StrUtils.subTokens(parts, 1, parts.length));
+					HyperParameter hp = HyperParameter.parse(StrUtils.subArray(parts, 1, parts.length));
 
 					if (hp.getTopK() == 100 && hp.getNumFBDocs() == 5 && hp.getNumFBWords() == 25 && hp.getMixtureForAllCollections() == 0
 							&& !hp.isUseDocPrior() && !hp.isUseDoubleScoring() && !hp.isUseWiki() && hp.getMixtureForFeedbackModel() == 0.5
@@ -508,7 +508,7 @@ public class SearchResultEvaluator {
 				HyperParameter hp = new HyperParameter();
 
 				if (j > 0) {
-					hp = HyperParameter.parse(StrUtils.subTokens(parts, 1, parts.length));
+					hp = HyperParameter.parse(StrUtils.subArray(parts, 1, parts.length));
 				}
 
 				// if (hyperParameter.getMixtureForExpQueryModel() == 0 ||
