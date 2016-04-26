@@ -13,6 +13,7 @@ import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.medical.general.MIRPath;
 import ohs.utils.Generics;
+import ohs.utils.StopWatch;
 import ohs.utils.StrUtils;
 
 public class ClueWebDumper extends TextDumper {
@@ -50,13 +51,13 @@ public class ClueWebDumper extends TextDumper {
 	private void dump(File dir) {
 		List<File> files = FileUtils.getFilesUnder(dir.getPath());
 
-		for (File file : files) {
+		StopWatch stopWatch = StopWatch.newStopWatch();
+		for (int k = 0; k < files.size(); k++) {
+			File file = files.get(k);
+
 			if (!file.getName().endsWith(".gz")) {
 				continue;
 			}
-
-			List<String> labels = Generics.newArrayList();
-			List<String> values = Generics.newArrayList();
 
 			List<String> lines = Generics.newArrayList();
 
@@ -106,6 +107,8 @@ public class ClueWebDumper extends TextDumper {
 			}
 			reader.close();
 		}
+
+		System.out.printf("process [%d] files under [%s], %s\n", files.size(), dir.getPath(), stopWatch.stop());
 	}
 
 }
