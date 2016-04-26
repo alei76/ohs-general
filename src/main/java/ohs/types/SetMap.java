@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
+import gnu.trove.map.TMap;
 import ohs.utils.Generics;
 
 public class SetMap<K, V> implements Serializable {
@@ -15,10 +16,26 @@ public class SetMap<K, V> implements Serializable {
 
 	protected Map<K, Set<V>> entries;
 
+	private Generics.MapType mt;
+
 	private Generics.SetType st;
 
 	public SetMap() {
 		this(100, Generics.MapType.HASH_MAP, Generics.SetType.HASH_SET);
+	}
+
+	public void trimToSize() {
+		Map<K, Set<V>> temp = Generics.newMap(mt, entries.size());
+
+		for (K key : entries.keySet()) {
+			Set<V> oldSet = entries.get(key);
+			Set<V> newSet = Generics.newSet(st, oldSet.size());
+			newSet.addAll(oldSet);
+			temp.put(key, newSet);
+			oldSet = null;
+		}
+
+		entries = temp;
 	}
 
 	public SetMap(Generics.MapType mt, Generics.SetType st) {
@@ -26,8 +43,9 @@ public class SetMap<K, V> implements Serializable {
 	}
 
 	public SetMap(int size, Generics.MapType mt, Generics.SetType st) {
-		entries = Generics.newMap(mt, size);
+		this.mt = mt;
 		this.st = st;
+		entries = Generics.newMap(mt, size);
 	}
 
 	public void addAll(SetMap<K, V> input) {

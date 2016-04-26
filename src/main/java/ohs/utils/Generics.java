@@ -73,6 +73,30 @@ public class Generics {
 		return (T) o;
 	}
 
+	public static <E> List<E> ensureArrayList(ArrayList<E> a) {
+		return a == null ? newArrayList() : a;
+	}
+
+	public static <K, V> BidMap<K, V> ensureBidMap(BidMap<K, V> a) {
+		return a == null ? newBidMap() : a;
+	}
+
+	public static <E> Counter<E> ensureCounter(Counter<E> a) {
+		return a == null ? newCounter() : a;
+	}
+
+	public static <K, V> Map<K, V> ensureHashMap(Map<K, V> a) {
+		return a == null ? newHashMap() : a;
+	}
+
+	public static <E> Set<E> ensureHashSet(Set<E> a) {
+		return a == null ? newHashSet() : a;
+	}
+
+	public static <K, V> Map<K, V> ensureTreeMap(Map<K, V> a) {
+		return a == null ? newTreeMap() : a;
+	}
+
 	/* Collections */
 	public static <E> ArrayList<E> newArrayList() {
 		return new ArrayList<E>();
@@ -159,30 +183,6 @@ public class Generics {
 		return new HashSet<E>();
 	}
 
-	public static <E> Set<E> ensureHashSet(Set<E> a) {
-		return a == null ? newHashSet() : a;
-	}
-
-	public static <E> Counter<E> ensureCounter(Counter<E> a) {
-		return a == null ? newCounter() : a;
-	}
-
-	public static <E> List<E> ensureArrayList(ArrayList<E> a) {
-		return a == null ? newArrayList() : a;
-	}
-
-	public static <K, V> Map<K, V> ensureHashMap(Map<K, V> a) {
-		return a == null ? newHashMap() : a;
-	}
-
-	public static <K, V> Map<K, V> ensureTreeMap(Map<K, V> a) {
-		return a == null ? newTreeMap() : a;
-	}
-
-	public static <K, V> BidMap<K, V> ensureBidMap(BidMap<K, V> a) {
-		return a == null ? newBidMap() : a;
-	}
-
 	public static <E> Set<E> newHashSet(Collection<? extends E> c) {
 		return new HashSet<E>(c);
 	}
@@ -205,15 +205,6 @@ public class Generics {
 
 	public static <K> Set<K> newIdentityHashSet(int size) {
 		return Collections.newSetFromMap(Generics.<K, Boolean> newIdentityHashMap(size));
-	}
-
-	public static <K> void nullify(Collection<K> c) {
-		Iterator<K> iter = c.iterator();
-		while (iter.hasNext()) {
-			iter.next();
-			iter.remove();
-		}
-		c = null;
 	}
 
 	public static <T> Indexer<T> newIndexer() {
@@ -317,13 +308,13 @@ public class Generics {
 		return new TreeSet<E>(s);
 	}
 
-	// public static <E> Index<E> newIndex() {
-	// return new HashIndex<E>();
-	// }
-
 	public static <T1, T2, T3> Triple<T1, T2, T3> newTriple(T1 first, T2 second, T3 third) {
 		return new Triple<T1, T2, T3>(first, second, third);
 	}
+
+	// public static <E> Index<E> newIndex() {
+	// return new HashIndex<E>();
+	// }
 
 	public static <K, V> WeakHashMap<K, V> newWeakHashMap() {
 		return new WeakHashMap<K, V>();
@@ -335,6 +326,15 @@ public class Generics {
 
 	public static <T> WeakReference<T> newWeakReference(T referent) {
 		return new WeakReference<T>(referent);
+	}
+
+	public static <K> void nullify(Collection<K> c) {
+		Iterator<K> iter = c.iterator();
+		while (iter.hasNext()) {
+			iter.next();
+			iter.remove();
+		}
+		c = null;
 	}
 
 	// public static <T> Interner<T> newInterner() {

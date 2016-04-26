@@ -2,7 +2,6 @@ package ohs.nlp.pos;
 
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 
 import ohs.io.FileUtils;
 import ohs.nlp.ling.types.KDocument;
@@ -27,9 +26,8 @@ public class MorphemeAnalyzer {
 		MorphemeAnalyzer a = new MorphemeAnalyzer();
 
 		{
-			// String document = "프랑스랑은 세계적인 의상 디자이너 엠마누엘 웅가로가 실내 장식용 직물 디자이너로
-			// 나섰다.\n";
-			String document = "우승은 프랑스일테니까!\n";
+			String document = "프랑스랑은 세계적인 의상 디자이너 엠마누엘 웅가로가 실내 장식용 직물 디자이너로 나섰다.\n";
+			// String document = "우승은 프랑스일테니까!\n";
 
 			KDocument doc = t.tokenize(document);
 			a.analyze(doc);
@@ -66,9 +64,11 @@ public class MorphemeAnalyzer {
 		System.out.println("proces ends.");
 	}
 
-	private Trie<Character> fixDict;
+	private Trie<Character> wordDict;
 
-	private Trie<Character> patDict;
+	private Trie<Character> suffixDict;
+
+	private Trie<SJTag> conRules;
 
 	private SetMap<String, String> analDict;
 
@@ -110,80 +110,66 @@ public class MorphemeAnalyzer {
 		Set<String> ret = Generics.newHashSet();
 
 		Character[] cs = StrUtils.asCharacters(wp);
+		int len = cs.length;
 
 		List<Triple<Integer, Integer, Set<String>>> list1 = Generics.newArrayList();
-		int num_matches = 0;
-
-		{
-			int start = 0;
-
-			while (start < cs.length) {
-				TSResult<Character> sr = fixDict.find(cs, start);
-				if (sr.getMatchType() == MatchType.FAIL) {
-					start++;
-				} else {
-					int end = sr.getMatchLoc() + 1;
-					num_matches += (end - start);
-
-					Set<String> set = (Set<String>) sr.getMatchNode().getData();
-
-					list1.add(Generics.newTriple(start, end, set));
-
-					start = end;
-				}
-			}
-		}
-
-		System.out.println(wp.length());
-		System.out.println(num_matches);
-
 		List<Triple<Integer, Integer, Set<String>>> list2 = Generics.newArrayList();
 
 		{
+
+			StringBuffer sb = new StringBuffer(wp);
+			sb.reverse();
+
+			Character[] cs2 = StrUtils.asCharacters(sb.toString());
+
 			int start = 0;
+
 			while (start < cs.length) {
-				TSResult<Character> sr = patDict.find(cs, start);
+				TSResult<Character> sr = suffixDict.find(cs2, start);
+				if (sr.getMatchType() == MatchType.FAIL) {
+					break;
+				} else {
+					int end = sr.getMatchLoc() + 1;
+					Set<String> set = (Set<String>) sr.getMatchNode().getData();
+
+					int new_start = len - end;
+					int new_end = len - start;
+
+					list2.add(Generics.newTriple(new_start, new_end, set));
+
+					start = end;
+				}
+			}
+
+			for (int i = 0; i < list2.size(); i++) {
+				Triple<Integer, Integer, Set<String>> t = list2.get(i);
+				System.out.printf("%s, %s\n", wp.substring(t.getFirst(), t.getSecond()), t.getThird());
+			}
+			System.out.println();
+		}
+
+		{
+			int start = 0;
+
+			while (start < cs.length) {
+				TSResult<Character> sr = wordDict.find(cs, start);
 				if (sr.getMatchType() == MatchType.FAIL) {
 					start++;
 				} else {
 					int end = sr.getMatchLoc() + 1;
 					Set<String> set = (Set<String>) sr.getMatchNode().getData();
-
-					list2.add(Generics.newTriple(start, end, set));
-
+					list1.add(Generics.newTriple(start, end, set));
 					start = end;
 				}
 			}
-		}
 
-		return ret;
-	}
-
-	public void analyze(String[] words) {
-		List<String>[] ret = new List[words.length];
-
-		for (int i = 0; i < ret.length; i++) {
-			ret[i] = Generics.newArrayList();
-		}
-	}
-
-	private List<Integer> getStartLocs(String word, SetMap<Integer, Character> locToChars) {
-		List<Integer> ret = Generics.newArrayList();
-		int L = word.length();
-
-		for (int i = L - 1; i >= 0; i--) {
-			if (i == L - 1 && locToChars.contains(0, word.charAt(i))) {
-				ret.add(i);
+			for (int i = 0; i < list1.size(); i++) {
+				Triple<Integer, Integer, Set<String>> t = list1.get(i);
+				System.out.printf("%s, %s\n", wp.substring(t.getFirst(), t.getSecond()), t.getThird());
 			}
-
-			if (locToChars.contains(1, word.charAt(i))) {
-				if (i >= 0 && locToChars.contains(0, word.charAt(i - 1))) {
-					ret.add(i);
-				}
-			} else {
-				break;
-			}
+			System.out.println();
 		}
+
 		return ret;
 	}
 
@@ -198,20 +184,32 @@ public class MorphemeAnalyzer {
 	public void readDicts() throws Exception {
 		analDict = Generics.newSetMap();
 
-		for (String line : FileUtils.readLines(NLPPath.DICT_ANALYZED_FILE)) {
-			String[] parts = line.split("\t");
+		conRules = Trie.newTrie();
 
-			for (int i = 1; i < parts.length; i++) {
-				analDict.put(parts[0], parts[1]);
-			}
-		}
+		// for (String line : FileUtils.readLines(NLPPath.DICT_ANALYZED_FILE)) {
+		// String[] parts = line.split("\t");
+		//
+		// for (int i = 1; i < parts.length; i++) {
+		// analDict.put(parts[0], parts[1]);
+		//
+		// String[] subParts = parts[i].split(" \\+ ");
+		// SJTag[] poss = new SJTag[subParts.length];
+		//
+		// for (int j = 0; j < subParts.length; j++) {
+		// String[] two = subParts[j].split(" / ");
+		// poss[j] = SJTag.valueOf(two[1]);
+		// }
+		//
+		// conRules.insert(poss);
+		// }
+		// }
 
-		fixDict = Trie.newTrie();
+		wordDict = Trie.newTrie();
 
 		for (String line : FileUtils.readLines(NLPPath.DICT_WORD_FILE)) {
 			String[] parts = line.split("\t");
 			Character[] cs = StrUtils.asCharacters(parts[0]);
-			Node<Character> node = fixDict.insert(cs);
+			Node<Character> node = wordDict.insert(cs);
 
 			Set<String> set = (Set<String>) node.getData();
 
@@ -225,12 +223,22 @@ public class MorphemeAnalyzer {
 			}
 		}
 
-		patDict = Trie.newTrie();
+		suffixDict = Trie.newTrie();
 
 		for (String line : FileUtils.readLines(NLPPath.DICT_SUFFIX_FILE)) {
 			String[] parts = line.split("\t");
-			Character[] cs = StrUtils.asCharacters(parts[0].substring(1));
-			Node<Character> node = patDict.insert(cs);
+
+			String suffix = parts[0];
+
+			if (suffix.startsWith("~")) {
+				suffix = suffix.substring(1);
+			}
+
+			StringBuffer sb = new StringBuffer(suffix);
+			sb.reverse();
+
+			Character[] cs = StrUtils.asCharacters(sb.toString());
+			Node<Character> node = suffixDict.insert(cs);
 
 			Set<String> set = (Set<String>) node.getData();
 

@@ -296,7 +296,6 @@ public class FileUtils {
 	private static List<File> getFilesUnder(File dir, boolean recursive) {
 		List<File> files = new ArrayList<File>();
 		addFilesUnder(dir, files, recursive);
-		// Collections.sort(files);
 
 		long total_bytes = 0;
 

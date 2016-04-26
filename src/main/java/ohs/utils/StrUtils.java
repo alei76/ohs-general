@@ -316,6 +316,8 @@ public class StrUtils {
 
 		if (a instanceof List) {
 			List<Integer> t = (List<Integer>) a;
+			end = Math.min(end, t.size());
+
 			for (int i = start; i < end; i++) {
 				int id = t.get(i);
 				String obj = b.getObject(id);

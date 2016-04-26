@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.xml.utils.SuballocatedByteVector;
+
 import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
 import ohs.nlp.ling.types.KDocument;
@@ -83,18 +85,26 @@ public class SejongDataHandler {
 						}
 
 						ot = sb.toString();
+						ot = ot.replaceAll("[’,'`\"]+", "~");
+						ot = ot.replaceAll("[\\#]+", "~");
 
-						if (ot.matches("^[#]+$")) {
+						if (ot.endsWith("~")) {
+							ot = ot.substring(0, ot.length() - 1);
+						}
+
+						int idx = ot.lastIndexOf("~");
+
+						if (idx > 0) {
+							ot = ot.substring(idx);
+						}
+
+						if (ot.matches("^[~]+$") || ot.length() == 0) {
 							continue;
 						}
 
 						int end = -1;
-
 						for (int i = words.length - 1; i >= 0; i--) {
-							String w1 = words[i];
-							String p1 = poss[i];
-
-							if (p1.startsWith("S") || w1.equals(p1)) {
+							if (poss[i].startsWith("S") || words[i].equals(poss[i])) {
 
 							} else {
 								end = i;
@@ -112,91 +122,71 @@ public class SejongDataHandler {
 						} else {
 							int start = -1;
 							for (int i = end - 1; i >= 0; i--) {
-								String w2 = words[i];
-								String p2 = poss[i];
-
-								if (p2.startsWith("S")) {
+								if (poss[i].startsWith("S")) {
 									start = i + 1;
 									break;
 								}
 
-								if (w2.equals(p2)) {
+								if (words[i].equals(poss[i])) {
 									start = i + 1;
 									break;
 								}
 							}
 
+							if (start == -1 && !ot.startsWith("~")) {
+								start = 0;
+							}
+
 							if (start > -1 && end - start != 0) {
-								String str = StrUtils.join(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, words, poss, start, end + 1);
+								String str1 = StrUtils.join(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, words, poss, start, end + 1);
+								String str2 = StrUtils.join("", words, start, end + 1);
+
 								int size = ts.size();
 
 								if (size == 0) {
 									// System.out.println(ot);
 								} else if (size == 1) {
-									if (ot.startsWith("#")) {
-										ot = ot.replaceAll("[\\#]+", "~");
+									int cnt1 = 0;
+									int cnt2 = 0;
 
-										int cnt1 = 0;
-										int cnt2 = 0;
-
-										for (int i = 0; i < ot.length(); i++) {
-											char ch = ot.charAt(i);
-											if (UnicodeUtils.isInRange(UnicodeUtils.HANGUL_SYLLABLES_RANGE, ch)) {
-												cnt1++;
-											} else {
-												cnt2++;
-											}
+									for (int i = 0; i < ot.length(); i++) {
+										char ch = ot.charAt(i);
+										if (UnicodeUtils.isInRange(UnicodeUtils.HANGUL_SYLLABLES_RANGE, ch)) {
+											cnt1++;
+										} else {
+											cnt2++;
 										}
+									}
 
-										if (cnt1 > 0 && cnt2 < 2) {
-											cm1.incrementCount(ot, str, 1);
+									if (cnt1 > 0 && cnt2 < 2) {
+										if (cnt1 == 1) {
+											if (Math.abs(ot.length() - str2.length()) < 2) {
+												cm1.incrementCount(ot, str1, 1);
+											}
+										} else {
+											cm1.incrementCount(ot, str1, 1);
 										}
 									}
 								} else if (size > 1) {
-									if (!ot.endsWith("#")) {
-										int loc = 0;
-										for (int i = ot.length() - 1; i >= 0; i--) {
-											char ch = ot.charAt(i);
-											if (ch != '#' && UnicodeUtils.isInRange(UnicodeUtils.HANGUL_SYLLABLES_RANGE, ch)) {
-												loc = i;
-												break;
+									int cnt1 = 0;
+									int cnt2 = 0;
+
+									for (int i = 0; i < ot.length(); i++) {
+										char ch = ot.charAt(i);
+										if (UnicodeUtils.isInRange(UnicodeUtils.HANGUL_SYLLABLES_RANGE, ch)) {
+											cnt1++;
+										} else {
+											cnt2++;
+										}
+									}
+
+									if (cnt1 > 0 && cnt2 < 2) {
+										if (cnt1 == 1) {
+											if (Math.abs(ot.length() - str2.length()) < 2) {
+												cm1.incrementCount(ot, str1, 1);
 											}
-										}
-
-										if (loc > 0) {
-											ot.substring(0, ot.length() - loc);
-										}
-
-										ot = ot.replaceAll("[\\#]+", "~");
-										ot = ot.replaceAll("[`'\"]+", "");
-
-										loc = 0;
-
-										for (int i = ot.length() - 1; i >= 0; i--) {
-											if (ot.charAt(i) == '~') {
-												loc = i;
-												break;
-											}
-										}
-
-										if (loc > 0) {
-											ot = ot.substring(loc);
-										}
-
-										int cnt1 = 0;
-										int cnt2 = 0;
-
-										for (int i = 0; i < ot.length(); i++) {
-											char ch = ot.charAt(i);
-											if (UnicodeUtils.isInRange(UnicodeUtils.HANGUL_SYLLABLES_RANGE, ch)) {
-												cnt1++;
-											} else {
-												cnt2++;
-											}
-										}
-
-										if (cnt1 > 0 && cnt2 < 2) {
-											// cm1.incrementCount(ot, str, 1);
+										} else {
+											cm1.incrementCount(ot, str1, 1);
 										}
 									}
 								} else {

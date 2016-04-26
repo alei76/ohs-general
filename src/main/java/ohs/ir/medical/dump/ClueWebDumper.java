@@ -1,12 +1,12 @@
 package ohs.ir.medical.dump;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-
-import com.mysql.fabric.xmlrpc.base.Struct;
 
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
@@ -32,26 +32,27 @@ public class ClueWebDumper extends TextDumper {
 		System.out.println("process ends.");
 	}
 
-	private TextFileWriter writer;
-
 	@Override
 	public void dump() throws Exception {
-		writer = new TextFileWriter(outputFileName);
+
+		FileUtils.deleteFilesUnder(inputDirName.replace("2012_disk_b", "2012_disk_b_text"));
+
 		File[] files = new File(inputDirName).listFiles();
+
+		Arrays.sort(files);
 
 		for (File file : files) {
 			if (file.isDirectory() && file.getPath().contains("ClueWeb12_")) {
 				dump(file);
 			}
 		}
-
-		writer.close();
 	}
 
 	private void dump(File dir) {
 		List<File> files = FileUtils.getFilesUnder(dir.getPath());
 
-		StopWatch stopWatch = StopWatch.newStopWatch();
+		Collections.sort(files);
+
 		for (int k = 0; k < files.size(); k++) {
 			File file = files.get(k);
 
@@ -59,11 +60,17 @@ public class ClueWebDumper extends TextDumper {
 				continue;
 			}
 
-			List<String> lines = Generics.newArrayList();
+			StopWatch stopWatch = StopWatch.newStopWatch();
 
+			String outputFileName = String.format("%s/%s", file.getParent().replace("2012_disk_b", "2012_disk_b_text"),
+					file.getName().replace("warc", "txt"));
+
+			TextFileWriter writer = new TextFileWriter(outputFileName);
+			TextFileReader reader = new TextFileReader(file);
+
+			List<String> lines = Generics.newArrayList();
 			int cnt = 0;
 
-			TextFileReader reader = new TextFileReader(file);
 			while (reader.hasNext()) {
 				String line = reader.next();
 
@@ -71,14 +78,15 @@ public class ClueWebDumper extends TextDumper {
 					if (lines.size() > 0 && cnt > 1) {
 						int start = 10;
 
-						for (int i = 0; i < lines.size(); i++) {
-							if (lines.get(i).startsWith("<!DOCTYPE")) {
-								start = i;
+						for (int i = 10; i < lines.size(); i++) {
+							if (lines.get(i).length() == 0) {
+								start = i + 1;
 								break;
 							}
 						}
 
 						String content = StrUtils.join("\n", lines, start, lines.size());
+
 						try {
 							Document doc = Jsoup.parse(content);
 							String t = doc.text();
@@ -106,9 +114,10 @@ public class ClueWebDumper extends TextDumper {
 				}
 			}
 			reader.close();
-		}
+			writer.close();
 
-		System.out.printf("process [%d] files under [%s], %s\n", files.size(), dir.getPath(), stopWatch.stop());
+			System.out.printf("[%s, %d, %s]\n", file.getPath(), cnt, stopWatch.stop());
+		}
 	}
 
 }
