@@ -16,7 +16,6 @@ import ohs.nlp.ling.types.KSentence;
 import ohs.nlp.ling.types.MultiToken;
 import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
-import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Triple;
 import ohs.utils.Generics;
@@ -104,10 +103,10 @@ public class SejongDataHandler {
 						}
 
 						if (end == -1) {
-							// System.out.println(ot);
 							// String s = StrUtils.join(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, words, poss);
 							// cm1.incrementCount(ot, s, 2);
 						} else if (end == 0) {
+							// System.out.println(ot);
 							// String s = StrUtils.join(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, words, poss);
 							// cm1.incrementCount(ot, s, 2);
 						} else {
@@ -136,7 +135,6 @@ public class SejongDataHandler {
 								} else if (size == 1) {
 									if (ot.startsWith("#")) {
 										ot = ot.replaceAll("[\\#]+", "~");
-										cm1.incrementCount(ot, str, 1);
 
 										int cnt1 = 0;
 										int cnt2 = 0;
@@ -150,7 +148,7 @@ public class SejongDataHandler {
 											}
 										}
 
-										if (cnt1 > 0 && cnt2 == 1) {
+										if (cnt1 > 0 && cnt2 < 2) {
 											cm1.incrementCount(ot, str, 1);
 										}
 									}
@@ -197,12 +195,11 @@ public class SejongDataHandler {
 											}
 										}
 
-										if (cnt1 > 0 && cnt2 == 1) {
-											cm1.incrementCount(ot, str, 1);
+										if (cnt1 > 0 && cnt2 < 2) {
+											// cm1.incrementCount(ot, str, 1);
 										}
 									}
 								} else {
-									System.out.println();
 								}
 							}
 						}

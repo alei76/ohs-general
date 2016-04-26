@@ -154,6 +154,16 @@ public class MIRPath {
 	public static final String CLEF_EHEALTH_PROXIMITY_DIR = CLEF_EHEALTH_DIR + "proximity/";
 
 	/*
+	 * clueweb 2012
+	 */
+
+	public static final String CLUEWEB_DIR = DATA_DIR + "clueweb/";
+
+	public static final String CLUEWEB12_DIR = CLUEWEB_DIR + "2012_disk_b/";
+
+	public static final String CLUEWEB12_COL_FILE = CLUEWEB_DIR + "clueweb12_disk_b.txt.gz";
+
+	/*
 	 * TREC CDS
 	 */
 

@@ -262,6 +262,16 @@ public class StrUtils {
 		return p;
 	}
 
+	public static int[] indexesOf(String[] a, String b) {
+		List<Integer> c = Generics.newArrayList();
+		for (int i = 0; i < a.length; i++) {
+			if (a[i].equals(b)) {
+				c.add(i);
+			}
+		}
+		return ArrayUtils.copy(c);
+	}
+
 	public static int indexOf(String[] a, String b) {
 		int ret = -1;
 		for (int i = 0; i < a.length; i++) {
@@ -271,16 +281,6 @@ public class StrUtils {
 			}
 		}
 		return ret;
-	}
-
-	public static int[] indexesOf(String[] a, String b) {
-		List<Integer> c = Generics.newArrayList();
-		for (int i = 0; i < a.length; i++) {
-			if (a[i].equals(b)) {
-				c.add(i);
-			}
-		}
-		return ArrayUtils.copy(c);
 	}
 
 	public static void init(String[] s) {
@@ -355,7 +355,7 @@ public class StrUtils {
 
 		if (a instanceof List) {
 			List<String> b = (List<String>) a;
-			end = b.size();
+			end = Math.min(b.size(), end);
 			for (int i = start; i < end; i++) {
 				sb.append(b.get(i));
 				if (i != end - 1) {
@@ -745,18 +745,18 @@ public class StrUtils {
 		return split("[\\s\\p{Punct}]+", s);
 	}
 
-	public static String substring(String text, String startText, String endText) {
-		int start = text.indexOf(startText) + startText.length();
-		int end = text.indexOf(endText);
-		return text.substring(start, end);
-	}
-
 	public static String[] subArray(String[] toks, int start, int end) {
 		String[] ret = new String[end - start];
 		for (int i = start, j = 0; i < toks.length && i < end; i++, j++) {
 			ret[j] = toks[i];
 		}
 		return ret;
+	}
+
+	public static String substring(String text, String startText, String endText) {
+		int start = text.indexOf(startText) + startText.length();
+		int end = text.indexOf(endText);
+		return text.substring(start, end);
 	}
 
 	public static String tag(String t, Collection<String> targets, String tagName) throws Exception {
