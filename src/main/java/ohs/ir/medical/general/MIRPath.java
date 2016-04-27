@@ -163,6 +163,8 @@ public class MIRPath {
 
 	public static final String CLUEWEB12_COL_FILE = CLUEWEB_DIR + "clueweb12_disk_b.txt.gz";
 
+	public static final String CLUEWEB12_FILE_NAME_FILE = CLUEWEB_DIR + "clueweb12_disk_b_file_names.txt";
+
 	/*
 	 * TREC CDS
 	 */
