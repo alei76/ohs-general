@@ -117,26 +117,16 @@ public class MorphemeAnalyzer {
 
 		{
 
-			StringBuffer sb = new StringBuffer(wp);
-			sb.reverse();
-
-			Character[] cs2 = StrUtils.asCharacters(sb.toString());
-
 			int start = 0;
 
 			while (start < cs.length) {
-				TSResult<Character> sr = suffixDict.find(cs2, start);
+				TSResult<Character> sr = suffixDict.find(cs, start);
 				if (sr.getMatchType() == MatchType.FAIL) {
-					break;
+					start++;
 				} else {
 					int end = sr.getMatchLoc() + 1;
 					Set<String> set = (Set<String>) sr.getMatchNode().getData();
-
-					int new_start = len - end;
-					int new_end = len - start;
-
-					list2.add(Generics.newTriple(new_start, new_end, set));
-
+					list2.add(Generics.newTriple(start, end, set));
 					start = end;
 				}
 			}
@@ -234,10 +224,7 @@ public class MorphemeAnalyzer {
 				suffix = suffix.substring(1);
 			}
 
-			StringBuffer sb = new StringBuffer(suffix);
-			sb.reverse();
-
-			Character[] cs = StrUtils.asCharacters(sb.toString());
+			Character[] cs = StrUtils.asCharacters(suffix);
 			Node<Character> node = suffixDict.insert(cs);
 
 			Set<String> set = (Set<String>) node.getData();

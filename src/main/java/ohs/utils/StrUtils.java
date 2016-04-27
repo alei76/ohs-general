@@ -477,6 +477,10 @@ public class StrUtils {
 	}
 
 	public static void main(String[] args) throws Exception {
+
+		{
+		}
+
 		String text = ">>><><><KWD>태깅</><KWD>태깅</KWD>";
 		// String text = ">>><><>태깅</>태깅";
 
