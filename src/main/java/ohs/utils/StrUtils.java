@@ -82,6 +82,31 @@ public class StrUtils {
 		return Arrays.asList(s);
 	}
 
+	public static String asString(char[] a) {
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < a.length; i++) {
+			sb.append(String.format("%d\t%c", i, a[i]));
+			if (i != a.length - 1) {
+				sb.append("\n");
+			}
+		}
+		return sb.toString();
+	}
+
+	public static String characterInfo(String a) {
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < a.length(); i++) {
+			char c = a.charAt(i);
+			UnicodeBlock ub = Character.UnicodeBlock.of(c);
+			String name = Character.getName((int) c);
+			sb.append(String.format("[%d, %c, %d, %s, %s]", i, c, (int) c, ub, name));
+			if (i != a.length() - 1) {
+				sb.append("\n");
+			}
+		}
+		return sb.toString();
+	}
+
 	public static String[] copy(String[] a) {
 		String[] b = new String[a.length];
 		copy(a, b);
@@ -348,6 +373,10 @@ public class StrUtils {
 		return sb.toString();
 	}
 
+	// public static String join(String glue, Collection<String> c, int start, int end) {
+	// return join(glue, c, start, end);
+	// }
+
 	public static String join(String glue, Iterable<String> a) {
 		return join(glue, a, 0, Integer.MAX_VALUE);
 	}
@@ -383,10 +412,6 @@ public class StrUtils {
 
 		return sb.toString();
 	}
-
-	// public static String join(String glue, Collection<String> c, int start, int end) {
-	// return join(glue, c, start, end);
-	// }
 
 	public static String join(String glue1, String glue2, String glue3, String[][][] a) {
 		StringBuffer sb = new StringBuffer();
@@ -598,7 +623,7 @@ public class StrUtils {
 	}
 
 	public static String normalizeSpaces(String s) {
-		return s.replaceAll("[\\s]+", " ").trim();
+		return s.replaceAll("[\\s\u2029]+", " ").trim();
 	}
 
 	public static String[] normalizeSpaces(String[] s) {
@@ -783,47 +808,6 @@ public class StrUtils {
 		List<String> targets = Generics.newArrayList();
 		targets.add(taget);
 		return tag(t, targets, tagName);
-	}
-
-	public static String toString(char[] chs) {
-		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < chs.length; i++) {
-			sb.append(String.format("%d\t%c", i, chs[i]));
-			if (i != chs.length - 1) {
-				sb.append("\n");
-			}
-		}
-		return sb.toString();
-	}
-
-	public static String toString(Object[] array, String delim) {
-		StringBuffer sb = new StringBuffer();
-		String separator = delim == null ? "\n" : delim;
-		for (int i = 0; i < array.length; i++) {
-			sb.append(array[i].toString() + (i == array.length - 1 ? "" : separator));
-		}
-		return sb.toString();
-	}
-
-	public static String toString(String delim, Counter<String> counter, NumberFormat nf) {
-		if (nf == null) {
-			nf = NumberFormat.getInstance();
-			nf.setMinimumFractionDigits(4);
-			nf.setGroupingUsed(false);
-		}
-
-		StringBuffer sb = new StringBuffer();
-		List<String> keys = counter.getSortedKeys();
-		for (int i = 0; i < keys.size(); i++) {
-			String key = keys.get(i);
-			double value = counter.getCount(key);
-			sb.append(String.format("%s:%s", key.toString(), nf.format(value)));
-
-			if (i != keys.size() - 1) {
-				sb.append(delim);
-			}
-		}
-		return sb.toString();
 	}
 
 	public static String[] trim(String[] a) {

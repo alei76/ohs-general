@@ -9,13 +9,14 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.Icon;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
-
-import com.mysql.fabric.xmlrpc.base.Struct;
+import org.jsoup.safety.Whitelist;
 
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
@@ -80,18 +81,20 @@ public class ClueWebDumper extends TextDumper {
 
 		Collections.sort(files);
 
+		Whitelist whitelist = Whitelist.relaxed();
+
 		for (int k = 0; k < files.size(); k++) {
 			File file = files.get(k);
 
 			if (!file.getName().endsWith(".gz")) {
 				continue;
 			}
-
-			// if (!file.getPath().contains("0002wb-82")) {
+			//
+			// if (fileNames.contains(file.getPath())) {
 			// continue;
 			// }
 
-			// if (fileNames.contains(file.getPath())) {
+			// if (!fileNames.contains("ClueWeb12_00/0013wb/0013wb-03")) {
 			// continue;
 			// }
 
@@ -105,14 +108,14 @@ public class ClueWebDumper extends TextDumper {
 
 					file.getName().replace("warc", "txt"));
 
-			// if (!outputFileName.contains("0000tw-26")) {
+			// if (FileUtils.exists(outputFileName)) {
 			// continue;
 			// }
 
 			// TextFileWriter writer = new TextFileWriter(outputFileName);
 			TextFileReader reader = new TextFileReader(file);
 
-			List<String> pages = Generics.newArrayList();
+			List<String> results = Generics.newArrayList();
 			List<String> lines = Generics.newArrayList();
 			int cnt = 0;
 
@@ -143,72 +146,37 @@ public class ClueWebDumper extends TextDumper {
 							}
 						}
 
+						// if (!id.equals("clueweb12-0000tw-00-20274")) {
+						// lines = Generics.newArrayList();
+						// continue;
+						// }
+
 						String text = StrUtils.join("\n", lines, start, lines.size()).trim();
 
-						Stack<Pair<Integer, String>> stack = Generics.newStack();
+						String text2 = Jsoup.clean(text, whitelist);
 
-						Pattern p = Pattern.compile("</?html", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
-
-						Matcher m = p.matcher(text);
-
-						List<String> htmls = Generics.newArrayList();
-
-						while (m.find()) {
-							String g1 = m.group().toLowerCase();
-							int s1 = m.start();
-
-							if (!stack.isEmpty()) {
-								Pair<Integer, String> pp = stack.peek();
-								int s0 = pp.getFirst();
-								String g0 = pp.getSecond();
-
-								if (g0.startsWith("<html") && g1.startsWith("</html")) {
-									String html = text.substring(s0, s1 + 1);
-									htmls.add(html);
-									stack.pop();
-								} else {
-									stack.push(new Pair<Integer, String>(s1, g1));
-								}
-							} else {
-								stack.push(new Pair<Integer, String>(s1, g1));
-							}
-						}
-
-						if (htmls.size() == 0) {
-							if (stack.size() > 0) {
-								Pair<Integer, String> pp = stack.peek();
-
-								if (pp.getSecond().equals("<html") || pp.getSecond().equals("</html")) {
-									htmls.add(text);
-								}
-							}
-						}
-
-						if (htmls.size() == 0) {
-							text = StrUtils.normalizeSpaces(text);
-							String[] parts = new String[] { id, text, "" };
-							pages.add(StrUtils.join("\t", StrUtils.wrap(parts)));
-
-						} else {
-
+						if (Jsoup.isValid(text2, whitelist)) {
 							try {
 								List<String> strs = Generics.newArrayList();
 								List<String> links = Generics.newArrayList();
 
-								for (String html : htmls) {
-									Document doc = Jsoup.parse(html);
+								Document doc = Jsoup.parse(text2);
 
-									goDown(doc, strs, links, false);
-								}
+								goDown(doc, strs, links, false);
 
 								if (id.length() > 0 && strs.size() > 0) {
 									String[] parts = new String[] { id, StrUtils.join("\\n", strs), StrUtils.join("\\t", links) };
-									pages.add(StrUtils.join("\t", StrUtils.wrap(parts)));
+									results.add(StrUtils.join("\t", StrUtils.wrap(parts)));
+
 								}
 							} catch (Exception e) {
 
 							}
+						} else {
+							System.out.println(text2);
+							System.out.println();
 						}
+
 					}
 
 					lines = Generics.newArrayList();
@@ -220,9 +188,9 @@ public class ClueWebDumper extends TextDumper {
 			reader.close();
 			// writer.close();
 
-			FileUtils.writeStrCollection(outputFileName, pages);
+			FileUtils.writeStrCollection(outputFileName, results);
 
-			pages = null;
+			results = null;
 			lines = null;
 
 			System.out.printf("[%s, %d, %s]\n", file.getPath(), cnt, stopWatch.stop());
@@ -251,11 +219,12 @@ public class ClueWebDumper extends TextDumper {
 				url = elem.attr("abs:src");
 			}
 
-			type = StrUtils.normalizeSpaces(type).replaceAll("[\n]+", "");
-			url = StrUtils.normalizeSpaces(url.trim()).replaceAll("[\n]+", "");
+			type = StrUtils.normalizeSpaces(type);
+
+			url = url.trim().replaceAll("[\n]+", "");
 
 			if (url.length() > 0) {
-				links.add(String.format("%s<->%s", type, url));
+				links.add(type + ":" + url);
 			}
 
 			if (tagName.equals("table") || tagName.equals("ul")) {
@@ -266,11 +235,14 @@ public class ClueWebDumper extends TextDumper {
 		if (node instanceof TextNode) {
 			TextNode tn = (TextNode) node;
 			String t = tn.text();
+
+			t = t.replaceAll("[\n]+", "\\n");
 			t = StrUtils.normalizeSpaces(t);
 
 			if (t.length() > 0) {
 				if (is_table_item) {
-					t = String.format("tbi:%s", t.replace(" ", "_"));
+					t = t.replaceAll("[ ]+", "_");
+					t = "tbi:" + t;
 				}
 				strs.add(t);
 			}
