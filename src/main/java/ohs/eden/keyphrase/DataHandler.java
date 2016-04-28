@@ -20,6 +20,7 @@ import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.DeepCounterMap;
 import ohs.types.SetMap;
+import ohs.types.StrPair;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 
@@ -56,12 +57,9 @@ public class DataHandler {
 
 		DeepCounterMap<String, String, String> dcm = Generics.newDeepCounterMap();
 
-		for (String kwdStr : data.getKeywordIndexer().getObjects()) {
-			String[] two = kwdStr.split("\t");
-			String korKwd = two[0];
-			String engKwd = two[1];
+		for (StrPair kwdp : data.getKeywordIndexer().getObjects()) {
 
-			for (String kwd : two) {
+			for (String kwd : kwdp.asArray()) {
 				if (kwd.equals(NONE)) {
 					continue;
 				}
@@ -69,8 +67,8 @@ public class DataHandler {
 				List<ohs.types.Pair<String, String>> pairs = ext.extract(kwd);
 
 				for (ohs.types.Pair<String, String> pair : pairs) {
-					cm.incrementCount(pair.getFirst(), korKwd + "#" + pair.getSecond().toLowerCase(), 1);
-					dcm.incrementCount(pair.getFirst(), pair.getSecond().toLowerCase(), korKwd, 1);
+					cm.incrementCount(pair.getFirst(), kwdp.getFirst() + "#" + pair.getSecond().toLowerCase(), 1);
+					dcm.incrementCount(pair.getFirst(), pair.getSecond().toLowerCase(), kwdp.getFirst(), 1);
 				}
 			}
 		}

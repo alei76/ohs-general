@@ -1,4 +1,4 @@
-package ohs.eden.linker;
+package ohs.ir.wiki;
 
 import java.io.ObjectInputStream;
 import java.util.Collections;
@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
+import ohs.eden.linker.ELPath;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
+import ohs.ir.medical.general.MIRPath;
 import ohs.string.sim.EditDistance;
 import ohs.string.sim.SequenceFactory;
 import ohs.tree.trie.hash.Node;
@@ -35,7 +37,7 @@ public class CategoryTreeBuilder {
 
 	private Counter<Integer> catPageCnts = null;
 
-	private SetMap<Integer, Integer> parentToChilds = null;
+	private SetMap<Integer, Integer> parentToChildren = null;
 
 	private SetMap<Integer, Integer> childToParents = null;
 
@@ -51,47 +53,7 @@ public class CategoryTreeBuilder {
 
 	private Set<Integer> leaves;
 
-	private void topDown(Stack<Integer> path) {
-
-		int parent_id = path.peek();
-		String parent = idToCat.getValue(parent_id);
-
-		List<String> catPath = Generics.newArrayList(path.size());
-		for (int catid : path) {
-			catPath.add(idToCat.getValue(catid));
-		}
-
-		Set<Integer> children = parentToChilds.get(parent_id, false);
-
-		if (children == null || catPath.size() >= 5) {
-			trie.insert(catPath);
-		} else {
-
-			for (int child_id : children) {
-				String child = idToCat.getValue(child_id);
-
-				if (!isValid(child_id)) {
-					continue;
-				}
-
-				if (path.contains(child_id)) {
-					continue;
-				}
-
-				if (mainCats.contains(child_id)) {
-					continue;
-				}
-
-				if (child_id == root_id) {
-					continue;
-				}
-
-				path.push(child_id);
-				topDown(path);
-				path.pop();
-			}
-		}
-	}
+	private SetMap<Integer, Integer> pageToCats;
 
 	private void bottomUp(Stack<Integer> path, Trie<String> trie) {
 		int c = path.peek();
@@ -158,54 +120,6 @@ public class CategoryTreeBuilder {
 		}
 	}
 
-	private boolean isValid(int catid) {
-		String cat = idToCat.getValue(catid);
-
-		if (cat.startsWith("Commons_category")
-
-				|| cat.startsWith("Hidden_categories")
-
-		// || cat.contains("Wikipedia")
-
-		) {
-			System.out.println(cat);
-
-			return false;
-		}
-
-		return true;
-	}
-
-	public void buildTopDown() throws Exception {
-		read();
-
-		// for (int id : mainTopics) {
-		// System.out.println(idToCat.getValue(id));
-		// }
-
-		// Stack<Integer> path = new Stack<Integer>();
-		// path.push(health_id);
-
-		// TextFileWriter writer = new TextFileWriter(ELPath.WIKI_DIR + "wiki_cat_tree.txt");
-
-		trie = Trie.newTrie();
-
-		Stack<Integer> path = new Stack<Integer>();
-		path.push(health_id);
-
-		topDown(path);
-
-		List<String> catPaths = Generics.newArrayList();
-
-		for (Node<String> node : trie.getLeafNodes()) {
-			catPaths.add(node.getKeyPath("\t"));
-		}
-
-		Collections.sort(catPaths);
-
-		FileUtils.writeStrCollection(ELPath.WIKI_DIR + "wiki_cat_tree.txt", catPaths);
-	}
-
 	public void buildBottomUp() throws Exception {
 
 		read();
@@ -269,16 +183,66 @@ public class CategoryTreeBuilder {
 		FileUtils.writeStrCollection(ELPath.WIKI_DIR + "wiki_cat_tree.txt", catPaths);
 	}
 
+	public void buildTopDown() throws Exception {
+		read();
+
+		// for (int id : mainTopics) {
+		// System.out.println(idToCat.getValue(id));
+		// }
+
+		// Stack<Integer> path = new Stack<Integer>();
+		// path.push(health_id);
+
+		// TextFileWriter writer = new TextFileWriter(ELPath.WIKI_DIR + "wiki_cat_tree.txt");
+
+		trie = Trie.newTrie();
+
+		Stack<Integer> path = new Stack<Integer>();
+		path.push(health_id);
+
+		topDown(path);
+
+		List<String> catPaths = Generics.newArrayList();
+
+		for (Node<String> node : trie.getLeafNodes()) {
+			catPaths.add(node.getKeyPath("\t"));
+		}
+
+		Collections.sort(catPaths);
+
+		FileUtils.writeStrCollection(ELPath.WIKI_DIR + "wiki_cat_tree.txt", catPaths);
+	}
+
+	private boolean isValid(int catid) {
+		String cat = idToCat.getValue(catid);
+
+		if (cat == null ||
+
+				cat.startsWith("Commons_category")
+
+				|| cat.startsWith("Hidden_categories")
+
+		// || cat.contains("Wikipedia")
+
+		) {
+			System.out.println(cat);
+
+			return false;
+		}
+
+		return true;
+	}
+
 	public void read() throws Exception {
 		{
-			ObjectInputStream ois = FileUtils.openObjectInputStream(ELPath.WIKI_DIR + "encoded_wiki_categorylink.ser.gz");
-			parentToChilds = FileUtils.readIntSetMap(ois);
+			ObjectInputStream ois = FileUtils.openObjectInputStream(MIRPath.WIKI_DIR + "wiki_catlinks.ser.gz");
+			parentToChildren = FileUtils.readIntSetMap(ois);
 			ois.close();
 
 			childToParents = Generics.newSetMap();
 
-			for (int p : parentToChilds.keySet()) {
-				for (int c : parentToChilds.get(p)) {
+			for (int p : parentToChildren.keySet()) {
+				for (int c : parentToChildren.get(p)) {
 					childToParents.put(c, p);
 				}
 			}
@@ -288,7 +252,7 @@ public class CategoryTreeBuilder {
 		catPageCnts = Generics.newCounter();
 
 		{
-			ObjectInputStream ois = FileUtils.openObjectInputStream(ELPath.WIKI_DIR + "encoded_wiki_category.ser.gz");
+			ObjectInputStream ois = FileUtils.openObjectInputStream(MIRPath.WIKI_DIR + "wiki_cats.ser.gz");
 			List<Integer> ids = FileUtils.readIntList(ois);
 			List<String> titles = FileUtils.readStrList(ois);
 			List<Integer> catPages = FileUtils.readIntList(ois);
@@ -302,29 +266,9 @@ public class CategoryTreeBuilder {
 				catPageCnts.setCount(ids.get(i), catPages.get(i));
 			}
 
-			TextFileReader reader = new TextFileReader(ELPath.WIKI_DIR + "wiki_category.csv.gz");
-			while (reader.hasNext()) {
-				/*
-				 * "id"\t"title"
-				 */
-				String[] parts = reader.next().split("\t");
-				parts = StrUtils.unwrap(parts);
-
-				int id = Integer.parseInt(parts[0]);
-				String cat_title = parts[1];
-				int cat_pages = Integer.parseInt(parts[2]);
-				int cat_subcats = Integer.parseInt(parts[3]);
-
-				ids.add(id);
-				titles.add(cat_title);
-				catPages.add(cat_pages);
-				catSubcats.add(cat_subcats);
-
-			}
-			reader.close();
 		}
 
-		mainCats = Generics.newHashSet(parentToChilds.get(root_id));
+		mainCats = Generics.newHashSet(parentToChildren.get(root_id));
 		mainCats.add(root_id);
 
 		{
@@ -332,7 +276,7 @@ public class CategoryTreeBuilder {
 
 			for (int c : idToCat.getKeys()) {
 				int cnt = (int) catPageCnts.getCount(c);
-				if (parentToChilds.get(c, false) == null && childToParents.get(c, false) != null && cnt > 0) {
+				if (parentToChildren.get(c, false) == null && childToParents.get(c, false) != null && cnt > 0) {
 					leaves.add(c);
 				}
 			}
@@ -340,6 +284,48 @@ public class CategoryTreeBuilder {
 			// for (int c : leaves) {
 			// System.out.println(idToCat.getValue(c));
 			// }
+		}
+	}
+
+	private void topDown(Stack<Integer> path) {
+
+		int parent_id = path.peek();
+		String parent = idToCat.getValue(parent_id);
+
+		List<String> catPath = Generics.newArrayList(path.size());
+		for (int catid : path) {
+			catPath.add(idToCat.getValue(catid));
+		}
+
+		Set<Integer> children = parentToChildren.get(parent_id, false);
+
+		if (children == null || catPath.size() >= 5) {
+			trie.insert(catPath);
+		} else {
+
+			for (int child_id : children) {
+				String child = idToCat.getValue(child_id);
+
+				if (!isValid(child_id)) {
+					continue;
+				}
+
+				if (path.contains(child_id)) {
+					continue;
+				}
+
+				if (mainCats.contains(child_id)) {
+					continue;
+				}
+
+				if (child_id == root_id) {
+					continue;
+				}
+
+				path.push(child_id);
+				topDown(path);
+				path.pop();
+			}
 		}
 	}
 

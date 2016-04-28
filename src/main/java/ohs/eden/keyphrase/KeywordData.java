@@ -11,12 +11,13 @@ import ohs.types.Counter;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
 import ohs.types.SetMap;
+import ohs.types.StrPair;
 import ohs.utils.Generics;
 import ohs.utils.StopWatch;
 
 public class KeywordData {
 
-	private Indexer<String> kwdIndexer;
+	private Indexer<StrPair> kwdIndexer;
 
 	private Indexer<String> docIndxer;
 
@@ -50,7 +51,7 @@ public class KeywordData {
 		return kwd_freqs;
 	}
 
-	public Indexer<String> getKeywordIndexer() {
+	public Indexer<StrPair> getKeywordIndexer() {
 		return kwdIndexer;
 	}
 
@@ -66,7 +67,18 @@ public class KeywordData {
 		StopWatch stopWatch = StopWatch.newStopWatch();
 
 		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
-		kwdIndexer = FileUtils.readStrIndexer(ois);
+
+		{
+			int size = ois.readInt();
+			kwdIndexer = Generics.newIndexer(size);
+
+			for (int i = 0; i < size; i++) {
+				StrPair kwdp = new StrPair();
+				kwdp.read(ois);
+				kwdIndexer.add(kwdp);
+			}
+		}
+
 		kwdids = FileUtils.readIntList(ois);
 		kwd_freqs = FileUtils.readIntArray(ois);
 
@@ -110,12 +122,14 @@ public class KeywordData {
 
 			String kor = parts[0];
 			String eng = parts[1];
+
+			StrPair kwdp = new StrPair(kor, eng);
 			double kwd_freq = Double.parseDouble(parts[2]);
 
 			// kor = kor.substring(1, kor.length() - 2);
 			// eng = eng.substring(1, eng.length() - 2);
 			String kwdStr = kor + "\t" + eng;
-			int kwdid = kwdIndexer.getIndex(kwdStr);
+			int kwdid = kwdIndexer.getIndex(kwdp);
 			kwdids.add(kwdid);
 			kwdFreqs.setCount(kwdid, kwd_freq);
 
@@ -151,7 +165,11 @@ public class KeywordData {
 
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
 
-		FileUtils.writeStrIndexer(oos, kwdIndexer);
+		oos.writeInt(kwdIndexer.size());
+		for (int i = 0; i < kwdIndexer.size(); i++) {
+			kwdIndexer.getObject(i).write(oos);
+		}
+
 		FileUtils.writeIntCollection(oos, kwdids);
 		FileUtils.writeIntArray(oos, kwd_freqs);
 

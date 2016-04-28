@@ -211,6 +211,10 @@ public class Generics {
 		return new Indexer<T>();
 	}
 
+	public static <T> Indexer<T> newIndexer(int size) {
+		return new Indexer<T>(size);
+	}
+
 	public static <E> LinkedList<E> newLinkedList() {
 		return new LinkedList<E>();
 	}

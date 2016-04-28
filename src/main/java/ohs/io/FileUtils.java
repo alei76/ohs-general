@@ -39,6 +39,7 @@ import org.apache.commons.compress.compressors.CompressorInputStream;
 import org.apache.commons.compress.compressors.CompressorOutputStream;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
+import org.apache.http.client.protocol.RequestAddCookies;
 
 import ohs.math.ArrayUtils;
 import ohs.types.BidMap;
@@ -205,19 +206,44 @@ public class FileUtils {
 	}
 
 	public static int countLines(String fileName) throws Exception {
-		int numLines = 0;
+		int ret = 0;
 
 		BufferedReader reader = openBufferedReader(fileName);
-		while (true) {
-			String line = reader.readLine();
-			if (line == null) {
-				break;
-			} else {
-				numLines++;
+		String line = reader.readLine();
+
+		if (line != null && line.startsWith(LINE_SIZE)) {
+			ret = Integer.parseInt(line.split("\t")[1]);
+		} else {
+			if (line != null) {
+				ret++;
+				while ((line = reader.readLine()) != null) {
+					ret++;
+				}
 			}
 		}
 		reader.close();
-		return numLines;
+		return ret;
+	}
+
+	public static int countLinesUnder(String dirName) throws Exception {
+		return countLinesUnderHere(new File(dirName));
+	}
+
+	private static int countLinesUnderHere(File root) throws Exception {
+		int ret = 0;
+		if (root != null) {
+			File[] children = root.listFiles();
+			if (children != null) {
+				for (File child : root.listFiles()) {
+					if (child.isFile()) {
+						ret += countLines(child.getPath());
+					} else {
+						ret += countLinesUnderHere(child);
+					}
+				}
+			}
+		}
+		return ret;
 	}
 
 	public static boolean create(String fileName) {

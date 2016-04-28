@@ -26,4 +26,6 @@ public class CommonFieldNames {
 
 	public static final String CATEGORY = "category";
 
+	public static final String LINKS = "links";
+
 }

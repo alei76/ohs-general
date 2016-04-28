@@ -70,10 +70,13 @@ public class StrUtils {
 		return ret;
 	}
 
-	public static char[] asChars(List<Character> a) {
+	public static char[] asChars(Collection<Character> a) {
 		char[] ret = new char[a.size()];
-		for (int i = 0; i < a.size(); i++) {
-			ret[i] = a.get(i).charValue();
+		int loc = 0;
+		Iterator<Character> iter = a.iterator();
+		while (iter.hasNext()) {
+			ret[loc] = iter.next().charValue();
+			loc++;
 		}
 		return ret;
 	}

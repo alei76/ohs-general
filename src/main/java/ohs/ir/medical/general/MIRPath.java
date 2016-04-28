@@ -161,6 +161,10 @@ public class MIRPath {
 
 	public static final String CLUEWEB12_DIR = CLUEWEB_DIR + "2012_disk_b/";
 
+	public static final String CLUEWEB12_TEXT_DIR = CLUEWEB_DIR + "2012_disk_b_text/";
+
+	public static final String CLUEWEB12_INDEX_DIR = CLUEWEB_DIR + "index";
+
 	public static final String CLUEWEB12_COL_FILE = CLUEWEB_DIR + "clueweb12_disk_b.txt.gz";
 
 	public static final String CLUEWEB12_FILE_NAME_FILE = CLUEWEB_DIR + "clueweb12_disk_b_file_names.txt";

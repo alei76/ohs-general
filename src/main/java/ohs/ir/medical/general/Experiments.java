@@ -16,7 +16,6 @@ import com.medallia.word2vec.Word2VecModel;
 
 import ohs.eden.linker.Entity;
 import ohs.eden.linker.EntityLinker;
-import ohs.eden.linker.WikiXmlDataHandler;
 import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.AnalyzerUtils;
@@ -24,6 +23,7 @@ import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.ir.medical.query.BaseQuery;
 import ohs.ir.medical.query.QueryReader;
+import ohs.ir.wiki.WikiXmlDataHandler;
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 import ohs.math.LA;

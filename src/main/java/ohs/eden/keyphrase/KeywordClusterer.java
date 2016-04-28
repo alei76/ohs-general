@@ -23,6 +23,7 @@ import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.SetMap;
+import ohs.types.StrPair;
 import ohs.utils.Generics;
 import ohs.utils.StopWatch;
 import ohs.utils.StrUtils;
@@ -58,7 +59,7 @@ public class KeywordClusterer {
 
 	private KeywordData kwdData;
 
-	private Indexer<String> kwdIndexer;
+	private Indexer<StrPair> kwdIndexer;
 
 	private SetMap<Integer, Integer> clusterToKwds;
 
@@ -119,10 +120,10 @@ public class KeywordClusterer {
 		Indexer<String> wordIndexer = Generics.newIndexer();
 
 		for (int kwdid : kwdids) {
-			String kwdStr = kwdIndexer.getObject(kwdid);
+			StrPair kwdp = kwdIndexer.getObject(kwdid);
 
 			Counter<Integer> cc = Generics.newCounter();
-			String[] two = kwdStr.split("\t");
+			String[] two = kwdp.asArray();
 
 			for (int i = 0; i < two.length; i++) {
 				String key = two[i];
@@ -191,10 +192,9 @@ public class KeywordClusterer {
 			Counter<Integer> c2 = new Counter<Integer>();
 
 			for (int kwdid : clusterToKwds.get(cids[i])) {
-				String kwdStr = kwdIndexer.getObject(kwdid);
-				String[] two = kwdStr.split("\t");
-				String korKey = normalize(two[0]);
-				String engKey = normalizeEnglish(two[1]);
+				StrPair kwdp = kwdIndexer.getObject(kwdid);
+				String korKey = normalize(kwdp.getFirst());
+				String engKey = normalizeEnglish(kwdp.getSecond());
 
 				int kwd_freq = kwdData.getKeywordFreqs()[kwdid];
 
@@ -248,9 +248,8 @@ public class KeywordClusterer {
 			Set<Integer> kwdids = e.getValue();
 
 			for (int kwdid : kwdids) {
-				String kwdStr = kwdIndexer.getObject(kwdid);
-				String[] two = kwdStr.split("\t");
-				String key = isEnglish ? two[1] : two[0];
+				StrPair kwdp = kwdIndexer.getObject(kwdid);
+				String key = isEnglish ? kwdp.getSecond() : kwdp.getFirst();
 				key = normalize(key);
 
 				if (key.length() == 0) {
@@ -376,10 +375,9 @@ public class KeywordClusterer {
 				Counter<String> engGramCnts = Generics.newCounter();
 
 				for (int kwdid : kwdids) {
-					String kwdStr = kwdIndexer.get(kwdid);
-					String[] two = kwdStr.split("\t");
-					String korKey = normalize(two[0]);
-					String engKey = normalizeEnglish(two[1]);
+					StrPair kwdp = kwdIndexer.get(kwdid);
+					String korKey = normalize(kwdp.getFirst());
+					String engKey = normalizeEnglish(kwdp.getSecond());
 
 					int kwd_freq = kwdData.getKeywordFreqs()[kwdid];
 
@@ -549,10 +547,9 @@ public class KeywordClusterer {
 			boolean isCandidate = true;
 
 			for (int kwdid : kwdids) {
-				String kwdStr = kwdIndexer.getObject(kwdid);
-				String[] two = kwdStr.split("\t");
-				String korKey = normalize(two[0]);
-				String engKey = normalize(two[1]);
+				StrPair kwdp = kwdIndexer.getObject(kwdid);
+				String korKey = normalize(kwdp.getFirst());
+				String engKey = normalize(kwdp.getSecond());
 
 				if (korKey.length() == 0 && engKey.length() > 0) {
 
@@ -563,10 +560,9 @@ public class KeywordClusterer {
 			}
 
 			if (isCandidate) {
-				String kwdStr = kwdIndexer.getObject(cid);
-				String[] two = kwdStr.split("\t");
-				String korKey = normalize(two[0]);
-				String engKey = normalize(two[1]);
+				StrPair kwdp = kwdIndexer.getObject(cid);
+				String korKey = normalize(kwdp.getFirst());
+				String engKey = normalize(kwdp.getSecond());
 				keyToClusters.put(engKey, cid);
 			}
 		}
@@ -605,9 +601,8 @@ public class KeywordClusterer {
 			int cid = e.getKey();
 			Set<Integer> kwdids = e.getValue();
 
-			String kwdStr = kwdIndexer.getObject(cid);
-			String[] two = kwdStr.split("\t");
-			String korKey = normalize(two[0]);
+			StrPair kwdp = kwdIndexer.getObject(cid);
+			String korKey = normalize(kwdp.getFirst());
 
 			if (korKey.length() > 0) {
 				keyToClusters.put(korKey, cid);
@@ -636,13 +631,10 @@ public class KeywordClusterer {
 
 		for (int cid : clusterToKwds.keySet()) {
 			for (int kwdid : clusterToKwds.get(cid)) {
-				String kwdStr = kwdIndexer.getObject(kwdid);
-				String[] two = kwdStr.split("\t");
-
-				two[0] = normalize(two[0]);
-				two[1] = normalizeEnglish(two[1]).replace(" ", "");
-
-				String key = StrUtils.join("\t", two);
+				StrPair kwdp = kwdIndexer.getObject(kwdid);
+				String korKey = normalize(kwdp.getFirst());
+				String engKey = normalizeEnglish(kwdp.getSecond()).replace(" ", "");
+				String key = korKey + "\t" + engKey;
 				keyToClusters.put(key, cid);
 			}
 		}
@@ -689,10 +681,9 @@ public class KeywordClusterer {
 				Counter<String> engGramCnts = Generics.newCounter();
 
 				for (int kwdid : kwdids) {
-					String kwdStr = kwdIndexer.get(kwdid);
-					String[] two = kwdStr.split("\t");
-					String korKey = normalize(two[0]);
-					String engKey = normalizeEnglish(two[1]);
+					StrPair kwdp = kwdIndexer.get(kwdid);
+					String korKey = normalize(kwdp.getFirst());
+					String engKey = normalizeEnglish(kwdp.getSecond());
 					int kwd_freq = kwdData.getKeywordFreqs()[kwdid];
 
 					if (!UnicodeUtils.isKorean(korKey)) {
@@ -919,14 +910,13 @@ public class KeywordClusterer {
 				int kwdid = kwdids.get(i);
 				int kwd_freq = kwdData.getKeywordFreqs()[kwdid];
 
-				String kwdStr = kwdIndexer.get(kwdid);
-				String[] two = kwdStr.split("\t");
+				StrPair kwdp = kwdIndexer.get(kwdid);
 
 				if (kwd_freq < 2) {
 					continue;
 				}
 
-				String engKwd = two[1].replaceAll("[\\s\\p{Punct}]+", "");
+				String engKwd = kwdp.getSecond().replaceAll("[\\s\\p{Punct}]+", "");
 
 				if (!StrUtils.isUppercase(engKwd)) {
 					label = kwdid;
@@ -973,7 +963,7 @@ public class KeywordClusterer {
 			List<String> keys = Generics.newArrayList();
 
 			for (int cid : clusterToKwds.keySet()) {
-				keys.add(kwdIndexer.getObject(cid));
+				keys.add(kwdIndexer.getObject(cid).join("\t"));
 			}
 
 			Collections.sort(keys);
@@ -1011,13 +1001,13 @@ public class KeywordClusterer {
 		for (int i = 0, n = 1; i < cids.size(); i++) {
 			int cid = cids.get(i);
 			int label = clusterToLabel.get(cid);
-			String kwdStr = kwdIndexer.getObject(label);
+			StrPair kwdp = kwdIndexer.getObject(label);
 
 			StringBuffer sb = new StringBuffer();
 			sb.append(String.format("No:\t%d", n));
 			sb.append(String.format("\nID:\t%d", cid));
 
-			sb.append(String.format("\nLabel:\n%d\t%s", label, kwdStr));
+			sb.append(String.format("\nLabel:\n%d\t%s", label, kwdp.join("\t")));
 			sb.append(String.format("\nKeywords:\t%d", clusterToKwds.get(cid).size()));
 
 			Counter<Integer> c = Generics.newCounter();

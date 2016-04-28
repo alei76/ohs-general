@@ -31,6 +31,7 @@ import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.FlushTemplates;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
 import ohs.eden.linker.ELPath;
+import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.CommonFieldNames;
@@ -38,6 +39,7 @@ import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.ir.lucene.common.MyTextField;
 import ohs.types.BidMap;
 import ohs.types.SetMap;
+import ohs.types.StrPair;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 
@@ -98,10 +100,81 @@ public class DocumentIndexer {
 		// di.indexOhsumed();
 		// di.indexTrecGenomics();
 
-		di.indexWiki();
+		// di.indexWiki();
+		di.indexClueWeb12();
 		// di.makeDocumentIdMap();
 
 		System.out.println("process ends.");
+	}
+
+	public void indexClueWeb12() throws Exception {
+		System.out.println("index ClueWeb12.");
+
+		IndexWriter iw = getIndexWriter(MIRPath.CLUEWEB12_INDEX_DIR);
+
+		List<File> files = FileUtils.getFilesUnder(MIRPath.CLUEWEB12_TEXT_DIR);
+
+		for (int i = 0; i < files.size(); i++) {
+
+			List<String> lines = FileUtils.readLines(files.get(i).getPath());
+
+			for (int j = 1; j < lines.size(); j++) {
+				String[] parts = lines.get(i).split("\t");
+				parts = StrUtils.unwrap(parts);
+
+				String id = parts[0];
+				String text = parts[1];
+				String uri = parts[2];
+				String linkStr = parts[3];
+
+				StringBuffer sb = new StringBuffer();
+
+				String[] ss = text.split("\\\\n");
+				for (int k = 0; k < ss.length; k++) {
+					String s = ss[k];
+					String[] toks = s.split(" ");
+					for (int l = 0; l < toks.length; l++) {
+						String tok = toks[l];
+						if (tok.startsWith("tbi:")) {
+							sb.append(tok.substring(4).replace("_", " "));
+						} else {
+							sb.append(tok);
+						}
+
+						if (l != toks.length - 1) {
+							sb.append(" ");
+						}
+					}
+
+					if (k != ss.length - 1) {
+						sb.append("\n");
+					}
+
+				}
+
+				List<String> links = Generics.newArrayList();
+
+				for (String link : linkStr.split("\\\\t")) {
+					int idx = link.indexOf(":");
+					String type = link.substring(0, idx);
+					String url = link.substring(idx + 1);
+					if (url.length() > 0) {
+						links.add(url);
+					}
+				}
+
+				Document doc = new Document();
+				doc.add(new StringField(CommonFieldNames.DOCUMENT_ID, id, Field.Store.YES));
+				doc.add(new StringField(CommonFieldNames.URL, uri, Field.Store.YES));
+				doc.add(new MyTextField(CommonFieldNames.CONTENT, text, Store.YES));
+				doc.add(new StringField(CommonFieldNames.LINKS, StrUtils.join("\n", links), Store.YES));
+
+				iw.addDocument(doc);
+			}
+		}
+
+		iw.close();
+
 	}
 
 	public DocumentIndexer() {

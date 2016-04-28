@@ -13,9 +13,9 @@ public class Pair<F, S> implements Serializable {
 		return new Pair<S, T>(first, second);
 	}
 
-	private F first;
+	protected F first;
 
-	private S second;
+	protected S second;
 
 	public Pair(final F first, final S second) {
 		this.first = first;
@@ -59,6 +59,10 @@ public class Pair<F, S> implements Serializable {
 		result = prime * result + ((first == null) ? 0 : first.hashCode());
 		result = prime * result + ((second == null) ? 0 : second.hashCode());
 		return result;
+	}
+
+	public String join(String glue) {
+		return first.toString() + glue + second.toString();
 	}
 
 	public void set(F first, S second) {

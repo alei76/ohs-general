@@ -5,11 +5,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.swing.Icon;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -22,7 +17,6 @@ import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.medical.general.MIRPath;
-import ohs.types.Pair;
 import ohs.utils.Generics;
 import ohs.utils.StopWatch;
 import ohs.utils.StrUtils;
@@ -34,7 +28,8 @@ public class ClueWebDumper extends TextDumper {
 
 		ClueWebDumper dh = new ClueWebDumper(MIRPath.CLUEWEB12_DIR, MIRPath.CLUEWEB12_COL_FILE);
 		// dh.readVisitedDocs(MIRPath.CLEF_EHEALTH_DIR + "doc_ids.txt");
-		dh.dump();
+		// dh.dump();
+		dh.merge();
 
 		System.out.println("process ends.");
 	}
@@ -43,14 +38,44 @@ public class ClueWebDumper extends TextDumper {
 
 	private TextFileWriter fileNameWriter;
 
+	private Set<String> stopIds;
+
 	public ClueWebDumper(String inputDir, String outputFileName) {
 		super(inputDir, outputFileName);
+	}
+
+	public void merge() throws Exception {
+
+		int max_lines = FileUtils.countLinesUnder(MIRPath.CLUEWEB12_TEXT_DIR);
+
+		TextFileWriter writer = new TextFileWriter(MIRPath.CLUEWEB12_COL_FILE);
+		writer.write(FileUtils.LINE_SIZE + "\t" + max_lines + "\n");
+
+		List<File> files = FileUtils.getFilesUnder(MIRPath.CLUEWEB12_TEXT_DIR);
+
+		for (int i = 0; i < files.size(); i++) {
+			List<String> lines = FileUtils.readLines(files.get(i).getPath());
+
+			for (int j = 1; j < lines.size(); j++) {
+				writer.write(lines.get(j));
+
+				if (i != files.size() - 1 && j != lines.size() - 1) {
+					writer.write("\n");
+				}
+			}
+		}
+		writer.close();
+
+		System.out.println(max_lines);
+
 	}
 
 	@Override
 	public void dump() throws Exception {
 
 		fileNames = Generics.newHashSet();
+
+		setStopIds();
 
 		if (FileUtils.exists(MIRPath.CLUEWEB12_FILE_NAME_FILE)) {
 			List<String> lines = FileUtils.readLines(MIRPath.CLUEWEB12_FILE_NAME_FILE);
@@ -61,9 +86,14 @@ public class ClueWebDumper extends TextDumper {
 			}
 		}
 
-		fileNameWriter = new TextFileWriter(MIRPath.CLUEWEB12_FILE_NAME_FILE, FileUtils.UTF_8, true);
+		fileNameWriter = new TextFileWriter(MIRPath.CLUEWEB12_FILE_NAME_FILE, FileUtils.UTF_8, false);
 
-		FileUtils.deleteFilesUnder(inputDirName.replace("2012_disk_b", "2012_disk_b_text"));
+		for (String fileName : fileNames) {
+			fileNameWriter.write(fileName + "\n");
+		}
+
+		// FileUtils.deleteFilesUnder(inputDirName.replace("2012_disk_b",
+		// "2012_disk_b_text"));
 
 		File[] files = new File(inputDirName).listFiles();
 
@@ -108,9 +138,9 @@ public class ClueWebDumper extends TextDumper {
 
 					file.getName().replace("warc", "txt"));
 
-			// if (FileUtils.exists(outputFileName)) {
-			// continue;
-			// }
+			if (FileUtils.exists(outputFileName)) {
+				continue;
+			}
 
 			// TextFileWriter writer = new TextFileWriter(outputFileName);
 			TextFileReader reader = new TextFileReader(file);
@@ -146,37 +176,32 @@ public class ClueWebDumper extends TextDumper {
 							}
 						}
 
-						// if (!id.equals("clueweb12-0000tw-00-20274")) {
-						// lines = Generics.newArrayList();
-						// continue;
-						// }
+						if (!stopIds.contains(id)) {
+							String text1 = StrUtils.join("\n", lines, start, lines.size()).trim();
+							String text2 = Jsoup.clean(text1, whitelist);
 
-						String text = StrUtils.join("\n", lines, start, lines.size()).trim();
+							if (Jsoup.isValid(text2, whitelist)) {
+								try {
+									List<String> strs = Generics.newArrayList();
+									List<String> links = Generics.newArrayList();
 
-						String text2 = Jsoup.clean(text, whitelist);
+									Document doc = Jsoup.parse(text2);
 
-						if (Jsoup.isValid(text2, whitelist)) {
-							try {
-								List<String> strs = Generics.newArrayList();
-								List<String> links = Generics.newArrayList();
+									goDown(doc, strs, links, false);
 
-								Document doc = Jsoup.parse(text2);
+									if (id.length() > 0 && strs.size() > 0) {
+										String[] parts = new String[] { id, StrUtils.join("\\n", strs), uri, StrUtils.join("\\t", links) };
 
-								goDown(doc, strs, links, false);
-
-								if (id.length() > 0 && strs.size() > 0) {
-									String[] parts = new String[] { id, StrUtils.join("\\n", strs), StrUtils.join("\\t", links) };
-									results.add(StrUtils.join("\t", StrUtils.wrap(parts)));
+										results.add(StrUtils.join("\t", StrUtils.wrap(parts)));
+									}
+								} catch (Exception e) {
 
 								}
-							} catch (Exception e) {
-
+							} else {
+								System.out.println(text2);
+								System.out.println();
 							}
-						} else {
-							System.out.println(text2);
-							System.out.println();
 						}
-
 					}
 
 					lines = Generics.newArrayList();
@@ -219,11 +244,12 @@ public class ClueWebDumper extends TextDumper {
 				url = elem.attr("abs:src");
 			}
 
-			type = StrUtils.normalizeSpaces(type);
-
-			url = url.trim().replaceAll("[\n]+", "");
+			if (type.length() > 0) {
+				type = StrUtils.normalizeSpaces(type);
+			}
 
 			if (url.length() > 0) {
+				url = url.trim().replaceAll("[\n]+", "");
 				links.add(type + ":" + url);
 			}
 
@@ -254,6 +280,12 @@ public class ClueWebDumper extends TextDumper {
 			goDown(child, strs, links, is_table_item);
 
 		}
+	}
+
+	public void setStopIds() {
+		stopIds = Generics.newHashSet();
+		stopIds.add("clueweb12-0010wb-86-28749");
+		stopIds.add("clueweb12-0013wb-03-12783");
 	}
 
 }

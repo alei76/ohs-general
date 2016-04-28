@@ -1,4 +1,4 @@
-package ohs.eden.linker;
+package ohs.ir.wiki;
 
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -23,6 +23,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import ohs.eden.linker.ELPath;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;

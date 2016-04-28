@@ -12,6 +12,7 @@ import java.util.Map;
 import ohs.io.FileUtils;
 import ohs.types.Counter;
 import ohs.types.SetMap;
+import ohs.types.StrPair;
 import ohs.utils.Generics;
 import ohs.utils.StopWatch;
 import ohs.utils.StrUtils;
@@ -121,8 +122,8 @@ public class KeywordLoader {
 				}
 
 				for (int kwdid : c.getSortedKeys()) {
-					String kwdStr = kwdData.getKeywordIndexer().getObject(kwdid);
-					String[] two = kwdStr.split("\t");
+					StrPair kwdp = kwdData.getKeywordIndexer().getObject(kwdid);
+					String[] two = kwdp.asArray();
 
 					two = StrUtils.unwrap(two);
 

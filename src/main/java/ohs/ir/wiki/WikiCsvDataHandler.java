@@ -1,4 +1,4 @@
-package ohs.ir.medical.general;
+package ohs.ir.wiki;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -10,7 +10,9 @@ import java.util.Set;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
+import ohs.ir.medical.general.MIRPath;
 import ohs.types.BidMap;
+import ohs.types.Counter;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
@@ -23,8 +25,8 @@ public class WikiCsvDataHandler {
 		WikiCsvDataHandler d = new WikiCsvDataHandler();
 		// d.encodeTitles();
 		// d.encodeCategories();
-		// d.encodeCategoryLinks();
-		d.encodeRedirects();
+		d.encodeCategoryLinks();
+		// d.encodeRedirects();
 		// d.map();
 
 		System.out.printf("[%s] ends.\n", WikiCsvDataHandler.class.getName());
@@ -47,6 +49,10 @@ public class WikiCsvDataHandler {
 			int id = Integer.parseInt(parts[0]);
 			String cat_title = parts[1];
 
+			if (cat_title.length() == 0) {
+				continue;
+			}
+
 			int cat_pages = Integer.parseInt(parts[2]);
 			int cat_subcats = Integer.parseInt(parts[3]);
 
@@ -66,17 +72,10 @@ public class WikiCsvDataHandler {
 	}
 
 	public void encodeCategoryLinks() throws Exception {
-		// Map<Integer, String> idToTitle = null;
-		//
-		// {
-		// ObjectInputStream ois = FileUtils.openObjectInputStream(MIRPath.WIKI_DIR + "wiki_titles.ser.gz");
-		// idToTitle = FileUtils.readIntStrMap(ois);
-		// ois.close();
-		// }
-
 		BidMap<Integer, String> idToCat = null;
 
 		{
+			Counter<String> c = Generics.newCounter();
 			ObjectInputStream ois = FileUtils.openObjectInputStream(MIRPath.WIKI_DIR + "wiki_cats.ser.gz");
 			List<Integer> ids = FileUtils.readIntList(ois);
 			List<String> titles = FileUtils.readStrList(ois);
@@ -88,12 +87,11 @@ public class WikiCsvDataHandler {
 
 			for (int i = 0; i < ids.size(); i++) {
 				idToCat.put(ids.get(i), titles.get(i));
-				// catPageCnts.setCount(ids.get(i), catPages.get(i));
 			}
 		}
 
 		SetMap<Integer, Integer> parentToChildren = Generics.newSetMap();
-		SetMap<Integer, Integer> pageToCats = Generics.newSetMap();
+		// SetMap<Integer, Integer> pageToCats = Generics.newSetMap();
 
 		TextFileReader reader = new TextFileReader(MIRPath.WIKI_DIR + "wiki_catlinks.txt.gz");
 		while (reader.hasNext()) {
@@ -111,9 +109,11 @@ public class WikiCsvDataHandler {
 			String cl_type = parts[2];
 
 			if (cl_type.equals("subcat")) {
+				String cat1 = idToCat.getValue(pageid);
+				String cat2 = idToCat.getValue(catid);
 				parentToChildren.put(catid, pageid);
 			} else {
-				pageToCats.put(pageid, catid);
+				// pageToCats.put(pageid, catid);
 			}
 
 		}
@@ -121,7 +121,7 @@ public class WikiCsvDataHandler {
 
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(MIRPath.WIKI_DIR + "wiki_catlinks.ser.gz");
 		FileUtils.writeIntSetMap(oos, parentToChildren);
-		FileUtils.writeIntSetMap(oos, pageToCats);
+		// FileUtils.writeIntSetMap(oos, pageToCats);
 		oos.close();
 	}
 
