@@ -6,11 +6,11 @@ public class KPPath {
 
 	public static final String TEXT_DUMP_DIR = DATA_DIR + "db_dump/";
 
-	public static final String PAPER_DUMP_FILE = TEXT_DUMP_DIR + "paper.csv";
+	public static final String PAPER_DUMP_FILE = TEXT_DUMP_DIR + "papers.csv.gz";
 
-	public static final String PATENT_DUMP_FILE = TEXT_DUMP_DIR + "patent.csv";
+	public static final String PATENT_DUMP_FILE = TEXT_DUMP_DIR + "patents.csv.gz";
 
-	public static final String REPORT_DUMP_FILE = TEXT_DUMP_DIR + "report.csv";
+	public static final String REPORT_DUMP_FILE = TEXT_DUMP_DIR + "reports.csv.gz";
 
 	public static final String SINGLE_DUMP_FILE = TEXT_DUMP_DIR + "3p.csv.gz";
 

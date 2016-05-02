@@ -31,10 +31,10 @@ public class DataHandler {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		DataHandler dh = new DataHandler();
-		// dh.mergeDumps();
+		dh.mergeDumps();
 		// dh.tagPOS();
-		dh.makeKeywordData();
-		dh.makeTitleData();
+		// dh.makeKeywordData();
+		// dh.makeTitleData();
 
 		// dh.extractKeywordAbbreviations();
 
@@ -342,16 +342,21 @@ public class DataHandler {
 				String line = reader.next();
 				String[] parts = line.split("\t");
 
-				parts = StrUtils.unwrap(parts);
+				// System.out.println(line);
 
 				if (reader.getNumLines() == 1) {
+					parts = StrUtils.unwrap(parts);
+
 					for (String p : parts) {
 						labels.add(p);
 					}
 				} else {
 					if (parts.length != labels.size()) {
+						System.out.println(line);
 						continue;
 					}
+
+					parts = StrUtils.unwrap(parts);
 
 					String cn = parts[0];
 					String korTitle = "";
@@ -363,21 +368,20 @@ public class DataHandler {
 					String type = "";
 
 					if (i == 0) {
-						korTitle = parts[4];
-						engTitle = parts[5];
-						korAbs = parts[10];
-						engAbs = parts[11];
-						korKwdStr = parts[8];
-						engKwdStr = parts[9];
+						korTitle = parts[1];
+						engTitle = parts[2];
+						korAbs = parts[5];
+						engAbs = parts[6];
+						korKwdStr = parts[3];
+						engKwdStr = parts[4];
 						type = "paper";
 					} else if (i == 1) {
 						korTitle = parts[1];
 						engTitle = parts[2];
-						korAbs = parts[7];
-						engAbs = parts[8];
-
-						korKwdStr = parts[5];
-						engKwdStr = parts[6];
+						korAbs = parts[5];
+						engAbs = parts[6];
+						korKwdStr = parts[3];
+						engKwdStr = parts[4];
 						type = "report";
 					} else if (i == 2) {
 						String applno = parts[0];
@@ -385,7 +389,6 @@ public class DataHandler {
 						engTitle = parts[2];
 						cn = parts[3];
 						korAbs = parts[4];
-						String cm = parts[5];
 						type = "patent";
 					}
 

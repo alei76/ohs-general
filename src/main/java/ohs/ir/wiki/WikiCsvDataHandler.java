@@ -25,8 +25,8 @@ public class WikiCsvDataHandler {
 		WikiCsvDataHandler d = new WikiCsvDataHandler();
 		// d.encodeTitles();
 		// d.encodeCategories();
-		d.encodeCategoryLinks();
-		// d.encodeRedirects();
+		// d.encodeCategoryLinks();
+		d.encodeRedirects();
 		// d.map();
 
 		System.out.printf("[%s] ends.\n", WikiCsvDataHandler.class.getName());
@@ -90,8 +90,17 @@ public class WikiCsvDataHandler {
 			}
 		}
 
+		Map<Integer, String> idToTitle = null;
+
+		{
+			ObjectInputStream ois = FileUtils.openObjectInputStream(MIRPath.WIKI_DIR + "wiki_titles.ser.gz");
+			idToTitle = FileUtils.readIntStrMap(ois);
+			ois.close();
+
+		}
+
 		SetMap<Integer, Integer> parentToChildren = Generics.newSetMap();
-		// SetMap<Integer, Integer> pageToCats = Generics.newSetMap();
+		SetMap<Integer, Integer> catToCats = Generics.newSetMap();
 
 		TextFileReader reader = new TextFileReader(MIRPath.WIKI_DIR + "wiki_catlinks.txt.gz");
 		while (reader.hasNext()) {
@@ -105,17 +114,16 @@ public class WikiCsvDataHandler {
 			}
 
 			int pageid = Integer.parseInt(parts[0]);
-			int catid = Integer.parseInt(parts[1]);
+			int parent_id = Integer.parseInt(parts[1]);
 			String cl_type = parts[2];
 
 			if (cl_type.equals("subcat")) {
-				String cat1 = idToCat.getValue(pageid);
-				String cat2 = idToCat.getValue(catid);
-				parentToChildren.put(catid, pageid);
-			} else {
-				// pageToCats.put(pageid, catid);
+				String child = idToTitle.get(pageid);
+				if (idToCat.containsValue(child)) {
+					int child_id = idToCat.getKey(child);
+					parentToChildren.put(parent_id, child_id);
+				}
 			}
-
 		}
 		reader.close();
 

@@ -5,7 +5,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,16 +29,12 @@ import de.tudarmstadt.ukp.wikipedia.parser.Section;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.FlushTemplates;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
-import ohs.eden.linker.ELPath;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.ir.lucene.common.MyTextField;
-import ohs.types.BidMap;
-import ohs.types.SetMap;
-import ohs.types.StrPair;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 
@@ -100,8 +95,8 @@ public class DocumentIndexer {
 		// di.indexOhsumed();
 		// di.indexTrecGenomics();
 
-		// di.indexWiki();
-		di.indexClueWeb12();
+		di.indexWiki();
+		// di.indexClueWeb12();
 		// di.makeDocumentIdMap();
 
 		System.out.println("process ends.");
@@ -328,150 +323,111 @@ public class DocumentIndexer {
 	}
 
 	public void indexWiki() throws Exception {
-		Set<String> stopSectionNames = getStopSectionNames();
+		Set<String> stopSecNames = getStopSectionNames();
 
-		BidMap<String, Integer> idToCat = Generics.newBidMap();
+		// SetMap<Integer, Integer> pageToCats = Generics.newSetMap();
+		//
+		// {
+		//
+		// TextFileReader reader = new TextFileReader(MIRPath.WIKI_DIR + "wiki_catlinks.txt.gz");
+		// while (reader.hasNext()) {
+		// String line = reader.next();
+		//
+		// String[] parts = StrUtils.unwrap(line.split("\t"));
+		//
+		// if (parts.length != 3) {
+		// System.out.println(line);
+		// continue;
+		// }
+		//
+		// int pageid = Integer.parseInt(parts[0]);
+		// int parent_id = Integer.parseInt(parts[1]);
+		// String cl_type = parts[2];
+		//
+		// if (cl_type.equals("page")) {
+		// pageToCats.put(pageid, parent_id);
+		// }
+		// }
+		// reader.close();
+		// }
+		//
+		// BidMap<Integer, String> idToCat = null;
+		//
+		// {
+		// ObjectInputStream ois = FileUtils.openObjectInputStream(MIRPath.WIKI_DIR + "wiki_cats.ser.gz");
+		// List<Integer> ids = FileUtils.readIntList(ois);
+		// List<String> titles = FileUtils.readStrList(ois);
+		// List<Integer> catPages = FileUtils.readIntList(ois);
+		// List<Integer> catSubcats = FileUtils.readIntList(ois);
+		// ois.close();
+		//
+		// idToCat = Generics.newBidMap(ids.size());
+		// // pageCnts = Generics.newCounter();
+		// // subCatCnts = Generics.newCounter();
+		//
+		// for (int i = 0; i < ids.size(); i++) {
+		// idToCat.put(ids.get(i), titles.get(i));
+		// // pageCnts.setCount(ids.get(i), catPages.get(i));
+		// // subCatCnts.setCount(ids.get(i), catSubcats.get(i));
+		// }
+		// }
 
-		{
-			TextFileReader reader = new TextFileReader(MIRPath.WIKI_DIR + "wiki_category.csv.gz");
-			while (reader.hasNext()) {
-				/*
-				 * "id"\t"title"
-				 */
-				String[] parts = reader.next().split("\t");
-				parts = StrUtils.unwrap(parts);
-
-				int id = Integer.parseInt(parts[0]);
-				String cat_title = parts[1];
-				int cat_pages = Integer.parseInt(parts[2]);
-				int cat_subcats = Integer.parseInt(parts[3]);
-
-				idToCat.put(cat_title, id);
-			}
-			reader.close();
-		}
-
-		SetMap<Integer, Integer> pageToCats = Generics.newSetMap();
-
-		{
-			TextFileReader reader = new TextFileReader(MIRPath.WIKI_DIR + "wiki_categorylink.csv.gz");
-			while (reader.hasNext()) {
-				String line = reader.next();
-				String[] parts = StrUtils.unwrap(line.split("\t"));
-
-				int cl_from = Integer.parseInt(parts[0]);
-				String cl_to = parts[1];
-				String cl_type = parts[2];
-
-				if (!cl_type.equals("page")) {
-					continue;
-				}
-
-				pageToCats.put(cl_from, idToCat.getValue(cl_to));
-
-			}
-			reader.close();
-		}
-
-		BidMap<Integer, String> idToPage = Generics.newBidMap();
-
-		{
-			TextFileReader reader = new TextFileReader(MIRPath.WIKI_DIR + "wiki_title.csv.gz");
-			while (reader.hasNext()) {
-				/*
-				 * "id"\t"title"
-				 */
-				String[] parts = StrUtils.unwrap(reader.next().split("\t"));
-
-				int page_id = Integer.parseInt(parts[0]);
-				String page_title = parts[1];
-				idToPage.put(page_id, page_title);
-			}
-			reader.close();
-		}
-
-		Map<Integer, Integer> fromTo = Generics.newHashMap();
-
-		{
-			TextFileReader reader = new TextFileReader(MIRPath.WIKI_DIR + "wiki_redirect.csv.gz");
-
-			while (reader.hasNext()) {
-				String line = reader.next();
-				String[] parts = StrUtils.unwrap(line.split("\t"));
-				String from = parts[0];
-				String to = parts[1];
-
-				if (from.equals("!")) {
-					System.out.println();
-				}
-
-				Integer from_id = idToPage.getKey(from);
-				Integer to_id = idToPage.getKey(to);
-
-				if (from_id == null || to_id == null) {
-					continue;
-				}
-
-				fromTo.put(from_id, to_id);
-			}
-			reader.close();
-		}
+		// Map<Integer, String> idToTitle = Generics.newHashMap();
+		//
+		// {
+		// ObjectInputStream ois = FileUtils.openObjectInputStream(MIRPath.WIKI_DIR + "wiki_titles.ser.gz");
+		// idToTitle = FileUtils.readIntStrMap(ois);
+		// ois.close();
+		// }
 
 		IndexWriter iw = getIndexWriter(MIRPath.WIKI_INDEX_DIR);
-		TextFileReader reader = new TextFileReader(MIRPath.WIKI_PAGE_FILE);
+		TextFileReader reader = new TextFileReader(MIRPath.WIKI_DIR + "wiki_pages.txt.gz");
 		reader.setPrintNexts(false);
 
 		MediaWikiParserFactory factory = new MediaWikiParserFactory(Language.english);
 		factory.setTemplateParserClass(FlushTemplates.class);
+
 		MediaWikiParser parser = factory.createParser();
 
 		while (reader.hasNext()) {
-			reader.print(100000);
+			reader.print(10000);
 
 			String line = reader.next();
-			String[] parts = StrUtils.unwrap(line.split("\t"));
 
-			// if (parts.length != 2) {
-			// continue;
-			// }
+			// System.out.println(line);
+			String[] parts = line.split("\t");
+
+			if (parts.length > 3) {
+				parts = new String[] { parts[0], parts[1], StrUtils.join("\t", parts, 2) };
+			}
+
+			parts = StrUtils.unwrap(parts);
 
 			int pageid = Integer.parseInt(parts[0]);
-
-			if (fromTo.containsKey(pageid)) {
-				continue;
-			}
-
-			StringBuffer sb2 = new StringBuffer();
-
-			Set<Integer> cats = pageToCats.get(pageid, false);
-
-			if (cats != null) {
-				for (int catid : cats) {
-					sb2.append(idToCat.getKey(catid) + "\n");
-				}
-			}
 
 			String title = parts[1];
 			String wikiText = parts[2].replace("\\\\n", "\n");
 
 			ParsedPage pp = parser.parse(wikiText);
 
+			if (pp == null) {
+				continue;
+			}
+
 			StringBuffer sb = new StringBuffer();
-			sb.append(title + "\n");
 
 			for (int i = 0; i < pp.getSections().size(); i++) {
-				Section section = pp.getSection(i);
-				String secTitle = section.getTitle();
+				Section sec = pp.getSection(i);
+				String secName = sec.getTitle();
 
-				if (secTitle != null && stopSectionNames.contains(secTitle.toLowerCase())) {
+				if (secName != null && stopSecNames.contains(secName.toLowerCase())) {
 					continue;
 				}
 
 				List<String> sents = new ArrayList<String>();
 
-				for (int j = 0; j < section.getContentList().size(); j++) {
-					Content content = section.getContentList().get(j);
-
+				for (int j = 0; j < sec.getContentList().size(); j++) {
+					Content content = sec.getContentList().get(j);
 					String[] ss = content.getText().split("[\\n]+");
 
 					for (String s : ss) {
@@ -489,8 +445,9 @@ public class DocumentIndexer {
 				}
 			}
 
-			String content = sb.toString();
+			String content = sb.toString().trim();
 			String redicrect = "";
+			boolean is_redirect = false;
 
 			{
 				String[] lines = content.split("\n");
@@ -500,26 +457,28 @@ public class DocumentIndexer {
 					int idx = lines[1].indexOf(prefix);
 
 					if (idx > -1) {
+						is_redirect = true;
 						redicrect = lines[1].substring(idx + prefix.length());
-						System.out.printf("%s -> %s\n", title, redicrect);
-						content = "";
+						// System.out.printf("%s -> %s\n", title, redicrect);
+						// content = "";
 					}
 				}
 			}
 
+			if (is_redirect) {
+				continue;
+			}
+
 			Document doc = new Document();
+			doc.add(new StringField(CommonFieldNames.DOCUMENT_ID, pageid + "", Store.YES));
 			doc.add(new StringField(CommonFieldNames.TITLE, title, Store.YES));
-			doc.add(new StringField(CommonFieldNames.LOWER_TITLE, title.toLowerCase(), Store.YES));
-			// doc.add(new StringField(CommonFieldNames.REDIRECT_TITLE, redicrect, Store.YES));
-			// doc.add(new StringField(CommonFieldNames.LOWER_REDIRECT_TITLE, redicrect.toLowerCase(), Store.YES));
-			// doc.add(new MyTextField(CommonFieldNames.CONTENT, content, Store.YES));
-			// doc.add(new MyTextField(CommonFieldNames.CATEGORY, sb2.toString(), Store.YES));
+			doc.add(new MyTextField(CommonFieldNames.CONTENT, content, Store.YES));
 			iw.addDocument(doc);
 		}
 		reader.printLast();
 		reader.close();
-
 		iw.close();
+
 	}
 
 	public void indexWikiXML() throws Exception {

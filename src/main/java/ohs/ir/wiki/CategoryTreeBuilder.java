@@ -8,10 +8,8 @@ import java.util.Stack;
 
 import ohs.eden.linker.ELPath;
 import ohs.io.FileUtils;
-import ohs.io.TextFileReader;
 import ohs.ir.medical.general.MIRPath;
 import ohs.string.sim.EditDistance;
-import ohs.string.sim.SequenceFactory;
 import ohs.tree.trie.hash.Node;
 import ohs.tree.trie.hash.Trie;
 import ohs.types.BidMap;
@@ -19,7 +17,6 @@ import ohs.types.Counter;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
 import ohs.utils.StopWatch;
-import ohs.utils.StrUtils;
 
 public class CategoryTreeBuilder {
 
@@ -35,15 +32,15 @@ public class CategoryTreeBuilder {
 
 	private BidMap<Integer, String> idToCat = null;
 
-	private Counter<Integer> catPageCnts = null;
+	private Counter<Integer> pageCnts = null;
 
 	private SetMap<Integer, Integer> parentToChildren = null;
 
 	private SetMap<Integer, Integer> childToParents = null;
 
 	private int root_id = 192834;
-
-	private int health_id = 153550;
+	//
+	// private int health_id = 153550;
 
 	private Trie<String> trie;
 
@@ -73,16 +70,16 @@ public class CategoryTreeBuilder {
 		}
 
 		if (mainCats.contains(c)) {
-			if (c == health_id) {
-				// List<String> catPath = Generics.newArrayList(path.size());
-				//
-				// for (int i = 0; i < path.size(); i++) {
-				// int loc = path.size() - i - 1;
-				// catPath.add(idToCat.getValue(path.get(loc)));
-				// }
+			// if (c == health_id) {
+			// List<String> catPath = Generics.newArrayList(path.size());
+			//
+			// for (int i = 0; i < path.size(); i++) {
+			// int loc = path.size() - i - 1;
+			// catPath.add(idToCat.getValue(path.get(loc)));
+			// }
 
-				trie.insert(catPath);
-			}
+			trie.insert(catPath);
+			// }
 			return;
 		}
 
@@ -95,7 +92,7 @@ public class CategoryTreeBuilder {
 		Counter<Integer> pageCnts = Generics.newCounter();
 
 		for (int p : parents) {
-			pageCnts.setCount(p, catPageCnts.getCount(p));
+			pageCnts.setCount(p, pageCnts.getCount(p));
 		}
 
 		for (int p : pageCnts.getSortedKeys()) {
@@ -197,20 +194,26 @@ public class CategoryTreeBuilder {
 
 		trie = Trie.newTrie();
 
-		Stack<Integer> path = new Stack<Integer>();
-		path.push(health_id);
-
-		topDown(path);
+		int[] roots = { 349052, 198457 };
 
 		List<String> catPaths = Generics.newArrayList();
 
-		for (Node<String> node : trie.getLeafNodes()) {
-			catPaths.add(node.getKeyPath("\t"));
+		for (int i = 0; i < roots.length; i++) {
+			// root_id = idToCat.getKey(roots[i]);
+			Stack<Integer> path = new Stack<Integer>();
+			path.push(roots[i]);
+
+			topDown(path);
+
+			for (Node<String> node : trie.getLeafNodes()) {
+				catPaths.add(node.getKeyPath("\t"));
+			}
 		}
 
-		Collections.sort(catPaths);
+		Set<String> res = Generics.newTreeSet();
+		res.addAll(catPaths);
 
-		FileUtils.writeStrCollection(ELPath.WIKI_DIR + "wiki_cat_tree.txt", catPaths);
+		FileUtils.writeStrCollection(MIRPath.WIKI_DIR + "wiki_cat_tree.txt", res);
 	}
 
 	private boolean isValid(int catid) {
@@ -233,6 +236,8 @@ public class CategoryTreeBuilder {
 		return true;
 	}
 
+	private Counter<Integer> subCatCnts;
+
 	public void read() throws Exception {
 		{
 			ObjectInputStream ois = FileUtils.openObjectInputStream(MIRPath.WIKI_DIR + "wiki_catlinks.ser.gz");
@@ -249,8 +254,6 @@ public class CategoryTreeBuilder {
 
 		}
 
-		catPageCnts = Generics.newCounter();
-
 		{
 			ObjectInputStream ois = FileUtils.openObjectInputStream(MIRPath.WIKI_DIR + "wiki_cats.ser.gz");
 			List<Integer> ids = FileUtils.readIntList(ois);
@@ -260,22 +263,29 @@ public class CategoryTreeBuilder {
 			ois.close();
 
 			idToCat = Generics.newBidMap(ids.size());
+			pageCnts = Generics.newCounter();
+			subCatCnts = Generics.newCounter();
 
 			for (int i = 0; i < ids.size(); i++) {
 				idToCat.put(ids.get(i), titles.get(i));
-				catPageCnts.setCount(ids.get(i), catPages.get(i));
+				pageCnts.setCount(ids.get(i), catPages.get(i));
+				subCatCnts.setCount(ids.get(i), catSubcats.get(i));
 			}
 
 		}
 
 		mainCats = Generics.newHashSet(parentToChildren.get(root_id));
-		mainCats.add(root_id);
+		// mainCats.add(root_id);
+
+		for (int id : mainCats) {
+			System.out.println(idToCat.getValue(id));
+		}
 
 		{
 			leaves = Generics.newHashSet();
 
 			for (int c : idToCat.getKeys()) {
-				int cnt = (int) catPageCnts.getCount(c);
+				int cnt = (int) pageCnts.getCount(c);
 				if (parentToChildren.get(c, false) == null && childToParents.get(c, false) != null && cnt > 0) {
 					leaves.add(c);
 				}
@@ -299,10 +309,11 @@ public class CategoryTreeBuilder {
 
 		Set<Integer> children = parentToChildren.get(parent_id, false);
 
-		if (children == null || catPath.size() >= 5) {
-			trie.insert(catPath);
+		if (children == null || catPath.size() >= 6) {
+			if (pageCnts.getCount(parent_id) > 0) {
+				trie.insert(catPath);
+			}
 		} else {
-
 			for (int child_id : children) {
 				String child = idToCat.getValue(child_id);
 
