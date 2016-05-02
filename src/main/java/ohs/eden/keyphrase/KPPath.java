@@ -30,9 +30,11 @@ public class KPPath {
 
 	public static final String KEYWORD_CLUSTER_FILE = KEYPHRASE_DIR + "keyword_cluster.txt";
 
+	public static final String KEYWORD_CLUSTER_TEMP_DIR = KEYPHRASE_DIR + "temp_cluster/";
+
 	public static final String KEYWORD_POS_CNT_FILE = KEYPHRASE_DIR + "kwd_pos_seq_cnt.txt";
 
-	public static final String PATENT_KEYWORD_MATCH_FILE = KEYPHRASE_DIR + "patent_kwd_match.txt";
+	public static final String KEYWORD_PATENT_FILE = KEYPHRASE_DIR + "keyword_patent.txt";
 
 	public static final String VOCAB_FILE = KEYPHRASE_DIR + "vocab.ser.gz";
 

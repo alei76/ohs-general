@@ -31,10 +31,10 @@ public class DataHandler {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		DataHandler dh = new DataHandler();
-		dh.mergeDumps();
+		// dh.mergeDumps();
 		// dh.tagPOS();
 		// dh.makeKeywordData();
-		// dh.makeTitleData();
+		dh.makeTitleData();
 
 		// dh.extractKeywordAbbreviations();
 
@@ -305,17 +305,16 @@ public class DataHandler {
 				for (Token t : doc.getSubTokens()) {
 					String word = t.getValue(TokenAttr.WORD);
 					String pos = t.getValue(TokenAttr.POS);
-					if (pos.contains("NN")) {
+					if (pos.startsWith("N")) {
 						c.incrementCount(word.toLowerCase(), 1);
 					}
 				}
 
 				c.incrementAll(AnalyzerUtils.getWordCounts(engTitle, analyzer));
 
-				cm.setCounter(cn, c);
-
-				// writer.write(cn + "\t" + c.toString(c.size()) + "\n");
-
+				if (c.size() > 0) {
+					cm.setCounter(cn, c);
+				}
 			}
 		}
 		reader.printLast();
@@ -443,18 +442,18 @@ public class DataHandler {
 				String cn = parts[1];
 				String korKwdStr = parts[2];
 				String engKwdStr = parts[3];
-				String korTitle = parts[4];
+				String korTitle = parts[4].replace("\n", "\\n").replace("\t", "\\t");
 				String engTitle = parts[5];
-				String korAbs = parts[6];
+				String korAbs = parts[6].replace("\n", "\\n").replace("\t", "\\t");
 				String engAbs = parts[7];
 
 				List<String> korKwds1 = getKeywords(korKwdStr);
 				List<String> korKwds2 = Generics.newArrayList(korKwds1.size());
 				List<String> engKwds = getKeywords(engKwdStr);
 
-				if (type.equals("patent")) {
-					break;
-				}
+				// if (type.equals("patent")) {
+				// break;
+				// }
 
 				if ((korTitle.length() == 0 && korAbs.length() == 0) || (engTitle.length() == 0 && engAbs.length() == 0)) {
 					continue;
@@ -467,8 +466,8 @@ public class DataHandler {
 				}
 
 				parts[2] = String.format("\"%s\" => \"%s\"", StrUtils.join(";", korKwds1), StrUtils.join(";", korKwds2));
-				parts[4] = getText(komoran.analyze(korTitle, 1));
-				parts[6] = getText(komoran.analyze(korAbs, 1));
+				parts[4] = getText(komoran.analyze(korTitle, 1)).replace("\n", "\\n").replace("\t", "\\t");
+				// parts[6] = getText(komoran.analyze(korAbs, 1)).replace("\n", "\\n").replace("\t", "\\t");
 
 				parts = StrUtils.wrap(parts);
 

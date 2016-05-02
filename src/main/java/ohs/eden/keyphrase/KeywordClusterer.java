@@ -15,7 +15,6 @@ import ohs.ir.weight.TermWeighting;
 import ohs.math.ArrayMath;
 import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
-import ohs.matrix.DenseVector;
 import ohs.matrix.SparseVector;
 import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.GramGenerator;
@@ -34,21 +33,21 @@ public class KeywordClusterer {
 	public static void main(String[] args) throws Exception {
 		System.out.printf("[%s] begins.\n", KeywordClusterer.class.getName());
 
-		KeywordData data = new KeywordData();
+		KeywordData kwdData = new KeywordData();
 
 		if (FileUtils.exists(KPPath.KEYWORD_DATA_SER_FILE)) {
-			data.read(KPPath.KEYWORD_DATA_SER_FILE);
+			kwdData.read(KPPath.KEYWORD_DATA_SER_FILE);
 		} else {
-			data.readText(KPPath.KEYWORD_DATA_FILE);
-			data.write(KPPath.KEYWORD_DATA_SER_FILE);
+			kwdData.readText(KPPath.KEYWORD_DATA_FILE);
+			kwdData.write(KPPath.KEYWORD_DATA_SER_FILE);
 		}
 
-		KeywordClusterer kc = new KeywordClusterer(data);
+		KeywordClusterer kc = new KeywordClusterer(kwdData);
 		// kc.setAbstractData(FileUtils.readStrCounterMap(KPPath.TITLE_DATA_FILE));
 		kc.cluster();
 		kc.writeClusters(KPPath.KEYWORD_CLUSTER_FILE);
 
-		data.write(KPPath.KEYWORD_DATA_SER_FILE.replace("_data", "_data_clusters"));
+		kwdData.write(KPPath.KEYWORD_DATA_SER_FILE.replace("_data", "_data_clusters"));
 
 		System.out.println("process ends.");
 	}
@@ -84,31 +83,24 @@ public class KeywordClusterer {
 		}
 
 		matchExactTwoLanguages();
-
 		selectClusterLabels();
-		writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-01.txt.gz"));
+		writeClusters(KPPath.KEYWORD_CLUSTER_TEMP_DIR + "temp-01.txt.gz");
 
-		matchExactKorean();
-
-		selectClusterLabels();
-		writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-02.txt.gz"));
-
-		matchExactEnglish();
-
-		selectClusterLabels();
-		writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-03.txt.gz"));
-
-		matchKoreanGrams();
-
-		selectClusterLabels();
-		writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-04.txt.gz"));
-
-		matchEnglishGrams();
-
-		selectClusterLabels();
-		writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", "-05.txt.gz"));
-
-		selectClusterLabels();
+		// matchExactKorean();
+		// selectClusterLabels();
+		// writeClusters(KPPath.KEYWORD_CLUSTER_TEMP_DIR + "temp-02.txt.gz");
+		//
+		// matchExactEnglish();
+		// selectClusterLabels();
+		// writeClusters(KPPath.KEYWORD_CLUSTER_TEMP_DIR + "temp-03.txt.gz");
+		//
+		// matchKoreanGrams();
+		// selectClusterLabels();
+		// writeClusters(KPPath.KEYWORD_CLUSTER_TEMP_DIR + "temp-04.txt.gz");
+		//
+		// matchEnglishGrams();
+		// selectClusterLabels();
+		// writeClusters(KPPath.KEYWORD_CLUSTER_TEMP_DIR + "temp-05.txt.gz");
 
 		kwdData.setClusterLabel(clusterToLabel);
 		kwdData.setClusters(clusterToKwds);
@@ -518,7 +510,7 @@ public class KeywordClusterer {
 			System.out.printf("[%d -> %d clusters]\n", old_size, new_size);
 
 			selectClusterLabels();
-			writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", String.format("eng-loop-%d.txt.gz", iter)));
+			writeClusters(KPPath.KEYWORD_CLUSTER_TEMP_DIR + String.format("temp-eng-loop-%d.txt.gz", iter));
 
 			korCents = null;
 			engCents = null;
@@ -827,7 +819,7 @@ public class KeywordClusterer {
 			System.out.printf("[%d -> %d clusters]\n", old_size, new_size);
 
 			selectClusterLabels();
-			writeClusters(KPPath.KEYWORD_CLUSTER_FILE.replace(".txt", String.format("-loop-%d.txt.gz", iter)));
+			writeClusters(KPPath.KEYWORD_CLUSTER_TEMP_DIR + String.format("temp-kor-loop-%d.txt.gz", iter));
 
 			korCents = null;
 			engCents = null;
@@ -871,19 +863,11 @@ public class KeywordClusterer {
 		return ret;
 	}
 
-	private String normalize(String s) {
+	public static String normalize(String s) {
 		return s.replaceAll("[\\p{Punct}\\s]+", "").toLowerCase().trim();
 	}
 
-	private String[] normalize(String[] s) {
-		String[] ret = new String[s.length];
-		for (int i = 0; i < s.length; i++) {
-			ret[i] = normalize(s[i]);
-		}
-		return ret;
-	}
-
-	private String normalizeEnglish(String s) {
+	public static String normalizeEnglish(String s) {
 		PorterStemmer stemmer = new PorterStemmer();
 		StringBuffer sb = new StringBuffer();
 		for (String word : StrUtils.splitPunctuations(s)) {

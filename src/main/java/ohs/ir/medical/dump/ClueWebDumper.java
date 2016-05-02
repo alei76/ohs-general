@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -28,8 +29,7 @@ public class ClueWebDumper extends TextDumper {
 
 		ClueWebDumper dh = new ClueWebDumper(MIRPath.CLUEWEB12_DIR, MIRPath.CLUEWEB12_COL_FILE);
 		// dh.readVisitedDocs(MIRPath.CLEF_EHEALTH_DIR + "doc_ids.txt");
-		// dh.dump();
-		dh.merge();
+		dh.dump();
 
 		System.out.println("process ends.");
 	}
@@ -38,36 +38,8 @@ public class ClueWebDumper extends TextDumper {
 
 	private TextFileWriter fileNameWriter;
 
-	private Set<String> stopIds;
-
 	public ClueWebDumper(String inputDir, String outputFileName) {
 		super(inputDir, outputFileName);
-	}
-
-	public void merge() throws Exception {
-
-		int max_lines = FileUtils.countLinesUnder(MIRPath.CLUEWEB12_TEXT_DIR);
-
-		TextFileWriter writer = new TextFileWriter(MIRPath.CLUEWEB12_COL_FILE);
-		writer.write(FileUtils.LINE_SIZE + "\t" + max_lines + "\n");
-
-		List<File> files = FileUtils.getFilesUnder(MIRPath.CLUEWEB12_TEXT_DIR);
-
-		for (int i = 0; i < files.size(); i++) {
-			List<String> lines = FileUtils.readLines(files.get(i).getPath());
-
-			for (int j = 1; j < lines.size(); j++) {
-				writer.write(lines.get(j));
-
-				if (i != files.size() - 1 && j != lines.size() - 1) {
-					writer.write("\n");
-				}
-			}
-		}
-		writer.close();
-
-		System.out.println(max_lines);
-
 	}
 
 	@Override
@@ -88,7 +60,7 @@ public class ClueWebDumper extends TextDumper {
 
 		fileNameWriter = new TextFileWriter(MIRPath.CLUEWEB12_FILE_NAME_FILE, FileUtils.UTF_8, false);
 
-		for (String fileName : fileNames) {
+		for (String fileName : new TreeSet<String>(fileNames)) {
 			fileNameWriter.write(fileName + "\n");
 		}
 
@@ -104,6 +76,26 @@ public class ClueWebDumper extends TextDumper {
 				dump(file);
 			}
 		}
+	}
+
+	private Set<String> stopIds;
+
+	public void setStopIds() {
+		stopIds = Generics.newHashSet();
+		stopIds.add("clueweb12-0010wb-86-28749");
+		stopIds.add("clueweb12-0013wb-03-12783");
+		stopIds.add("clueweb12-0101wb-43-23045");
+		stopIds.add("clueweb12-0101wb-94-11951");
+		stopIds.add("clueweb12-0200wb-38-08218");
+		stopIds.add("clueweb12-0206wb-98-23340");
+		stopIds.add("clueweb12-0911wb-83-14261");
+		stopIds.add("clueweb12-0911wb-86-21505");
+		stopIds.add("clueweb12-0912wb-08-19355");
+		stopIds.add("clueweb12-0912wb-16-22255");
+		stopIds.add("clueweb12-0912wb-20-04379");
+		stopIds.add("clueweb12-0912wb-23-03224");
+		stopIds.add("clueweb12-0912wb-46-17872");
+		stopIds.add("clueweb12-0913wb-39-12898");
 	}
 
 	private void dump(File dir) throws Exception {
@@ -177,6 +169,9 @@ public class ClueWebDumper extends TextDumper {
 						}
 
 						if (!stopIds.contains(id)) {
+							// if (id.equals("clueweb12-0101wb-94-11951")) {
+							// System.out.println();
+							// }
 							String text1 = StrUtils.join("\n", lines, start, lines.size()).trim();
 							String text2 = Jsoup.clean(text1, whitelist);
 
@@ -187,7 +182,7 @@ public class ClueWebDumper extends TextDumper {
 
 									Document doc = Jsoup.parse(text2);
 
-									goDown(doc, strs, links, false);
+									goDown(doc, strs, links, false, 1);
 
 									if (id.length() > 0 && strs.size() > 0) {
 										String[] parts = new String[] { id, StrUtils.join("\\n", strs), uri, StrUtils.join("\\t", links) };
@@ -195,11 +190,9 @@ public class ClueWebDumper extends TextDumper {
 										results.add(StrUtils.join("\t", StrUtils.wrap(parts)));
 									}
 								} catch (Exception e) {
-
+									lines = Generics.newArrayList();
+									continue;
 								}
-							} else {
-								System.out.println(text2);
-								System.out.println();
 							}
 						}
 					}
@@ -222,7 +215,10 @@ public class ClueWebDumper extends TextDumper {
 		}
 	}
 
-	private void goDown(Node node, List<String> strs, List<String> links, boolean is_table_item) {
+	private void goDown(Node node, List<String> strs, List<String> links, boolean is_table_item, int depth) {
+		if (depth >= 1000) {
+			return;
+		}
 
 		List<Node> childNodes = node.childNodes();
 
@@ -240,11 +236,16 @@ public class ClueWebDumper extends TextDumper {
 				type = "link";
 				url = elem.attr("abs:href");
 			} else {
-				type = elem.attr("type");
-				url = elem.attr("abs:src");
+				if (elem.hasAttr("type")) {
+					type = elem.attr("type");
+				}
+
+				if (elem.hasAttr("abs:src")) {
+					url = elem.attr("abs:src");
+				}
 			}
 
-			if (type.length() > 0) {
+			if (!type.equals("e")) {
 				type = StrUtils.normalizeSpaces(type);
 			}
 
@@ -277,15 +278,9 @@ public class ClueWebDumper extends TextDumper {
 		for (int i = 0; i < childNodes.size(); i++) {
 			Node child = childNodes.get(i);
 
-			goDown(child, strs, links, is_table_item);
+			goDown(child, strs, links, is_table_item, depth + 1);
 
 		}
-	}
-
-	public void setStopIds() {
-		stopIds = Generics.newHashSet();
-		stopIds.add("clueweb12-0010wb-86-28749");
-		stopIds.add("clueweb12-0013wb-03-12783");
 	}
 
 }
