@@ -34,7 +34,7 @@ public class DataHandler {
 		// dh.mergeDumps();
 		// dh.tagPOS();
 		// dh.makeKeywordData();
-		dh.makeTitleData();
+		// dh.makeTitleData();
 
 		// dh.extractKeywordAbbreviations();
 

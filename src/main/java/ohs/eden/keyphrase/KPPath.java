@@ -26,6 +26,8 @@ public class KPPath {
 
 	public static final String KEYWORD_DATA_SER_FILE = KEYPHRASE_DIR + "keyword_data.ser.gz";
 
+	public static final String KEYWORD_DATA_CLUSTER_SER_FILE = KEYPHRASE_DIR + "keyword_data_clusters.ser.gz";
+
 	public static final String KEYWORD_ABBR_FILE = KEYPHRASE_DIR + "keyword_abbr.txt.gz";
 
 	public static final String KEYWORD_CLUSTER_FILE = KEYPHRASE_DIR + "keyword_cluster.txt";
