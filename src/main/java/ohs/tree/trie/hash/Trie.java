@@ -299,7 +299,7 @@ public class Trie<K> implements Serializable {
 			}
 		}
 
-		MatchType type = MatchType.FAIL;
+ 		MatchType type = MatchType.FAIL;
 
 		if (num_matches == max_matches) {
 			if (node.getData() == null) {

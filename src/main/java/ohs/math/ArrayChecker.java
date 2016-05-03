@@ -203,6 +203,44 @@ public class ArrayChecker {
 		return true;
 	}
 
+	public static boolean isSorted(boolean ascending, double[] a) {
+		if (a.length > 1) {
+			double prev = a[0];
+
+			for (int i = 1; i < a.length; i++) {
+				if (ascending) {
+					if (prev > a[i]) {
+						return false;
+					}
+				} else {
+					if (prev < a[i]) {
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+
+	public static boolean isSorted(boolean ascending, int[] a) {
+		if (a.length > 1) {
+			int prev = a[0];
+
+			for (int i = 1; i < a.length; i++) {
+				if (ascending) {
+					if (prev > a[i]) {
+						return false;
+					}
+				} else {
+					if (prev < a[i]) {
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+
 	public static boolean isEqual(double[][] a, double[][] b) {
 		if (!isEqualDim(a, b)) {
 			throw new IllegalArgumentException();

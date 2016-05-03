@@ -43,7 +43,7 @@ public class KeywordClusterer {
 		}
 
 		KeywordClusterer kc = new KeywordClusterer(kwdData);
-		// kc.setAbstractData(FileUtils.readStrCounterMap(KPPath.TITLE_DATA_FILE));
+		kc.setTitleData(FileUtils.readStrCounterMap(KPPath.TITLE_DATA_FILE));
 		kc.cluster();
 		kc.writeClusters(KPPath.KEYWORD_CLUSTER_FILE);
 
@@ -52,7 +52,22 @@ public class KeywordClusterer {
 		System.out.println("process ends.");
 	}
 
-	private Map<Integer, SparseVector> kwdToWords;
+	public static String normalize(String s) {
+		return s.replaceAll("[\\p{Punct}\\s]+", "").toLowerCase().trim();
+	}
+
+	public static String normalizeEnglish(String s) {
+		PorterStemmer stemmer = new PorterStemmer();
+		StringBuffer sb = new StringBuffer();
+		for (String word : StrUtils.splitPunctuations(s)) {
+			stemmer.setCurrent(word.toLowerCase());
+			stemmer.stem();
+			sb.append(stemmer.getCurrent() + " ");
+		}
+		return sb.toString().trim();
+	}
+
+	private Map<Integer, SparseVector> kwdToWordCnts;
 
 	private Indexer<String> wordIndexer;
 
@@ -86,21 +101,25 @@ public class KeywordClusterer {
 		selectClusterLabels();
 		writeClusters(KPPath.KEYWORD_CLUSTER_TEMP_DIR + "temp-01.txt.gz");
 
-		// matchExactKorean();
-		// selectClusterLabels();
-		// writeClusters(KPPath.KEYWORD_CLUSTER_TEMP_DIR + "temp-02.txt.gz");
-		//
-		// matchExactEnglish();
-		// selectClusterLabels();
-		// writeClusters(KPPath.KEYWORD_CLUSTER_TEMP_DIR + "temp-03.txt.gz");
-		//
-		// matchKoreanGrams();
-		// selectClusterLabels();
-		// writeClusters(KPPath.KEYWORD_CLUSTER_TEMP_DIR + "temp-04.txt.gz");
-		//
-		// matchEnglishGrams();
-		// selectClusterLabels();
-		// writeClusters(KPPath.KEYWORD_CLUSTER_TEMP_DIR + "temp-05.txt.gz");
+		matchExactKorean();
+		selectClusterLabels();
+		writeClusters(KPPath.KEYWORD_CLUSTER_TEMP_DIR + "temp-02.txt.gz");
+
+		matchExactEnglish();
+		selectClusterLabels();
+		writeClusters(KPPath.KEYWORD_CLUSTER_TEMP_DIR + "temp-03.txt.gz");
+
+		matchKoreanGrams();
+		selectClusterLabels();
+		writeClusters(KPPath.KEYWORD_CLUSTER_TEMP_DIR + "temp-04.txt.gz");
+
+		matchEnglishGrams();
+		selectClusterLabels();
+		writeClusters(KPPath.KEYWORD_CLUSTER_TEMP_DIR + "temp-05.txt.gz");
+
+		matchTitleContexts();
+		selectClusterLabels();
+		writeClusters(KPPath.KEYWORD_CLUSTER_TEMP_DIR + "temp-06.txt.gz");
 
 		kwdData.setClusterLabel(clusterToLabel);
 		kwdData.setClusters(clusterToKwds);
@@ -161,7 +180,7 @@ public class KeywordClusterer {
 
 		TermWeighting.computeTFIDFs(kwdCents.values());
 
-		SparseVector avgCent = TermWeighting.computeAverageVector(kwdCents.values());
+		SparseVector avgCent = VectorMath.average(kwdCents.values());
 
 		Counter<Integer> ret = Generics.newCounter(kwdids.size());
 
@@ -215,131 +234,6 @@ public class KeywordClusterer {
 		double eng_cosine = VectorMath.dotProduct(svss[0][1], svss[1][1]);
 		double cosine = ArrayMath.addAfterScale(kor_cosine, 0.5, eng_cosine);
 		return cosine;
-	}
-
-	private boolean hasUsed(int kid, Set<Integer> used, SetMap<Integer, Integer> keyToClusters) {
-		boolean hasUsed = false;
-		for (int cid : keyToClusters.get(kid)) {
-			if (used.contains(cid)) {
-				hasUsed = true;
-				break;
-			}
-		}
-		return hasUsed;
-	}
-
-	private void matchContextualLanguage(boolean isEnglish) {
-		System.out.println("match language (English: " + isEnglish + ")");
-
-		int old_size = clusterToKwds.size();
-
-		SetMap<String, Integer> keyToClusters = Generics.newSetMap();
-
-		for (Entry<Integer, Set<Integer>> e : clusterToKwds.getEntrySet()) {
-			int cid = e.getKey();
-			Set<Integer> kwdids = e.getValue();
-
-			for (int kwdid : kwdids) {
-				StrPair kwdp = kwdIndexer.getObject(kwdid);
-				String key = isEnglish ? kwdp.getSecond() : kwdp.getFirst();
-				key = normalize(key);
-
-				if (key.length() == 0) {
-					continue;
-				}
-
-				keyToClusters.put(key, cid);
-			}
-		}
-
-		Map<Integer, SparseVector> cents = Generics.newHashMap();
-
-		for (int cid : clusterToKwds.keySet()) {
-			Counter<Integer> c = Generics.newCounter();
-			int num_kwds = 0;
-
-			for (int kwdid : clusterToKwds.get(cid)) {
-				SparseVector sv = kwdToWords.get(kwdid);
-				if (sv.size() > 0) {
-					VectorMath.add(kwdToWords.get(kwdid), c);
-					num_kwds++;
-				}
-			}
-
-			SparseVector sv = VectorUtils.toSparseVector(c);
-			sv.scale(1f / num_kwds);
-
-			VectorMath.unitVector(sv);
-
-			cents.put(cid, sv);
-		}
-
-		for (String key : keyToClusters.keySet()) {
-			Set<Integer> cids = keyToClusters.get(key);
-
-			if (cids.size() < 2) {
-				continue;
-			}
-
-			SparseVector avgCent = null;
-
-			{
-				Counter<Integer> c = Generics.newCounter();
-				int num_svs = 0;
-
-				for (int cid : cids) {
-					SparseVector sv = cents.get(cid);
-					if (sv.size() > 0) {
-						VectorMath.add(cents.get(cid), c);
-						num_svs++;
-					}
-				}
-
-				avgCent = VectorUtils.toSparseVector(c);
-				avgCent.scale(1f / num_svs);
-
-				VectorMath.unitVector(avgCent);
-			}
-
-			Counter<Integer> cosines = Generics.newCounter();
-
-			for (int cid : cids) {
-				// System.out.println(kwdIndexer.getObject(cid));
-				double cosine = VectorMath.dotProduct(avgCent, cents.get(cid));
-				cosines.incrementCount(cid, cosine);
-				if (cosine >= 0.9) {
-					cosines.incrementCount(cid, cosine);
-				}
-			}
-
-			if (cosines.size() < 2) {
-				continue;
-			}
-
-			Set<Integer> kwds = Generics.newHashSet();
-			// System.out.println("############################");
-
-			for (int cid : cosines.keySet()) {
-				// System.out.println(kwdIndexer.getObject(cid));
-				Set<Integer> temp = clusterToKwds.removeKey(cid);
-				if (temp != null) {
-					kwds.addAll(temp);
-				}
-			}
-			// System.out.println("############################");
-
-			int new_cid = min(cids);
-
-			clusterToKwds.put(new_cid, kwds);
-
-			for (int kwdid : kwds) {
-				kwdToCluster[kwdid] = new_cid;
-			}
-		}
-
-		int new_size = clusterToKwds.size();
-
-		System.out.printf("[%d -> %d clusters]\n", old_size, new_size);
 	}
 
 	private void matchEnglishGrams() {
@@ -834,6 +728,146 @@ public class KeywordClusterer {
 		}
 	}
 
+	private void matchTitleContexts() {
+		System.out.println("match title contexts.");
+
+		for (int iter = 0; iter < 10; iter++) {
+
+			int old_size = clusterToKwds.size();
+
+			Map<Integer, SparseVector> cents = Generics.newHashMap();
+
+			SetMap<Integer, Integer> wordToClusters = Generics.newSetMap();
+
+			for (Entry<Integer, Set<Integer>> e : clusterToKwds.getEntrySet()) {
+				int cid = e.getKey();
+				Set<Integer> kwdids = e.getValue();
+
+				Counter<Integer> c = Generics.newCounter();
+
+				for (int kwdid : kwdids) {
+					StrPair kwdp = kwdIndexer.get(kwdid);
+					SparseVector sv = kwdToWordCnts.get(kwdid);
+
+					if (sv == null) {
+						continue;
+					}
+
+					for (int w : sv.indexes()) {
+						wordToClusters.put(w, cid);
+					}
+					VectorMath.add(sv, c);
+				}
+
+				cents.put(cid, VectorUtils.toSparseVector(c));
+			}
+
+			TermWeighting.computeTFIDFs(cents.values());
+
+			StopWatch stopWatch = StopWatch.newStopWatch();
+
+			CounterMap<Integer, Integer> queryToTargets = Generics.newCounterMap();
+
+			List<Integer> cids = Generics.newArrayList(cents.keySet());
+
+			for (int i = 0; i < cids.size(); i++) {
+				if ((i + 1) % 10000 == 0) {
+					System.out.printf("\r[%d/%d, %s]", i + 1, cids.size(), stopWatch.stop());
+				}
+
+				int qcid = cids.get(i);
+				SparseVector qCent = cents.get(qcid);
+
+				// String qKwdStr = kwdIndexer.get(qcid);
+
+				Counter<Integer> toCompare = Generics.newCounter();
+
+				for (int w : qCent.indexes()) {
+					Set<Integer> set = wordToClusters.get(w, false);
+
+					if (set != null) {
+						for (int cid : set) {
+							if (qcid == cid || queryToTargets.containKey(qcid, cid) || queryToTargets.containKey(cid, qcid)) {
+
+							} else {
+								toCompare.incrementCount(cid, 1);
+							}
+						}
+					}
+				}
+
+				if (toCompare.size() < 2) {
+					continue;
+				}
+
+				List<Integer> keys = toCompare.getSortedKeys();
+
+				for (int j = 0; j < keys.size(); j++) {
+					int tcid = keys.get(j);
+
+					SparseVector tCent = cents.get(tcid);
+
+					double cosine = VectorMath.dotProduct(qCent, tCent);
+
+					if (cosine >= 0.9) {
+						System.out.println(kwdIndexer.getObject(qcid));
+						System.out.println(kwdIndexer.getObject(tcid));
+						System.out.println();
+
+						queryToTargets.incrementCount(qcid, tcid, cosine);
+						queryToTargets.incrementCount(tcid, qcid, cosine);
+
+					}
+				}
+			}
+
+			System.out.printf("\r[%d/%d, %s]\n", cids.size(), cids.size(), stopWatch.stop());
+
+			if (queryToTargets.size() == 0) {
+				break;
+			}
+
+			Set<Integer> merged = Generics.newHashSet();
+
+			for (int qcid : queryToTargets.keySet()) {
+				if (merged.contains(qcid)) {
+					continue;
+				}
+
+				Counter<Integer> targets = queryToTargets.getCounter(qcid);
+
+				Set<Integer> toMerge = Generics.newHashSet();
+				toMerge.add(qcid);
+
+				for (int tcid : targets.keySet()) {
+					if (!merged.contains(tcid)) {
+						toMerge.add(tcid);
+					}
+				}
+
+				if (toMerge.size() > 1) {
+					merge(toMerge);
+
+					merged.addAll(toMerge);
+				}
+			}
+
+			int new_size = clusterToKwds.size();
+
+			System.out.printf("[%d -> %d clusters]\n", old_size, new_size);
+
+			selectClusterLabels();
+			writeClusters(KPPath.KEYWORD_CLUSTER_TEMP_DIR + String.format("temp-title-loop-%d.txt.gz", iter));
+
+			cents = null;
+
+			wordToClusters = null;
+
+			queryToTargets = null;
+			cids = null;
+		}
+	}
+
 	private void merge(Collection<Integer> cids) {
 		Set<Integer> kwds = Generics.newHashSet();
 
@@ -861,21 +895,6 @@ public class KeywordClusterer {
 			}
 		}
 		return ret;
-	}
-
-	public static String normalize(String s) {
-		return s.replaceAll("[\\p{Punct}\\s]+", "").toLowerCase().trim();
-	}
-
-	public static String normalizeEnglish(String s) {
-		PorterStemmer stemmer = new PorterStemmer();
-		StringBuffer sb = new StringBuffer();
-		for (String word : StrUtils.splitPunctuations(s)) {
-			stemmer.setCurrent(word.toLowerCase());
-			stemmer.stem();
-			sb.append(stemmer.getCurrent() + " ");
-		}
-		return sb.toString().trim();
 	}
 
 	private void selectClusterLabels() {
@@ -917,8 +936,8 @@ public class KeywordClusterer {
 		}
 	}
 
-	public void setAbstractData(CounterMap<String, String> cm) {
-		kwdToWords = Generics.newHashMap();
+	public void setTitleData(CounterMap<String, String> cm) {
+		kwdToWordCnts = Generics.newHashMap();
 		wordIndexer = Generics.newIndexer();
 
 		for (int kwdid : kwdData.getKeywordToDocs().keySet()) {
@@ -927,10 +946,10 @@ public class KeywordClusterer {
 				String cn = kwdData.getDocIndexer().getObject(docid);
 				c.incrementAll(cm.getCounter(cn));
 			}
-			kwdToWords.put(kwdid, VectorUtils.toSparseVector(c, wordIndexer, true));
+			if (c.size() > 0) {
+				kwdToWordCnts.put(kwdid, VectorUtils.toSparseVector(c, wordIndexer, true));
+			}
 		}
-
-		TermWeighting.computeTFIDFs(kwdToWords.values());
 	}
 
 	public void writeClusters(String fileName) {

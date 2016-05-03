@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.commons.math.linear.SparseRealVector;
+
 import ohs.math.CommonFuncs;
 import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
@@ -24,26 +26,10 @@ import ohs.utils.Generics;
  */
 public class TermWeighting {
 
-	public static void computeTFIDFs(Collection<SparseVector> docs) {
-		computeTFIDFs(docs, docFreqs(docs));
-	}
-
-	public static SparseVector computeAverageVector(Collection<SparseVector> docs) {
-		Counter<Integer> c = Generics.newCounter();
-
-		for (SparseVector doc : docs) {
-			VectorMath.add(doc, c);
-		}
-
-		SparseVector ret = VectorUtils.toSparseVector(c);
-		ret.scale(1f / docs.size());
-		return ret;
-	}
-
 	public static boolean print_log = false;
 
-	public static void print(String log) {
-		System.out.println(log);
+	public static void computeTFIDFs(Collection<SparseVector> docs) {
+		computeTFIDFs(docs, documentFreqs(docs));
 	}
 
 	public static void computeTFIDFs(Collection<SparseVector> docs, DenseVector docFreqs) {
@@ -52,23 +38,28 @@ public class TermWeighting {
 			print("compute tfidfs.");
 		}
 
+		double norm = 0;
+		int w = 0;
+		double cnt = 0;
+		double doc_freq = 0;
+		double num_docs = docs.size();
+		double weight = 0;
 		for (SparseVector doc : docs) {
-			double norm = 0;
+			norm = 0;
 			for (int j = 0; j < doc.size(); j++) {
-				int w = doc.indexAtLoc(j);
-				double cnt = doc.valueAtLoc(j);
-				double doc_freq = docFreqs.value(w);
-				double num_docs = docs.size();
-				double tfidf = tfidf(cnt, num_docs, doc_freq);
-				norm += (tfidf * tfidf);
-				doc.setAtLoc(j, tfidf);
+				w = doc.indexAtLoc(j);
+				cnt = doc.valueAtLoc(j);
+				doc_freq = docFreqs.value(w);
+				weight = tfidf(cnt, num_docs, doc_freq);
+				norm += (weight * weight);
+				doc.setAtLoc(j, weight);
 			}
 			norm = Math.sqrt(norm);
 			doc.scale(1f / norm);
 		}
 	}
 
-	public static DenseVector docFreqs(Collection<SparseVector> docs) {
+	public static DenseVector documentFreqs(Collection<SparseVector> docs) {
 		return docFreqs(docs, maxWordIndex(docs) + 1);
 	}
 
@@ -93,6 +84,102 @@ public class TermWeighting {
 
 	public static double idf(double num_docs, double doc_freq) {
 		return Math.log((num_docs + 1) / (doc_freq));
+	}
+
+	public static void computeBM25(Collection<SparseVector> docs) {
+		computeBM25(docs, 0);
+	}
+
+	public static void computeBM25Plus(Collection<SparseVector> docs) {
+		computeBM25(docs, 1);
+	}
+
+	public static void computeBM25(Collection<SparseVector> docs, double sigma) {
+		computeBM25(docs, documentFreqs(docs), sigma);
+	}
+
+	public static DenseVector collectionWordCnts(Collection<SparseVector> docs) {
+		int max_word_id = maxWordIndex(docs) + 1;
+		DenseVector ret = new DenseVector(max_word_id);
+		for (SparseVector x : docs) {
+
+			for (int i = 0; i < x.size(); i++) {
+				ret.increment(x.indexAtLoc(i), x.valueAtLoc(i));
+			}
+		}
+		return ret;
+	}
+
+	public static void computeDFRee(List<SparseVector> docs, DenseVector collWordCnts) {
+		double num_words = collWordCnts.sum();
+		int w = 0;
+		double tf = 0;
+		double prior = 0;
+		double posterior = 0;
+		double termFrequency = 0;
+		double InvPriorCollection = 0;
+		double norm = 0;
+		double weight = 0;
+
+		for (int i = 0; i < docs.size(); i++) {
+			SparseVector x = docs.get(i);
+			double docLength = x.sum();
+
+			for (int j = 0; j < x.size(); j++) {
+				w = x.indexAtLoc(j);
+				tf = x.valueAtLoc(j);
+				prior = tf / docLength;
+				posterior = (tf + 1d) / (docLength + 1);
+				termFrequency = collWordCnts.value(w);
+				InvPriorCollection = num_words / termFrequency;
+				norm = tf * CommonFuncs.log2(posterior / prior);
+				weight = norm * (tf * (-CommonFuncs.log2(prior * InvPriorCollection)) +
+
+						(tf + 1d) * (+CommonFuncs.log2(posterior * InvPriorCollection)) + 0.5 * CommonFuncs.log2(posterior / prior));
+
+				x.setAtLoc(j, weight);
+			}
+
+			VectorMath.unitVector(x);
+		}
+	}
+
+	public static void computeBM25(Collection<SparseVector> docs, DenseVector docFreqs, double sigma) {
+		double avg_doc_len = 0;
+
+		for (SparseVector x : docs) {
+			avg_doc_len += x.sum();
+		}
+
+		avg_doc_len /= docs.size();
+
+		double b = 0.75;
+		double k1 = 1.5;
+
+		int w = 0;
+		double cnt = 0;
+		double doc_freq = 0;
+		double doc_len = 0;
+		double idf = 0;
+		double num_docs = docs.size();
+		double numerator = 0;
+		double denominator = 0;
+		double weight = 0;
+
+		for (SparseVector x : docs) {
+			for (int i = 0; i < x.size(); i++) {
+				w = x.indexAtLoc(i);
+				cnt = x.valueAtLoc(i);
+				doc_len = x.sum();
+				doc_freq = docFreqs.valueAtLoc(w);
+				idf = Math.log((num_docs - doc_freq + 0.5) / (doc_freq + 0.5));
+
+				numerator = cnt * (k1 + 1);
+				denominator = cnt + k1 * (1 - b + b * (doc_len / avg_doc_len));
+				weight = idf * (numerator / denominator + sigma);
+				x.setAtLoc(i, weight);
+			}
+		}
 	}
 
 	public static List<SparseVector> invertedIndexDoubleVector(List<SparseVector> docs, int num_terms) {
@@ -179,6 +266,10 @@ public class TermWeighting {
 			}
 		}
 		return ret;
+	}
+
+	public static void print(String log) {
+		System.out.println(log);
 	}
 
 	public static double tf(double word_cnt) {

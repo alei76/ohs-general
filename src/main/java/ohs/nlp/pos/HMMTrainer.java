@@ -355,11 +355,11 @@ public class HMMTrainer {
 
 		ArrayMath.normalizeRows(a);
 		ArrayMath.normalize(posPrs);
-		ArrayMath.addAfterScaleRows(a, posPrs, 0.5, 0.5, a);
+		ArrayMath.addAfterScaleRows(a, 0.5, posPrs, 0.5, a);
 
 		ArrayMath.normalizeRows(b);
 		ArrayMath.normalize(wordPrs);
-		ArrayMath.addAfterScaleRows(b, wordPrs, 0.5, 0.5, b);
+		ArrayMath.addAfterScaleRows(b, 0.5, wordPrs, 0.5, b);
 	}
 
 	public void trainUnsupervised(HMM hmm, int[][] obss, int iter) {

@@ -1,6 +1,7 @@
 package ohs.math;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -11,6 +12,7 @@ import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
 import ohs.matrix.Vector;
 import ohs.types.Counter;
+import ohs.utils.Generics;
 
 /**
  * @author Heung-Seon Oh
@@ -18,128 +20,62 @@ import ohs.types.Counter;
  */
 public class VectorMath {
 
-	public static void add(SparseVector a, Counter<Integer> b) {
+	public static void add(Vector a, Counter<Integer> b) {
 		addAfterScale(a, 1, b);
 	}
 
-	public static SparseVector add(Vector a, Vector b) {
-		return add(new Vector[] { a, b });
+	public static SparseVector add(Vector[] a) {
+		Counter<Integer> b = Generics.newCounter();
+		add(a, b);
+		return VectorUtils.toSparseVector(b);
 	}
 
-	public static void add(Vector a, Vector b, Vector c) {
-		addAfterScale(a, b, 1, 1, c);
-	}
-
-	public static void softmax(Vector a) {
-		double sum = ArrayMath.softmax(a.values(), a.values());
-		a.setSum(sum);
-	}
-
-	public static SparseVector add(Vector[] as) {
-		return addAfterScale(as, ArrayUtils.array(as.length, 1));
-	}
-
-	public static void addAfterScale(SparseVector a, Counter<Integer> b, double ca, double cb, Counter<Integer> c) {
-		for (int i = 0; i < a.size(); i++) {
-			c.incrementCount(a.indexAtLoc(i), ca * a.valueAtLoc(i));
+	public static void add(Vector[] a, Counter<Integer> b) {
+		for (Vector v : a) {
+			add(v, b);
 		}
+	}
+
+	public static void addAfterScale(Vector a, double ac, Counter<Integer> b) {
+		for (int i = 0; i < a.size(); i++) {
+			b.incrementCount(a.indexAtLoc(i), ac * a.valueAtLoc(i));
+		}
+	}
+
+	public static void addAfterScale(Vector a, double ac, Counter<Integer> b, double bc, Counter<Integer> c) {
+		addAfterScale(a, ac, c);
 
 		for (Entry<Integer, Double> e : b.entrySet()) {
-			c.incrementCount(e.getKey(), cb * e.getValue().doubleValue());
+			c.incrementCount(e.getKey(), bc * e.getValue().doubleValue());
 		}
 	}
 
-	public static void addAfterScale(SparseVector a, double ca, Counter<Integer> b) {
-		for (int i = 0; i < a.size(); i++) {
-			b.incrementCount(a.indexAtLoc(i), ca * a.valueAtLoc(i));
-		}
-	}
-
-	public static SparseVector addAfterScale(Vector a, Vector b, double ca, double cb) {
-		return addAfterScale(new Vector[] { a, b }, new double[] { ca, cb });
-	}
-
-	public static void addAfterScale(Vector a, Vector b, double ca, double cb, Vector c) {
-		if (VectorChecker.isSameDimension(a, b) && VectorChecker.isSameDimension(b, c)) {
-
-		} else {
-			new IllegalArgumentException("different dimension");
-		}
-
-		if (isSparse(c)) {
-			SparseVector sv = addAfterScale(a, b, ca, cb);
-			c.setIndexes(sv.indexes());
-			c.setValues(sv.values());
-			c.setSum(sv.sum());
-		} else {
-			for (int i = 0; i < a.size(); i++) {
-				int index = a.indexAtLoc(i);
-				double value = a.valueAtLoc(i);
-				c.increment(index, ca * value);
-			}
-
-			for (int i = 0; i < b.size(); i++) {
-				int index = b.indexAtLoc(i);
-				double value = b.valueAtLoc(i);
-				c.increment(index, ca * value);
-			}
-		}
-	}
-
-	public static SparseVector addAfterScale(Vector[] as, double[] cas) {
-		Counter<Integer> c = new Counter<Integer>();
-		for (int i = 0; i < as.length; i++) {
-			Vector a = as[i];
-			for (int j = 0; j < a.size(); j++) {
-				c.incrementCount(a.indexAtLoc(j), cas[i] * a.valueAtLoc(j));
-			}
-		}
+	public static SparseVector addAfterScale(Vector a, double ac, Vector b, double bc) {
+		Counter<Integer> c = Generics.newCounter();
+		addAfterScale(new Vector[] { a, b }, new double[] { ac, bc }, c);
 		return VectorUtils.toSparseVector(c);
+	}
+
+	public static void addAfterScale(Vector a, double ac, Vector b, double bc, Counter<Integer> c) {
+		addAfterScale(new Vector[] { a, b }, new double[] { ac, bc }, c);
+	}
+
+	public static SparseVector addAfterScale(Vector[] a, double[] ac) {
+		Counter<Integer> b = Generics.newCounter();
+		addAfterScale(a, ac, b);
+		return VectorUtils.toSparseVector(b);
+	}
+
+	public static void addAfterScale(Vector[] a, double[] ac, Counter<Integer> b) {
+		for (int i = 0; i < a.length; i++) {
+			addAfterScale(a[i], ac[i], b);
+		}
 	}
 
 	public static double cosine(Vector a, Vector b, boolean normalizeBefore) {
 		double[] norms = new double[2];
 		double dot_product = dotProduct(a, b, normalizeBefore, norms);
 		return ArrayMath.cosine(dot_product, norms[0], norms[1]);
-	}
-
-	public static void DFRee(List<SparseVector> xs) {
-		int maxId = 0;
-
-		for (SparseVector x : xs) {
-			int id = x.indexAtLoc(x.size() - 1);
-			if (id > maxId) {
-				maxId = id;
-			}
-		}
-
-		DenseVector term_countInBG = new DenseVector(maxId + 1);
-		for (SparseVector x : xs) {
-			add(term_countInBG, x, term_countInBG);
-		}
-
-		double numberOfTokens = term_countInBG.sum();
-
-		for (int i = 0; i < xs.size(); i++) {
-			SparseVector x = xs.get(i);
-			double docLength = x.sum();
-
-			for (int j = 0; j < x.size(); j++) {
-				int termId = x.indexAtLoc(j);
-				double tf = x.valueAtLoc(j);
-
-				double prior = tf / docLength;
-				double posterior = (tf + 1d) / (docLength + 1);
-				double termFrequency = term_countInBG.value(termId);
-				double InvPriorCollection = numberOfTokens / termFrequency;
-				double norm = tf * CommonFuncs.log2(posterior / prior);
-				double weight = norm * (tf * (-CommonFuncs.log2(prior * InvPriorCollection)) +
-
-						(tf + 1d) * (+CommonFuncs.log2(posterior * InvPriorCollection)) + 0.5 * CommonFuncs.log2(posterior / prior));
-				x.setAtLoc(j, weight);
-			}
-			unitVector(x);
-		}
 	}
 
 	public static void distribute(Vector x, double sum) {
@@ -175,33 +111,7 @@ public class VectorMath {
 
 		double ret = 0;
 		if (isSparse(a) && isSparse(b)) {
-			int i = 0, j = 0;
-			while (i < a.size() && j < b.size()) {
-				int id1 = a.indexAtLoc(i);
-				int id2 = b.indexAtLoc(j);
-				double v1 = normalizeBefore ? a.probAtLoc(i) : a.valueAtLoc(i);
-				double v2 = normalizeBefore ? b.probAtLoc(j) : b.valueAtLoc(j);
-
-				if (id1 == id2) {
-					ret += (v1 * v2);
-					if (norms.length == 2) {
-						norms[0] += (v1 * v1);
-						norms[1] += (v2 * v2);
-					}
-					i++;
-					j++;
-				} else if (id1 > id2) {
-					if (norms.length == 2) {
-						norms[1] += (v2 * v2);
-					}
-					j++;
-				} else if (id1 < id2) {
-					if (norms.length == 2) {
-						norms[0] += (v1 * v1);
-					}
-					i++;
-				}
-			}
+			ret = ArrayMath.dotProduct(a.indexes(), a.values(), b.indexes(), b.values(), norms);
 		} else if (!isSparse(a) && !isSparse(b)) {
 			ret = ArrayMath.dotProduct(a.values(), b.values(), norms);
 		} else {
@@ -216,26 +126,10 @@ public class VectorMath {
 				s = (SparseVector) b;
 			}
 
-			if (norms.length == 2) {
-				for (int i = 0; i < s.size(); i++) {
-					int id = s.indexAtLoc(i);
-					double v1 = normalizeBefore ? s.probAtLoc(i) : s.valueAtLoc(i);
-					double v2 = normalizeBefore ? d.prob(id) : d.value(id);
-					ret += v1 * v2;
-					norms[0] += (v1 * v1);
-				}
-				norms[1] = ArrayMath.normL2(d.values());
+			ret = ArrayMath.dotProduct(s.indexes(), s.values(), d.values(), norms);
 
-				if (isSparse(d)) {
-					ArrayUtils.swap(norms, 0, 1);
-				}
-			} else {
-				for (int i = 0; i < s.size(); i++) {
-					int id = s.indexAtLoc(i);
-					double v2 = normalizeBefore ? s.probAtLoc(i) : s.valueAtLoc(i);
-					double v1 = normalizeBefore ? d.prob(id) : d.value(id);
-					ret += v1 * v2;
-				}
+			if (isSparse(b)) {
+				ArrayUtils.swap(norms, 0, 1);
 			}
 
 		}
@@ -489,16 +383,8 @@ public class VectorMath {
 	}
 
 	public static void normalizeBySigmoid(SparseVector x) {
-		double sum = 0;
-		for (int i = 0; i < x.size(); i++) {
-			double value = x.valueAtLoc(i);
-			value = 1f / (1f + Math.exp(-value));
-			x.setAtLoc(i, value);
-
-			sum += value;
-		}
+		double sum = ArrayMath.normalizeBySigmoid(x.values(), x.values());
 		x.setSum(sum);
-		x.normalize();
 	}
 
 	public static void normalizeLogProbs(Vector x, boolean scale) {
@@ -623,57 +509,6 @@ public class VectorMath {
 		}
 	}
 
-	// public static void pointwiseMultiply(Matrix a, Matrix b) {
-	// if (!VectorChecker.isProductable(a, b)) {
-	// new IllegalArgumentException("different dimension");
-	// }
-	//
-	// if (isSparse(a) && isSparse(b)) {
-	// SparseMatrix m1 = (SparseMatrix) a;
-	// SparseMatrix m2 = (SparseMatrix) b;
-	// for (int i = 0; i < m1.rowSize(); i++) {
-	// int rowId = m1.indexAtRowLoc(i);
-	// Vector row1 = m1.vectorAtRowLoc(i);
-	// Vector row2 = m2.rowAlways(rowId);
-	//
-	// if (row2 == null) {
-	// row1.setAll(0);
-	// } else {
-	// pointwiseMultiply(row1, row2);
-	// }
-	// }
-	// } else if (!isSparse(a) && !isSparse(b)) {
-	// DenseMatrix m1 = (DenseMatrix) a;
-	// DenseMatrix m2 = (DenseMatrix) b;
-	// for (int i = 0; i < m1.rowDim(); i++) {
-	// pointwiseMultiply(m1.row(i), m2.row(i));
-	// }
-	// } else if (!isSparse(a) && isSparse(b)) {
-	// DenseMatrix m1 = (DenseMatrix) a;
-	// SparseMatrix m2 = (SparseMatrix) b;
-	//
-	// for (int i = 0; i < m1.rowDim(); i++) {
-	// Vector row1 = m1.row(i);
-	// Vector row2 = m2.rowAlways(i);
-	// if (row2 == null) {
-	// row1.setAll(0);
-	// } else {
-	// pointwiseMultiply(row1, row2);
-	// }
-	// }
-	// } else if (isSparse(a) && !isSparse(b)) {
-	// SparseMatrix m1 = (SparseMatrix) a;
-	// DenseMatrix m2 = (DenseMatrix) b;
-	//
-	// for (int i = 0; i < m1.rowSize(); i++) {
-	// int rowId = m1.indexAtRowLoc(i);
-	// Vector row1 = m1.vectorAtRowLoc(i);
-	// Vector row2 = m2.row(rowId);
-	// pointwiseMultiply(row1, row2);
-	// }
-	// }
-	// }
-
 	public static void product(Matrix a, Matrix b, Matrix c) {
 		if (!VectorChecker.isProductable(a, b, c)) {
 			new IllegalArgumentException("different dimension");
@@ -752,6 +587,57 @@ public class VectorMath {
 		}
 	}
 
+	// public static void pointwiseMultiply(Matrix a, Matrix b) {
+	// if (!VectorChecker.isProductable(a, b)) {
+	// new IllegalArgumentException("different dimension");
+	// }
+	//
+	// if (isSparse(a) && isSparse(b)) {
+	// SparseMatrix m1 = (SparseMatrix) a;
+	// SparseMatrix m2 = (SparseMatrix) b;
+	// for (int i = 0; i < m1.rowSize(); i++) {
+	// int rowId = m1.indexAtRowLoc(i);
+	// Vector row1 = m1.vectorAtRowLoc(i);
+	// Vector row2 = m2.rowAlways(rowId);
+	//
+	// if (row2 == null) {
+	// row1.setAll(0);
+	// } else {
+	// pointwiseMultiply(row1, row2);
+	// }
+	// }
+	// } else if (!isSparse(a) && !isSparse(b)) {
+	// DenseMatrix m1 = (DenseMatrix) a;
+	// DenseMatrix m2 = (DenseMatrix) b;
+	// for (int i = 0; i < m1.rowDim(); i++) {
+	// pointwiseMultiply(m1.row(i), m2.row(i));
+	// }
+	// } else if (!isSparse(a) && isSparse(b)) {
+	// DenseMatrix m1 = (DenseMatrix) a;
+	// SparseMatrix m2 = (SparseMatrix) b;
+	//
+	// for (int i = 0; i < m1.rowDim(); i++) {
+	// Vector row1 = m1.row(i);
+	// Vector row2 = m2.rowAlways(i);
+	// if (row2 == null) {
+	// row1.setAll(0);
+	// } else {
+	// pointwiseMultiply(row1, row2);
+	// }
+	// }
+	// } else if (isSparse(a) && !isSparse(b)) {
+	// SparseMatrix m1 = (SparseMatrix) a;
+	// DenseMatrix m2 = (DenseMatrix) b;
+	//
+	// for (int i = 0; i < m1.rowSize(); i++) {
+	// int rowId = m1.indexAtRowLoc(i);
+	// Vector row1 = m1.vectorAtRowLoc(i);
+	// Vector row2 = m2.row(rowId);
+	// pointwiseMultiply(row1, row2);
+	// }
+	// }
+	// }
+
 	public static SparseVector rank(Vector x) {
 		SparseVector ret = null;
 		if (isSparse(x)) {
@@ -827,20 +713,14 @@ public class VectorMath {
 		}
 	}
 
-	public static void subtract(Vector a, Vector b) {
-		addAfterScale(a, b, 1, -1);
-	}
-
-	public static void subtract(Vector a, Vector b, Vector c) {
-		addAfterScale(a, b, 1, -1, c);
-	}
-
-	public static void subtractAfterScale(Vector a, Vector b, double aCoef, double bCoef, SparseVector c) {
-		addAfterScale(a, b, aCoef, -bCoef, c);
+	public static void softmax(Vector a) {
+		double sum = ArrayMath.softmax(a.values(), a.values());
+		a.setSum(sum);
 	}
 
 	public static void unitVector(Vector x) {
-		x.scale(1f / normL2(x, false));
+		double sum = ArrayMath.unitVector(x.values(), x.values());
+		x.setSum(sum);
 	}
 
 	public static double variance(Vector x) {
@@ -849,6 +729,19 @@ public class VectorMath {
 
 	public static double variance(Vector x, double mean) {
 		return ArrayMath.variance(x.values(), mean);
+	}
+
+	public static SparseVector average(Collection<SparseVector> a) {
+		Counter<Integer> b = Generics.newCounter();
+		average(a, b);
+		return VectorUtils.toSparseVector(b);
+	}
+
+	public static void average(Collection<SparseVector> a, Counter<Integer> b) {
+		for (Vector x : a) {
+			add(x, b);
+		}
+		b.scale(1f / a.size());
 	}
 
 }

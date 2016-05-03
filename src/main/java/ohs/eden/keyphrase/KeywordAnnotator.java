@@ -34,7 +34,7 @@ public class KeywordAnnotator {
 
 		KeywordAnnotator kwdAnno = new KeywordAnnotator(kwdData);
 
-		TextFileReader reader = new TextFileReader(KPPath.SINGLE_DUMP_FILE);
+		TextFileReader reader = new TextFileReader(KPPath.SINGLE_DUMP_POS_FILE);
 		reader.setPrintNexts(false);
 
 		TextFileWriter writer = new TextFileWriter(KPPath.KEYWORD_PATENT_FILE);
@@ -69,35 +69,19 @@ public class KeywordAnnotator {
 
 				String type = parts[0];
 				String cn = parts[1];
-				String korKwdStr = parts[2];
+				String korKwdStr = parts[2].split(" => ")[0];
+				String korKwdStrPos = parts[2].split(" => ")[1];
 				String engKwdStr = parts[3];
 				String korTitle = parts[4];
 				String engTitle = parts[5];
 				String korAbs = parts[6];
 				String engAbs = parts[7];
 
-				if (!type.equals("patent")) {
-					continue;
-				}
+				// if (!type.equals("patent")) {
+				// continue;
+				// }
 
 				Set<Integer> kwdids = kwdAnno.annotateKorean(korTitle + "\n" + korAbs);
-
-				// StringBuffer sb = new StringBuffer();
-				// for (int i = 0; i < labels.size(); i++) {
-				// String label = labels.get(i);
-				// String value = parts[i];
-				// sb.append(String.format("%s:\t%s\n", label, value));
-				// }
-				//
-				// sb.append(String.format("KOW KWDS:\t%s\n", cs[0].toString(cs[0].size())));
-				// sb.append(String.format("ENG KWDS:\t%s", cs[1].toString(cs[1].size())));
-				// writer.write(sb.toString() + "\n\n");
-
-				// writer.write(String.format("\"%s\"\t\"%s\"\n", cn, String.join(";", cs[0].keySet())));
-
-				// if (++num_docs > 1000) {
-				// break;
-				// }
 			}
 		}
 		reader.printLast();
@@ -157,28 +141,31 @@ public class KeywordAnnotator {
 
 		Character[] cs = StrUtils.asCharacters(text);
 		Set<Integer> kwdids = Generics.newHashSet();
-		for (int start = 0; start < cs.length; start++) {
-			TSResult<Character> sr = korDict.find(cs, start);
+		for (int i = 0; i < cs.length; i++) {
 
-			if (sr.getMatchType() == MatchType.FAIL) {
-				start++;
-			} else {
-				int end = sr.getMatchLoc() + 1;
+			for (int j = i + 1; j < cs.length; j++) {
+				TSResult<Character> sr = korDict.search(cs, i, j);
 
-				StringBuffer sb = new StringBuffer();
+				if (sr.getMatchType() == MatchType.EXACT_KEYS_WITH_DATA) {
+					StringBuffer sb = new StringBuffer();
 
-				for (int j = start; j < end; j++) {
-					sb.append(cs[j].charValue());
+					for (int k = i; k < j; k++) {
+						sb.append(cs[k].charValue());
+					}
+
+					String s = sb.toString();
+
+					System.out.println(s);
+
+					Set<Integer> set = (Set<Integer>) sr.getMatchNode().getData();
+					kwdids.addAll(set);
+				} else if (sr.getMatchType() == MatchType.EXACT_KEYS_WITHOUT_DATA) {
+
+				} else {
+					break;
 				}
-
-				String s = sb.toString();
-
-				Set<Integer> set = (Set<Integer>) sr.getMatchNode().getData();
-
-				kwdids.addAll(set);
-
-				start = end - 1;
 			}
+
 		}
 
 		if (kwdids.size() == 0) {
@@ -295,7 +282,7 @@ public class KeywordAnnotator {
 		engDict = new Trie<String>();
 
 		for (int kwdid : kwdData.getKeywords()) {
-			int kwd_freq = kwdData.getKeywordFreqs()[kwdid];
+			int kwd_freq = kwdData.getKeywordFreq(kwdid);
 
 			if (kwd_freq < 10) {
 				continue;

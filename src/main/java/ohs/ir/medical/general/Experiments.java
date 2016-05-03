@@ -124,7 +124,7 @@ public class Experiments {
 			double[] v = searcher.getVector(word);
 			if (v != null) {
 				double tfidf = wwc.getCount(word);
-				ArrayMath.addAfterScale(qwv, v, 1, tfidf, qwv);
+				ArrayMath.addAfterScale(qwv, 1, v, tfidf, qwv);
 			}
 
 			Counter<String> c = new Counter<>();
@@ -210,7 +210,7 @@ public class Experiments {
 			double tfidf = wcs.getCount(word);
 			double[] v = searcher.getVector(word);
 			if (v != null) {
-				double sum = ArrayMath.addAfterScale(ret, v, 1, tfidf, ret);
+				double sum = ArrayMath.addAfterScale(ret, 1, v, tfidf, ret);
 				num_words++;
 			}
 		}
@@ -361,7 +361,7 @@ public class Experiments {
 
 				double rm_mixture = 0.5;
 
-				eqlm = VectorMath.addAfterScale(qlm, rm, 1 - rm_mixture, rm_mixture);
+				eqlm = VectorMath.addAfterScale(qlm, 1 - rm_mixture, rm, rm_mixture);
 
 				KLDivergenceScorer scorer = new KLDivergenceScorer();
 				docScores = scorer.score(wcb, eqlm);
@@ -416,7 +416,7 @@ public class Experiments {
 
 				double rm_mixture = 0.5;
 
-				eqlm = VectorMath.addAfterScale(qlm, rm, 1 - rm_mixture, rm_mixture);
+				eqlm = VectorMath.addAfterScale(qlm, 1 - rm_mixture, rm, rm_mixture);
 
 				KLDivergenceScorer scorer = new KLDivergenceScorer();
 				docScores = scorer.score(wcb, eqlm);
@@ -562,7 +562,7 @@ public class Experiments {
 
 				double mixture = 0.5;
 
-				SparseVector qlm3 = VectorMath.addAfterScale(qlm2, rm, 1 - mixture, mixture);
+				SparseVector qlm3 = VectorMath.addAfterScale(qlm2, 1 - mixture, rm, mixture);
 
 				docScores = scorer.score(wcb, qlm3);
 
@@ -685,7 +685,7 @@ public class Experiments {
 
 				double mixture = 0.5;
 
-				SparseVector qlm3 = VectorMath.addAfterScale(qlm2, rm, 1 - mixture, mixture);
+				SparseVector qlm3 = VectorMath.addAfterScale(qlm2, 1 - mixture, rm, mixture);
 
 				docScores = scorer.score(wcb, qlm3);
 
@@ -788,7 +788,7 @@ public class Experiments {
 
 				double rm_mixture = 0.5;
 
-				eqlm = VectorMath.addAfterScale(qlm, rm, 1 - rm_mixture, rm_mixture);
+				eqlm = VectorMath.addAfterScale(qlm, 1 - rm_mixture, rm, rm_mixture);
 
 				KLDivergenceScorer scorer = new KLDivergenceScorer();
 				docScores = scorer.score(wcb, eqlm);
@@ -845,7 +845,7 @@ public class Experiments {
 
 				double rm_mixture = 0.5;
 
-				eqlm = VectorMath.addAfterScale(qlm, rm, 1 - rm_mixture, rm_mixture);
+				eqlm = VectorMath.addAfterScale(qlm, 1 - rm_mixture, rm, rm_mixture);
 
 				KLDivergenceScorer scorer = new KLDivergenceScorer();
 				docScores = scorer.score(wcb, eqlm);
@@ -959,7 +959,8 @@ public class Experiments {
 
 				SparseVector expQLM = qlm.copy();
 
-				WordCountBox wcb1 = WordCountBox.getWordCountBox(siss[i].getIndexReader(), sentScores, wordIndexer, CommonFieldNames.CONTENT);
+				WordCountBox wcb1 = WordCountBox.getWordCountBox(siss[i].getIndexReader(), sentScores, wordIndexer,
+						CommonFieldNames.CONTENT);
 
 				RelevanceModelBuilder rmb = new RelevanceModelBuilder(10, 15, 20);
 				SparseVector rm = rmb.getRelevanceModel(wcb1, sentScores);
@@ -968,7 +969,7 @@ public class Experiments {
 
 				double mixture = 0.5;
 
-				expQLM = VectorMath.addAfterScale(qlm, rm, 1 - mixture, mixture);
+				expQLM = VectorMath.addAfterScale(qlm, 1 - mixture, rm, mixture);
 
 				WordCountBox wcb2 = WordCountBox.getWordCountBox(iss[i].getIndexReader(), docScores, wordIndexer, CommonFieldNames.CONTENT);
 

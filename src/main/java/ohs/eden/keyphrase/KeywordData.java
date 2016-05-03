@@ -51,6 +51,10 @@ public class KeywordData {
 		return kwd_freqs;
 	}
 
+	public int getKeywordFreq(int kwdid) {
+		return kwd_freqs[kwdid];
+	}
+
 	public Indexer<StrPair> getKeywordIndexer() {
 		return kwdIndexer;
 	}

@@ -4,10 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.commons.math.stat.descriptive.SynchronizedMultivariateSummaryStatistics;
 import org.apache.commons.math.stat.inference.TTestImpl;
-
-import ohs.matrix.SparseVector;
 
 /**
  * @author Heung-Seon Oh
@@ -68,14 +65,14 @@ public class ArrayMath {
 	}
 
 	public static double addAfterScale(double a, double ac, double b) {
-		return addAfterScale(a, b, ac, 1 - ac);
+		return addAfterScale(a, ac, b, 1 - ac);
 	}
 
-	public static double addAfterScale(double a, double b, double ac, double bc) {
+	public static double addAfterScale(double a, double ac, double b, double bc) {
 		return a * ac + b * bc;
 	}
 
-	public static double addAfterScale(double[] a, double b, double ac, double bc, double[] c) {
+	public static double addAfterScale(double[] a, double ac, double b, double bc, double[] c) {
 		if (!ArrayChecker.isEqualDim(a, c)) {
 			throw new IllegalArgumentException();
 		}
@@ -87,7 +84,7 @@ public class ArrayMath {
 		return sum;
 	}
 
-	public static double addAfterScale(double[] a, double[] b, double ac, double bc, double[] c) {
+	public static double addAfterScale(double[] a, double ac, double[] b, double bc, double[] c) {
 		if (!ArrayChecker.isEqualDim(a, b, c)) {
 			throw new IllegalArgumentException();
 		}
@@ -99,7 +96,7 @@ public class ArrayMath {
 		return sum;
 	}
 
-	public static double addAfterScale(double[] a, double[] b, double[] ac, double[] bc, double[] c) {
+	public static double addAfterScale(double[] a, double[] ac, double[] b, double[] bc, double[] c) {
 		if (ArrayChecker.isEqualDim(a, b, c) && ArrayChecker.isEqualDim(c, ac, bc)) {
 
 		} else {
@@ -113,7 +110,7 @@ public class ArrayMath {
 		return sum;
 	}
 
-	public static double addAfterScaleColumns(double[][] a, double[] b, double ac, double bc, double[][] c) {
+	public static double addAfterScaleColumns(double[][] a, double ac, double[] b, double bc, double[][] c) {
 		if (ArrayChecker.isEqualDim(a, c) && a.length == b.length) {
 
 		} else {
@@ -129,7 +126,7 @@ public class ArrayMath {
 		return ret;
 	}
 
-	public static double addAfterScaleRows(double[][] a, double[] b, double ac, double bc, double[][] c) {
+	public static double addAfterScaleRows(double[][] a, double ac, double[] b, double bc, double[][] c) {
 		if (ArrayChecker.isEqualDim(a, c) && a[0].length == b.length) {
 
 		} else {
@@ -138,7 +135,7 @@ public class ArrayMath {
 
 		double ret = 0;
 		for (int i = 0; i < a.length; i++) {
-			ret += addAfterScale(a[i], b, ac, bc, c[i]);
+			ret += addAfterScale(a[i], ac, b, bc, c[i]);
 		}
 		return ret;
 	}
@@ -446,6 +443,99 @@ public class ArrayMath {
 		return sum;
 	}
 
+	public static double dotProduct(int[] ais, double[] avs, double[] b) {
+		return dotProduct(ais, avs, b, new double[0]);
+	}
+
+	public static double dotProduct(int[] ais, double[] avs, double[] b, double[] norms) {
+		if (ArrayChecker.isEqualDim(ais, avs)) {
+
+		} else {
+			throw new IllegalArgumentException();
+		}
+
+		double ret = 0;
+		int ai = 0;
+		double av = 0;
+		double bv = 0;
+
+		for (int i = 0; i < ais.length; i++) {
+			ai = ais[i];
+			av = avs[i];
+			bv = b[ai];
+			ret += (av * bv);
+
+			if (norms.length == 2) {
+				norms[0] += (av * av);
+			}
+		}
+
+		if (norms.length == 2) {
+			norms[1] = sumSquared(b);
+
+			for (int k = 0; k < norms.length; k++) {
+				norms[k] = Math.sqrt(norms[k]);
+			}
+		}
+
+		return ret;
+	}
+
+	public static double dotProduct(int[] ais, double[] avs, int[] bis, double[] bvs) {
+		return dotProduct(ais, avs, bis, bvs, new double[0]);
+	}
+
+	public static double dotProduct(int[] ais, double[] avs, int[] bis, double[] bvs, double[] norms) {
+		if (ArrayChecker.isEqualDim(ais, avs) && ArrayChecker.isEqualDim(bis, bvs)) {
+
+		} else {
+			throw new IllegalArgumentException();
+		}
+
+		int ai = 0;
+		int bi = 0;
+		double av = 0;
+		double bv = 0;
+
+		double ret = 0;
+		int i = 0, j = 0;
+
+		while (i < ais.length && j < bis.length) {
+			ai = ais[i];
+			bi = bis[j];
+			av = avs[i];
+			bv = bvs[j];
+
+			if (ai == bi) {
+				ret += (av * bv);
+				if (norms.length == 2) {
+					norms[0] += (av * av);
+					norms[1] += (bv * bv);
+				}
+				i++;
+				j++;
+			} else if (ai > bi) {
+				if (norms.length == 2) {
+					norms[1] += (bv * bv);
+				}
+				j++;
+			} else if (ai < bi) {
+				if (norms.length == 2) {
+					norms[0] += (av * av);
+				}
+				i++;
+			}
+		}
+
+		if (norms.length == 2) {
+			for (int k = 0; k < norms.length; k++) {
+				norms[k] = Math.sqrt(norms[k]);
+			}
+		}
+
+		return ret;
+	}
+
 	public static double dotProductColumns(double[][] a, int j1, double[][] b, int j2) {
 		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
@@ -498,7 +588,7 @@ public class ArrayMath {
 			throw new IllegalArgumentException();
 		}
 		double[] c = new double[a.length];
-		addAfterScale(a, b, 0.5, 0.5, c);
+		addAfterScale(a, 0.5, b, 0.5, c);
 		return (klDivergence(a, c) + klDivergence(b, c)) / 2;
 	}
 
@@ -707,7 +797,7 @@ public class ArrayMath {
 			double[][] c = new double[3][3];
 
 			for (int i = 0; i < a.length; i++) {
-				addAfterScale(a[i], b[i], 0.8, 0.2, c[i]);
+				addAfterScale(a[i], 0.8, b[i], 0.2, c[i]);
 			}
 
 			System.out.println(ArrayUtils.toString(c));
@@ -1085,6 +1175,14 @@ public class ArrayMath {
 		}
 	}
 
+	public static double normL1(double[] a) {
+		double ret = 0;
+		for (int i = 0; i < a.length; i++) {
+			ret += Math.abs(a[i]);
+		}
+		return ret;
+	}
+
 	/**
 	 * 
 	 * [Definition]
@@ -1094,11 +1192,11 @@ public class ArrayMath {
 	 * |v| = Sqrt(InnerProduct(v,v))
 	 * 
 	 * 
-	 * @param x
+	 * @param a
 	 * @return
 	 */
-	public static double normL2(double[] x) {
-		return Math.sqrt(dotProduct(x, x));
+	public static double normL2(double[] a) {
+		return Math.sqrt(dotProduct(a, a));
 	}
 
 	public static void outerProduct(double[] a, double[] b, double[][] c) {
@@ -1741,6 +1839,14 @@ public class ArrayMath {
 			sum += b[i];
 		}
 		return sum;
+	}
+
+	public static double sumSquared(double[] a) {
+		double ret = 0;
+		for (int i = 0; i < a.length; i++) {
+			ret += (a[i] * a[i]);
+		}
+		return ret;
 	}
 
 	public static double sumSquaredDifferences(double[] a, double[] b) {
