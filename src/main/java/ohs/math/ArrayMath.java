@@ -28,6 +28,14 @@ public class ArrayMath {
 		return sum;
 	}
 
+	public static double sumAfterLog(double[] a) {
+		double ret = 0;
+		for (int i = 0; i < a.length; i++) {
+			ret += Math.log(a[i]);
+		}
+		return ret;
+	}
+
 	public static double add(double[] a, double b, double[] c) {
 		if (!ArrayChecker.isEqualDim(a, c)) {
 			throw new IllegalArgumentException();

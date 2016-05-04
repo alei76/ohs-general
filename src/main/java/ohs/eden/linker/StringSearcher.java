@@ -50,7 +50,7 @@ public class StringSearcher implements Serializable {
 
 	private GramGenerator gg;
 
-	private DeepMap<String, Integer, Double[]> cache;
+	private DeepMap<String, Integer, List<Double>> cache;
 
 	private int top_k = 100;
 
@@ -64,9 +64,9 @@ public class StringSearcher implements Serializable {
 
 	private int[] gram_cnts;
 
-	private List<StringScorer<Character>> stringScorers;
+	private List<StringScorer<Character>> strScorers;
 
-	private Map<Integer, Double[]> simScores;
+	private ListMap<Integer, Double> simScores;
 
 	private Counter<Integer> candidates;
 
@@ -82,15 +82,15 @@ public class StringSearcher implements Serializable {
 		this.q = q;
 
 		gg = new GramGenerator(q);
-		cache = new DeepMap<String, Integer, Double[]>(1000, MapType.WEAK_HASH_MAP, MapType.WEAK_HASH_MAP);
+		cache = new DeepMap<String, Integer, List<Double>>(1000, MapType.WEAK_HASH_MAP, MapType.WEAK_HASH_MAP);
 
-		stringScorers = Generics.newArrayList();
+		strScorers = Generics.newArrayList();
 
-		stringScorers.add(new EditDistance<Character>());
-		stringScorers.add(new SmithWaterman<Character>());
-		stringScorers.add(new Jaro<Character>());
-		stringScorers.add(new Jaccard<Character>());
-		simScores = Generics.newHashMap();
+		strScorers.add(new EditDistance<Character>());
+		strScorers.add(new SmithWaterman<Character>());
+		strScorers.add(new Jaro<Character>());
+		strScorers.add(new Jaccard<Character>());
+		simScores = Generics.newListMap();
 
 	}
 
@@ -111,7 +111,6 @@ public class StringSearcher implements Serializable {
 		}
 
 		for (int i = 0; i < input.size(); i++) {
-
 			if ((i + 1) % chunk_size == 0) {
 				int progess = (int) ((i + 1f) / input.size() * 100);
 				System.out.printf("\r[%d percent, %s]", progess, stopWatch.stop());
@@ -119,9 +118,11 @@ public class StringSearcher implements Serializable {
 
 			StringRecord sr = input.get(i);
 			Gram[] grams = gg.generateQGrams(sr.getString().toLowerCase());
+
 			if (grams.length == 0) {
 				continue;
 			}
+
 			Set<Integer> gids = Generics.newHashSet();
 			for (int j = 0; j < grams.length; j++) {
 				int gid = gramIndexer.getIndex(grams[j].getString());
@@ -167,10 +168,10 @@ public class StringSearcher implements Serializable {
 	}
 
 	public List<StringScorer<Character>> getSimScorers() {
-		return stringScorers;
+		return strScorers;
 	}
 
-	public Map<Integer, Double[]> getSimScores() {
+	public ListMap<Integer, Double> getSimScores() {
 		return simScores;
 	}
 
@@ -186,8 +187,8 @@ public class StringSearcher implements Serializable {
 		System.out.printf("index [%s] records.\n", input.size());
 
 		if (index == null && !append) {
-			gramIndexer = new Indexer<String>();
-			index = new ListMap<Integer, Integer>(1000, MapType.HASH_MAP, ListType.ARRAY_LIST);
+			gramIndexer = Generics.newIndexer();
+			index = Generics.newListMap(1000, MapType.HASH_MAP, ListType.ARRAY_LIST);
 			srs = Generics.newHashMap();
 			gram_dfs = new int[0];
 			gram_cnts = new int[0];
@@ -312,7 +313,7 @@ public class StringSearcher implements Serializable {
 		index = new ListMap<Integer, Integer>(size3, MapType.HASH_MAP, ListType.ARRAY_LIST);
 
 		for (int i = 0; i < size3; i++) {
-			index.set(ois.readInt(), FileUtils.readIntList(ois));
+			index.put(ois.readInt(), FileUtils.readIntList(ois));
 		}
 
 		System.out.printf("read [%s] - [%s]\n", this.getClass().getName(), stopWatch.stop());
@@ -359,7 +360,7 @@ public class StringSearcher implements Serializable {
 		}
 
 		Counter<StringRecord> ret = Generics.newCounter();
-		simScores = Generics.newHashMap(top_k);
+		simScores = Generics.newListMap(top_k);
 
 		Sequence<Character> ss = SequenceFactory.newCharSequence(s.toLowerCase());
 
@@ -372,12 +373,13 @@ public class StringSearcher implements Serializable {
 
 			Sequence<Character> tt = SequenceFactory.newCharSequence(sr.getString().toLowerCase());
 
-			Double[] scores = cache.get(s, sr.getId(), false);
+			List<Double> scores = cache.get(s, sr.getId(), false);
 
 			if (scores == null) {
-				scores = new Double[stringScorers.size()];
-				for (int j = 0; j < stringScorers.size(); j++) {
-					scores[j] = stringScorers.get(j).getSimilarity(ss, tt);
+				scores = Generics.newArrayList(strScorers.size());
+				for (int j = 0; j < strScorers.size(); j++) {
+					double sim = strScorers.get(j).getSimilarity(ss, tt);
+					scores.add(sim);
 				}
 				cache.put(s, sr.getId(), scores);
 			}
@@ -385,16 +387,16 @@ public class StringSearcher implements Serializable {
 			simScores.put(sr.getId(), scores);
 
 			double sim_score_sum = 0;
-			for (int j = 0; j < scores.length; j++) {
-				sim_score_sum += scores[j].doubleValue();
+			for (int j = 0; j < scores.size(); j++) {
+				sim_score_sum += scores.get(j).doubleValue();
 			}
-			double avg_sim_score = sim_score_sum / scores.length;
+			double avg_sim_score = sim_score_sum / scores.size();
 			double score = avg_sim_score;
 
 			if (makeLog) {
 				logBuff.append("\n" + sr.getId() + "\t" + sr.getString());
-				for (int j = 0; j < scores.length; j++) {
-					logBuff.append(String.format("\t%f", scores[j]));
+				for (int j = 0; j < scores.size(); j++) {
+					logBuff.append(String.format("\t%f", scores.get(j)));
 				}
 				logBuff.append(String.format("\t%f", avg_sim_score));
 				logBuff.append(String.format("\t%f", idf_sum));

@@ -430,7 +430,7 @@ public class KeywordClusterer {
 			int cid = e.getKey();
 			Set<Integer> kwdids = e.getValue();
 
-			boolean isCandidate = true;
+			boolean is_candidate = true;
 
 			for (int kwdid : kwdids) {
 				StrPair kwdp = kwdIndexer.getObject(kwdid);
@@ -440,12 +440,12 @@ public class KeywordClusterer {
 				if (korKey.length() == 0 && engKey.length() > 0) {
 
 				} else {
-					isCandidate = false;
+					is_candidate = false;
 					break;
 				}
 			}
 
-			if (isCandidate) {
+			if (is_candidate) {
 				StrPair kwdp = kwdIndexer.getObject(cid);
 				String korKey = normalize(kwdp.getFirst());
 				String engKey = normalize(kwdp.getSecond());
@@ -777,12 +777,18 @@ public class KeywordClusterer {
 
 				int qcid = cids.get(i);
 				SparseVector qCent = cents.get(qcid);
+				qCent.sortByValue();
 
 				// String qKwdStr = kwdIndexer.get(qcid);
 
 				Counter<Integer> toCompare = Generics.newCounter();
 
-				for (int w : qCent.indexes()) {
+				int search_word_size = qCent.size() / 3;
+
+				for (int j = 0; j < qCent.size() && j < search_word_size; j++) {
+					int w = qCent.indexAtLoc(j);
+					double weight = qCent.valueAtLoc(j);
+
 					Set<Integer> set = wordToClusters.get(w, false);
 
 					if (set != null) {
@@ -790,11 +796,13 @@ public class KeywordClusterer {
 							if (qcid == cid || queryToTargets.containKey(qcid, cid) || queryToTargets.containKey(cid, qcid)) {
 
 							} else {
-								toCompare.incrementCount(cid, 1);
+								toCompare.incrementCount(cid, weight);
 							}
 						}
 					}
 				}
+
+				qCent.sortByIndex();
 
 				if (toCompare.size() < 2) {
 					continue;
@@ -802,7 +810,7 @@ public class KeywordClusterer {
 
 				List<Integer> keys = toCompare.getSortedKeys();
 
-				for (int j = 0; j < keys.size(); j++) {
+				for (int j = 0; j < keys.size() && j < 100; j++) {
 					int tcid = keys.get(j);
 
 					SparseVector tCent = cents.get(tcid);

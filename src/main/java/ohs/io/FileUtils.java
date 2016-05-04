@@ -342,6 +342,10 @@ public class FileUtils {
 		return getFilesUnder(new File(dirName), true);
 	}
 
+	public static List<File> getFilesUnder(File dir) {
+		return getFilesUnder(dir, true);
+	}
+
 	public static long length(String fileName) {
 		return new File(fileName).length();
 	}

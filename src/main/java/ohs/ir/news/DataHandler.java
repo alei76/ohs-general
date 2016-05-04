@@ -69,7 +69,7 @@ public class DataHandler {
 		File[] dirs = new File(NSPath.CONTENT_NLP_DIR).listFiles();
 
 		for (int i = 0; i < dirs.length; i++) {
-			List<File> files = FileUtils.getFilesUnder(dirs[i]);
+			List<File> files = FileUtils.getFilesUnder(dirs[i].getPath());
 
 			for (int j = 0; j < files.size(); j++) {
 				File file = files.get(j);
@@ -101,7 +101,7 @@ public class DataHandler {
 		TextFileWriter writer = new TextFileWriter(NSPath.NEWS_NER_FILE);
 
 		for (int i = 0; i < dirs.length; i++) {
-			List<File> files = FileUtils.getFilesUnder(dirs[i]);
+			List<File> files = FileUtils.getFilesUnder(dirs[i].getPath());
 
 			for (int j = 0; j < files.size(); j++) {
 				File file = files.get(j);

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-import ohs.eden.linker.ELPath;
 import ohs.io.FileUtils;
 import ohs.ir.medical.general.MIRPath;
 import ohs.string.sim.EditDistance;
@@ -17,6 +16,7 @@ import ohs.types.Counter;
 import ohs.types.SetMap;
 import ohs.utils.Generics;
 import ohs.utils.StopWatch;
+import ohs.utils.StrUtils;
 
 public class CategoryTreeBuilder {
 
@@ -42,7 +42,7 @@ public class CategoryTreeBuilder {
 	//
 	// private int health_id = 153550;
 
-	private Trie<String> trie;
+	private Trie<Integer> trie;
 
 	private Set<Integer> mainCats;
 
@@ -52,7 +52,9 @@ public class CategoryTreeBuilder {
 
 	private SetMap<Integer, Integer> pageToCats;
 
-	private void bottomUp(Stack<Integer> path, Trie<String> trie) {
+	private Counter<Integer> subCatCnts;
+
+	private void bottomUp(Stack<Integer> path, Trie<Integer> trie) {
 		int c = path.peek();
 		String cat = idToCat.getValue(c);
 
@@ -62,31 +64,24 @@ public class CategoryTreeBuilder {
 			return;
 		}
 
-		List<String> catPath = Generics.newArrayList(path.size());
+		List<Integer> path2 = Generics.newArrayList(path);
+		Collections.reverse(path2);
 
-		for (int i = 0; i < path.size(); i++) {
-			int loc = path.size() - i - 1;
-			catPath.add(idToCat.getValue(path.get(loc)));
+		List<String> catPath = Generics.newArrayList(path2.size());
+
+		for (int i = 0; i < path2.size(); i++) {
+			catPath.add(idToCat.getValue(path2.get(i)));
 		}
 
 		if (mainCats.contains(c)) {
-			// if (c == health_id) {
-			// List<String> catPath = Generics.newArrayList(path.size());
-			//
-			// for (int i = 0; i < path.size(); i++) {
-			// int loc = path.size() - i - 1;
-			// catPath.add(idToCat.getValue(path.get(loc)));
-			// }
-
-			trie.insert(catPath);
-			// }
+			trie.insert(path2);
 			return;
 		}
 
 		Counter<Integer> catCnts = Generics.newCounter();
 
-		for (int catid : path) {
-			catCnts.incrementCount(catid, 1);
+		for (int cid : path) {
+			catCnts.incrementCount(cid, 1);
 		}
 
 		Counter<Integer> pageCnts = Generics.newCounter();
@@ -104,7 +99,6 @@ public class CategoryTreeBuilder {
 				continue;
 			}
 
-			String nCat = idToCat.getValue(p);
 			if (!isValid(p)) {
 				continue;
 			}
@@ -121,19 +115,19 @@ public class CategoryTreeBuilder {
 
 		read();
 
-		// for (int id : mainTopics) {
-		// System.out.println(idToCat.getValue(id));
-		// }
-
-		// Stack<Integer> path = new Stack<Integer>();
-		// path.push(health_id);
-
-		// TextFileWriter writer = new TextFileWriter(ELPath.WIKI_DIR + "wiki_cat_tree.txt");
-
-		trie = Trie.newTrie();
 		int num_nodes = 0;
 
 		StopWatch stopWatch = StopWatch.newStopWatch();
+
+		int[] roots = { 349052, 198457 };
+
+		Set<Integer> rootSet = Generics.newHashSet();
+
+		for (int id : roots) {
+			rootSet.add(id);
+		}
+
+		Set<String> catPaths = Generics.newTreeSet();
 
 		for (int c : leaves) {
 			if (++num_nodes % 1000 == 0) {
@@ -148,59 +142,50 @@ public class CategoryTreeBuilder {
 			Stack<Integer> path = new Stack<Integer>();
 			path.push(c);
 
-			Trie<String> trie2 = Trie.newTrie();
+			Trie<Integer> trie = Trie.newTrie();
 
-			bottomUp(path, trie2);
+			bottomUp(path, trie);
 
-			List<Node<String>> leaves = trie2.getLeafNodes();
+			List<Node<Integer>> leaves = trie.getLeafNodes();
 
-			System.out.println(idToCat.getValue(c));
 			for (int i = 0; i < leaves.size(); i++) {
-				System.out.println(leaves.get(i).getKeyPath(" -> "));
+				List<Integer> keyPath = leaves.get(i).getKeyPath();
+				boolean is_valid = false;
+
+				for (int j = 0; j < keyPath.size(); j++) {
+					if (rootSet.contains(keyPath.get(j))) {
+						is_valid = true;
+						break;
+					}
+				}
+
+				if (is_valid) {
+					List<String> catPath = Generics.newArrayList();
+
+					for (int j = 0; j < keyPath.size(); j++) {
+						catPath.add(idToCat.getValue(keyPath.get(j)));
+					}
+
+					catPaths.add(StrUtils.join("\t", catPath));
+
+				}
+
 			}
 			System.out.println();
 		}
 
 		System.out.printf("\r[%d/%d, %s]\n", num_nodes, leaves.size(), stopWatch.stop());
 
-		// topDown(path);
-
-		// writer.close();
-
-		// FileUtils.writeStrCounter(ELPath.WIKI_DIR + "wiki_cat_tree.txt", leaves);
-
-		List<String> catPaths = Generics.newArrayList();
-
-		for (Node<String> node : trie.getLeafNodes()) {
-			List<String> keyPath = node.getKeyPath();
-			
-			
-			
-			catPaths.add(node.getKeyPath(" -> "));
-		}
-
-		Collections.sort(catPaths);
-
-		FileUtils.writeStrCollection(ELPath.WIKI_DIR + "wiki_cat_tree.txt", catPaths);
+		FileUtils.writeStrCollection(MIRPath.WIKI_DIR + "wiki_cat_tree_bottom-up.txt", catPaths);
 	}
 
 	public void buildTopDown() throws Exception {
 		read();
 
-		// for (int id : mainTopics) {
-		// System.out.println(idToCat.getValue(id));
-		// }
-
-		// Stack<Integer> path = new Stack<Integer>();
-		// path.push(health_id);
-
-		// TextFileWriter writer = new TextFileWriter(ELPath.WIKI_DIR + "wiki_cat_tree.txt");
-
 		trie = Trie.newTrie();
-		
+
 		/*
-		 * 349052 -> Diseases_and_disorders
-		 * 198457 -> Medicine
+		 * 349052 -> Diseases_and_disorders 198457 -> Medicine
 		 */
 
 		int[] roots = { 349052, 198457 };
@@ -214,15 +199,22 @@ public class CategoryTreeBuilder {
 
 			topDown(path);
 
-			for (Node<String> node : trie.getLeafNodes()) {
-				catPaths.add(node.getKeyPath("\t"));
+			for (Node<Integer> node : trie.getLeafNodes()) {
+				List<Integer> keyPath = node.getKeyPath();
+
+				List<String> catPath = Generics.newArrayList();
+
+				for (int cid : keyPath) {
+					catPath.add(idToCat.getValue(cid));
+				}
+				catPaths.add(StrUtils.join("\t", catPath));
 			}
 		}
 
 		Set<String> res = Generics.newTreeSet();
 		res.addAll(catPaths);
 
-		FileUtils.writeStrCollection(MIRPath.WIKI_DIR + "wiki_cat_tree.txt", res);
+		FileUtils.writeStrCollection(MIRPath.WIKI_DIR + "wiki_cat_tree_top-down.txt", res);
 	}
 
 	private boolean isValid(int catid) {
@@ -237,15 +229,13 @@ public class CategoryTreeBuilder {
 		// || cat.contains("Wikipedia")
 
 		) {
-			System.out.println(cat);
+			// System.out.println(cat);
 
 			return false;
 		}
 
 		return true;
 	}
-
-	private Counter<Integer> subCatCnts;
 
 	public void read() throws Exception {
 		{
@@ -320,7 +310,7 @@ public class CategoryTreeBuilder {
 
 		if (children == null || catPath.size() >= 10) {
 			if (pageCnts.getCount(parent_id) > 0) {
-				trie.insert(catPath);
+				trie.insert(path);
 			}
 		} else {
 			for (int child_id : children) {

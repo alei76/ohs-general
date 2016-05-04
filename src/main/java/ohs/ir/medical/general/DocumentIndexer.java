@@ -23,6 +23,7 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.xmlbeans.impl.common.IOUtil;
 
 import de.tudarmstadt.ukp.wikipedia.api.WikiConstants.Language;
 import de.tudarmstadt.ukp.wikipedia.parser.Content;
@@ -54,6 +55,7 @@ public class DocumentIndexer {
 	public static final int ram_size = 5000;
 
 	public static IndexWriter getIndexWriter(String outputDirName) throws Exception {
+		FileUtils.deleteFilesUnder(outputDirName);
 
 		IndexWriterConfig iwc = new IndexWriterConfig(MedicalEnglishAnalyzer.newAnalyzer());
 		// IndexWriterConfig iwc = new IndexWriterConfig(new StandardAnalyzer());
@@ -100,8 +102,8 @@ public class DocumentIndexer {
 		// di.indexOhsumed();
 		// di.indexTrecGenomics();
 
-		di.indexWikiDbDump();
-		// di.indexClueWeb12();
+		// di.indexWikiDbDump();
+		di.indexClueWeb12();
 		// di.makeDocumentIdMap();
 
 		System.out.println("process ends.");
@@ -132,7 +134,7 @@ public class DocumentIndexer {
 				String[] ss = text.split("\\\\n");
 				for (int k = 0; k < ss.length; k++) {
 					String s = ss[k];
-					String[] toks = s.split(" ");
+					String[] toks = s.split("[ \\t]+");
 					for (int l = 0; l < toks.length; l++) {
 						String tok = toks[l];
 						if (tok.startsWith("tbi:")) {
@@ -149,7 +151,6 @@ public class DocumentIndexer {
 					if (k != ss.length - 1) {
 						sb.append("\n");
 					}
-
 				}
 
 				List<String> links = Generics.newArrayList();

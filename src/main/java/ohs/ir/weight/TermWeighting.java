@@ -9,6 +9,9 @@ import java.util.TreeSet;
 
 import org.apache.commons.math.linear.SparseRealVector;
 
+import ohs.math.ArrayChecker;
+import ohs.math.ArrayMath;
+import ohs.math.ArrayUtils;
 import ohs.math.CommonFuncs;
 import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
@@ -28,76 +31,6 @@ public class TermWeighting {
 
 	public static boolean print_log = false;
 
-	public static void computeTFIDFs(Collection<SparseVector> docs) {
-		computeTFIDFs(docs, documentFreqs(docs));
-	}
-
-	public static void computeTFIDFs(Collection<SparseVector> docs, DenseVector docFreqs) {
-
-		if (print_log) {
-			print("compute tfidfs.");
-		}
-
-		double norm = 0;
-		int w = 0;
-		double cnt = 0;
-		double doc_freq = 0;
-		double num_docs = docs.size();
-		double weight = 0;
-		for (SparseVector doc : docs) {
-			norm = 0;
-			for (int j = 0; j < doc.size(); j++) {
-				w = doc.indexAtLoc(j);
-				cnt = doc.valueAtLoc(j);
-				doc_freq = docFreqs.value(w);
-				weight = tfidf(cnt, num_docs, doc_freq);
-				norm += (weight * weight);
-				doc.setAtLoc(j, weight);
-			}
-			norm = Math.sqrt(norm);
-			doc.scale(1f / norm);
-		}
-	}
-
-	public static DenseVector documentFreqs(Collection<SparseVector> docs) {
-		return docFreqs(docs, maxWordIndex(docs) + 1);
-	}
-
-	public static DenseVector docFreqs(Collection<SparseVector> docs, int word_size) {
-		DenseVector ret = new DenseVector(word_size);
-		for (SparseVector doc : docs) {
-			for (int w : doc.indexes()) {
-				ret.increment(w, 1);
-			}
-		}
-		return ret;
-	}
-
-	public static ListMap<Integer, Integer> groupByLabel(List<SparseVector> docs) {
-		ListMap<Integer, Integer> ret = new ListMap<Integer, Integer>();
-		for (int i = 0; i < docs.size(); i++) {
-			SparseVector x = docs.get(i);
-			ret.put(x.label(), i);
-		}
-		return ret;
-	}
-
-	public static double idf(double num_docs, double doc_freq) {
-		return Math.log((num_docs + 1) / (doc_freq));
-	}
-
-	public static void computeBM25(Collection<SparseVector> docs) {
-		computeBM25(docs, 0);
-	}
-
-	public static void computeBM25Plus(Collection<SparseVector> docs) {
-		computeBM25(docs, 1);
-	}
-
-	public static void computeBM25(Collection<SparseVector> docs, double sigma) {
-		computeBM25(docs, documentFreqs(docs), sigma);
-	}
-
 	public static DenseVector collectionWordCnts(Collection<SparseVector> docs) {
 		int max_word_id = maxWordIndex(docs) + 1;
 		DenseVector ret = new DenseVector(max_word_id);
@@ -110,38 +43,8 @@ public class TermWeighting {
 		return ret;
 	}
 
-	public static void computeDFRee(List<SparseVector> docs, DenseVector collWordCnts) {
-		double num_words = collWordCnts.sum();
-		int w = 0;
-		double tf = 0;
-		double prior = 0;
-		double posterior = 0;
-		double termFrequency = 0;
-		double InvPriorCollection = 0;
-		double norm = 0;
-		double weight = 0;
-
-		for (int i = 0; i < docs.size(); i++) {
-			SparseVector x = docs.get(i);
-			double docLength = x.sum();
-
-			for (int j = 0; j < x.size(); j++) {
-				w = x.indexAtLoc(j);
-				tf = x.valueAtLoc(j);
-				prior = tf / docLength;
-				posterior = (tf + 1d) / (docLength + 1);
-				termFrequency = collWordCnts.value(w);
-				InvPriorCollection = num_words / termFrequency;
-				norm = tf * CommonFuncs.log2(posterior / prior);
-				weight = norm * (tf * (-CommonFuncs.log2(prior * InvPriorCollection)) +
-
-						(tf + 1d) * (+CommonFuncs.log2(posterior * InvPriorCollection)) + 0.5 * CommonFuncs.log2(posterior / prior));
-
-				x.setAtLoc(j, weight);
-			}
-
-			VectorMath.unitVector(x);
-		}
+	public static void computeBM25(Collection<SparseVector> docs) {
+		computeBM25(docs, 0);
 	}
 
 	public static void computeBM25(Collection<SparseVector> docs, DenseVector docFreqs, double sigma) {
@@ -180,6 +83,197 @@ public class TermWeighting {
 				x.setAtLoc(i, weight);
 			}
 		}
+	}
+
+	public static void computeBM25(Collection<SparseVector> docs, double sigma) {
+		computeBM25(docs, documentFreqs(docs), sigma);
+	}
+
+	public static void computeBM25Plus(Collection<SparseVector> docs) {
+		computeBM25(docs, 1);
+	}
+
+	public static void computeDFRee(List<SparseVector> docs, DenseVector collWordCnts) {
+		double num_words = collWordCnts.sum();
+		int w = 0;
+		double tf = 0;
+		double prior = 0;
+		double posterior = 0;
+		double termFrequency = 0;
+		double InvPriorCollection = 0;
+		double norm = 0;
+		double weight = 0;
+
+		for (int i = 0; i < docs.size(); i++) {
+			SparseVector x = docs.get(i);
+			double docLength = x.sum();
+
+			for (int j = 0; j < x.size(); j++) {
+				w = x.indexAtLoc(j);
+				tf = x.valueAtLoc(j);
+				prior = tf / docLength;
+				posterior = (tf + 1d) / (docLength + 1);
+				termFrequency = collWordCnts.value(w);
+				InvPriorCollection = num_words / termFrequency;
+				norm = tf * CommonFuncs.log2(posterior / prior);
+				weight = norm * (tf * (-CommonFuncs.log2(prior * InvPriorCollection)) +
+
+						(tf + 1d) * (+CommonFuncs.log2(posterior * InvPriorCollection)) + 0.5 * CommonFuncs.log2(posterior / prior));
+
+				x.setAtLoc(j, weight);
+			}
+
+			VectorMath.unitVector(x);
+		}
+	}
+
+	public static void computeDirichletLanguageModels(List<SparseVector> docs) {
+		DenseVector collWordPrs = collectionWordCnts(docs);
+		collWordPrs.normalize();
+
+		computeDirichletLanguageModels(docs, collWordPrs, 2000);
+	}
+
+	public static void computeDirichletLanguageModels(List<SparseVector> docs, DenseVector collWordPrs, double dirichlet_prior) {
+		int w = 0;
+		double cnt = 0;
+		double cnt_sum_in_doc = 0;
+		double mixture_for_coll = 0;
+		double pr_w_in_doc = 0;
+		double pr_w_in_coll = 0;
+		double pr_sum = 0;
+
+		for (int i = 0; i < docs.size(); i++) {
+			SparseVector x = docs.get(i);
+			cnt_sum_in_doc = x.sum();
+			pr_sum = 0;
+
+			for (int j = 0; j < x.size(); j++) {
+				w = x.indexAtLoc(j);
+				cnt = x.valueAtLoc(j);
+				pr_w_in_doc = cnt / cnt_sum_in_doc;
+				pr_w_in_coll = collWordPrs.prob(w);
+				mixture_for_coll = dirichlet_prior / (cnt_sum_in_doc + dirichlet_prior);
+				pr_w_in_doc = (1 - mixture_for_coll) * pr_w_in_doc + mixture_for_coll * pr_w_in_coll;
+				pr_sum += pr_w_in_doc;
+
+				x.setAtLoc(j, pr_w_in_doc);
+			}
+			x.setSum(pr_sum);
+		}
+	}
+
+	public static void computeParsimoniousLanguageModels(Collection<SparseVector> docs) {
+		DenseVector collWordPrs = collectionWordCnts(docs);
+		collWordPrs.normalize();
+
+		computeParsimoniousLanguageModels(docs, collWordPrs, 0.5);
+	}
+
+	public static void computeParsimoniousLanguageModels(Collection<SparseVector> docs, DenseVector collWordPrs, double mixture_for_coll) {
+		int w = 0;
+		double cnt = 0;
+		double pr_w_in_doc = 0;
+		double pr_w_in_coll = 0;
+		double mixture_for_doc = 1 - mixture_for_coll;
+		double e = 0;
+		double pr_sum = 0;
+		double dist = 0;
+
+		for (SparseVector x : docs) {
+			SparseVector nx = x.copy();
+			nx.normalize();
+
+			SparseVector ox = nx.copy();
+
+			for (int j = 0; j < 10; j++) {
+				pr_sum = 0;
+
+				for (int k = 0; k < nx.size(); k++) {
+					w = nx.indexAtLoc(k);
+					pr_w_in_doc = nx.valueAtLoc(k);
+					cnt = x.valueAtLoc(k);
+					pr_w_in_coll = collWordPrs.value(w);
+					e = (mixture_for_doc * pr_w_in_doc)
+							/ ArrayMath.addAfterScale(pr_w_in_coll, mixture_for_coll, pr_w_in_doc, mixture_for_doc);
+					e = cnt * e;
+					pr_sum += e;
+
+					nx.setAtLoc(k, e);
+				}
+				nx.scale(1f / pr_sum);
+
+				dist = ArrayMath.cosine(ox.values(), nx.values());
+
+				if (dist < 0.00001) {
+					break;
+				}
+
+				ox = nx.copy();
+			}
+
+			x.setIndexes(nx.indexes());
+			x.setValues(nx.values());
+			x.setSum(nx.sum());
+		}
+	}
+
+	public static void computeTFIDFs(Collection<SparseVector> docs) {
+		computeTFIDFs(docs, documentFreqs(docs));
+	}
+
+	public static void computeTFIDFs(Collection<SparseVector> docs, DenseVector docFreqs) {
+
+		if (print_log) {
+			print("compute tfidfs.");
+		}
+
+		double norm = 0;
+		int w = 0;
+		double cnt = 0;
+		double doc_freq = 0;
+		double num_docs = docs.size();
+		double weight = 0;
+		for (SparseVector doc : docs) {
+			norm = 0;
+			for (int j = 0; j < doc.size(); j++) {
+				w = doc.indexAtLoc(j);
+				cnt = doc.valueAtLoc(j);
+				doc_freq = docFreqs.value(w);
+				weight = tfidf(cnt, num_docs, doc_freq);
+				norm += (weight * weight);
+				doc.setAtLoc(j, weight);
+			}
+			norm = Math.sqrt(norm);
+			doc.scale(1f / norm);
+		}
+	}
+
+	public static DenseVector docFreqs(Collection<SparseVector> docs, int word_size) {
+		DenseVector ret = new DenseVector(word_size);
+		for (SparseVector doc : docs) {
+			for (int w : doc.indexes()) {
+				ret.increment(w, 1);
+			}
+		}
+		return ret;
+	}
+
+	public static DenseVector documentFreqs(Collection<SparseVector> docs) {
+		return docFreqs(docs, maxWordIndex(docs) + 1);
+	}
+
+	public static ListMap<Integer, Integer> groupByLabel(List<SparseVector> docs) {
+		ListMap<Integer, Integer> ret = new ListMap<Integer, Integer>();
+		for (int i = 0; i < docs.size(); i++) {
+			SparseVector x = docs.get(i);
+			ret.put(x.label(), i);
+		}
+		return ret;
+	}
+
+	public static double idf(double num_docs, double doc_freq) {
+		return Math.log((num_docs + 1) / (doc_freq));
 	}
 
 	public static List<SparseVector> invertedIndexDoubleVector(List<SparseVector> docs, int num_terms) {

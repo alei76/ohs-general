@@ -383,7 +383,6 @@ public class StrUtils {
 	public static String join(String glue, Iterable<String> a) {
 		return join(glue, a, 0, Integer.MAX_VALUE);
 	}
-	
 
 	public static String join(String glue, Iterable<String> a, int start, int end) {
 		StringBuffer sb = new StringBuffer();
@@ -840,10 +839,24 @@ public class StrUtils {
 		return b;
 	}
 
-	public static String[] unwrap(String[] a, String open, String close, String[] b) {
+	public static void unwrap(String[] a, String open, String close, String[] b) {
 		for (int i = 0; i < a.length; i++) {
 			b[i] = unwrap(a[i], open, close);
 		}
+	}
+
+	public static void unwrap(List<String> a, String open, String close, List<String> b) {
+		for (int i = 0; i < a.size(); i++) {
+			b.set(i, unwrap(a.get(i), open, close));
+		}
+	}
+
+	public static List<String> unwrap(List<String> a) {
+		List<String> b = Generics.newArrayList(a.size());
+		for (int i = 0; i < a.size(); i++) {
+			b.add("");
+		}
+		unwrap(a, "\"", "\"", b);
 		return b;
 	}
 
@@ -865,6 +878,23 @@ public class StrUtils {
 		for (int i = 0; i < a.length; i++) {
 			b[i] = wrap(a[i], open, close);
 		}
+	}
+
+	public static void wrap(List<String> a, String open, String close, List<String> b) {
+		for (int i = 0; i < a.size(); i++) {
+			b.set(i, wrap(a.get(i), open, close));
+		}
+	}
+
+	public static List<String> wrap(List<String> a) {
+		List<String> b = Generics.newArrayList(a.size());
+
+		for (int i = 0; i < a.size(); i++) {
+			b.add("");
+		}
+
+		wrap(a, "\"", "\"", b);
+		return b;
 	}
 
 };

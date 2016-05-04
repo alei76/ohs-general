@@ -86,6 +86,10 @@ public class KeywordMapper {
 				String korAbs = parts[6];
 				String engAbs = parts[7];
 
+				if (!type.equals("patent")) {
+					continue;
+				}
+
 				KDocument doc = TaggedTextParser.parse(korTitle + "\\n" + korAbs);
 				Counter<String> c = Generics.newCounter();
 				//
@@ -97,7 +101,7 @@ public class KeywordMapper {
 					}
 				}
 
-				List<String> words = Generics.newArrayList();
+				StringBuffer sb = new StringBuffer();
 
 				{
 					String[][][] vals = doc.getSubValues(TokenAttr.WORD);
@@ -105,19 +109,29 @@ public class KeywordMapper {
 					for (int i = 0; i < vals.length; i++) {
 						for (int j = 0; j < vals[i].length; j++) {
 							for (int k = 0; k < vals[i][j].length; k++) {
-								words.add(vals[i][j][k]);
+								sb.append(vals[i][j][k] + " ");
 							}
 						}
 					}
 				}
 
-				System.out.println();
+				if (++num_docs > 1000) {
+					break;
+				}
 
-				// if (!type.equals("patent")) {
-				// continue;
-				// }
+				Set<Integer> kwdids = kwdMapper.map(sb.toString().trim(), c);
 
-				Set<Integer> kwdids = kwdMapper.map(StrUtils.join(" ", words), c);
+				sb = new StringBuffer();
+				sb.append(cn);
+				sb.append("\n" + korTitle);
+
+				for (int kwdid : kwdids) {
+					StrPair kwdp = kwdData.getKeywordIndexer().getObject(kwdid);
+					sb.append("\n" + String.format("%s\t%d", kwdp.toString(), kwdid));
+				}
+
+				writer.write(sb.toString() + "\n\n");
+
 			}
 		}
 		reader.printLast();
@@ -131,13 +145,9 @@ public class KeywordMapper {
 
 	private Trie<Character> korDict;
 
-	private Trie<String> engDict;
-
 	private Map<Integer, Integer> kwdToCluster;
 
 	private Indexer<String> wordIndexer;
-
-	private GramGenerator gg = new GramGenerator(3);
 
 	private Map<Integer, SparseVector> kwdToWordCnts;
 
@@ -235,8 +245,8 @@ public class KeywordMapper {
 
 					for (int kwdid : clusterToKwds.get(cid)) {
 						kwdids.add(kwdid);
-						StrPair kwdp = kwdData.getKeywordIndexer().getObject(kwdid);
-						System.out.println(kwdp);
+						// StrPair kwdp = kwdData.getKeywordIndexer().getObject(kwdid);
+						// System.out.println(kwdp);
 					}
 				}
 
@@ -295,7 +305,6 @@ public class KeywordMapper {
 		}
 
 		korDict = new Trie<Character>();
-		engDict = new Trie<String>();
 
 		for (int kwdid : kwdData.getKeywords()) {
 			int kwd_freq = kwdData.getKeywordFreq(kwdid);
@@ -314,25 +323,10 @@ public class KeywordMapper {
 			String engKwd = kwdp.getSecond();
 
 			korKwd = StrUtils.unwrap(korKwd);
-			engKwd = StrUtils.unwrap(engKwd);
-
 			korKwd = KeywordClusterer.normalize(korKwd);
-			engKwd = KeywordClusterer.normalizeEnglish(engKwd);
 
 			if (korKwd.length() > 0) {
 				Node<Character> node = korDict.insert(StrUtils.asCharacters(korKwd));
-				Set<Integer> data = (Set<Integer>) node.getData();
-
-				if (data == null) {
-					data = Generics.newHashSet();
-					node.setData(data);
-				}
-
-				data.add(kwdid);
-			}
-
-			if (engKwd.length() > 0) {
-				Node<String> node = engDict.insert(StrUtils.split(engKwd));
 				Set<Integer> data = (Set<Integer>) node.getData();
 
 				if (data == null) {

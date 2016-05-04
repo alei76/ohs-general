@@ -217,7 +217,7 @@ public class PrefixSpan {
 			for (int i = 0; i < projected.size(); i++) {
 				ids.add((int) projected.get(i).getFirst());
 			}
-			patMap.set(key, ids);
+			patMap.put(key, ids);
 		}
 
 		// StringBuffer sb = new StringBuffer();

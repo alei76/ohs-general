@@ -140,7 +140,7 @@ public class WordCountBox {
 				words.add(locWords.get(loc));
 			}
 
-			docWords.set(docId, words);
+			docWords.put(docId, words);
 
 			for (int w : wcs.keySet()) {
 				fbWords.add(w);

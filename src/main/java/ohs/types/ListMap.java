@@ -21,12 +21,34 @@ public class ListMap<K, V> implements Serializable {
 
 	private ListType lt;
 
+	private MapType mt;
+
 	public ListMap() {
 		this(10000, Generics.MapType.HASH_MAP, Generics.ListType.ARRAY_LIST);
 	}
 
+	public void trimToSize() {
+		Map<K, List<V>> temp = Generics.newMap(mt, entries.size());
+
+		for (K k : entries.keySet()) {
+			List<V> l = entries.get(k);
+			List<V> nl = Generics.newArrayList(l.size());
+
+			for (V v : l) {
+				nl.add(v);
+			}
+			temp.put(k, nl);
+
+			l.clear();
+			l = null;
+		}
+		entries = temp;
+	}
+
 	public ListMap(int size, MapType mt, ListType lt) {
 		entries = Generics.newMap(mt, size);
+
+		this.mt = mt;
 		this.lt = lt;
 	}
 
@@ -73,8 +95,8 @@ public class ListMap<K, V> implements Serializable {
 		return get(key, true);
 	}
 
-	public List<V> get(K key, boolean createIfAbsent) {
-		return createIfAbsent ? ensure(key) : entries.get(key);
+	public List<V> get(K key, boolean addIfUnseen) {
+		return addIfUnseen ? ensure(key) : entries.get(key);
 	}
 
 	@Override
@@ -99,10 +121,6 @@ public class ListMap<K, V> implements Serializable {
 
 	public List<V> remove(K key) {
 		return entries.remove(key);
-	}
-
-	public void set(K key, List<V> values) {
-		entries.put(key, values);
 	}
 
 	public int size() {

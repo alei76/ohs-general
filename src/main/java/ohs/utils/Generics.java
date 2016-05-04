@@ -245,6 +245,10 @@ public class Generics {
 		return new ListMap<K, V>(size, MapType.HASH_MAP, ListType.ARRAY_LIST);
 	}
 
+	public static <K, V> ListMap<K, V> newListMap(int size, MapType mt, ListType lt) {
+		return new ListMap<K, V>(size, mt, lt);
+	}
+
 	public static <K, V> Map<K, V> newMap(MapType mt) {
 		return newMap(mt, 0);
 	}

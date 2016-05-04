@@ -79,7 +79,7 @@ public class EntityContextGenerator {
 
 	public void generate() throws Exception {
 
-		List<Entity> ents = new ArrayList<Entity>(el.getEntityMap().values());
+		List<Entity> ents = new ArrayList<Entity>(el.getIdToEntity().values());
 
 		Indexer<String> wordIndexer = Generics.newIndexer();
 		Map<Integer, SparseVector> contVecs = Generics.newHashMap();

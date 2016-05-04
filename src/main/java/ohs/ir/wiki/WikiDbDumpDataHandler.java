@@ -17,19 +17,19 @@ import ohs.types.SetMap;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 
-public class WikiCsvDataHandler {
+public class WikiDbDumpDataHandler {
 
 	public static void main(String[] args) throws Exception {
-		System.out.printf("[%s] begins.\n", WikiCsvDataHandler.class.getName());
+		System.out.printf("[%s] begins.\n", WikiDbDumpDataHandler.class.getName());
 
-		WikiCsvDataHandler d = new WikiCsvDataHandler();
+		WikiDbDumpDataHandler d = new WikiDbDumpDataHandler();
 		// d.encodeTitles();
 		// d.encodeCategories();
 		// d.encodeCategoryLinks();
-		d.encodeRedirects();
+		// d.encodeRedirects();
 		// d.map();
 
-		System.out.printf("[%s] ends.\n", WikiCsvDataHandler.class.getName());
+		System.out.printf("[%s] ends.\n", WikiDbDumpDataHandler.class.getName());
 	}
 
 	public void encodeCategories() throws Exception {
