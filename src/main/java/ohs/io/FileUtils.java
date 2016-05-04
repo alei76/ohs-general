@@ -612,11 +612,9 @@ public class FileUtils {
 
 	public static Map<Integer, Integer> readIntMap(ObjectInputStream ois) throws Exception {
 		int size = ois.readInt();
-		Map<Integer, Integer> ret = new HashMap<Integer, Integer>(size);
+		Map<Integer, Integer> ret = Generics.newHashMap(size);
 		for (int i = 0; i < size; i++) {
-			int key = ois.readInt();
-			int value = ois.readInt();
-			ret.put(key, value);
+			ret.put(ois.readInt(), ois.readInt());
 		}
 		// System.out.printf("read [%d] entries.\n", ret.size());
 		return ret;
@@ -774,7 +772,7 @@ public class FileUtils {
 
 	public static CounterMap<String, String> readStrCounterMap(ObjectInputStream ois) throws Exception {
 		int size = ois.readInt();
-		CounterMap<String, String> ret = new CounterMap<String, String>(size);
+		CounterMap<String, String> ret = Generics.newCounterMap(size);
 		for (int i = 0; i < size; i++) {
 			ret.setCounter(ois.readUTF(), readStrCounter(ois));
 		}
@@ -782,7 +780,7 @@ public class FileUtils {
 	}
 
 	public static CounterMap<String, String> readStrCounterMap(String fileName) throws Exception {
-		CounterMap<String, String> ret = new CounterMap<String, String>();
+		CounterMap<String, String> ret = Generics.newCounterMap();
 
 		BufferedReader br = openBufferedReader(fileName);
 

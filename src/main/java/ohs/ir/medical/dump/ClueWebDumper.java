@@ -38,8 +38,6 @@ public class ClueWebDumper extends TextDumper {
 
 	private TextFileWriter fileNameWriter;
 
-	private Set<String> stopIds;
-
 	public ClueWebDumper(String inputDir, String outputFileName) {
 		super(inputDir, outputFileName);
 	}
@@ -48,8 +46,6 @@ public class ClueWebDumper extends TextDumper {
 	public void dump() throws Exception {
 
 		fileNames = Generics.newHashSet();
-
-		setStopIds();
 
 		if (FileUtils.exists(MIRPath.CLUEWEB12_FILE_NAME_FILE)) {
 			List<String> lines = FileUtils.readLines(MIRPath.CLUEWEB12_FILE_NAME_FILE);
@@ -282,49 +278,6 @@ public class ClueWebDumper extends TextDumper {
 			goDown(child, strs, links, is_table_item, depth + 1);
 
 		}
-	}
-
-	public void setStopIds() {
-		stopIds = Generics.newHashSet();
-		stopIds.add("clueweb12-0010wb-86-28749");
-		stopIds.add("clueweb12-0013wb-03-12783");
-		stopIds.add("clueweb12-0101wb-43-23045");
-		stopIds.add("clueweb12-0101wb-94-11951");
-		stopIds.add("clueweb12-0200wb-38-08218");
-		stopIds.add("clueweb12-0206wb-98-23340");
-		stopIds.add("clueweb12-0911wb-83-14261");
-		stopIds.add("clueweb12-0911wb-86-21505");
-		stopIds.add("clueweb12-0912wb-08-19355");
-		stopIds.add("clueweb12-0912wb-16-22255");
-		stopIds.add("clueweb12-0912wb-20-04379");
-		stopIds.add("clueweb12-0912wb-23-03224");
-		stopIds.add("clueweb12-0912wb-46-17872");
-		stopIds.add("clueweb12-0913wb-39-12898");
-		stopIds.add("clueweb12-1308wb-17-06386");
-		stopIds.add("clueweb12-1308wb-22-14390");
-		stopIds.add("clueweb12-1308wb-38-13929");
-		stopIds.add("clueweb12-1308wb-38-10511");
-		stopIds.add("clueweb12-1308wb-38-09092");
-		stopIds.add("clueweb12-1308wb-38-13943");
-		stopIds.add("clueweb12-1308wb-43-11663");
-		stopIds.add("clueweb12-1308wb-43-11677");
-		stopIds.add("clueweb12-1308wb-59-03244");
-		stopIds.add("clueweb12-1308wb-59-03258");
-		stopIds.add("clueweb12-1308wb-63-13526");
-		stopIds.add("clueweb12-1308wb-63-13540");
-		stopIds.add("clueweb12-1308wb-81-09160");
-		stopIds.add("clueweb12-1308wb-81-09174");
-		stopIds.add("clueweb12-1308wb-87-00714");
-		stopIds.add("clueweb12-1309wb-23-06337");
-		stopIds.add("clueweb12-1309wb-23-06351");
-		stopIds.add("clueweb12-1309wb-29-06310");
-		stopIds.add("clueweb12-1309wb-29-06324");
-		stopIds.add("clueweb12-1309wb-45-18218");
-		stopIds.add("clueweb12-1309wb-45-18232");
-		stopIds.add("clueweb12-1309wb-60-14854");
-		stopIds.add("clueweb12-1309wb-60-14868");
-		stopIds.add("clueweb12-1309wb-81-08344");
-		stopIds.add("clueweb12-1309wb-81-08358");
 	}
 
 }

@@ -1,10 +1,13 @@
 package ohs.ir.medical.general;
 
 import java.io.File;
+import java.io.ObjectInputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,6 +38,8 @@ import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.ir.lucene.common.MyTextField;
+import ohs.types.BidMap;
+import ohs.types.SetMap;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 
@@ -95,7 +100,7 @@ public class DocumentIndexer {
 		// di.indexOhsumed();
 		// di.indexTrecGenomics();
 
-		di.indexWiki();
+		di.indexWikiDbDump();
 		// di.indexClueWeb12();
 		// di.makeDocumentIdMap();
 
@@ -322,63 +327,74 @@ public class DocumentIndexer {
 		iw.close();
 	}
 
-	public void indexWiki() throws Exception {
+	public void indexWikiDbDump() throws Exception {
 		Set<String> stopSecNames = getStopSectionNames();
 
-		// SetMap<Integer, Integer> pageToCats = Generics.newSetMap();
-		//
-		// {
-		//
-		// TextFileReader reader = new TextFileReader(MIRPath.WIKI_DIR + "wiki_catlinks.txt.gz");
-		// while (reader.hasNext()) {
-		// String line = reader.next();
-		//
-		// String[] parts = StrUtils.unwrap(line.split("\t"));
-		//
-		// if (parts.length != 3) {
-		// System.out.println(line);
-		// continue;
-		// }
-		//
-		// int pageid = Integer.parseInt(parts[0]);
-		// int parent_id = Integer.parseInt(parts[1]);
-		// String cl_type = parts[2];
-		//
-		// if (cl_type.equals("page")) {
-		// pageToCats.put(pageid, parent_id);
-		// }
-		// }
-		// reader.close();
-		// }
-		//
-		// BidMap<Integer, String> idToCat = null;
-		//
-		// {
-		// ObjectInputStream ois = FileUtils.openObjectInputStream(MIRPath.WIKI_DIR + "wiki_cats.ser.gz");
-		// List<Integer> ids = FileUtils.readIntList(ois);
-		// List<String> titles = FileUtils.readStrList(ois);
-		// List<Integer> catPages = FileUtils.readIntList(ois);
-		// List<Integer> catSubcats = FileUtils.readIntList(ois);
-		// ois.close();
-		//
-		// idToCat = Generics.newBidMap(ids.size());
-		// // pageCnts = Generics.newCounter();
-		// // subCatCnts = Generics.newCounter();
-		//
-		// for (int i = 0; i < ids.size(); i++) {
-		// idToCat.put(ids.get(i), titles.get(i));
-		// // pageCnts.setCount(ids.get(i), catPages.get(i));
-		// // subCatCnts.setCount(ids.get(i), catSubcats.get(i));
-		// }
-		// }
+		SetMap<Integer, Integer> toToFrom = Generics.newSetMap();
 
-		// Map<Integer, String> idToTitle = Generics.newHashMap();
-		//
-		// {
-		// ObjectInputStream ois = FileUtils.openObjectInputStream(MIRPath.WIKI_DIR + "wiki_titles.ser.gz");
-		// idToTitle = FileUtils.readIntStrMap(ois);
-		// ois.close();
-		// }
+		{
+			ObjectInputStream ois = FileUtils.openObjectInputStream(MIRPath.WIKI_DIR + "wiki_redirects.ser.gz");
+			Map<Integer, Integer> m = FileUtils.readIntMap(ois);
+			ois.close();
+
+			for (Entry<Integer, Integer> e : m.entrySet()) {
+				toToFrom.put(e.getValue(), e.getKey());
+			}
+		}
+
+		SetMap<Integer, Integer> pageToCats = Generics.newSetMap();
+
+		{
+			TextFileReader reader = new TextFileReader(MIRPath.WIKI_DIR + "wiki_catlinks.txt.gz");
+			while (reader.hasNext()) {
+				String line = reader.next();
+
+				String[] parts = StrUtils.unwrap(line.split("\t"));
+
+				if (parts.length != 3) {
+					System.out.println(line);
+					continue;
+				}
+
+				int pageid = Integer.parseInt(parts[0]);
+				int parent_id = Integer.parseInt(parts[1]);
+				String cl_type = parts[2];
+
+				if (cl_type.equals("page")) {
+					pageToCats.put(pageid, parent_id);
+				}
+			}
+			reader.close();
+		}
+
+		BidMap<Integer, String> idToCat = null;
+
+		{
+			ObjectInputStream ois = FileUtils.openObjectInputStream(MIRPath.WIKI_DIR + "wiki_cats.ser.gz");
+			List<Integer> ids = FileUtils.readIntList(ois);
+			List<String> titles = FileUtils.readStrList(ois);
+			List<Integer> catPages = FileUtils.readIntList(ois);
+			List<Integer> catSubcats = FileUtils.readIntList(ois);
+			ois.close();
+
+			idToCat = Generics.newBidMap(ids.size());
+			// pageCnts = Generics.newCounter();
+			// subCatCnts = Generics.newCounter();
+
+			for (int i = 0; i < ids.size(); i++) {
+				idToCat.put(ids.get(i), titles.get(i));
+				// pageCnts.setCount(ids.get(i), catPages.get(i));
+				// subCatCnts.setCount(ids.get(i), catSubcats.get(i));
+			}
+		}
+
+		Map<Integer, String> idToTitle = Generics.newHashMap();
+
+		{
+			ObjectInputStream ois = FileUtils.openObjectInputStream(MIRPath.WIKI_DIR + "wiki_titles.ser.gz");
+			idToTitle = FileUtils.readIntStrMap(ois);
+			ois.close();
+		}
 
 		IndexWriter iw = getIndexWriter(MIRPath.WIKI_INDEX_DIR);
 		TextFileReader reader = new TextFileReader(MIRPath.WIKI_DIR + "wiki_pages.txt.gz");
@@ -407,6 +423,33 @@ public class DocumentIndexer {
 
 			String title = parts[1];
 			String wikiText = parts[2].replace("\\\\n", "\n");
+			String catStr = "";
+			String redStr = "";
+
+			{
+				StringBuffer sb = new StringBuffer();
+				Set<Integer> cats = pageToCats.get(pageid, false);
+
+				if (cats != null) {
+					for (int cid : cats) {
+						String cat = idToCat.getValue(cid);
+						sb.append(String.format("%s\t%d\n", cat, cid));
+					}
+				}
+				catStr = sb.toString().trim();
+			}
+
+			{
+				StringBuffer sb = new StringBuffer();
+				Set<Integer> froms = toToFrom.get(pageid, false);
+
+				if (froms != null) {
+					for (int from : froms) {
+						sb.append(String.format("%s\t%d\n", idToTitle.get(from), from));
+					}
+				}
+				redStr = sb.toString().trim();
+			}
 
 			ParsedPage pp = parser.parse(wikiText);
 
@@ -472,6 +515,8 @@ public class DocumentIndexer {
 			Document doc = new Document();
 			doc.add(new StringField(CommonFieldNames.DOCUMENT_ID, pageid + "", Store.YES));
 			doc.add(new StringField(CommonFieldNames.TITLE, title, Store.YES));
+			doc.add(new StringField(CommonFieldNames.CATEGORY, catStr, Store.YES));
+			doc.add(new StringField(CommonFieldNames.REDIRECTS, redStr, Store.YES));
 			doc.add(new MyTextField(CommonFieldNames.CONTENT, content, Store.YES));
 			iw.addDocument(doc);
 		}
@@ -568,9 +613,9 @@ public class DocumentIndexer {
 
 			Document doc = new Document();
 			doc.add(new StringField(CommonFieldNames.TITLE, title, Store.YES));
-			doc.add(new StringField(CommonFieldNames.LOWER_TITLE, title.toLowerCase(), Store.YES));
-			doc.add(new StringField(CommonFieldNames.REDIRECT_TITLE, redicrect, Store.YES));
-			doc.add(new StringField(CommonFieldNames.LOWER_REDIRECT_TITLE, redicrect.toLowerCase(), Store.YES));
+			// doc.add(new StringField(CommonFieldNames.LOWER_TITLE, title.toLowerCase(), Store.YES));
+			// doc.add(new StringField(CommonFieldNames.REDIRECT_TITLE, redicrect, Store.YES));
+			// doc.add(new StringField(CommonFieldNames.LOWER_REDIRECT_TITLE, redicrect.toLowerCase(), Store.YES));
 			doc.add(new MyTextField(CommonFieldNames.CONTENT, content, Store.YES));
 			doc.add(new MyTextField(CommonFieldNames.CATEGORY, sb2.toString(), Store.YES));
 			iw.addDocument(doc);

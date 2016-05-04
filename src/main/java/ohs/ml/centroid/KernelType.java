@@ -1,4 +1,4 @@
-package ohs.classifier.centroid;
+package ohs.ml.centroid;
 
 public enum KernelType {
 	LINEAR(0), POLY(1), RBF(2), SIGMOD(3);

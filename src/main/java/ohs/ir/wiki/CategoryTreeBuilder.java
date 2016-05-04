@@ -172,6 +172,10 @@ public class CategoryTreeBuilder {
 		List<String> catPaths = Generics.newArrayList();
 
 		for (Node<String> node : trie.getLeafNodes()) {
+			List<String> keyPath = node.getKeyPath();
+			
+			
+			
 			catPaths.add(node.getKeyPath(" -> "));
 		}
 
@@ -193,6 +197,11 @@ public class CategoryTreeBuilder {
 		// TextFileWriter writer = new TextFileWriter(ELPath.WIKI_DIR + "wiki_cat_tree.txt");
 
 		trie = Trie.newTrie();
+		
+		/*
+		 * 349052 -> Diseases_and_disorders
+		 * 198457 -> Medicine
+		 */
 
 		int[] roots = { 349052, 198457 };
 
@@ -309,7 +318,7 @@ public class CategoryTreeBuilder {
 
 		Set<Integer> children = parentToChildren.get(parent_id, false);
 
-		if (children == null || catPath.size() >= 6) {
+		if (children == null || catPath.size() >= 10) {
 			if (pageCnts.getCount(parent_id) > 0) {
 				trie.insert(catPath);
 			}

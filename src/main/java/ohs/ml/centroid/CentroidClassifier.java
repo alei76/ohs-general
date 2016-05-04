@@ -1,4 +1,4 @@
-package ohs.classifier.centroid;
+package ohs.ml.centroid;
 
 import java.util.ArrayList;
 import java.util.List;
