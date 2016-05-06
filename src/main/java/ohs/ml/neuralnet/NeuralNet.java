@@ -5,15 +5,18 @@ import ohs.math.ArrayMath;
 public class NeuralNet {
 
 	public static void main(String[] args) {
-		NeuralNet nn = new NeuralNet();
+		NeuralNetParams param = new NeuralNetParams();
 
-		int num_data = 100;
-		int num_labels = 5;
+		NeuralNet nn = new NeuralNet(param);
 
-		double[][] xs = ArrayMath.random(0, 1, num_data, num_labels);
-		double[][] ys = new double[num_data][num_labels];
+		int data_size = 100;
+		int label_size = param.getNumOutputNeurons();
+		int feat_size = param.getNumInputNeurons();
 
-		int[] labels = ArrayMath.random(0, 4, num_data);
+		double[][] xs = ArrayMath.random(0, 1, data_size, feat_size);
+		double[][] ys = new double[data_size][label_size];
+
+		int[] labels = ArrayMath.random(0, label_size - 1, data_size);
 
 		for (int i = 0; i < ys.length; i++) {
 			int label = labels[i];
@@ -32,9 +35,15 @@ public class NeuralNet {
 
 	private double[] b2;
 
-	private NeuralNetParams param = new NeuralNetParams();
+	private NeuralNetParams param;
 
 	public NeuralNet() {
+		this(new NeuralNetParams());
+	}
+
+	public NeuralNet(NeuralNetParams param) {
+		this.param = param;
+
 		W1 = new double[param.getNumInputNeurons()][param.getNumHiddenNeurons()];
 		W2 = new double[param.getNumHiddenNeurons()][param.getNumOutputNeurons()];
 		b1 = new double[param.getNumHiddenNeurons()];
@@ -44,27 +53,57 @@ public class NeuralNet {
 		ArrayMath.random(0, 1, W2);
 		ArrayMath.random(0, 1, b1);
 		ArrayMath.random(0, 1, b2);
-
 	}
 
-	public void train(double[][] xs, double[][] ys) {
-		double[] h = new double[param.getNumHiddenNeurons()];
-		double[] z1 = new double[h.length];
-		double[] z2 = new double[param.getNumOutputNeurons()];
-
-		double[] yh = new double[param.getNumOutputNeurons()];
+	public void train(double[][] X, double[][] Y) {
+		double[][] H = new double[X.length][param.getNumHiddenNeurons()];
+		double[][] Yh = new double[X.length][param.getNumOutputNeurons()];
 		double cost = 0;
 
-		for (int i = 0; i < xs.length; i++) {
-			ArrayMath.product(W1, xs[i], z1);
-			ArrayMath.add(z1, b1, z1);
-			ArrayMath.sigmoid(z1, h);
+		ArrayMath.product(X, W1, H);
+		ArrayMath.add(H, b1, H);
+		ArrayMath.sigmoid(H, H);
 
-			ArrayMath.product(W2, h, z2);
-			ArrayMath.add(z2, b2, z2);
-			ArrayMath.softmax(z2, yh);
-			cost -= ArrayMath.crossEntropy(ys[i], yh);
+		ArrayMath.product(H, W2, Yh);
+		ArrayMath.add(Yh, b2, Yh);
+		ArrayMath.softmax(Yh, Yh);
+
+		for (int i = 0; i < Y.length; i++) {
+			for (int j = 0; j < Y[i].length; j++) {
+				if (Y[i][j] != 0) {
+					cost -= Math.log(Yh[i][j]);
+				}
+			}
 		}
+
+		double[][] D = new double[X.length][param.getNumOutputNeurons()];
+		double[][] GW2 = new double[param.getNumHiddenNeurons()][param.getNumOutputNeurons()];
+		double[][] HT = ArrayMath.transpose(H);
+
+		ArrayMath.substract(Yh, Y, D);
+		ArrayMath.product(ArrayMath.transpose(H), D, GW2);
+
+		D = ArrayMath.product(D, ArrayMath.transpose(W2));
+
+		ArrayMath.multiply(D, ArrayMath.sigmoidGradient(H), D);
+
+		// for (int i = 0; i < X.length; i++) {
+		// ArrayMath.product(W1, X[i], Z1[i]);
+		// ArrayMath.add(Z1[i], b1, Z1[i]);
+		// ArrayMath.sigmoid(Z1[i], H[i]);
+		//
+		// ArrayMath.product(W1, H[i], Z2[i]);
+		// ArrayMath.add(Z2[i], b2, Z2[i]);
+		// ArrayMath.softmax(Z2[i], Yh[i]);
+		// ArrayMath.log(Yh[i], tmp);
+		//
+		// cost -= ArrayMath.dotProduct(tmp, Y[i]);
+		// }
+
+		// double[][] delta1 = new double[X.length][param.getNumOutputNeurons()];
+		// double[][] gradW2 = new double[param.getNumHiddenNeurons()][param.getNumOutputNeurons()];
+		//
+		// ArrayMath.addAfterScale(Yh, 1, Y, -1, delta1);
 
 	}
 

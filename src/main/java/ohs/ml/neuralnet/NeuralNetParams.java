@@ -4,16 +4,16 @@ public class NeuralNetParams {
 
 	private int num_hidden_layers = 1;
 
-	private int num_input_neurons = 5;
+	private int num_input_neurons = 10;
 
-	private int num_hidden_neurons = 3;
+	private int num_hidden_neurons = 4;
 
 	private int num_output_neurons = 5;
 
 	private double learning_rate = 0.05;
-	
-	public NeuralNetParams(){
-		
+
+	public NeuralNetParams() {
+
 	}
 
 	public NeuralNetParams(int num_hidden_layers, int num_input_neurons, int num_hidden_neurons, int num_output_neurons,

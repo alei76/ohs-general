@@ -72,6 +72,10 @@ public class ArrayMath {
 		return ret;
 	}
 
+	public static double add(double[][] a, double[] b, double[][] c) {
+		return addAfterScale(a, 1, b, 1, c);
+	}
+
 	public static double addAfterScale(double a, double ac, double b) {
 		return addAfterScale(a, ac, b, 1 - ac);
 	}
@@ -134,7 +138,7 @@ public class ArrayMath {
 		return ret;
 	}
 
-	public static double addAfterScaleRows(double[][] a, double ac, double[] b, double bc, double[][] c) {
+	public static double addAfterScale(double[][] a, double ac, double[] b, double bc, double[][] c) {
 		if (ArrayChecker.isEqualDim(a, c) && a[0].length == b.length) {
 
 		} else {
@@ -146,6 +150,25 @@ public class ArrayMath {
 			ret += addAfterScale(a[i], ac, b, bc, c[i]);
 		}
 		return ret;
+	}
+
+	public static double addAfterScale(double[][] a, double ac, double[][] b, double bc, double[][] c) {
+		if (!ArrayChecker.isEqualDim(a, b, c)) {
+			throw new IllegalArgumentException();
+		}
+		double ret = 0;
+		for (int i = 0; i < a.length; i++) {
+			ret += addAfterScale(a[i], ac, b[i], bc, c[i]);
+		}
+		return ret;
+	}
+
+	public static double add(double[][] a, double[][] b, double[][] c) {
+		return addAfterScale(a, 1, b, 1, c);
+	}
+
+	public static double substract(double[][] a, double[][] b, double[][] c) {
+		return addAfterScale(a, 1, b, -1, c);
 	}
 
 	public static int argMax(double[] a) {
@@ -620,8 +643,7 @@ public class ArrayMath {
 
 	/**
 	 * 
-	 * See the example in table 8.2 in Introduction to Information Retrieval by
-	 * Manning et al.
+	 * See the example in table 8.2 in Introduction to Information Retrieval by Manning et al.
 	 * 
 	 * 
 	 * @param judges1
@@ -1334,6 +1356,26 @@ public class ArrayMath {
 		return sum;
 	}
 
+	public static void transpose(double[][] a, double[][] b) {
+		if (!ArrayChecker.isTransposable(a, b)) {
+			throw new IllegalArgumentException();
+		}
+
+		for (int i = 0; i < a.length; i++) {
+			for (int j = 0; j < a[i].length; j++) {
+				b[j][i] = a[i][j];
+			}
+		}
+	}
+
+	public static double[][] transpose(double[][] a) {
+		int a_rows = a.length;
+		int a_cols = a[0].length;
+		double[][] b = new double[a_cols][a_rows];
+		transpose(a, b);
+		return b;
+	}
+
 	public static double[] product(double[][] a, double[] b) {
 		if (!ArrayChecker.isProductable(a, b)) {
 			throw new IllegalArgumentException();
@@ -1348,9 +1390,9 @@ public class ArrayMath {
 			throw new IllegalArgumentException();
 		}
 
-		int[] dimA = ArrayUtils.dimensions(a);
-		int[] dimB = ArrayUtils.dimensions(a);
-		double[][] c = new double[dimA[0]][dimB[1]];
+		int[] a_dim = ArrayUtils.dimensions(a);
+		int[] b_sim = ArrayUtils.dimensions(a);
+		double[][] c = new double[a_dim[0]][b_sim[1]];
 		product(a, b, c);
 		return c;
 
@@ -1448,8 +1490,7 @@ public class ArrayMath {
 	 * @param damping_factor
 	 * @return
 	 */
-	public static void randomWalk(double[][] trans_probs, double[] cents, int max_iter, double min_dist,
-			double damping_factor) {
+	public static void randomWalk(double[][] trans_probs, double[] cents, int max_iter, double min_dist, double damping_factor) {
 		if (!ArrayChecker.isProductable(trans_probs, cents)) {
 			throw new IllegalArgumentException();
 		}
@@ -1615,6 +1656,36 @@ public class ArrayMath {
 		return sum;
 	}
 
+	public static double[][] sigmoidGradient(double[][] a) {
+		int[] dim = ArrayUtils.dimensions(a);
+		double[][] b = new double[dim[0]][dim[1]];
+		sigmoidGradient(a, b);
+		return b;
+	}
+
+	public static double sigmoidGradient(double[][] a, double[][] b) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			sum += sigmoidGradient(a[i], b[i]);
+		}
+		return sum;
+	}
+
+	public static double sigmoidGradient(double[] a, double[] b) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			b[i] = CommonFuncs.sigmoidGradient(a[i]);
+			sum += b[i];
+		}
+		return sum;
+	}
+
 	public static void simpleLinearRegression() {
 		int MAXN = 1000;
 		int n = 0;
@@ -1731,8 +1802,8 @@ public class ArrayMath {
 	 *               = a + log (1 - e^(b-a))
 	 * </pre>
 	 * 
-	 * By exponentiating <tt>b-a</tt>, we obtain better numerical precision than
-	 * we would if we calculated <tt>e^a</tt> or <tt>e^b</tt> directly.
+	 * By exponentiating <tt>b-a</tt>, we obtain better numerical precision than we would if we calculated <tt>e^a</tt> or <tt>e^b</tt>
+	 * directly.
 	 * <p>
 	 * Returns <tt>NaN</tt> if b > a (so that log(e^a - e^b) is undefined).
 	 */
@@ -1805,12 +1876,11 @@ public class ArrayMath {
 	 *               = a + log (1 + e^(b-a))
 	 * </pre>
 	 * 
-	 * By exponentiating <tt>b-a</tt>, we obtain better numerical precision than
-	 * we would if we calculated <tt>e^a</tt> or <tt>e^b</tt> directly.
+	 * By exponentiating <tt>b-a</tt>, we obtain better numerical precision than we would if we calculated <tt>e^a</tt> or <tt>e^b</tt>
+	 * directly.
 	 * <P>
-	 * Note: This function is just like
-	 * {@link cc.mallet.fst.Transducer#sumNegLogProb sumNegLogProb} in
-	 * <TT>Transducer</TT>, except that the logs aren't negated.
+	 * Note: This function is just like {@link cc.mallet.fst.Transducer#sumNegLogProb sumNegLogProb} in <TT>Transducer</TT>, except that the
+	 * logs aren't negated.
 	 */
 	public static double sumLogProb(double a, double b) {
 		if (a == Double.NEGATIVE_INFINITY)
@@ -1826,14 +1896,12 @@ public class ArrayMath {
 	/**
 	 * Below from Stanford NLP package, SloppyMath.java
 	 * 
-	 * Sums an array of numbers log(x1)...log(xn). This saves some of the
-	 * unnecessary calls to Math.log in the two-argument version.
+	 * Sums an array of numbers log(x1)...log(xn). This saves some of the unnecessary calls to Math.log in the two-argument version.
 	 * <p>
-	 * Note that this implementation IGNORES elements of the x array that are
-	 * more than LOGTOLERANCE (currently 30.0) less than the maximum element.
+	 * Note that this implementation IGNORES elements of the x array that are more than LOGTOLERANCE (currently 30.0) less than the maximum
+	 * element.
 	 * <p>
-	 * Cursory testing makes me wonder if this is actually much faster than
-	 * repeated use of the 2-argument version, however -cas.
+	 * Cursory testing makes me wonder if this is actually much faster than repeated use of the 2-argument version, however -cas.
 	 * 
 	 * @param x
 	 *            An array log(x1), log(x2), ..., log(xn)
