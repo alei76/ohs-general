@@ -2,10 +2,10 @@ package ohs.ml.neuralnet;
 
 import ohs.math.ArrayMath;
 
-public class NeuralNet {
+public class Word2Vec {
 
 	public static void main(String[] args) {
-		NeuralNet nn = new NeuralNet();
+		Word2Vec nn = new Word2Vec();
 
 		int num_data = 100;
 		int num_labels = 5;
@@ -34,7 +34,7 @@ public class NeuralNet {
 
 	private NeuralNetParams param = new NeuralNetParams();
 
-	public NeuralNet() {
+	public Word2Vec() {
 		W1 = new double[param.getNumInputNeurons()][param.getNumHiddenNeurons()];
 		W2 = new double[param.getNumHiddenNeurons()][param.getNumOutputNeurons()];
 		b1 = new double[param.getNumHiddenNeurons()];
@@ -54,6 +54,7 @@ public class NeuralNet {
 
 		double[] yh = new double[param.getNumOutputNeurons()];
 		double cost = 0;
+		
 
 		for (int i = 0; i < xs.length; i++) {
 			ArrayMath.product(W1, xs[i], z1);
@@ -65,11 +66,13 @@ public class NeuralNet {
 			ArrayMath.softmax(z2, yh);
 			cost -= ArrayMath.crossEntropy(ys[i], yh);
 		}
-
+		
+		
 	}
-
+	
 	public void train2(double[] x, double[] y) {
-
+		
 	}
+
 
 }

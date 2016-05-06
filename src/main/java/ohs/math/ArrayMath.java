@@ -409,7 +409,16 @@ public class ArrayMath {
 		return -ret;
 	}
 
+	public static double[] cumulate(double[] a) {
+		double[] b = new double[a.length];
+		cumulate(a, b);
+		return b;
+	}
+
 	public static double cumulate(double[] a, double[] b) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
 		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			sum += a[i];
@@ -571,12 +580,21 @@ public class ArrayMath {
 	}
 
 	public static double exp(double[] a, double[] b) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
 		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			b[i] = Math.exp(a[i]);
 			sum += b[i];
 		}
 		return sum;
+	}
+
+	public static double[] exp(double[] a) {
+		double[] b = new double[a.length];
+		exp(a, b);
+		return b;
 	}
 
 	public static double geometricMean(double[] a) {
@@ -602,7 +620,8 @@ public class ArrayMath {
 
 	/**
 	 * 
-	 * See the example in table 8.2 in Introduction to Information Retrieval by Manning et al.
+	 * See the example in table 8.2 in Introduction to Information Retrieval by
+	 * Manning et al.
 	 * 
 	 * 
 	 * @param judges1
@@ -760,6 +779,12 @@ public class ArrayMath {
 		return sum;
 	}
 
+	public static double[] log(double[] a) {
+		double[] b = new double[a.length];
+		log(a, b);
+		return b;
+	}
+
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
@@ -798,7 +823,8 @@ public class ArrayMath {
 		}
 
 		{
-			// double[][] a = new double[][] { { 0.5, 0.5, 0 }, { 0.5, 0, 1 }, { 0, 0.5, 0 } };
+			// double[][] a = new double[][] { { 0.5, 0.5, 0 }, { 0.5, 0, 1 }, {
+			// 0, 0.5, 0 } };
 			double[][] a = new double[][] { { 0.5, 0.5, 0 }, { 0.5, 0, 0 }, { 0, 0.5, 1 } };
 			double[][] b = ArrayUtils.matrix(3, 1f / 3);
 
@@ -823,7 +849,8 @@ public class ArrayMath {
 		}
 
 		{
-			// double[][] a = new double[][] { { 0.5, 0.5, 0 }, { 0.5, 0, 1 }, { 0, 0.5, 0 } };
+			// double[][] a = new double[][] { { 0.5, 0.5, 0 }, { 0.5, 0, 1 }, {
+			// 0, 0.5, 0 } };
 			double[][] a = new double[][] { { 0.5, 0.5, 0 }, { 0.5, 0, 0 }, { 0, 0.5, 1 } };
 
 			System.out.println(ArrayUtils.toString(a));
@@ -1295,12 +1322,25 @@ public class ArrayMath {
 	}
 
 	public static double product(double[][] a, double[] b, double[] c) {
+		if (!ArrayChecker.isProductable(a, b, c)) {
+			throw new IllegalArgumentException();
+		}
+
 		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			c[i] = dotProduct(a[i], b);
 			sum += c[i];
 		}
 		return sum;
+	}
+
+	public static double[] product(double[][] a, double[] b) {
+		if (!ArrayChecker.isProductable(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		double[] c = new double[a.length];
+		product(a, b, c);
+		return c;
 	}
 
 	public static double[][] product(double[][] a, double[][] b) {
@@ -1316,24 +1356,27 @@ public class ArrayMath {
 
 	}
 
-	public static void product(double[][] a, double[][] b, double[][] c) {
+	public static double product(double[][] a, double[][] b, double[][] c) {
 		if (!ArrayChecker.isProductable(a, b, c)) {
 			throw new IllegalArgumentException();
 		}
 
-		int aRowDim = a.length;
-		int aColDim = a[0].length;
-		int bRowDim = b.length;
-		int bColDim = b[0].length;
+		int a_rows = a.length;
+		int a_cols = a[0].length;
+		int b_rows = b.length;
+		int b_cols = b[0].length;
+		double sum = 0;
 
-		double[] bc = new double[bRowDim]; // column j of B
+		double[] bc = new double[b_rows]; // column j of B
 
-		for (int j = 0; j < bColDim; j++) {
+		for (int j = 0; j < b_cols; j++) {
 			ArrayUtils.copyColumn(b, j, bc);
-			for (int i = 0; i < aRowDim; i++) {
+			for (int i = 0; i < a_rows; i++) {
 				c[i][j] = dotProduct(a[i], bc);
+				sum += c[i][j];
 			}
 		}
+		return sum;
 	}
 
 	public static double random(double min, double max, double[] x) {
@@ -1405,7 +1448,8 @@ public class ArrayMath {
 	 * @param damping_factor
 	 * @return
 	 */
-	public static void randomWalk(double[][] trans_probs, double[] cents, int max_iter, double min_dist, double damping_factor) {
+	public static void randomWalk(double[][] trans_probs, double[] cents, int max_iter, double min_dist,
+			double damping_factor) {
 		if (!ArrayChecker.isProductable(trans_probs, cents)) {
 			throw new IllegalArgumentException();
 		}
@@ -1427,7 +1471,8 @@ public class ArrayMath {
 				dot_product = 0;
 				for (int j = 0; j < trans_probs[i].length; j++) {
 					tran_prob = damping_factor * trans_probs[i][j];
-					// tran_prob = damping_factor * trans_probs[i][j] + uniform_cent;
+					// tran_prob = damping_factor * trans_probs[i][j] +
+					// uniform_cent;
 					dot_product += tran_prob * old_cents[j];
 				}
 				cents[i] = dot_product;
@@ -1440,10 +1485,12 @@ public class ArrayMath {
 			}
 
 			// double sum1 = LA.product(trans_probs, old_cents, cents);
-			// double sum2 = addAfterScale(cents, uniform_cent, 1 - damping_factor, damping_factor, cents);
+			// double sum2 = addAfterScale(cents, uniform_cent, 1 -
+			// damping_factor, damping_factor, cents);
 
 			// for (int j = 0; j < cents.length; j++) {
-			// cents[j] = damping_factor * uniform_cent + (1 - damping_factor) * cents[j];
+			// cents[j] = damping_factor * uniform_cent + (1 - damping_factor) *
+			// cents[j];
 			// sum += cents[j];
 			// }
 
@@ -1557,6 +1604,17 @@ public class ArrayMath {
 		return sum;
 	}
 
+	public static double sigmoid(double[][] a, double[][] b) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			sum += sigmoid(a[i], b[i]);
+		}
+		return sum;
+	}
+
 	public static void simpleLinearRegression() {
 		int MAXN = 1000;
 		int n = 0;
@@ -1626,6 +1684,18 @@ public class ArrayMath {
 		return scale(b, 1f / sum, b);
 	}
 
+	public static double softmax(double[][] a, double[][] b) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			sum += softmax(a[i], b[i]);
+		}
+		return sum;
+	}
+
 	public static double substract(double[] a, double b, double[] c) {
 		if (!ArrayChecker.isEqualDim(a, c)) {
 			throw new IllegalArgumentException();
@@ -1661,8 +1731,8 @@ public class ArrayMath {
 	 *               = a + log (1 - e^(b-a))
 	 * </pre>
 	 * 
-	 * By exponentiating <tt>b-a</tt>, we obtain better numerical precision than we would if we calculated <tt>e^a</tt> or <tt>e^b</tt>
-	 * directly.
+	 * By exponentiating <tt>b-a</tt>, we obtain better numerical precision than
+	 * we would if we calculated <tt>e^a</tt> or <tt>e^b</tt> directly.
 	 * <p>
 	 * Returns <tt>NaN</tt> if b > a (so that log(e^a - e^b) is undefined).
 	 */
@@ -1735,11 +1805,12 @@ public class ArrayMath {
 	 *               = a + log (1 + e^(b-a))
 	 * </pre>
 	 * 
-	 * By exponentiating <tt>b-a</tt>, we obtain better numerical precision than we would if we calculated <tt>e^a</tt> or <tt>e^b</tt>
-	 * directly.
+	 * By exponentiating <tt>b-a</tt>, we obtain better numerical precision than
+	 * we would if we calculated <tt>e^a</tt> or <tt>e^b</tt> directly.
 	 * <P>
-	 * Note: This function is just like {@link cc.mallet.fst.Transducer#sumNegLogProb sumNegLogProb} in <TT>Transducer</TT>, except that the
-	 * logs aren't negated.
+	 * Note: This function is just like
+	 * {@link cc.mallet.fst.Transducer#sumNegLogProb sumNegLogProb} in
+	 * <TT>Transducer</TT>, except that the logs aren't negated.
 	 */
 	public static double sumLogProb(double a, double b) {
 		if (a == Double.NEGATIVE_INFINITY)
@@ -1755,12 +1826,14 @@ public class ArrayMath {
 	/**
 	 * Below from Stanford NLP package, SloppyMath.java
 	 * 
-	 * Sums an array of numbers log(x1)...log(xn). This saves some of the unnecessary calls to Math.log in the two-argument version.
+	 * Sums an array of numbers log(x1)...log(xn). This saves some of the
+	 * unnecessary calls to Math.log in the two-argument version.
 	 * <p>
-	 * Note that this implementation IGNORES elements of the x array that are more than LOGTOLERANCE (currently 30.0) less than the maximum
-	 * element.
+	 * Note that this implementation IGNORES elements of the x array that are
+	 * more than LOGTOLERANCE (currently 30.0) less than the maximum element.
 	 * <p>
-	 * Cursory testing makes me wonder if this is actually much faster than repeated use of the 2-argument version, however -cas.
+	 * Cursory testing makes me wonder if this is actually much faster than
+	 * repeated use of the 2-argument version, however -cas.
 	 * 
 	 * @param x
 	 *            An array log(x1), log(x2), ..., log(xn)
