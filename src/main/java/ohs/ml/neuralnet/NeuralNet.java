@@ -78,6 +78,7 @@ public class NeuralNet {
 
 		double[][] D = new double[X.length][param.getNumOutputNeurons()];
 		double[][] GW2 = new double[param.getNumHiddenNeurons()][param.getNumOutputNeurons()];
+		double[][] GW1 = new double[param.getNumHiddenNeurons()][param.getNumHiddenNeurons()];
 		double[][] HT = ArrayMath.transpose(H);
 
 		ArrayMath.substract(Yh, Y, D);
@@ -86,6 +87,9 @@ public class NeuralNet {
 		D = ArrayMath.product(D, ArrayMath.transpose(W2));
 
 		ArrayMath.multiply(D, ArrayMath.sigmoidGradient(H), D);
+		
+		ArrayMath.product(ArrayMath.transpose(X), D, GW1);
+		
 
 		// for (int i = 0; i < X.length; i++) {
 		// ArrayMath.product(W1, X[i], Z1[i]);
