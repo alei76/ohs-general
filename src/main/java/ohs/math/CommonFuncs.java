@@ -17,14 +17,6 @@ public class CommonFuncs {
 		return 1 / (1 + Math.exp(-alpha * x));
 	}
 
-	public static boolean isEqual(int a, int b) {
-		return a == b;
-	}
-
-	public static boolean isEqual(double a, double b) {
-		return a == b;
-	}
-
 	public static double binarySigmoidDerivative(double alpha, double x) {
 		return alpha * binarySigmoid(alpha, x) * (1 - binarySigmoid(alpha, x));
 	}
@@ -67,6 +59,14 @@ public class CommonFuncs {
 		return Math.exp(logFactorial(n) - logFactorial(r) - logFactorial(n - r));
 	}
 
+	public static double divide(double numerator, double denominator) {
+		double ret = 0;
+		if (numerator > 0 && denominator > 0) {
+			ret = numerator / denominator;
+		}
+		return ret;
+	}
+
 	public static double factorial(int n) {
 		return Math.exp(logGamma(n + 1));
 	}
@@ -92,6 +92,14 @@ public class CommonFuncs {
 	 */
 	public static double heapsLaw(double k, double b, double T) {
 		return k * Math.pow(T, b);
+	}
+
+	public static boolean isEqual(double a, double b) {
+		return a == b;
+	}
+
+	public static boolean isEqual(int a, int b) {
+		return a == b;
 	}
 
 	public static double log(double x) {
@@ -308,14 +316,6 @@ public class CommonFuncs {
 	public static double zipfLaw(double rank, double M, double L) {
 		double c = 1 / Math.log(M);
 		double ret = (L * c) / rank;
-		return ret;
-	}
-
-	public static double divide(double numerator, double denominator) {
-		double ret = 0;
-		if (numerator > 0 && denominator > 0) {
-			ret = numerator / denominator;
-		}
 		return ret;
 	}
 

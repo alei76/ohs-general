@@ -28,14 +28,6 @@ public class ArrayMath {
 		return sum;
 	}
 
-	public static double sumAfterLog(double[] a) {
-		double ret = 0;
-		for (int i = 0; i < a.length; i++) {
-			ret += Math.log(a[i]);
-		}
-		return ret;
-	}
-
 	public static double add(double[] a, double b, double[] c) {
 		if (!ArrayChecker.isEqualDim(a, c)) {
 			throw new IllegalArgumentException();
@@ -73,6 +65,10 @@ public class ArrayMath {
 	}
 
 	public static double add(double[][] a, double[] b, double[][] c) {
+		return addAfterScale(a, 1, b, 1, c);
+	}
+
+	public static double add(double[][] a, double[][] b, double[][] c) {
 		return addAfterScale(a, 1, b, 1, c);
 	}
 
@@ -122,22 +118,6 @@ public class ArrayMath {
 		return sum;
 	}
 
-	public static double addAfterScaleColumns(double[][] a, double ac, double[] b, double bc, double[][] c) {
-		if (ArrayChecker.isEqualDim(a, c) && a.length == b.length) {
-
-		} else {
-			throw new IllegalArgumentException();
-		}
-		double ret = 0;
-		for (int j = 0; j < a[0].length; j++) {
-			for (int i = 0; i < a.length; i++) {
-				c[i][j] = ac * a[i][j] + bc * b[i];
-				ret += c[i][j];
-			}
-		}
-		return ret;
-	}
-
 	public static double addAfterScale(double[][] a, double ac, double[] b, double bc, double[][] c) {
 		if (ArrayChecker.isEqualDim(a, c) && a[0].length == b.length) {
 
@@ -163,12 +143,20 @@ public class ArrayMath {
 		return ret;
 	}
 
-	public static double add(double[][] a, double[][] b, double[][] c) {
-		return addAfterScale(a, 1, b, 1, c);
-	}
+	public static double addAfterScaleColumns(double[][] a, double ac, double[] b, double bc, double[][] c) {
+		if (ArrayChecker.isEqualDim(a, c) && a.length == b.length) {
 
-	public static double substract(double[][] a, double[][] b, double[][] c) {
-		return addAfterScale(a, 1, b, -1, c);
+		} else {
+			throw new IllegalArgumentException();
+		}
+		double ret = 0;
+		for (int j = 0; j < a[0].length; j++) {
+			for (int i = 0; i < a.length; i++) {
+				c[i][j] = ac * a[i][j] + bc * b[i];
+				ret += c[i][j];
+			}
+		}
+		return ret;
 	}
 
 	public static int argMax(double[] a) {
@@ -195,13 +183,17 @@ public class ArrayMath {
 		return ret;
 	}
 
-	public static int argMax(int[] x) {
+	public static int argMax(int[] a) {
+		return argMax(a, 0, a.length);
+	}
+
+	public static int argMax(int[] a, int start, int end) {
 		int ret = -1;
 		double max = -Double.MAX_VALUE;
-		for (int i = 0; i < x.length; i++) {
-			if (x[i] > max) {
+		for (int i = start; i < end; i++) {
+			if (a[i] > max) {
 				ret = i;
-				max = x[i];
+				max = a[i];
 			}
 		}
 		return ret;
@@ -274,6 +266,7 @@ public class ArrayMath {
 	public static int[] argMinMax(double[] a, int start, int end) {
 		int min_i = -1;
 		int max_i = -1;
+
 		double min = Double.MAX_VALUE;
 		double max = -Double.MAX_VALUE;
 
@@ -602,6 +595,12 @@ public class ArrayMath {
 		return Math.sqrt(sumSquaredDifferences(a, b));
 	}
 
+	public static double[] exp(double[] a) {
+		double[] b = new double[a.length];
+		exp(a, b);
+		return b;
+	}
+
 	public static double exp(double[] a, double[] b) {
 		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
@@ -612,12 +611,6 @@ public class ArrayMath {
 			sum += b[i];
 		}
 		return sum;
-	}
-
-	public static double[] exp(double[] a) {
-		double[] b = new double[a.length];
-		exp(a, b);
-		return b;
 	}
 
 	public static double geometricMean(double[] a) {
@@ -783,6 +776,12 @@ public class ArrayMath {
 		return ret;
 	}
 
+	public static double[] log(double[] a) {
+		double[] b = new double[a.length];
+		log(a, b);
+		return b;
+	}
+
 	/**
 	 * @param a
 	 * @param b
@@ -799,12 +798,6 @@ public class ArrayMath {
 			sum += b[i];
 		}
 		return sum;
-	}
-
-	public static double[] log(double[] a) {
-		double[] b = new double[a.length];
-		log(a, b);
-		return b;
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -1343,6 +1336,15 @@ public class ArrayMath {
 		product(aa, b, cc);
 	}
 
+	public static double[] product(double[][] a, double[] b) {
+		if (!ArrayChecker.isProductable(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		double[] c = new double[a.length];
+		product(a, b, c);
+		return c;
+	}
+
 	public static double product(double[][] a, double[] b, double[] c) {
 		if (!ArrayChecker.isProductable(a, b, c)) {
 			throw new IllegalArgumentException();
@@ -1356,46 +1358,16 @@ public class ArrayMath {
 		return sum;
 	}
 
-	public static void transpose(double[][] a, double[][] b) {
-		if (!ArrayChecker.isTransposable(a, b)) {
-			throw new IllegalArgumentException();
-		}
-
-		for (int i = 0; i < a.length; i++) {
-			for (int j = 0; j < a[i].length; j++) {
-				b[j][i] = a[i][j];
-			}
-		}
-	}
-
-	public static double[][] transpose(double[][] a) {
-		int a_rows = a.length;
-		int a_cols = a[0].length;
-		double[][] b = new double[a_cols][a_rows];
-		transpose(a, b);
-		return b;
-	}
-
-	public static double[] product(double[][] a, double[] b) {
-		if (!ArrayChecker.isProductable(a, b)) {
-			throw new IllegalArgumentException();
-		}
-		double[] c = new double[a.length];
-		product(a, b, c);
-		return c;
-	}
-
 	public static double[][] product(double[][] a, double[][] b) {
 		if (!ArrayChecker.isProductable(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
 		int[] a_dim = ArrayUtils.dimensions(a);
-		int[] b_sim = ArrayUtils.dimensions(a);
+		int[] b_sim = ArrayUtils.dimensions(b);
 		double[][] c = new double[a_dim[0]][b_sim[1]];
 		product(a, b, c);
 		return c;
-
 	}
 
 	public static double product(double[][] a, double[][] b, double[][] c) {
@@ -1656,6 +1628,18 @@ public class ArrayMath {
 		return sum;
 	}
 
+	public static double sigmoidGradient(double[] a, double[] b) {
+		if (!ArrayChecker.isEqualDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			b[i] = CommonFuncs.sigmoidGradient(a[i]);
+			sum += b[i];
+		}
+		return sum;
+	}
+
 	public static double[][] sigmoidGradient(double[][] a) {
 		int[] dim = ArrayUtils.dimensions(a);
 		double[][] b = new double[dim[0]][dim[1]];
@@ -1670,18 +1654,6 @@ public class ArrayMath {
 		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			sum += sigmoidGradient(a[i], b[i]);
-		}
-		return sum;
-	}
-
-	public static double sigmoidGradient(double[] a, double[] b) {
-		if (!ArrayChecker.isEqualDim(a, b)) {
-			throw new IllegalArgumentException();
-		}
-		double sum = 0;
-		for (int i = 0; i < a.length; i++) {
-			b[i] = CommonFuncs.sigmoidGradient(a[i]);
-			sum += b[i];
 		}
 		return sum;
 	}
@@ -1759,12 +1731,27 @@ public class ArrayMath {
 		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
-
 		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			sum += softmax(a[i], b[i]);
 		}
 		return sum;
+	}
+
+	public static double softmax(double[][] a, int c, int o) {
+		double sum = 0;
+		double tmp = 0;
+		double v = 0;
+
+		for (int i = 0; i < a.length; i++) {
+			tmp = dotProduct(a[i], a[c]);
+			sum += tmp;
+
+			if (i == o) {
+				v = tmp;
+			}
+		}
+		return v / sum;
 	}
 
 	public static double substract(double[] a, double b, double[] c) {
@@ -1789,6 +1776,10 @@ public class ArrayMath {
 			sum += c[i];
 		}
 		return sum;
+	}
+
+	public static double substract(double[][] a, double[][] b, double[][] c) {
+		return addAfterScale(a, 1, b, -1, c);
 	}
 
 	/**
@@ -1834,6 +1825,14 @@ public class ArrayMath {
 		int ret = 0;
 		for (int i = 0; i < x.length; i++) {
 			ret += x[i];
+		}
+		return ret;
+	}
+
+	public static double sumAfterLog(double[] a) {
+		double ret = 0;
+		for (int i = 0; i < a.length; i++) {
+			ret += Math.log(a[i]);
 		}
 		return ret;
 	}
@@ -2023,6 +2022,26 @@ public class ArrayMath {
 			sum += tfidfs[i];
 		}
 		return sum;
+	}
+
+	public static double[][] transpose(double[][] a) {
+		int a_rows = a.length;
+		int a_cols = a[0].length;
+		double[][] b = new double[a_cols][a_rows];
+		transpose(a, b);
+		return b;
+	}
+
+	public static void transpose(double[][] a, double[][] b) {
+		if (!ArrayChecker.isTransposable(a, b)) {
+			throw new IllegalArgumentException();
+		}
+
+		for (int i = 0; i < a.length; i++) {
+			for (int j = 0; j < a[i].length; j++) {
+				b[j][i] = a[i][j];
+			}
+		}
 	}
 
 	public static double unitVector(double[] a, double[] b) {

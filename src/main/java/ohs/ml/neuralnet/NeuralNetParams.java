@@ -6,9 +6,9 @@ public class NeuralNetParams {
 
 	private int num_input_neurons = 10;
 
-	private int num_hidden_neurons = 4;
+	private int num_hidden_neurons = 5;
 
-	private int num_output_neurons = 5;
+	private int num_output_neurons = 10;
 
 	private double learning_rate = 0.05;
 

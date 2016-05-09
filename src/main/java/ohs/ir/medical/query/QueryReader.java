@@ -214,7 +214,7 @@ public class QueryReader {
 			String line = reader.next();
 
 			if (line.startsWith(".I")) {
-				String[] parts = line.split("[\\text]+");
+				String[] parts = line.split("[ \t]+");
 				String key = parts[0];
 				String value = parts[1];
 

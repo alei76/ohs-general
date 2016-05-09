@@ -1,15 +1,17 @@
 package ohs.ml.neuralnet;
 
 import ohs.math.ArrayMath;
+import ohs.math.ArrayUtils;
 
 public class NeuralNet {
 
 	public static void main(String[] args) {
+		System.out.println("process begins.");
 		NeuralNetParams param = new NeuralNetParams();
 
 		NeuralNet nn = new NeuralNet(param);
 
-		int data_size = 100;
+		int data_size = 20;
 		int label_size = param.getNumOutputNeurons();
 		int feat_size = param.getNumInputNeurons();
 
@@ -25,6 +27,7 @@ public class NeuralNet {
 
 		nn.train(xs, ys);
 
+		System.out.println("process ends.");
 	}
 
 	private double[][] W1;
@@ -76,39 +79,47 @@ public class NeuralNet {
 			}
 		}
 
+		/*
+		 * D (20 x 10)
+		 * 
+		 * X (20 x 10)
+		 * 
+		 * Y (20 x 10)
+		 * 
+		 * Yh(20 x 10)
+		 * 
+		 * W1(10 x 5)
+		 * 
+		 * W2(5 x 10)
+		 * 
+		 * GW2(5 x 10)
+		 * 
+		 * gb2 (10)
+		 * 
+		 * GW1 (10 x 20) x (20 x 5) = (10 x 5)
+		 * 
+		 * gb1 (5)
+		 */
+
 		double[][] D = new double[X.length][param.getNumOutputNeurons()];
 		double[][] GW2 = new double[param.getNumHiddenNeurons()][param.getNumOutputNeurons()];
-		double[][] GW1 = new double[param.getNumHiddenNeurons()][param.getNumHiddenNeurons()];
-		double[][] HT = ArrayMath.transpose(H);
+		double[][] GW1 = new double[param.getNumOutputNeurons()][param.getNumHiddenNeurons()];
+		double[] gb1 = new double[param.getNumHiddenNeurons()];
+		double[] gb2 = new double[param.getNumOutputNeurons()];
 
 		ArrayMath.substract(Yh, Y, D);
 		ArrayMath.product(ArrayMath.transpose(H), D, GW2);
+		ArrayMath.sumColumns(GW2, gb2);
+
+		/*
+		 * D (20 x 10) x (10 x 5) = (20 x 5)
+		 * 
+		 */
 
 		D = ArrayMath.product(D, ArrayMath.transpose(W2));
-
 		ArrayMath.multiply(D, ArrayMath.sigmoidGradient(H), D);
-		
 		ArrayMath.product(ArrayMath.transpose(X), D, GW1);
-		
-
-		// for (int i = 0; i < X.length; i++) {
-		// ArrayMath.product(W1, X[i], Z1[i]);
-		// ArrayMath.add(Z1[i], b1, Z1[i]);
-		// ArrayMath.sigmoid(Z1[i], H[i]);
-		//
-		// ArrayMath.product(W1, H[i], Z2[i]);
-		// ArrayMath.add(Z2[i], b2, Z2[i]);
-		// ArrayMath.softmax(Z2[i], Yh[i]);
-		// ArrayMath.log(Yh[i], tmp);
-		//
-		// cost -= ArrayMath.dotProduct(tmp, Y[i]);
-		// }
-
-		// double[][] delta1 = new double[X.length][param.getNumOutputNeurons()];
-		// double[][] gradW2 = new double[param.getNumHiddenNeurons()][param.getNumOutputNeurons()];
-		//
-		// ArrayMath.addAfterScale(Yh, 1, Y, -1, delta1);
-
+		ArrayMath.sumColumns(GW1, gb1);
 	}
 
 	public void train2(double[] x, double[] y) {

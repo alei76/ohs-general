@@ -58,7 +58,8 @@ public class DocumentIndexer {
 		FileUtils.deleteFilesUnder(outputDirName);
 
 		IndexWriterConfig iwc = new IndexWriterConfig(MedicalEnglishAnalyzer.newAnalyzer());
-		// IndexWriterConfig iwc = new IndexWriterConfig(new StandardAnalyzer());
+		// IndexWriterConfig iwc = new IndexWriterConfig(new
+		// StandardAnalyzer());
 		iwc.setOpenMode(OpenMode.CREATE);
 		iwc.setRAMBufferSizeMB(ram_size);
 		IndexWriter ret = new IndexWriter(FSDirectory.open(Paths.get(outputDirName)), iwc);
@@ -101,7 +102,6 @@ public class DocumentIndexer {
 		// di.indexClefEHealth();
 		// di.indexOhsumed();
 		// di.indexTrecGenomics();
-
 		// di.indexWikiDbDump();
 		di.indexClueWeb12();
 		// di.makeDocumentIdMap();
@@ -121,7 +121,27 @@ public class DocumentIndexer {
 			List<String> lines = FileUtils.readLines(files.get(i).getPath());
 
 			for (int j = 1; j < lines.size(); j++) {
-				String[] parts = lines.get(i).split("\t");
+				String line = lines.get(j);
+				line = line.replace("\\t", "<TAB>");
+				String[] parts = line.split("\t");
+
+				if (parts.length > 4) {
+					String ss = StrUtils.join("", parts, 3);
+
+					parts = new String[] { parts[0], parts[1], parts[2], ss };
+
+				}
+
+				if (parts.length != 4) {
+					System.out.printf("[%s]\n", line);
+					continue;
+				}
+
+				if (parts[0].length() == 0 || parts[1].length() == 0 || parts[2].length() == 0) {
+					System.out.printf("[%s]\n", line);
+					continue;
+				}
+
 				parts = StrUtils.unwrap(parts);
 
 				String id = parts[0];
@@ -134,13 +154,15 @@ public class DocumentIndexer {
 				String[] ss = text.split("\\\\n");
 				for (int k = 0; k < ss.length; k++) {
 					String s = ss[k];
-					String[] toks = s.split("[ \\t]+");
+					String[] toks = s.split("<TAB>");
 					for (int l = 0; l < toks.length; l++) {
-						String tok = toks[l];
-						if (tok.startsWith("tbi:")) {
-							sb.append(tok.substring(4).replace("_", " "));
-						} else {
-							sb.append(tok);
+						String tok = toks[l].trim();
+						if (tok.length() > 0) {
+							if (tok.startsWith("tbi:")) {
+								sb.append(tok.substring(4).replace("_", " "));
+							} else {
+								sb.append(tok);
+							}
 						}
 
 						if (l != toks.length - 1) {
@@ -155,12 +177,16 @@ public class DocumentIndexer {
 
 				List<String> links = Generics.newArrayList();
 
-				for (String link : linkStr.split("\\\\t")) {
-					int idx = link.indexOf(":");
-					String type = link.substring(0, idx);
-					String url = link.substring(idx + 1);
-					if (url.length() > 0) {
-						links.add(url);
+				if (linkStr.length() > 0) {
+					for (String link : linkStr.split("<TAB>")) {
+						int idx = link.indexOf(":");
+						if (idx > -1) {
+							String type = link.substring(0, idx);
+							String url = link.substring(idx + 1);
+							if (url.length() > 0) {
+								links.add(url);
+							}
+						}
 					}
 				}
 
@@ -168,7 +194,7 @@ public class DocumentIndexer {
 				doc.add(new StringField(CommonFieldNames.DOCUMENT_ID, id, Field.Store.YES));
 				doc.add(new StringField(CommonFieldNames.URL, uri, Field.Store.YES));
 				doc.add(new MyTextField(CommonFieldNames.CONTENT, text, Store.YES));
-				doc.add(new StringField(CommonFieldNames.LINKS, StrUtils.join("\n", links), Store.YES));
+				doc.add(new TextField(CommonFieldNames.LINKS, StrUtils.join("\n", links), Store.YES));
 
 				iw.addDocument(doc);
 			}
@@ -517,7 +543,7 @@ public class DocumentIndexer {
 			doc.add(new StringField(CommonFieldNames.DOCUMENT_ID, pageid + "", Store.YES));
 			doc.add(new StringField(CommonFieldNames.TITLE, title, Store.YES));
 			doc.add(new StringField(CommonFieldNames.CATEGORY, catStr, Store.YES));
-			doc.add(new StringField(CommonFieldNames.REDIRECTS, redStr, Store.YES));
+			doc.add(new TextField(CommonFieldNames.REDIRECTS, redStr, Store.YES));
 			doc.add(new MyTextField(CommonFieldNames.CONTENT, content, Store.YES));
 			iw.addDocument(doc);
 		}
@@ -614,9 +640,12 @@ public class DocumentIndexer {
 
 			Document doc = new Document();
 			doc.add(new StringField(CommonFieldNames.TITLE, title, Store.YES));
-			// doc.add(new StringField(CommonFieldNames.LOWER_TITLE, title.toLowerCase(), Store.YES));
-			// doc.add(new StringField(CommonFieldNames.REDIRECT_TITLE, redicrect, Store.YES));
-			// doc.add(new StringField(CommonFieldNames.LOWER_REDIRECT_TITLE, redicrect.toLowerCase(), Store.YES));
+			// doc.add(new StringField(CommonFieldNames.LOWER_TITLE,
+			// title.toLowerCase(), Store.YES));
+			// doc.add(new StringField(CommonFieldNames.REDIRECT_TITLE,
+			// redicrect, Store.YES));
+			// doc.add(new StringField(CommonFieldNames.LOWER_REDIRECT_TITLE,
+			// redicrect.toLowerCase(), Store.YES));
 			doc.add(new MyTextField(CommonFieldNames.CONTENT, content, Store.YES));
 			doc.add(new MyTextField(CommonFieldNames.CATEGORY, sb2.toString(), Store.YES));
 			iw.addDocument(doc);
