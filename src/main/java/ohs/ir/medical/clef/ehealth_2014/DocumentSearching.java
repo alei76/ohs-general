@@ -26,7 +26,6 @@ import org.apache.lucene.search.similarities.AfterEffectL;
 import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.search.similarities.BasicModelBE;
 import org.apache.lucene.search.similarities.DFRSimilarity;
-import org.apache.lucene.search.similarities.DefaultSimilarity;
 import org.apache.lucene.search.similarities.LMDirichletSimilarity;
 import org.apache.lucene.search.similarities.NormalizationH1;
 import org.apache.lucene.search.similarities.Similarity;

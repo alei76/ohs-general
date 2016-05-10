@@ -9,8 +9,13 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.util.BytesRef;
 
 import ohs.io.FileUtils;
+import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.types.Counter;
+import ohs.types.Indexer;
+import ohs.types.IntegerArrayList;
+import ohs.types.Vocab;
+import ohs.utils.Generics;
 
 public class VocabBuilder {
 
@@ -21,6 +26,7 @@ public class VocabBuilder {
 
 		Terms t = fields.terms(CommonFieldNames.CONTENT);
 
+		long term_size = t.size();
 		System.out.println(t.getSumTotalTermFreq());
 
 		TermsEnum te = t.iterator();
@@ -28,7 +34,14 @@ public class VocabBuilder {
 		BytesRef bytesRef = null;
 		PostingsEnum pe = null;
 
-		Counter<String> c = new Counter<String>();
+		// Indexer<String> wordIndexer = Generics.newIndexer();
+		// IntegerArrayList wordCnts = new IntegerArrayList();
+		// IntegerArrayList docFreqs = new IntegerArrayList();
+
+		long num_words = 0;
+
+		TextFileWriter writer = new TextFileWriter(outputFileName);
+		writer.write(String.format("###DOC SIZE###\t%d", is.getIndexReader().maxDoc()));
 
 		while ((bytesRef = te.next()) != null) {
 			pe = te.postings(pe, PostingsEnum.ALL);
@@ -37,21 +50,35 @@ public class VocabBuilder {
 			// throw new AssertionError();
 			// }
 
+			if (++num_words % 100000 == 0) {
+				System.out.printf("\r[%d words]", num_words);
+			}
+
 			long cnt = te.totalTermFreq();
+			int doc_freq = te.docFreq();
 			String word = bytesRef.utf8ToString();
+			// int w = wordIndexer.getIndex(word);
+			// wordCnts.add((int) cnt);
+			// docFreqs.add(doc_freq);
 
-			c.incrementCount(word, cnt);
+			writer.write(String.format("\n%s\t%d\t%d", word, cnt, doc_freq));
 		}
+		writer.close();
+		System.out.printf("\r[%d words]\n", num_words);
 
-		FileUtils.writeStrCounter(outputFileName, c);
+		// FileUtils.writeStrCounter(outputFileName, wordCnts);
+
+		// Vocab vocab = new Vocab(wordIndexer, wordCnts.getValues(),
+		// docFreqs.getValues(), is.getIndexReader().maxDoc());
+		// vocab.write(outputFileName);
 	}
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		// for (int i = 0; i < MIRPath.IndexDirNames.length; i++) {
-		// build(MIRPath.IndexDirNames[i], MIRPath.VocFileNames[i]);
-		// }
+		for (int i = 4; i < MIRPath.IndexDirNames.length; i++) {
+			build(MIRPath.IndexDirNames[i], MIRPath.VocFileNames[i]);
+		}
 
 		// merge(MIRPath.VocFileNames, MIRPath.VOCAB_FILE);
 

@@ -27,7 +27,7 @@ public class ClueWebDumper extends TextDumper {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		ClueWebDumper dh = new ClueWebDumper(MIRPath.CLUEWEB12_DIR, MIRPath.CLUEWEB12_COL_FILE);
+		ClueWebDumper dh = new ClueWebDumper(MIRPath.CLUEWEB_DIR, MIRPath.CLUEWEB12_COL_FILE);
 		// dh.readVisitedDocs(MIRPath.CLEF_EHEALTH_DIR + "doc_ids.txt");
 		dh.dump();
 

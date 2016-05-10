@@ -22,7 +22,7 @@ public class MIRPath {
 
 	public static final String PERFORMANCE_DETAIL_FILE = DATA_DIR + "performance_detail.txt";
 
-	public static final String VOCAB_FILE = DATA_DIR + "vocab.txt";
+	public static final String VOCAB_FILE = DATA_DIR + "vocab.txt.gz";
 
 	/*
 	 * Wikipedia
@@ -40,7 +40,7 @@ public class MIRPath {
 
 	public static final String WIKI_CATEGORYLINK_FILE = WIKI_DIR + "wiki_categorylink.csv.gz";
 
-	public static final String WIKI_VOCAB_FILE = WIKI_DIR + "vocab.txt";
+	public static final String WIKI_VOCAB_FILE = WIKI_DIR + "vocab.txt.gz";
 
 	public static final String WIKI_INDEX_DIR = WIKI_DIR + "index/";
 
@@ -104,22 +104,27 @@ public class MIRPath {
 
 	public static final String CLEF_EHEALTH_INDEX_SENT_DIR = CLEF_EHEALTH_DIR + "index_sent/";
 
-	public static final String CLEF_EHEALTH_QUERY_2013_FILE = CLEF_EHEALTH_QUERY_DIR + "2013/queries.clef2013ehealth.1-50.test.xml";
+	public static final String CLEF_EHEALTH_QUERY_2013_FILE = CLEF_EHEALTH_QUERY_DIR
+			+ "2013/queries.clef2013ehealth.1-50.test.xml";
 
 	public static final String CLEF_EHEALTH_RELEVANCE_JUDGE_2013_FILE = CLEF_EHEALTH_QUERY_DIR
 			+ "2013/qrels.clef2013ehealth.1-50-SmithWatermanScorer.graded.final.txt";
 
-	public static final String CLEF_EHEALTH_QUERY_2014_FILE = CLEF_EHEALTH_QUERY_DIR + "2014/queries.clef2014ehealth.1-50.test.en.xml";
+	public static final String CLEF_EHEALTH_QUERY_2014_FILE = CLEF_EHEALTH_QUERY_DIR
+			+ "2014/queries.clef2014ehealth.1-50.test.en.xml";
 
-	public static final String CLEF_EHEALTH_RELEVANCE_JUDGE_2014_FILE = CLEF_EHEALTH_QUERY_DIR + "2014/clef2014t3.qrels.test.graded.txt";
+	public static final String CLEF_EHEALTH_RELEVANCE_JUDGE_2014_FILE = CLEF_EHEALTH_QUERY_DIR
+			+ "2014/clef2014t3.qrels.test.graded.txt";
 
-	public static final String CLEF_EHEALTH_QUERY_2015_FILE = CLEF_EHEALTH_QUERY_DIR + "2015/clef2015.test.queries-EN.txt";
+	public static final String CLEF_EHEALTH_QUERY_2015_FILE = CLEF_EHEALTH_QUERY_DIR
+			+ "2015/clef2015.test.queries-EN.txt";
 
-	public static final String CLEF_EHEALTH_RELEVANCE_JUDGE_2015_FILE = CLEF_EHEALTH_QUERY_DIR + "2015/qrels.clef2015.test.graded.txt";
+	public static final String CLEF_EHEALTH_RELEVANCE_JUDGE_2015_FILE = CLEF_EHEALTH_QUERY_DIR
+			+ "2015/qrels.clef2015.test.graded.txt";
 
 	public static final String CLEF_EHEALTH_QUERY_2016_FILE = CLEF_EHEALTH_QUERY_DIR + "2016/queries2016.xml";
 
-	public static final String CLEF_EHEALTH_VOCAB_FILE = CLEF_EHEALTH_DIR + "vocab.txt";
+	public static final String CLEF_EHEALTH_VOCAB_FILE = CLEF_EHEALTH_DIR + "vocab.txt.gz";
 
 	public static final String CLEF_EHEALTH_DOC_ID_MAP_FIE = CLEF_EHEALTH_DIR + "document_id_map.txt.gz";
 
@@ -137,13 +142,16 @@ public class MIRPath {
 
 	public static final String CLEF_EHEALTH_OUTPUT_RESULT_2015_DIR = CLEF_EHEALTH_OUTPUT_DIR + "result-clef2015/";
 
-	public static final String CLEF_EHEALTH_OUTPUT_RESULT_2015_QUERY_DOC_DIR = CLEF_EHEALTH_OUTPUT_RESULT_2015_DIR + "query-doc/";
+	public static final String CLEF_EHEALTH_OUTPUT_RESULT_2015_QUERY_DOC_DIR = CLEF_EHEALTH_OUTPUT_RESULT_2015_DIR
+			+ "query-doc/";
 
 	public static final String CLEF_EHEALTH_OUTPUT_RESULT_2015_INIT_DIR = CLEF_EHEALTH_OUTPUT_RESULT_2015_DIR + "init/";
 
-	public static final String CLEF_EHEALTH_OUTPUT_RESULT_2015_RERANK_DIR = CLEF_EHEALTH_OUTPUT_RESULT_2015_DIR + "rerank/";
+	public static final String CLEF_EHEALTH_OUTPUT_RESULT_2015_RERANK_DIR = CLEF_EHEALTH_OUTPUT_RESULT_2015_DIR
+			+ "rerank/";
 
-	public static final String CLEF_EHEALTH_OUTPUT_RESULT_2015_QUERY_MODEL_DIR = CLEF_EHEALTH_OUTPUT_RESULT_2015_DIR + "query_model/";
+	public static final String CLEF_EHEALTH_OUTPUT_RESULT_2015_QUERY_MODEL_DIR = CLEF_EHEALTH_OUTPUT_RESULT_2015_DIR
+			+ "query_model/";
 
 	public static final String CLEF_EHEALTH_OUTPUT_RESULT_2015_LOG_DIR = CLEF_EHEALTH_OUTPUT_RESULT_2015_DIR + "log/";
 
@@ -169,7 +177,13 @@ public class MIRPath {
 
 	public static final String CLUEWEB12_FILE_NAME_FILE = CLUEWEB_DIR + "clueweb12_disk_b_file_names.txt";
 
-	public static final String CLUEWEB12_DOC_ID_MAP_FIE = CLEF_EHEALTH_DIR + "document_id_map.txt.gz";
+	public static final String CLUEWEB12_DOC_ID_MAP_FIE = CLUEWEB_DIR + "document_id_map.txt.gz";
+
+	public static final String CLUEWEB12_VOCAB_FILE = CLUEWEB_DIR + "vocab.txt.gz";
+
+	public static final String CLUEWEB_OUTPUT_DIR = CLUEWEB_DIR + "output/";
+
+	public static final String CLUEWEB_OUTPUT_RESULT_DIR = CLUEWEB_OUTPUT_DIR + "result/";
 
 	/*
 	 * TREC CDS
@@ -213,7 +227,7 @@ public class MIRPath {
 
 	public static final String TREC_CDS_RELEVANCE_JUDGE_2014_FILE = TREC_CDS_QUERY_2014_DIR + "qrels2014.txt";
 
-	public static final String TREC_CDS_VOCAB_FILE = TREC_CDS_DIR + "vocab.txt";
+	public static final String TREC_CDS_VOCAB_FILE = TREC_CDS_DIR + "vocab.txt.gz";
 
 	public static final String TREC_CDS_DOC_ID_MAP_FILE = TREC_CDS_DIR + "document_id_map.txt.gz";
 
@@ -237,17 +251,21 @@ public class MIRPath {
 
 	public static final String TREC_CDS_OUTPUT_RESULT_2015_DIR = TREC_CDS_OUTPUT_DIR + "result-2015/";
 
-	public static final String TREC_CDS_OUTPUT_RESULT_2015_PERFORMANCE_FILE = TREC_CDS_OUTPUT_DIR + "performance_2015.txt";
+	public static final String TREC_CDS_OUTPUT_RESULT_2015_PERFORMANCE_FILE = TREC_CDS_OUTPUT_DIR
+			+ "performance_2015.txt";
 
-	public static final String TREC_CDS_OUTPUT_RESULT_2015_PERFORMANCE_COMPACT_FILE = TREC_CDS_OUTPUT_DIR + "performance_2015_compact.txt";
+	public static final String TREC_CDS_OUTPUT_RESULT_2015_PERFORMANCE_COMPACT_FILE = TREC_CDS_OUTPUT_DIR
+			+ "performance_2015_compact.txt";
 
-	public static final String TREC_CDS_OUTPUT_RESULT_2015_QUERY_DOC_DIR = TREC_CDS_OUTPUT_RESULT_2015_DIR + "query-doc/";
+	public static final String TREC_CDS_OUTPUT_RESULT_2015_QUERY_DOC_DIR = TREC_CDS_OUTPUT_RESULT_2015_DIR
+			+ "query-doc/";
 
 	public static final String TREC_CDS_OUTPUT_RESULT_2015_INIT_DIR = TREC_CDS_OUTPUT_RESULT_2015_DIR + "init/";
 
 	public static final String TREC_CDS_OUTPUT_RESULT_2015_RERANK_DIR = TREC_CDS_OUTPUT_RESULT_2015_DIR + "rerank/";
 
-	public static final String TREC_CDS_OUTPUT_RESULT_2015_QUERY_MODEL_DIR = TREC_CDS_OUTPUT_RESULT_2015_DIR + "query_model/";
+	public static final String TREC_CDS_OUTPUT_RESULT_2015_QUERY_MODEL_DIR = TREC_CDS_OUTPUT_RESULT_2015_DIR
+			+ "query_model/";
 
 	public static final String TREC_CDS_OUTPUT_RESULT_2015_LOG_DIR = TREC_CDS_OUTPUT_RESULT_2015_DIR + "log/";
 
@@ -275,11 +293,12 @@ public class MIRPath {
 
 	public static final String TREC_GENOMICS_QUERY_2007_DIR = TREC_GENOMICS_QUERY_DIR + "2007/";
 
-	public static final String TREC_GENOMICS_VOCAB_FILE = TREC_GENOMICS_DIR + "vocab.txt";
+	public static final String TREC_GENOMICS_VOCAB_FILE = TREC_GENOMICS_DIR + "vocab.txt.gz";
 
 	public static final String TREC_GENOMICS_QUERY_2007_FILE = TREC_GENOMICS_QUERY_2007_DIR + "2007topics.txt";
 
-	public static final String TREC_GENOMICS_RELEVANCE_JUDGE_2007_FILE = TREC_GENOMICS_QUERY_2007_DIR + "trecgen2007.all.judgments.tsv.txt";
+	public static final String TREC_GENOMICS_RELEVANCE_JUDGE_2007_FILE = TREC_GENOMICS_QUERY_2007_DIR
+			+ "trecgen2007.all.judgments.tsv.txt";
 
 	public static final String TREC_GENOMICS_DOC_ID_MAP_FILE = TREC_GENOMICS_DIR + "document_id_map.txt.gz";
 
@@ -321,7 +340,7 @@ public class MIRPath {
 
 	public static final String OHSUMED_RELEVANCE_JUDGE_FILE = OHSUMED_QUERY_DIR + "judged.txt";
 
-	public static final String OHSUMED_VOCAB_FILE = OHSUMED_DIR + "vocab.txt";
+	public static final String OHSUMED_VOCAB_FILE = OHSUMED_DIR + "vocab.txt.gz";
 
 	public static final String OHSUMED_DOC_ID_MAP_FILE = OHSUMED_DIR + "document_id_map.txt.gz";
 
@@ -351,52 +370,54 @@ public class MIRPath {
 
 	public static String[] DataDirNames = { TREC_CDS_DIR, CLEF_EHEALTH_DIR, OHSUMED_DIR, TREC_GENOMICS_DIR };
 
-	public static String[] QueryFileNames = { TREC_CDS_QUERY_2014_FILE, CLEF_EHEALTH_QUERY_2015_FILE, OHSUMED_QUERY_FILE,
-			TREC_GENOMICS_QUERY_2007_FILE };
+	public static String[] QueryFileNames = { TREC_CDS_QUERY_2014_FILE, CLEF_EHEALTH_QUERY_2015_FILE,
+			OHSUMED_QUERY_FILE, TREC_GENOMICS_QUERY_2007_FILE };
 
 	// public static String[] IndexDirNames = { MIRPath.TREC_CDS_INDEX_DIR,
 	// MIRPath.CLEF_EHEALTH_INDEX_DIR, MIRPath.OHSUMED_INDEX_DIR};
 
-	public static final String[] IndexDirNames = { TREC_CDS_INDEX_DIR, CLEF_EHEALTH_INDEX_DIR, OHSUMED_INDEX_DIR, TREC_GENOMICS_INDEX_DIR,
-			CLUEWEB12_INDEX_DIR };
+	public static final String[] IndexDirNames = { TREC_CDS_INDEX_DIR, CLEF_EHEALTH_INDEX_DIR, OHSUMED_INDEX_DIR,
+			TREC_GENOMICS_INDEX_DIR, CLUEWEB12_INDEX_DIR };
 
-	public static final String[] SentIndexDirNames = { TREC_CDS_INDEX_SENT_DIR, CLEF_EHEALTH_INDEX_SENT_DIR, OHSUMED_INDEX_SENT_DIR,
-			TREC_GENOMICS_INDEX_SENT_DIR };
+	public static final String[] SentIndexDirNames = { TREC_CDS_INDEX_SENT_DIR, CLEF_EHEALTH_INDEX_SENT_DIR,
+			OHSUMED_INDEX_SENT_DIR, TREC_GENOMICS_INDEX_SENT_DIR };
 
-	public static final String[] ResultDirNames = { TREC_CDS_OUTPUT_RESULT_DIR, CLEF_EHEALTH_OUTPUT_RESULT_DIR, OHSUMED_OUTPUT_RESULT_DIR,
-			TREC_GENOMICS_OUTPUT_RESULT_DIR };
+	public static final String[] ResultDirNames = { TREC_CDS_OUTPUT_RESULT_DIR, CLEF_EHEALTH_OUTPUT_RESULT_DIR,
+			OHSUMED_OUTPUT_RESULT_DIR, TREC_GENOMICS_OUTPUT_RESULT_DIR };
 
 	public static final String[] OutputDirNames = { TREC_CDS_OUTPUT_DIR, CLEF_EHEALTH_OUTPUT_DIR, OHSUMED_OUTPUT_DIR,
 			TREC_GENOMICS_OUTPUT_DIR };
 
-	public static final String[] LogDirNames = { TREC_CDS_OUTPUT_LOG_DIR, CLEF_EHEALTH_OUTPUT_LOG_DIR, OHSUMED_OUTPUT_LOG_DIR,
-			TREC_GENOMICS_OUTPUT_LOG_DIR };
+	public static final String[] LogDirNames = { TREC_CDS_OUTPUT_LOG_DIR, CLEF_EHEALTH_OUTPUT_LOG_DIR,
+			OHSUMED_OUTPUT_LOG_DIR, TREC_GENOMICS_OUTPUT_LOG_DIR };
 
-	public static final String[] DocPriorFileNames = { TREC_CDS_DOC_PRIOR_FILE, CLEF_EHEALTH_DOC_PRIOR_FILE, OHSUMED_DOC_PRIOR_FILE,
-			TREC_GENOMICS_DOC_PRIOR_FILE };
+	public static final String[] DocPriorFileNames = { TREC_CDS_DOC_PRIOR_FILE, CLEF_EHEALTH_DOC_PRIOR_FILE,
+			OHSUMED_DOC_PRIOR_FILE, TREC_GENOMICS_DOC_PRIOR_FILE };
 
-	public static final String[] RelevanceFileNames = { TREC_CDS_RELEVANCE_JUDGE_2014_FILE, CLEF_EHEALTH_RELEVANCE_JUDGE_2015_FILE,
-			OHSUMED_RELEVANCE_JUDGE_FILE, TREC_GENOMICS_RELEVANCE_JUDGE_2007_FILE };
+	public static final String[] RelevanceFileNames = { TREC_CDS_RELEVANCE_JUDGE_2014_FILE,
+			CLEF_EHEALTH_RELEVANCE_JUDGE_2015_FILE, OHSUMED_RELEVANCE_JUDGE_FILE,
+			TREC_GENOMICS_RELEVANCE_JUDGE_2007_FILE };
 
-	public static final String[] DocIdMapFileNames = { TREC_CDS_DOC_ID_MAP_FILE, CLEF_EHEALTH_DOC_ID_MAP_FIE, OHSUMED_DOC_ID_MAP_FILE,
-			TREC_GENOMICS_DOC_ID_MAP_FILE };
+	public static final String[] DocIdMapFileNames = { TREC_CDS_DOC_ID_MAP_FILE, CLEF_EHEALTH_DOC_ID_MAP_FIE,
+			OHSUMED_DOC_ID_MAP_FILE, TREC_GENOMICS_DOC_ID_MAP_FILE, CLUEWEB12_DOC_ID_MAP_FIE };
 
-	public static final String[] AbbrFileNames = { TREC_CDS_ABBR_FILE, CLEF_EHEALTH_ABBR_FILE, OHSUMED_ABBR_FILE, TREC_GENOMICS_ABBR_FILE };
+	public static final String[] AbbrFileNames = { TREC_CDS_ABBR_FILE, CLEF_EHEALTH_ABBR_FILE, OHSUMED_ABBR_FILE,
+			TREC_GENOMICS_ABBR_FILE };
 
 	public static final String[] CollNames = { "TREC CDS", "CLEF eHealth", "OHSUMED", "TREC GENOMICS", "WIKI" };
 
 	public static final String[] VocFileNames = { TREC_CDS_VOCAB_FILE, CLEF_EHEALTH_VOCAB_FILE, OHSUMED_VOCAB_FILE,
-			TREC_GENOMICS_VOCAB_FILE };
+			TREC_GENOMICS_VOCAB_FILE, CLUEWEB12_VOCAB_FILE };
 
-	public static final String[] QueryDocFileNames = { TREC_CDS_QUERY_DOC_FILE, CLEF_EHEALTH_QUERY_DOC_FILE, OHSUMED_QUERY_DOC_FILE,
-			TREC_GENOMICS_QUERY_DOC_FILE };
+	public static final String[] QueryDocFileNames = { TREC_CDS_QUERY_DOC_FILE, CLEF_EHEALTH_QUERY_DOC_FILE,
+			OHSUMED_QUERY_DOC_FILE, TREC_GENOMICS_QUERY_DOC_FILE };
 
 	public static final String[] TaskDirs = { TREC_CDS_DIR, CLEF_EHEALTH_DIR, OHSUMED_DIR, TREC_GENOMICS_DIR };
 
 	public static final String[] SentFileNames = { TREC_CDS_SENTS_FILE, CLEF_EHEALTH_SENTS_FILE, OHSUMED_SENTS_FILE,
 			TREC_GENOMICS_SENTS_FILE };
 
-	public static final String[] SentStemFileNames = { TREC_CDS_SENTS_STEM_FILE, CLEF_EHEALTH_SENTS_STEM_FILE, OHSUMED_SENTS_STEM_FILE,
-			TREC_GENOMICS_SENTS_STEM_FILE };
+	public static final String[] SentStemFileNames = { TREC_CDS_SENTS_STEM_FILE, CLEF_EHEALTH_SENTS_STEM_FILE,
+			OHSUMED_SENTS_STEM_FILE, TREC_GENOMICS_SENTS_STEM_FILE };
 
 }

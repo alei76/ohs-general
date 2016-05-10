@@ -39,8 +39,9 @@ public class DocumentClusterer {
 
 	private Indexer<String> wordIndexer;
 
-	public DocumentClusterer(SparseVector docScores, SparseMatrix docWordCounts, SparseVector collWordCounts, SparseVector docFreqs,
-			int doc_size_in_collection, int top_k, double merge_threshold, Indexer<String> wordIndexer) {
+	public DocumentClusterer(SparseVector docScores, SparseMatrix docWordCounts, SparseVector collWordCounts,
+			SparseVector docFreqs, int doc_size_in_collection, int top_k, double merge_threshold,
+			Indexer<String> wordIndexer) {
 		this.docScores = docScores;
 		this.collWordCounts = collWordCounts;
 		this.docWordCounts = docWordCounts;
@@ -73,8 +74,10 @@ public class DocumentClusterer {
 			if (w == t) {
 				double prob_w_in_collection = collWordCounts.probAlways(w);
 
-				double prob_w_in_doc1 = (count_w_in_doc1 + dirichlet_prior * prob_w_in_collection) / (count_sum_in_doc1 + dirichlet_prior);
-				double prob_w_in_doc2 = (count_w_in_doc2 + dirichlet_prior * prob_w_in_collection) / (count_sum_in_doc2 + dirichlet_prior);
+				double prob_w_in_doc1 = (count_w_in_doc1 + dirichlet_prior * prob_w_in_collection)
+						/ (count_sum_in_doc1 + dirichlet_prior);
+				double prob_w_in_doc2 = (count_w_in_doc2 + dirichlet_prior * prob_w_in_collection)
+						/ (count_sum_in_doc2 + dirichlet_prior);
 
 				dotProduct += (prob_w_in_doc1 * prob_w_in_doc2);
 				norm1 += prob_w_in_doc1 * prob_w_in_doc1;
@@ -84,13 +87,15 @@ public class DocumentClusterer {
 				j++;
 			} else if (w > t) {
 				double prob_t_in_collection = collWordCounts.probAlways(t);
-				double prob_w_in_doc2 = (count_w_in_doc2 + dirichlet_prior * prob_t_in_collection) / (count_sum_in_doc2 + dirichlet_prior);
+				double prob_w_in_doc2 = (count_w_in_doc2 + dirichlet_prior * prob_t_in_collection)
+						/ (count_sum_in_doc2 + dirichlet_prior);
 
 				norm2 += prob_w_in_doc2 * prob_w_in_doc2;
 				j++;
 			} else if (w < t) {
 				double prob_w_in_collection = collWordCounts.probAlways(w);
-				double prob_w_in_doc1 = (count_w_in_doc1 + dirichlet_prior * prob_w_in_collection) / (count_sum_in_doc1 + dirichlet_prior);
+				double prob_w_in_doc1 = (count_w_in_doc1 + dirichlet_prior * prob_w_in_collection)
+						/ (count_sum_in_doc1 + dirichlet_prior);
 
 				norm1 += prob_w_in_doc1 * prob_w_in_doc1;
 				i++;
@@ -235,7 +240,8 @@ public class DocumentClusterer {
 			NumberFormat nf = NumberFormat.getInstance();
 			nf.setMinimumFractionDigits(5);
 
-			// System.out.printf("[%d] clusters, similarity [%s] between [%s] and [%s]\n",
+			// System.out.printf("[%d] clusters, similarity [%s] between [%s]
+			// and [%s]\n",
 			//
 			// tempClusterDocMap.size(), nf.format(best_sim), best_cId1,
 			// best_cId2);
@@ -249,7 +255,7 @@ public class DocumentClusterer {
 				// simMatrix.length, simMatrix.length, true,
 				// NumberFormat.getInstance()));
 				// System.out.println();
-				VectorMath.add(sv1, sv2, sv1);
+				sv1 = VectorMath.add(sv1, sv2);
 
 				tempClusterWordCountData.put(best_cId1, sv1);
 
@@ -267,7 +273,8 @@ public class DocumentClusterer {
 				clusterDocCounts.setCount(cId, tempClusterDocMap.get(cId).size());
 			}
 
-			System.out.printf("[%d]th iter\t[%d] clusters\t%s\n", i + 1, clusterDocCounts.size(), clusterDocCounts.toString());
+			System.out.printf("[%d]th iter\t[%d] clusters\t%s\n", i + 1, clusterDocCounts.size(),
+					clusterDocCounts.toString());
 		}
 
 		clusterDocMap = new SetMap<Integer, Integer>();

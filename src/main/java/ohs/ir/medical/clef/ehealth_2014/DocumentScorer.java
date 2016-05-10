@@ -129,7 +129,8 @@ public class DocumentScorer {
 		return ret;
 	}
 
-	private SparseVector computeClusterScores(SparseVector queryModel, List<SparseVector> clusterWordCounts, SparseVector collWordCounts) {
+	private SparseVector computeClusterScores(SparseVector queryModel, List<SparseVector> clusterWordCounts,
+			SparseVector collWordCounts) {
 		SparseVector ret = new SparseVector(clusterWordCounts.size());
 
 		for (int i = 0; i < queryModel.size(); i++) {
@@ -164,8 +165,8 @@ public class DocumentScorer {
 		return ret;
 	}
 
-	private SparseVector computeDocumentScores(SparseVector queryModel, SparseMatrix docWordCounts, SparseVector collWordCounts,
-			SparseMatrix transModels) {
+	private SparseVector computeDocumentScores(SparseVector queryModel, SparseMatrix docWordCounts,
+			SparseVector collWordCounts, SparseMatrix transModels) {
 		SparseVector ret = new SparseVector(docWordCounts.rowSize());
 
 		for (int i = 0; i < queryModel.size(); i++) {
@@ -181,7 +182,8 @@ public class DocumentScorer {
 
 				double count_w_in_doc = dwc.valueAlways(w);
 				double count_sum_in_doc = dwc.sum();
-				double prob_w_in_doc = (count_w_in_doc + dirichlet_prior * prob_w_in_collection) / (count_sum_in_doc + dirichlet_prior);
+				double prob_w_in_doc = (count_w_in_doc + dirichlet_prior * prob_w_in_collection)
+						/ (count_sum_in_doc + dirichlet_prior);
 
 				double prob_w_in_tr_doc = 0;
 				for (int k = 0; k < transModel.size(); k++) {
@@ -217,8 +219,8 @@ public class DocumentScorer {
 		return ret;
 	}
 
-	private SparseVector computeRelevanceModel(SparseVector docScores, SparseMatrix docWordCounts, SparseVector collWordCounts,
-			SparseVector docPriors) {
+	private SparseVector computeRelevanceModel(SparseVector docScores, SparseMatrix docWordCounts,
+			SparseVector collWordCounts, SparseVector docPriors) {
 
 		Set<Integer> fbWords = new HashSet<Integer>();
 
@@ -242,7 +244,8 @@ public class DocumentScorer {
 				SparseVector dwc = docWordCounts.rowAlways(docId);
 				double count_w_in_doc = dwc.valueAlways(w);
 				double count_sum_in_doc = dwc.sum();
-				double prob_w_in_doc = (count_w_in_doc + dirichlet_prior * prob_w_in_collection) / (count_sum_in_doc + dirichlet_prior);
+				double prob_w_in_doc = (count_w_in_doc + dirichlet_prior * prob_w_in_collection)
+						/ (count_sum_in_doc + dirichlet_prior);
 				double document_weight = docScores.valueAtLoc(i);
 				double document_prior = docPriors.valueAlways(docId);
 				double prob_w_in_fb_model = document_weight * prob_w_in_doc;
@@ -286,8 +289,8 @@ public class DocumentScorer {
 		return VectorUtils.toSparseVector(ret);
 	}
 
-	private SparseVector computeRelevanceModelMixture(List<SparseVector> indexScoreData, List<SparseMatrix> docWordCountData,
-			List<SparseVector> docPriorData) {
+	private SparseVector computeRelevanceModelMixture(List<SparseVector> indexScoreData,
+			List<SparseMatrix> docWordCountData, List<SparseVector> docPriorData) {
 		List<SparseVector> relevanceModels = new ArrayList<SparseVector>();
 
 		for (int i = 0; i < indexScoreData.size(); i++) {
@@ -322,8 +325,8 @@ public class DocumentScorer {
 		return VectorUtils.toSparseVector(ret);
 	}
 
-	private CounterMap<Integer, Integer> computeTranslatedDocumentModels(SparseMatrix docWordCounts, SparseVector collWordCounts,
-			SparseMatrix transMatrix) {
+	private CounterMap<Integer, Integer> computeTranslatedDocumentModels(SparseMatrix docWordCounts,
+			SparseVector collWordCounts, SparseMatrix transMatrix) {
 
 		CounterMap<Integer, Integer> ret = new CounterMap<Integer, Integer>();
 
@@ -352,7 +355,8 @@ public class DocumentScorer {
 					double count_t_in_doc = dwc.valueAlways(t);
 					double count_sum_in_doc = dwc.sum();
 					double prob_t_in_collection = collWordCounts.probAlways(t);
-					double prob_t_in_doc = (count_t_in_doc + dirichlet_prior * prob_t_in_collection) / (count_sum_in_doc + dirichlet_prior);
+					double prob_t_in_doc = (count_t_in_doc + dirichlet_prior * prob_t_in_collection)
+							/ (count_sum_in_doc + dirichlet_prior);
 					prob_w_from_all_t += prob_t_to_w * prob_t_in_doc;
 				}
 
@@ -400,7 +404,7 @@ public class DocumentScorer {
 		ArrayMath.normalizeColumns(transMat);
 
 		double[] centralities = new double[transMat.length];
-		
+
 		ArrayMath.randomWalk(transMat, centralities, 100, 0.000001, 0.85);
 
 		SparseVector ret = new SparseVector(max_words);
@@ -618,8 +622,8 @@ public class DocumentScorer {
 
 		ArrayMath.normalizeColumns(m);
 
-		double[] importances = new double[m.length]; 
-				
+		double[] importances = new double[m.length];
+
 		ArrayMath.randomWalk(m, importances, 10, 0.00001, 0.85);
 
 		Counter<String> wordImportances = new Counter<String>();
@@ -783,8 +787,8 @@ public class DocumentScorer {
 		System.out.printf("Entire vocabulary size:\t%d\n", wordIndexer.size());
 	}
 
-	public Counter<Integer> score(List<String> queryWords, List<SparseVector> docScoreData, List<List<String>> dischargeWords)
-			throws Exception {
+	public Counter<Integer> score(List<String> queryWords, List<SparseVector> docScoreData,
+			List<List<String>> dischargeWords) throws Exception {
 
 		SparseVector queryModel = getModel(getCounter(queryWords));
 
@@ -835,7 +839,8 @@ public class DocumentScorer {
 
 			docClusterer.doClustering();
 
-			SparseVector clusterScores = computeClusterScores(queryModel, docClusterer.getClusterWordCountData(), collWordCountData.get(0));
+			SparseVector clusterScores = computeClusterScores(queryModel, docClusterer.getClusterWordCountData(),
+					collWordCountData.get(0));
 
 			clusterScores.sortByValue();
 
@@ -896,7 +901,8 @@ public class DocumentScorer {
 			transModels = computeWordTranslationModels(docScoreData.get(0));
 		}
 
-		SparseVector newDocScores = computeDocumentScores(queryModel, docWordCountData.get(0), collWordCountData.get(0), transModels);
+		SparseVector newDocScores = computeDocumentScores(queryModel, docWordCountData.get(0), collWordCountData.get(0),
+				transModels);
 
 		return VectorUtils.toCounter(newDocScores);
 	}

@@ -13,7 +13,10 @@ import ohs.io.TextFileWriter;
 import ohs.ir.eval.PerformanceEvaluator;
 import ohs.ir.medical.general.DocumentIdMapper;
 import ohs.ir.medical.general.MIRPath;
+import ohs.types.BidMap;
 import ohs.types.Counter;
+import ohs.types.CounterMap;
+import ohs.utils.Generics;
 
 public class ResultFormatter {
 
@@ -26,34 +29,58 @@ public class ResultFormatter {
 		/*
 		 * run1: unigram language model with dirichlet prior
 		 * 
-		 * run2: unigram language model with dirichlet prior + ESA based on ICD-10
+		 * run2: unigram language model with dirichlet prior + ESA based on
+		 * ICD-10
 		 * 
-		 * run3: unigram language model with dirichlet prior + ESA with document centrality based on ICD-10
+		 * run3: unigram language model with dirichlet prior + ESA with document
+		 * centrality based on ICD-10
 		 * 
 		 * run4: unigram language model with dirichlet prior + CBEEM
 		 * 
-		 * run5: unigram language model with dirichlet prior + CBEEM + ESA based on ICD-10
+		 * run5: unigram language model with dirichlet prior + CBEEM + ESA based
+		 * on ICD-10
 		 * 
-		 * run6: unigram language model with dirichlet prior + CBEEM + ESA with document centrality based on ICD-10
+		 * run6: unigram language model with dirichlet prior + CBEEM + ESA with
+		 * document centrality based on ICD-10
 		 * 
-		 * run7: unigram language model with dirichlet prior + CBEEM + expanded query by CBEEM + ESA based on ICD-10
+		 * run7: unigram language model with dirichlet prior + CBEEM + expanded
+		 * query by CBEEM + ESA based on ICD-10
 		 * 
-		 * run8: unigram language model with dirichlet prior + CBEEM + + expanded query by CBEEM + ESA with document centrality based on
+		 * run8: unigram language model with dirichlet prior + CBEEM + +
+		 * expanded query by CBEEM + ESA with document centrality based on
 		 * ICD-10
 		 */
 
 		Map<String, String> nameMap = new HashMap<String, String>();
 		nameMap.put("lm_dirichlet.txt", "KISTI_EN_RUN1.dat");
-		nameMap.put("lmd_esa_false_false.txt", "KISTI_EN_RUN2.dat"); // unigram langauge model with dirichlet prior + ESA based on ICD-10
-		nameMap.put("lmd_esa_false_true.txt", "KISTI_EN_RUN3.dat"); // unigram langauge model with dirichlet prior + ESA with document
-																	// centrality based on ICD-10
+		nameMap.put("lmd_esa_false_false.txt", "KISTI_EN_RUN2.dat"); // unigram
+																		// langauge
+																		// model
+																		// with
+																		// dirichlet
+																		// prior
+																		// + ESA
+																		// based
+																		// on
+																		// ICD-10
+		nameMap.put("lmd_esa_false_true.txt", "KISTI_EN_RUN3.dat"); // unigram
+																	// langauge
+																	// model
+																	// with
+																	// dirichlet
+																	// prior +
+																	// ESA with
+																	// document
+																	// centrality
+																	// based on
+																	// ICD-10
 		nameMap.put("cbeem_1000_10_5_25_2000.0_0.5_false_false_false_0.5_false_false.txt", "KISTI_EN_RUN4.dat");
 		nameMap.put("cbeem_esa_false_false.txt", "KISTI_EN_RUN5.dat");
 		nameMap.put("cbeem_esa_false_true.txt", "KISTI_EN_RUN6.dat");
 		nameMap.put("cbeem_esa_true_false.txt", "KISTI_EN_RUN7.dat");
 		nameMap.put("cbeem_esa_true_true.txt", "KISTI_EN_RUN8.dat");
 
-		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(MIRPath.CLEF_EHEALTH_DOC_ID_MAP_FIE);
+		BidMap<String, String> docIdMap = DocumentIdMapper.readDocumentIdMap(MIRPath.CLEF_EHEALTH_DOC_ID_MAP_FIE);
 
 		File outputDir = new File(MIRPath.CLEF_EHEALTH_OUTPUT_RESULT_2015_DIR, "submit");
 
@@ -67,7 +94,7 @@ public class ResultFormatter {
 			}
 
 			System.out.printf("%s -> %s\n", inputFile.getName(), outputFileName);
-			StrCounterMap searchResults = PerformanceEvaluator.readSearchResults(inputFile.getPath());
+			CounterMap<String, String> searchResults = PerformanceEvaluator.readSearchResults(inputFile.getPath());
 			searchResults = DocumentIdMapper.mapIndexIdsToDocIds(searchResults, docIdMap);
 
 			writeResults(outputFile, searchResults);
@@ -76,7 +103,7 @@ public class ResultFormatter {
 		System.out.println("process ends.");
 	}
 
-	private static void writeResults(File outputFile, StrCounterMap resultData) {
+	private static void writeResults(File outputFile, CounterMap<String, String> resultData) {
 		System.out.printf("write to [%s]\n", outputFile.getPath());
 		TextFileWriter writer = new TextFileWriter(outputFile);
 
@@ -84,7 +111,7 @@ public class ResultFormatter {
 		nf.setMinimumFractionDigits(20);
 		nf.setGroupingUsed(false);
 
-		StrCounterMap temp = new StrCounterMap();
+		CounterMap<String, String> temp = Generics.newCounterMap();
 
 		for (String qId : resultData.keySet()) {
 			Counter<String> docScores = resultData.getCounter(qId);
@@ -113,7 +140,8 @@ public class ResultFormatter {
 				int iter = 0;
 				int rank = 0;
 				int runId = 0;
-				String output = String.format("%s\tQ%d\t%s\t%d\t%s\t%d", qId, iter, docId, rank, Double.toString(score), runId);
+				String output = String.format("%s\tQ%d\t%s\t%d\t%s\t%d", qId, iter, docId, rank, Double.toString(score),
+						runId);
 				writer.write(output + "\n");
 			}
 		}

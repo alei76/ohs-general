@@ -38,6 +38,7 @@ import ohs.ir.medical.general.MIRPath;
 import ohs.ir.medical.general.SearcherUtils;
 import ohs.types.DeepMap;
 import ohs.types.ListMap;
+import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 
 /**
@@ -100,7 +101,8 @@ public class ICDHandler {
 
 		if (title.length() > 0) {
 			//
-			// if (title.equals("Latent syphilis, unspecified as early or late")) {
+			// if (title.equals("Latent syphilis, unspecified as early or
+			// late")) {
 			// System.out.println();
 			// }
 
@@ -115,7 +117,8 @@ public class ICDHandler {
 
 			for (int i = 0; i < node.getLinks().size(); i++) {
 				Link link = node.getLinks().get(i);
-				sb.append(String.format("\n%s:\t%d\t%s\t%s", link.getType().toString(), i + 1, link.getText(), link.getTarget()));
+				sb.append(String.format("\n%s:\t%d\t%s\t%s", link.getType().toString(), i + 1, link.getText(),
+						link.getTarget()));
 			}
 			items.add(sb.toString().trim());
 		}
@@ -214,7 +217,8 @@ public class ICDHandler {
 
 				String title = doc.getField(CommonFieldNames.TITLE).stringValue();
 				String wikiText = doc.getField(CommonFieldNames.CONTENT).stringValue();
-				String newLine = StrUtils.join("\t", new String[] { chapter, section, subSection, title, wikiText.replace("\n", "<NL>") });
+				String newLine = StrUtils.join("\t",
+						new String[] { chapter, section, subSection, title, wikiText.replace("\n", "<NL>") });
 
 				writer.write(newLine + "\n");
 			}
@@ -234,7 +238,7 @@ public class ICDHandler {
 
 		MediaWikiParser parser = new MediaWikiParserFactory().createParser();
 
-		StrArrayList chapterItems = new StrArrayList();
+		List<String> chapterItems = Generics.newArrayList();
 
 		for (int i = 0; i < lines.length; i++) {
 			String line = lines[i];
@@ -260,7 +264,7 @@ public class ICDHandler {
 
 			page.setName(title);
 
-			StrArrayList pageItems = new StrArrayList();
+			List<String> pageItems = Generics.newArrayList();
 			pageItems.add(chapter);
 
 			for (int k = 0; k < page.getSections().size(); k++) {
@@ -274,7 +278,7 @@ public class ICDHandler {
 
 				System.out.println(secTitle);
 
-				StrArrayList secItems = new StrArrayList();
+				List<String> secItems = Generics.newArrayList();
 				secItems.add(String.format("Section Name:\t%s", secTitle));
 
 				List<NestedListContainer> containers = section.getNestedLists();
@@ -369,7 +373,7 @@ public class ICDHandler {
 
 		System.out.println(codeLocs);
 
-		ListMap<String, String> map = new ListMap<String, String>(true);
+		ListMap<String, String> map = new ListMap<String, String>();
 
 		for (int i = 0; i < codeLocs.size() - 1; i++) {
 			String chater = items.get(chapterLocs.get(i));
@@ -452,8 +456,8 @@ public class ICDHandler {
 
 		if (docId == null) {
 			BooleanQuery searchQuery = new BooleanQuery();
-			searchQuery
-					.add(new BooleanClause(new TermQuery(new Term(CommonFieldNames.REDIRECT_TITLE, wikiTitle.toLowerCase())), Occur.SHOULD));
+			searchQuery.add(new BooleanClause(
+					new TermQuery(new Term(CommonFieldNames.REDIRECT_TITLE, wikiTitle.toLowerCase())), Occur.SHOULD));
 			TopDocs topDocs = indexSearcher.search(searchQuery, 1);
 			if (topDocs.scoreDocs.length > 0) {
 				ret = indexSearcher.getIndexReader().document(topDocs.scoreDocs[0].doc);

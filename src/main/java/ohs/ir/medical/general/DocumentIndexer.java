@@ -658,7 +658,7 @@ public class DocumentIndexer {
 		String[] indexDirNames = MIRPath.IndexDirNames;
 		String[] docMapFileNames = MIRPath.DocIdMapFileNames;
 
-		for (int i = 0; i < indexDirNames.length; i++) {
+		for (int i = 3; i < indexDirNames.length; i++) {
 			String indexDirName = indexDirNames[i];
 			String docMapFileName = docMapFileNames[i];
 

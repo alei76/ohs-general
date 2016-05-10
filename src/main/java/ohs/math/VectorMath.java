@@ -30,6 +30,10 @@ public class VectorMath {
 		return VectorUtils.toSparseVector(b);
 	}
 
+	public static SparseVector add(Vector a, Vector b) {
+		return add(new Vector[] { a, b });
+	}
+
 	public static void add(Vector[] a, Counter<Integer> b) {
 		for (Vector v : a) {
 			add(v, b);
@@ -543,7 +547,8 @@ public class VectorMath {
 	 * @param damping_factor
 	 * @return
 	 */
-	public static void randomWalk(SparseMatrix trans_probs, double[] cents, int max_iter, double min_dist, double damping_factor) {
+	public static void randomWalk(SparseMatrix trans_probs, double[] cents, int max_iter, double min_dist,
+			double damping_factor) {
 
 		double tran_prob = 0;
 		double dot_product = 0;
