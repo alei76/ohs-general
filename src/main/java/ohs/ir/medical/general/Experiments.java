@@ -62,8 +62,8 @@ public class Experiments {
 		// e.searchByKldFbWordVectorPrior();
 		// e.searchByEntityLinking();
 		// e.testKLDFBWiki();
-		e.searchByKLDFBWiki();
-		SearchResultEvaluator.main(args);
+		// e.searchByKLDFBWiki();
+		// SearchResultEvaluator.main(args);
 
 		System.out.println("process ends.");
 	}

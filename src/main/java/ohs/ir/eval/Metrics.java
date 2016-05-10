@@ -74,7 +74,7 @@ public class Metrics {
 		return binaryPreference(docIds, docRels, 10);
 	}
 
-	public static double[] computeDCGs(double[] gains) {
+	public static double[] discountedCumulativeGain(double[] gains) {
 		double[] dcgs = new double[gains.length];
 		double dcg = 0;
 
@@ -242,8 +242,8 @@ public class Metrics {
 
 		ArrayUtils.sort(max_gains);
 
-		double[] dcgs = computeDCGs(gains);
-		double[] max_dcgs = computeDCGs(max_gains);
+		double[] dcgs = discountedCumulativeGain(gains);
+		double[] max_dcgs = discountedCumulativeGain(max_gains);
 
 		double[] ndcgs = new double[n];
 

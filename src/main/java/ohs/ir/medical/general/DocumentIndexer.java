@@ -23,7 +23,6 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.xmlbeans.impl.common.IOUtil;
 
 import de.tudarmstadt.ukp.wikipedia.api.WikiConstants.Language;
 import de.tudarmstadt.ukp.wikipedia.parser.Content;
@@ -103,10 +102,46 @@ public class DocumentIndexer {
 		// di.indexOhsumed();
 		// di.indexTrecGenomics();
 		// di.indexWikiDbDump();
-		di.indexClueWeb12();
-		// di.makeDocumentIdMap();
+		// di.indexClueWeb12();
+		di.makeDocumentIdMap();
 
 		System.out.println("process ends.");
+	}
+
+	public DocumentIndexer() {
+
+	}
+
+	public void indexClefEHealth() throws Exception {
+		System.out.println("index CLEF eHealth.");
+		IndexWriter iw = getIndexWriter(MIRPath.CLEF_EHEALTH_INDEX_DIR);
+
+		TextFileReader reader = new TextFileReader(MIRPath.CLEF_EHEALTH_COL_FILE);
+		reader.setPrintNexts(false);
+
+		while (reader.hasNext()) {
+			reader.print(100000);
+
+			String line = reader.next();
+			String[] parts = line.split("\t");
+
+			String uid = parts[0];
+			String date = parts[1];
+			String url = parts[2];
+			String content = parts[3].replaceAll("\\n", "\n");
+
+			Document doc = new Document();
+			doc.add(new StringField(CommonFieldNames.DOCUMENT_ID, uid, Field.Store.YES));
+			doc.add(new StringField(CommonFieldNames.URL, url, Field.Store.YES));
+			doc.add(new StringField(CommonFieldNames.DATE, date, Field.Store.YES));
+			doc.add(new MyTextField(CommonFieldNames.CONTENT, content, Store.YES));
+
+			iw.addDocument(doc);
+		}
+		reader.printLast();
+		reader.close();
+
+		iw.close();
 	}
 
 	public void indexClueWeb12() throws Exception {
@@ -129,7 +164,6 @@ public class DocumentIndexer {
 					String ss = StrUtils.join("", parts, 3);
 
 					parts = new String[] { parts[0], parts[1], parts[2], ss };
-
 				}
 
 				if (parts.length != 4) {
@@ -202,42 +236,6 @@ public class DocumentIndexer {
 
 		iw.close();
 
-	}
-
-	public DocumentIndexer() {
-
-	}
-
-	public void indexClefEHealth() throws Exception {
-		System.out.println("index CLEF eHealth.");
-		IndexWriter iw = getIndexWriter(MIRPath.CLEF_EHEALTH_INDEX_DIR);
-
-		TextFileReader reader = new TextFileReader(MIRPath.CLEF_EHEALTH_COL_FILE);
-		reader.setPrintNexts(false);
-
-		while (reader.hasNext()) {
-			reader.print(100000);
-
-			String line = reader.next();
-			String[] parts = line.split("\t");
-
-			String uid = parts[0];
-			String date = parts[1];
-			String url = parts[2];
-			String content = parts[3].replaceAll("\\n", "\n");
-
-			Document doc = new Document();
-			doc.add(new StringField(CommonFieldNames.DOCUMENT_ID, uid, Field.Store.YES));
-			doc.add(new StringField(CommonFieldNames.URL, url, Field.Store.YES));
-			doc.add(new StringField(CommonFieldNames.DATE, date, Field.Store.YES));
-			doc.add(new MyTextField(CommonFieldNames.CONTENT, content, Store.YES));
-
-			iw.addDocument(doc);
-		}
-		reader.printLast();
-		reader.close();
-
-		iw.close();
 	}
 
 	public void indexOhsumed() throws Exception {

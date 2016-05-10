@@ -52,7 +52,7 @@ public class MIRPath {
 
 	public static final String WIKI_TITLE_FILE = WIKI_DIR + "titles.txt";
 
-	public static final String WIKI_DOC_ID_MAP_FILE = WIKI_DIR + "document_id_map.txt";
+	public static final String WIKI_DOC_ID_MAP_FILE = WIKI_DIR + "document_id_map.txt.gz";
 
 	public static final String WIKI_CATEGORY_MAP_FILE = WIKI_DIR + "category_map.txt";
 
@@ -117,11 +117,11 @@ public class MIRPath {
 
 	public static final String CLEF_EHEALTH_RELEVANCE_JUDGE_2015_FILE = CLEF_EHEALTH_QUERY_DIR + "2015/qrels.clef2015.test.graded.txt";
 
-	public static final String CLEF_EHEALTH_QUERY_2016_FILE = CLEF_EHEALTH_QUERY_DIR + "2016/example-topics.xml";
+	public static final String CLEF_EHEALTH_QUERY_2016_FILE = CLEF_EHEALTH_QUERY_DIR + "2016/queries2016.xml";
 
 	public static final String CLEF_EHEALTH_VOCAB_FILE = CLEF_EHEALTH_DIR + "vocab.txt";
 
-	public static final String CLEF_EHEALTH_DOC_ID_MAP_FIE = CLEF_EHEALTH_DIR + "document_id_map.txt";
+	public static final String CLEF_EHEALTH_DOC_ID_MAP_FIE = CLEF_EHEALTH_DIR + "document_id_map.txt.gz";
 
 	public static final String CLEF_EHEALTH_OUTPUT_DIR = CLEF_EHEALTH_DIR + "output/";
 
@@ -169,6 +169,8 @@ public class MIRPath {
 
 	public static final String CLUEWEB12_FILE_NAME_FILE = CLUEWEB_DIR + "clueweb12_disk_b_file_names.txt";
 
+	public static final String CLUEWEB12_DOC_ID_MAP_FIE = CLEF_EHEALTH_DIR + "document_id_map.txt.gz";
+
 	/*
 	 * TREC CDS
 	 */
@@ -213,7 +215,7 @@ public class MIRPath {
 
 	public static final String TREC_CDS_VOCAB_FILE = TREC_CDS_DIR + "vocab.txt";
 
-	public static final String TREC_CDS_DOC_ID_MAP_FILE = TREC_CDS_DIR + "document_id_map.txt";
+	public static final String TREC_CDS_DOC_ID_MAP_FILE = TREC_CDS_DIR + "document_id_map.txt.gz";
 
 	public static final String TREC_CDS_OUTPUT_DIR = TREC_CDS_DIR + "output/";
 
@@ -279,7 +281,7 @@ public class MIRPath {
 
 	public static final String TREC_GENOMICS_RELEVANCE_JUDGE_2007_FILE = TREC_GENOMICS_QUERY_2007_DIR + "trecgen2007.all.judgments.tsv.txt";
 
-	public static final String TREC_GENOMICS_DOC_ID_MAP_FILE = TREC_GENOMICS_DIR + "document_id_map.txt";
+	public static final String TREC_GENOMICS_DOC_ID_MAP_FILE = TREC_GENOMICS_DIR + "document_id_map.txt.gz";
 
 	public static final String TREC_GENOMICS_OUTPUT_DIR = TREC_GENOMICS_DIR + "output/";
 
@@ -321,7 +323,7 @@ public class MIRPath {
 
 	public static final String OHSUMED_VOCAB_FILE = OHSUMED_DIR + "vocab.txt";
 
-	public static final String OHSUMED_DOC_ID_MAP_FILE = OHSUMED_DIR + "document_id_map.txt";
+	public static final String OHSUMED_DOC_ID_MAP_FILE = OHSUMED_DIR + "document_id_map.txt.gz";
 
 	public static final String OHSUMED_OUTPUT_DIR = OHSUMED_DIR + "output/";
 
@@ -355,7 +357,8 @@ public class MIRPath {
 	// public static String[] IndexDirNames = { MIRPath.TREC_CDS_INDEX_DIR,
 	// MIRPath.CLEF_EHEALTH_INDEX_DIR, MIRPath.OHSUMED_INDEX_DIR};
 
-	public static final String[] IndexDirNames = { TREC_CDS_INDEX_DIR, CLEF_EHEALTH_INDEX_DIR, OHSUMED_INDEX_DIR, TREC_GENOMICS_INDEX_DIR };
+	public static final String[] IndexDirNames = { TREC_CDS_INDEX_DIR, CLEF_EHEALTH_INDEX_DIR, OHSUMED_INDEX_DIR, TREC_GENOMICS_INDEX_DIR,
+			CLUEWEB12_INDEX_DIR };
 
 	public static final String[] SentIndexDirNames = { TREC_CDS_INDEX_SENT_DIR, CLEF_EHEALTH_INDEX_SENT_DIR, OHSUMED_INDEX_SENT_DIR,
 			TREC_GENOMICS_INDEX_SENT_DIR };
