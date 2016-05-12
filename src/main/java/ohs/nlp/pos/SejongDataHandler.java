@@ -9,8 +9,6 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.apache.xml.utils.SuballocatedByteVector;
-
 import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
 import ohs.nlp.ling.types.KDocument;
@@ -50,9 +48,9 @@ public class SejongDataHandler {
 
 			for (KSentence sent : doc.getSentences()) {
 				for (MultiToken mt : sent.toMultiTokens()) {
-					String ot = mt.getValue(TokenAttr.WORD);
-					String[] words = mt.getSubValues(TokenAttr.WORD);
-					String[] poss = mt.getSubValues(TokenAttr.POS);
+					String ot = mt.get(TokenAttr.WORD);
+					String[] words = mt.getSub(TokenAttr.WORD);
+					String[] poss = mt.getSub(TokenAttr.POS);
 
 					// cm3.incrementCount(ot, StrUtils.join(Token.DELIM_TOKEN, MultiToken.DELIM_MULTI_TOKEN, words, poss), 1);
 
@@ -218,7 +216,7 @@ public class SejongDataHandler {
 					MultiToken mt = (MultiToken) tok;
 
 					for (Token t : mt.getTokens()) {
-						cm.incrementCount(t.getValue(TokenAttr.WORD), t.getValue(TokenAttr.POS), 1);
+						cm.incrementCount(t.get(TokenAttr.WORD), t.get(TokenAttr.POS), 1);
 					}
 				}
 			}
@@ -257,19 +255,19 @@ public class SejongDataHandler {
 
 					if (mt.size() > 0) {
 						Token t = mt.getToken(0);
-						String word = t.getValue(TokenAttr.WORD);
-						String pos = t.getValue(TokenAttr.POS);
+						String word = t.get(TokenAttr.WORD);
+						String pos = t.get(TokenAttr.POS);
 						cm2.incrementCount(word, pos, 1);
 					}
 
 					for (int i = 1; i < mt.size(); i++) {
 						Token t1 = mt.getToken(i - 1);
-						String word1 = t1.getValue(TokenAttr.WORD);
-						String pos1 = t1.getValue(TokenAttr.POS);
+						String word1 = t1.get(TokenAttr.WORD);
+						String pos1 = t1.get(TokenAttr.POS);
 
 						Token t2 = mt.getToken(i);
-						String word2 = t2.getValue(TokenAttr.WORD);
-						String pos2 = t2.getValue(TokenAttr.POS);
+						String word2 = t2.get(TokenAttr.WORD);
+						String pos2 = t2.get(TokenAttr.POS);
 
 						cm2.incrementCount(word2, pos2, 1);
 						cm3.incrementCount(pos1, pos2, 1);

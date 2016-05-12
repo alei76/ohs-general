@@ -77,7 +77,7 @@ public class KDocument {
 		String[][][] ret = new String[end - start][][];
 
 		for (int i = start; i < end; i++) {
-			ret[i] = sents[i].getSubValues(attr);
+			ret[i] = sents[i].getSub(attr);
 		}
 		return ret;
 	}
@@ -101,7 +101,7 @@ public class KDocument {
 		for (int i = start; i < end; i++) {
 			KSentence sent = sents[i];
 			for (Token t : sent.getTokens()) {
-				ret.add(t.getValue(attr));
+				ret.add(t.get(attr));
 			}
 		}
 		return ret.toArray(new String[ret.size()]);
@@ -143,7 +143,7 @@ public class KDocument {
 		sents = new KSentence[ois.readInt()];
 		for (int i = 0; i < sents.length; i++) {
 			KSentence sent = new KSentence();
-			sent.read(ois);
+			sent.readObject(ois);
 			sents[i] = sent;
 		}
 	}
@@ -204,7 +204,7 @@ public class KDocument {
 	public void write(ObjectOutputStream oos) throws Exception {
 		oos.writeInt(sents.length);
 		for (int i = 0; i < sents.length; i++) {
-			sents[i].write(oos);
+			sents[i].writeObject(oos);
 		}
 	}
 }

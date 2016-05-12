@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.RandomAccess;
 
-import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 
 public class IntegerArrayList implements RandomAccess, Cloneable, Serializable {

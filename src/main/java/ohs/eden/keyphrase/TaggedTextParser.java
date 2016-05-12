@@ -33,11 +33,11 @@ public class TaggedTextParser {
 						String word = two[0];
 						String pos = two[1];
 
-						tok.setValue(TokenAttr.WORD, word);
-						tok.setValue(TokenAttr.POS, pos);
+						tok.set(TokenAttr.WORD, word);
+						tok.set(TokenAttr.POS, pos);
 					} else {
-						tok.setValue(TokenAttr.WORD, "");
-						tok.setValue(TokenAttr.POS, "");
+						tok.set(TokenAttr.WORD, "");
+						tok.set(TokenAttr.POS, "");
 					}
 
 					tok.setStart(num_ts++);

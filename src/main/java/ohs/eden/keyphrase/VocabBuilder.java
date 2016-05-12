@@ -185,7 +185,7 @@ public class VocabBuilder {
 					Counter<String> c = Generics.newCounter();
 
 					for (Token t : doc.getSubTokens()) {
-						c.incrementCount(t.getValue(TokenAttr.WORD).toLowerCase(), 1);
+						c.incrementCount(t.get(TokenAttr.WORD).toLowerCase(), 1);
 					}
 
 					for (String word : c.keySet()) {

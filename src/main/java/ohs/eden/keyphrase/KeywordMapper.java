@@ -4,10 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.math.linear.SparseRealVector;
-
-import edu.stanford.nlp.classify.GeneralizedExpectationObjectiveFunction;
-import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.weight.TermWeighting;
@@ -17,8 +13,6 @@ import ohs.matrix.SparseVector;
 import ohs.nlp.ling.types.KDocument;
 import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
-import ohs.string.search.ppss.Gram;
-import ohs.string.search.ppss.GramGenerator;
 import ohs.tree.trie.hash.Node;
 import ohs.tree.trie.hash.Trie;
 import ohs.tree.trie.hash.Trie.TSResult;
@@ -26,7 +20,6 @@ import ohs.tree.trie.hash.Trie.TSResult.MatchType;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
-import ohs.types.SetMap;
 import ohs.types.StrPair;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
@@ -94,8 +87,8 @@ public class KeywordMapper {
 				Counter<String> c = Generics.newCounter();
 				//
 				for (Token t : doc.getSubTokens()) {
-					String word = t.getValue(TokenAttr.WORD);
-					String pos = t.getValue(TokenAttr.POS);
+					String word = t.get(TokenAttr.WORD);
+					String pos = t.get(TokenAttr.POS);
 					if (pos.startsWith("N")) {
 						c.incrementCount(word.toLowerCase(), 1);
 					}

@@ -1,12 +1,8 @@
 package ohs.ir.medical.wiki;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -22,12 +18,6 @@ import com.medallia.word2vec.neuralnetwork.NeuralNetworkType;
 import com.medallia.word2vec.util.AutoLog;
 import com.medallia.word2vec.util.Format;
 import com.medallia.word2vec.util.Strings;
-
-import ohs.io.TextFileReader;
-import ohs.math.ArrayUtils;
-import ohs.types.Counter;
-import ohs.types.Indexer;
-import ohs.types.Vocab;
 
 /** Example usages of {@link Word2VecModel} */
 public class Word2VecExamples {
@@ -48,7 +38,7 @@ public class Word2VecExamples {
 		prop.setProperty("iterations", "5");
 		prop.setProperty("down_sample_rate", "1e-4");
 		prop.setProperty("num_train_sents", "10000");
-		prop.setProperty("train_mode", "true");
+		prop.setProperty("train_mode", "false");
 		return prop;
 	}
 

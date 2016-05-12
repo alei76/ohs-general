@@ -272,7 +272,7 @@ public class KeyphraseExtractor {
 				for (String kwd : korKwdStr.split(";")) {
 					if (kwd.length() > 0) {
 						KSentence kwdSent = TaggedTextParser.parse(kwd).toSentence();
-						String s = StrUtils.join(" ", "", kwdSent.getSubValues(TokenAttr.WORD));
+						String s = StrUtils.join(" ", "", kwdSent.getSub(TokenAttr.WORD));
 
 						keywordSet.add(s);
 
@@ -326,10 +326,10 @@ public class KeyphraseExtractor {
 	public Counter<String> extract(KDocument doc) {
 		Counter<String> ret = Generics.newCounter();
 
-		// KSentence[] sents = new KSentence[doc.size()];
+		// MTSentence[] sents = new MTSentence[doc.size()];
 		//
 		// for (int i = 0; i < doc.size(); i++) {
-		// sents[i] = new KSentence(doc.getSentence(i).getSubTokens());
+		// sents[i] = new MTSentence(doc.getSentence(i).getSubTokens());
 		// }
 		// KDocument temp = new KDocument(sents);
 
@@ -356,8 +356,8 @@ public class KeyphraseExtractor {
 				cm1.incrementCount(candStr1, word, 1);
 			}
 
-			int left = cand1.getFirst().getStart();
-			int right = cand1.getLast().getStart();
+			int left = cand1.getToken(0).getStart();
+			int right = cand1.getToken(cand1.size() - 1).getStart();
 
 			{
 				int start = Math.max(left - window_size, 0);
@@ -386,7 +386,7 @@ public class KeyphraseExtractor {
 			}
 
 			// for (int j = i + 1; j < cands.size(); j++) {
-			// KSentence cand2 = cands.get(j);
+			// MTSentence cand2 = cands.get(j);
 			// String candStr2 = cand2.joinValues("", "", new TokenAttr[] { TokenAttr.WORD }, 0, cand2.size());
 			//
 			// int dist = cand2.getFirst().getStart() - cand1.getLast().getStart();

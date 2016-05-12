@@ -7,19 +7,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.commons.math.linear.SparseRealVector;
-
-import ohs.math.ArrayChecker;
 import ohs.math.ArrayMath;
-import ohs.math.ArrayUtils;
 import ohs.math.CommonFuncs;
 import ohs.math.VectorMath;
-import ohs.math.VectorUtils;
 import ohs.matrix.DenseVector;
 import ohs.matrix.SparseVector;
-import ohs.types.Counter;
 import ohs.types.ListMap;
-import ohs.utils.Generics;
 
 /**
  * This class provides well-known IR utilities.

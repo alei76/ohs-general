@@ -44,7 +44,7 @@ public class MorphemeAnalyzer2 {
 		// StringBuffer sb = new StringBuffer();
 		//
 		// for (int i = 0; i < doc.size(); i++) {
-		// KSentence sent = doc.getSentence(i);
+		// MTSentence sent = doc.getSentence(i);
 		// MultiToken[] mts = MultiToken.toMultiTokens(sent.getTokens());
 		//
 		// for (int j = 0; j < mts.length; j++) {
@@ -108,7 +108,7 @@ public class MorphemeAnalyzer2 {
 
 			for (int j = 0; j < mts.length; j++) {
 				MultiToken mt = mts[j];
-				String eojeol = mt.getValue(TokenAttr.WORD);
+				String eojeol = mt.get(TokenAttr.WORD);
 				// Set<String> morphemes = analDict.get(eojeol, false);
 
 				// if (morphemes == null) {

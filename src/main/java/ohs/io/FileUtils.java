@@ -39,7 +39,6 @@ import org.apache.commons.compress.compressors.CompressorInputStream;
 import org.apache.commons.compress.compressors.CompressorOutputStream;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
-import org.apache.http.client.protocol.RequestAddCookies;
 
 import ohs.math.ArrayUtils;
 import ohs.types.BidMap;
@@ -104,20 +103,17 @@ public class FileUtils {
 			/** Step: 3 ---> Create a tar entry for each file that is read. **/
 
 			/**
-			 * relativize is used to to add a file to a tar, without including
-			 * the entire path from root.
+			 * relativize is used to to add a file to a tar, without including the entire path from root.
 			 **/
 
-			TarArchiveEntry tae = new TarArchiveEntry(input,
-					root.getParentFile().toURI().relativize(input.toURI()).getPath());
+			TarArchiveEntry tae = new TarArchiveEntry(input, root.getParentFile().toURI().relativize(input.toURI()).getPath());
 
 			/** Step: 4 ---> Put the tar entry using putArchiveEntry. **/
 
 			taos.putArchiveEntry(tae);
 
 			/**
-			 * Step: 5 ---> Write the data to the tar file and close the input
-			 * stream.
+			 * Step: 5 ---> Write the data to the tar file and close the input stream.
 			 **/
 
 			int count;
@@ -137,8 +133,7 @@ public class FileUtils {
 				if (input.listFiles().length == 0) {
 
 					System.out.println("Adding Empty Folder: " + root.toURI().relativize(input.toURI()).getPath());
-					TarArchiveEntry entry = new TarArchiveEntry(input,
-							root.getParentFile().toURI().relativize(input.toURI()).getPath());
+					TarArchiveEntry entry = new TarArchiveEntry(input, root.getParentFile().toURI().relativize(input.toURI()).getPath());
 					taos.putArchiveEntry(entry);
 					taos.closeArchiveEntry();
 				}
@@ -170,8 +165,7 @@ public class FileUtils {
 		taos.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
 
 		/**
-		 * Step: 2 --->Open the source data and get a list of files from given
-		 * directory recursively.
+		 * Step: 2 --->Open the source data and get a list of files from given directory recursively.
 		 **/
 
 		File input = new File(inPath);
@@ -343,8 +337,7 @@ public class FileUtils {
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMinimumFractionDigits(2);
 
-		System.out.println(String.format("read [%d, %s MBs] files from [%s]", files.size(),
-				nf.format(fs.size(Type.MEGA)), dir.getName()));
+		System.out.println(String.format("read [%d, %s MBs] files from [%s]", files.size(), nf.format(fs.size(Type.MEGA)), dir.getName()));
 		return files;
 	}
 
@@ -448,16 +441,14 @@ public class FileUtils {
 		InputStreamReader isr = null;
 
 		if (file.getName().endsWith(".gz")) {
-			CompressorInputStream cis = new CompressorStreamFactory()
-					.createCompressorInputStream(CompressorStreamFactory.GZIP, fis);
+			CompressorInputStream cis = new CompressorStreamFactory().createCompressorInputStream(CompressorStreamFactory.GZIP, fis);
 			isr = new InputStreamReader(cis, encoding);
 		} else if (file.getName().endsWith(".bz2")) {
 			// byte[] ignoreBytes = new byte[2];
 			// fis.read(ignoreBytes); // "B", "Z" bytes from commandline tools
 			// ret = new BufferedReader(new InputStreamReader(new
 			// CBZip2InputStream(fis)));
-			CompressorInputStream cis = new CompressorStreamFactory()
-					.createCompressorInputStream(CompressorStreamFactory.BZIP2, fis);
+			CompressorInputStream cis = new CompressorStreamFactory().createCompressorInputStream(CompressorStreamFactory.BZIP2, fis);
 			isr = new InputStreamReader(cis, encoding);
 		} else {
 			isr = new InputStreamReader(fis, encoding);
@@ -495,14 +486,12 @@ public class FileUtils {
 		if (file.getName().endsWith(".gz")) {
 			// osw = new OutputStreamWriter(new GZIPOutputStream(new
 			// FileOutputStream(file, append)), encoding);
-			CompressorOutputStream cos = new CompressorStreamFactory()
-					.createCompressorOutputStream(CompressorStreamFactory.GZIP, fos);
+			CompressorOutputStream cos = new CompressorStreamFactory().createCompressorOutputStream(CompressorStreamFactory.GZIP, fos);
 			osw = new OutputStreamWriter(cos, encoding);
 		} else if (file.getName().endsWith(".bz2")) {
 			// osw = new OutputStreamWriter(new CBZip2OutputStream(new
 			// FileOutputStream(file, append)), encoding);
-			CompressorOutputStream cos = new CompressorStreamFactory()
-					.createCompressorOutputStream(CompressorStreamFactory.BZIP2, fos);
+			CompressorOutputStream cos = new CompressorStreamFactory().createCompressorOutputStream(CompressorStreamFactory.BZIP2, fos);
 			osw = new OutputStreamWriter(cos, encoding);
 		} else {
 			osw = new OutputStreamWriter(fos, encoding);
@@ -1102,7 +1091,6 @@ public class FileUtils {
 
 	public static void writeStrCollection(ObjectOutputStream oos, Collection<String> c) throws Exception {
 		oos.writeInt(c.size());
-
 		Iterator<String> iter = c.iterator();
 		while (iter.hasNext()) {
 			oos.writeUTF(iter.next());
@@ -1133,16 +1121,14 @@ public class FileUtils {
 		writeStrCounter(fileName, c, false);
 	}
 
-	public static void writeStrCounter(String fileName, Counter<String> c, boolean orderAlphabetically)
-			throws Exception {
+	public static void writeStrCounter(String fileName, Counter<String> c, boolean orderAlphabetically) throws Exception {
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMinimumFractionDigits(0);
 		nf.setGroupingUsed(false);
 		writeStrCounter(fileName, c, nf, orderAlphabetically);
 	}
 
-	public static void writeStrCounter(String fileName, Counter<String> c, NumberFormat nf, boolean orderAlphabetically)
-			throws Exception {
+	public static void writeStrCounter(String fileName, Counter<String> c, NumberFormat nf, boolean orderAlphabetically) throws Exception {
 		StopWatch stopWatch = StopWatch.newStopWatch();
 
 		BufferedWriter bw = openBufferedWriter(fileName, UTF_8, false);
@@ -1182,8 +1168,8 @@ public class FileUtils {
 		writeStrCounterMap(fileName, cm, nf, false);
 	}
 
-	public static void writeStrCounterMap(String fileName, CounterMap<String, String> cm, NumberFormat nf,
-			boolean orderAlphabetically) throws Exception {
+	public static void writeStrCounterMap(String fileName, CounterMap<String, String> cm, NumberFormat nf, boolean orderAlphabetically)
+			throws Exception {
 		StopWatch stopWatch = StopWatch.newStopWatch();
 
 		BufferedWriter bw = openBufferedWriter(fileName, UTF_8, false);

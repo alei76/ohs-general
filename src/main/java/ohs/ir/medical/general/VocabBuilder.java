@@ -12,10 +12,6 @@ import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.types.Counter;
-import ohs.types.Indexer;
-import ohs.types.IntegerArrayList;
-import ohs.types.Vocab;
-import ohs.utils.Generics;
 
 public class VocabBuilder {
 

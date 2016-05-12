@@ -1,7 +1,5 @@
 package ohs.ml.neuralnet;
 
-import ohs.types.Indexer;
-
 public class Word2VecParam {
 
 	public static enum Type {

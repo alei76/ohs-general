@@ -1,9 +1,7 @@
 package ohs.nlp.pos;
 
 
-import java.text.*;
-
-import org.apache.commons.math.stat.descriptive.SynchronizedMultivariateSummaryStatistics;
+import java.text.DecimalFormat;
 
 import ohs.math.ArrayUtils;
 

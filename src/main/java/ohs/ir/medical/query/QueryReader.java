@@ -3,7 +3,6 @@ package ohs.ir.medical.query;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

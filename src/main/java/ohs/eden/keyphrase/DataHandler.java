@@ -120,7 +120,7 @@ public class DataHandler {
 
 				for (String kwd : korKwds) {
 					KSentence sent = TaggedTextParser.parse(kwd).getSentence(0);
-					String pat = String.join(" ", sent.getValues(TokenAttr.POS));
+					String pat = String.join(" ", sent.get(TokenAttr.POS));
 					patCnts.incrementCount(pat, 1);
 				}
 			}
@@ -303,8 +303,8 @@ public class DataHandler {
 				KDocument doc = TaggedTextParser.parse(korTitle + "\\n" + korAbs);
 				//
 				for (Token t : doc.getSubTokens()) {
-					String word = t.getValue(TokenAttr.WORD);
-					String pos = t.getValue(TokenAttr.POS);
+					String word = t.get(TokenAttr.WORD);
+					String pos = t.get(TokenAttr.POS);
 					if (pos.startsWith("N")) {
 						c.incrementCount(word.toLowerCase(), 1);
 					}

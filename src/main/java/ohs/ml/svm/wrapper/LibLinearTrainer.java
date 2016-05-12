@@ -3,7 +3,6 @@ package ohs.ml.svm.wrapper;
 import java.util.List;
 
 import de.bwaldvogel.liblinear.Feature;
-import de.bwaldvogel.liblinear.FeatureNode;
 import de.bwaldvogel.liblinear.Linear;
 import de.bwaldvogel.liblinear.Model;
 import de.bwaldvogel.liblinear.Parameter;

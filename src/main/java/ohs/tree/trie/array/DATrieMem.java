@@ -1,36 +1,6 @@
 package ohs.tree.trie.array;
 
-/*
- *Copyright (C) Jeshua Bratman 2012
- *              (jeshuabratman@gmail.com) 
- *
- *Permission is hereby granted, free of charge, to any person obtaining a copy
- *of this software and associated documentation files (the "Software"), to deal
- *in the Software without restriction, including without limitation the rights
- *to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- *copies of the Software, and to permit persons to whom the Software is
- *furnished to do so, subject to the following conditions:
- *
- *The above copyright notice and this permission notice shall be included in
- *all copies or substantial portions of the Software.
- *
- *THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- *IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- *FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- *AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- *LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- *OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- *THE SOFTWARE.
- */
-
-import java.io.IOException;
 import java.util.TreeMap;
-
-import ohs.nlp.ling.types.KDocument;
-import ohs.nlp.ling.types.KSentence;
-import ohs.nlp.ling.types.MultiToken;
-import ohs.nlp.pos.NLPPath;
-import ohs.nlp.pos.SejongReader;
 
 /**
  * Pure memory implementation of Double-Array Trie. Stores array as -- well -- array and a tree structure to store address data.
@@ -140,7 +110,7 @@ public class DATrieMem extends DATrie {
 		// KDocument doc = r.next();
 		//
 		// for (int i = 0; i < doc.size(); i++) {
-		// KSentence sent = doc.getSentence(i);
+		// MTSentence sent = doc.getSentence(i);
 		// for (MultiToken mt : sent.toMultiTokens()) {
 		// String text = mt.getText();
 		// int[] ws = new int[text.length()];

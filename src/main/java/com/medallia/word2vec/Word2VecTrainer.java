@@ -4,7 +4,6 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 
-import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.medallia.word2vec.Word2VecTrainerBuilder.TrainingProgressListener;
 import com.medallia.word2vec.huffman.HuffmanCoding;

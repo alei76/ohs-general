@@ -10,6 +10,8 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.springframework.ui.Model;
 
+import de.bwaldvogel.liblinear.FeatureNode;
+import de.bwaldvogel.liblinear.Linear;
 import ohs.io.FileUtils;
 import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
@@ -89,7 +91,7 @@ public class QueryClassifier implements Serializable {
 
 	public static QueryClassifier read(Indexer<String> featureIndexer) throws Exception {
 		Indexer<String> labelIndexer = FileUtils.readStrIndexer(CDSPath.QUERY_CLASSIFIER_TYPE_INDEXER_FILE);
-		Model model = Model.load(new File(CDSPath.QUERY_CLASSIFIER_MODEL_FILE));
+		Model model = Model.loadPatentKeywordsMap(new File(CDSPath.QUERY_CLASSIFIER_MODEL_FILE));
 		return new QueryClassifier(model, labelIndexer, featureIndexer);
 	}
 

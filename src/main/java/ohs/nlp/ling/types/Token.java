@@ -17,20 +17,18 @@ public class Token implements Serializable {
 
 	public static final String DELIM_TOKEN = " / ";
 
-	protected String[] values = new String[TokenAttr.values().length];
+	protected String[] values = new String[0];
 
 	protected int start = 0;
 
 	public Token() {
-		for (int i = 0; i < values.length; i++) {
-			values[i] = "";
-		}
+
 	}
 
 	public Token(int start, String word) {
 		this();
 		this.start = start;
-		setValue(TokenAttr.WORD, word);
+		set(TokenAttr.WORD, word);
 	}
 
 	@Override
@@ -47,28 +45,28 @@ public class Token implements Serializable {
 		return true;
 	}
 
-	public int getStart() {
-		return start;
+	public String[] get() {
+		return get(TokenAttr.values());
 	}
 
-	public String getValue(int ordinal) {
+	public String get(int ordinal) {
 		return values[ordinal];
 	}
 
-	public String getValue(TokenAttr attr) {
-		return getValue(attr.ordinal());
+	public String get(TokenAttr attr) {
+		return get(attr.ordinal());
 	}
 
-	public String[] getValues() {
-		return getValues(TokenAttr.values());
-	}
-
-	public String[] getValues(TokenAttr[] attrs) {
+	public String[] get(TokenAttr[] attrs) {
 		String[] ret = new String[attrs.length];
 		for (int i = 0; i < attrs.length; i++) {
 			ret[i] = values[attrs[i].ordinal()];
 		}
 		return ret;
+	}
+
+	public int getStart() {
+		return start;
 	}
 
 	@Override
@@ -80,20 +78,31 @@ public class Token implements Serializable {
 	}
 
 	public int length() {
-		return getValue(TokenAttr.WORD).length();
+		return get(TokenAttr.WORD).length();
 	}
 
-	public void read(ObjectInputStream ois) throws Exception {
+	public void readObject(ObjectInputStream ois) throws Exception {
 		start = ois.readInt();
 		values = FileUtils.readStrArray(ois);
+	}
+
+	public void set(int i, String value) {
+		if (i >= values.length) {
+			values = Arrays.copyOf(values, i + 1);
+		}
+		values[i] = value;
+	}
+
+	public void set(TokenAttr attr, String value) {
+		set(attr.ordinal(), value);
 	}
 
 	public void setStart(int start) {
 		this.start = start;
 	}
 
-	public void setValue(TokenAttr attr, String value) {
-		values[attr.ordinal()] = value;
+	public int size() {
+		return values.length;
 	}
 
 	public MultiToken toMultiToken() {
@@ -112,14 +121,19 @@ public class Token implements Serializable {
 	public String toString(boolean print_attr_names) {
 		StringBuffer sb = new StringBuffer();
 		if (print_attr_names) {
-			sb.append(StrUtils.join("\t", TokenAttr.strValues()));
+			for (int i = 0; i < values.length; i++) {
+				sb.append(TokenAttr.values()[i]);
+				if (i != values.length) {
+					sb.append("\t");
+				}
+			}
 			sb.append("\n");
 		}
 		sb.append(StrUtils.join("\t", StrUtils.wrap(values)));
 		return sb.toString();
 	}
 
-	public void write(ObjectOutputStream oos) throws Exception {
+	public void writeObject(ObjectOutputStream oos) throws Exception {
 		oos.writeInt(start);
 		FileUtils.writeStrArray(oos, values);
 	}

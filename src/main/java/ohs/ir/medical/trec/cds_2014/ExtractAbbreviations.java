@@ -18,9 +18,10 @@ import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.medical.clef.ehealth_2014.AbbreviationExtractor;
 import ohs.ir.medical.general.SearcherUtils;
-import ohs.ling.struct.TextSpan;
+import ohs.nlp.ling.types.TextSpan;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
+import ohs.types.StrPair;
 import ohs.utils.StopWatch;
 
 public class ExtractAbbreviations {

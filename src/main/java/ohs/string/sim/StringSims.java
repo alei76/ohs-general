@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Set;
 
 import ohs.math.ArrayMath;
-import ohs.math.ArrayUtils;
 import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;

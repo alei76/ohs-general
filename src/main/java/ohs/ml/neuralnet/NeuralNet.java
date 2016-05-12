@@ -1,7 +1,6 @@
 package ohs.ml.neuralnet;
 
 import ohs.math.ArrayMath;
-import ohs.math.ArrayUtils;
 
 public class NeuralNet {
 

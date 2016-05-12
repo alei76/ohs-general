@@ -7,7 +7,6 @@ import ohs.io.FileUtils;
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 import ohs.math.CommonFuncs;
-import ohs.ml.neuralnet.Word2Vec;
 import ohs.nlp.ling.types.KDocument;
 import ohs.nlp.ling.types.KDocumentCollection;
 import ohs.nlp.ling.types.KSentence;
@@ -91,7 +90,7 @@ public class HMMTrainer {
 		for (KDocument doc : coll) {
 			for (KSentence sent : doc.getSentences()) {
 				for (MultiToken mt : sent.toMultiTokens()) {
-					String text = mt.getValue(TokenAttr.WORD);
+					String text = mt.get(TokenAttr.WORD);
 					String text2 = UnicodeUtils.decomposeToJamoStr(text);
 
 					System.out.println(text + "\t" + text2 + "\t" + String.valueOf(text2.getBytes()));
@@ -126,8 +125,8 @@ public class HMMTrainer {
 
 			for (int j = 0; j < toks.length; j++) {
 				Token t = toks[j];
-				ws[j] = wordIndexer.getIndex(t.getValue(TokenAttr.WORD));
-				poss[j] = posIndexer.getIndex(t.getValue(TokenAttr.POS));
+				ws[j] = wordIndexer.getIndex(t.get(TokenAttr.WORD));
+				poss[j] = posIndexer.getIndex(t.get(TokenAttr.POS));
 			}
 
 			wss[i] = ws;
@@ -148,7 +147,7 @@ public class HMMTrainer {
 		//
 		// for (int j = 0; j < doc.size(); j++) {
 		// for (int k = 0; k < doc.size(); k++) {
-		// KSentence sent = doc.getSentence(k);
+		// MTSentence sent = doc.getSentence(k);
 		// }
 		// }
 		// }

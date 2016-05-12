@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
+import ohs.utils.Generics;
+
 public class Study {
 
 	interface TestFunctionalInterface<T> {
@@ -21,15 +23,20 @@ public class Study {
 	public static void test01() {
 		List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6);
 
+		List<Integer> numbers2 = Generics.newArrayList();
+
 		numbers.forEach(new Consumer<Integer>() {
 			@Override
 			public void accept(Integer value) {
 				System.out.println(value);
+
+				numbers2.add(value);
 			}
 		});
-		
 
 		numbers.forEach((Integer value) -> System.out.println(value));
+
+		System.out.println("-------------");
 
 		numbers.forEach(System.out::println);
 	}

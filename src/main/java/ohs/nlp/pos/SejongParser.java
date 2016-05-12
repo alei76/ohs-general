@@ -1,7 +1,5 @@
 package ohs.nlp.pos;
 
-import org.apache.poi.ss.formula.functions.Vlookup;
-
 import ohs.nlp.ling.types.KDocument;
 import ohs.nlp.ling.types.KSentence;
 import ohs.nlp.ling.types.MultiToken;
@@ -71,7 +69,7 @@ public class SejongParser {
 
 		Token ret = new Token();
 		for (TokenAttr attr : TokenAttr.values()) {
-			ret.setValue(attr, values[attr.ordinal()]);
+			ret.set(attr, values[attr.ordinal()]);
 		}
 		return ret;
 	}

@@ -24,6 +24,8 @@ public class SentenceGenerator {
 
 	private int[][] sents;
 
+	private int max_train_sents = Integer.MAX_VALUE;
+
 	public SentenceGenerator() {
 		textLocs = Generics.newHashSet();
 	}
@@ -38,12 +40,6 @@ public class SentenceGenerator {
 
 	public Vocab getVocab() {
 		return vocab;
-	}
-
-	private int max_train_sents = Integer.MAX_VALUE;
-
-	public void setMaxTrainSents(int max_train_sents) {
-		this.max_train_sents = max_train_sents;
 	}
 
 	public void process(String fileName) {
@@ -154,6 +150,10 @@ public class SentenceGenerator {
 			reader.printProgress();
 			reader.close();
 		}
+	}
+
+	public void setMaxTrainSents(int max_train_sents) {
+		this.max_train_sents = max_train_sents;
 	}
 
 }

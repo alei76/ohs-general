@@ -8,7 +8,6 @@ import java.util.Stack;
 
 import ohs.io.FileUtils;
 import ohs.ir.medical.general.MIRPath;
-import ohs.string.sim.EditDistance;
 import ohs.tree.trie.hash.Node;
 import ohs.tree.trie.hash.Trie;
 import ohs.types.BidMap;

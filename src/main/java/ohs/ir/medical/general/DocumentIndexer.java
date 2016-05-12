@@ -157,7 +157,6 @@ public class DocumentIndexer {
 
 			for (int j = 1; j < lines.size(); j++) {
 				String line = lines.get(j);
-				line = line.replace("\\t", "<TAB>");
 				String[] parts = line.split("\t");
 
 				if (parts.length > 4) {
@@ -185,10 +184,9 @@ public class DocumentIndexer {
 
 				StringBuffer sb = new StringBuffer();
 
-				String[] ss = text.split("\\\\n");
+				String[] ss = text.split("<nl>");
 				for (int k = 0; k < ss.length; k++) {
-					String s = ss[k];
-					String[] toks = s.split("<TAB>");
+					String[] toks = ss[k].split(" ");
 					for (int l = 0; l < toks.length; l++) {
 						String tok = toks[l].trim();
 						if (tok.length() > 0) {
@@ -212,7 +210,7 @@ public class DocumentIndexer {
 				List<String> links = Generics.newArrayList();
 
 				if (linkStr.length() > 0) {
-					for (String link : linkStr.split("<TAB>")) {
+					for (String link : linkStr.split("<tab>")) {
 						int idx = link.indexOf(":");
 						if (idx > -1) {
 							String type = link.substring(0, idx);

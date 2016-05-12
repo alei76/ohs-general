@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.apache.lucene.index.DocsAndPositionsEnum;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
@@ -18,6 +17,9 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.util.BytesRef;
 import org.springframework.ui.Model;
 
+import de.bwaldvogel.liblinear.FeatureNode;
+import de.bwaldvogel.liblinear.Linear;
+import de.bwaldvogel.liblinear.SolverType;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.ir.lucene.common.CommonFieldNames;

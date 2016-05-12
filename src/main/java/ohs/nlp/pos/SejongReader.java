@@ -57,7 +57,7 @@ public class SejongReader implements Iterator<KDocument> {
 			for (Token tok : sent.getTokens()) {
 				MultiToken mt = (MultiToken) tok;
 				for (Token t : mt.getTokens()) {
-					String pos = t.getValue(TokenAttr.POS);
+					String pos = t.get(TokenAttr.POS);
 					if (!posSet.contains(pos)) {
 						isValid = false;
 						break;

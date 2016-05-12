@@ -9,6 +9,9 @@ import java.util.Map;
 
 import org.springframework.ui.Model;
 
+import de.bwaldvogel.liblinear.FeatureNode;
+import de.bwaldvogel.liblinear.Linear;
+import de.bwaldvogel.liblinear.SolverType;
 import edu.stanford.nlp.math.ArrayMath;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;

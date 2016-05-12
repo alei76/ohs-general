@@ -28,7 +28,6 @@ import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.CommonFieldNames;
-import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
 import ohs.ir.medical.general.MIRPath;
 import ohs.ir.medical.general.SearcherUtils;
 import ohs.types.Counter;

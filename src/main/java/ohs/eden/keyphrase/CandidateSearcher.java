@@ -1,23 +1,18 @@
 package ohs.eden.keyphrase;
 
-import java.sql.Struct;
-import java.util.Arrays;
 import java.util.List;
 
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.nlp.ling.types.KDocument;
 import ohs.nlp.ling.types.KSentence;
-import ohs.nlp.ling.types.MultiToken;
 import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
-import ohs.tree.trie.hash.Node;
 import ohs.tree.trie.hash.Trie;
 import ohs.tree.trie.hash.Trie.TSResult;
 import ohs.tree.trie.hash.Trie.TSResult.MatchType;
 import ohs.types.Counter;
 import ohs.utils.Generics;
-import ohs.utils.StrUtils;
 
 public class CandidateSearcher {
 
@@ -61,7 +56,7 @@ public class CandidateSearcher {
 				if (korAbs.length() > 0) {
 					KDocument doc = TaggedTextParser.parse(korAbs);
 
-					// KDocument input = new KSentence(doc.getSubTokens()).toDocument();
+					// KDocument input = new MTSentence(doc.getSubTokens()).toDocument();
 
 					cs.search(doc);
 
@@ -129,7 +124,7 @@ public class CandidateSearcher {
 		for (int i = 0; i < input.size(); i++) {
 			KSentence sent = input.getSentence(i);
 			Token[] subToks = sent.getSubTokens();
-			String[] poss = new KSentence(subToks).getValues(TokenAttr.POS);
+			String[] poss = new KSentence(subToks).get(TokenAttr.POS);
 
 			for (int s = 0; s < poss.length;) {
 				int found = -1;
@@ -153,9 +148,9 @@ public class CandidateSearcher {
 
 					for (int j = s, loc = 0; j < found; j++) {
 						if (j == s) {
-							subToks[j].setValue(TokenAttr.KWD, "KWD-B");
+							subToks[j].set(TokenAttr.KWD, "KWD-B");
 						} else {
-							subToks[j].setValue(TokenAttr.KWD, "KWD-I");
+							subToks[j].set(TokenAttr.KWD, "KWD-I");
 						}
 						ts[loc++] = subToks[j];
 					}

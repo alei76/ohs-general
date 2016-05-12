@@ -8,37 +8,31 @@ import java.util.List;
 import ohs.utils.Generics;
 import ohs.utils.StrUtils;
 
-public class KSentence {
+public class MSentence {
 
 	public static final String DELIM_SENT = "\n";
 
-	public static KSentence newSentence(String[] words) {
+	public static MSentence newSentence(String[] words) {
 		MultiToken[] mts = new MultiToken[words.length];
 		for (int j = 0, loc = 0; j < words.length; j++) {
 			MultiToken mt = new MultiToken(loc++, words[j]);
 			mts[j] = mt;
 		}
-		return new KSentence(mts);
+		return new MSentence(mts);
 	}
 
-	private Token[] toks;
+	private MultiToken[] toks;
 
-	private boolean is_multi_tok = false;
-
-	public KSentence() {
-
+	public MSentence() {
+		
 	}
 
-	public KSentence(List<Token> toks) {
-		this(toks.toArray(new Token[toks.size()]));
+	public MSentence(List<MultiToken> toks) {
+		this(toks.toArray(new MultiToken[toks.size()]));
 	}
 
-	public KSentence(Token[] toks) {
+	public MSentence(MultiToken[] toks) {
 		this.toks = toks;
-
-		if (toks[0] instanceof MultiToken) {
-			is_multi_tok = true;
-		}
 	}
 
 	public String[] get(int start, int end, TokenAttr attr) {
@@ -53,8 +47,8 @@ public class KSentence {
 		return get(0, toks.length, attr);
 	}
 
-	public KSentence getSentence(int start, int end) {
-		return new KSentence(getTokens(start, end));
+	public MSentence getSentence(int start, int end) {
+		return new MSentence(getTokens(start, end));
 	}
 
 	public String[][] getSub(int start, int end, TokenAttr attr) {
@@ -72,7 +66,7 @@ public class KSentence {
 
 	public Token[] getSubTokens() {
 		List<Token> ret = Generics.newArrayList();
-		for (MultiToken mt : toMultiTokens()) {
+		for (MultiToken mt : toks) {
 			for (Token t : mt.getTokens()) {
 				ret.add(t);
 			}
@@ -80,16 +74,16 @@ public class KSentence {
 		return ret.toArray(new Token[ret.size()]);
 	}
 
-	public Token getToken(int i) {
+	public MultiToken getToken(int i) {
 		return toks[i];
 	}
 
-	public Token[] getTokens() {
+	public MultiToken[] getTokens() {
 		return toks;
 	}
 
-	public Token[] getTokens(int start, int end) {
-		Token[] ret = new Token[end - start];
+	public MultiToken[] getTokens(int start, int end) {
+		MultiToken[] ret = new MultiToken[end - start];
 		for (int i = start, loc = 0; i < end; i++, loc++) {
 			ret[loc] = toks[i];
 		}
@@ -107,41 +101,22 @@ public class KSentence {
 	public int length() {
 		int ret = 0;
 		for (Token t : toks) {
-			if (is_multi_tok) {
-				ret += t.toMultiToken().length();
-			} else {
-				ret += t.length();
-			}
+			ret += t.toMultiToken().length();
 		}
 		return ret;
 	}
 
 	public void readObject(ObjectInputStream ois) throws Exception {
-		is_multi_tok = ois.readBoolean();
 		toks = new MultiToken[ois.readInt()];
 		for (int i = 0; i < toks.length; i++) {
-			if (is_multi_tok) {
-				MultiToken t = new MultiToken();
-				t.readObject(ois);
-				toks[i] = t;
-			} else {
-				Token t = new Token();
-				t.readObject(ois);
-				toks[i] = t;
-			}
+			MultiToken t = new MultiToken();
+			t.readObject(ois);
+			toks[i] = t;
 		}
 	}
 
 	public int size() {
 		return toks.length;
-	}
-
-	public KDocument toDocument() {
-		return new KDocument(new KSentence[] { this });
-	}
-
-	public MultiToken[] toMultiTokens() {
-		return (MultiToken[]) toks;
 	}
 
 	@Override
@@ -157,20 +132,14 @@ public class KSentence {
 			if (!print_sub_values_only) {
 				sb.append(StrUtils.join("\t", TokenAttr.strValues()));
 			}
-			if (is_multi_tok) {
-				sb.append("\tSubValues");
-			}
+			sb.append("\tSubValues");
 			sb.append("\n");
 		}
 
 		for (int i = 0; i < toks.length; i++) {
 			Token t = toks[i];
-			if (is_multi_tok) {
-				MultiToken mt = t.toMultiToken();
-				sb.append(String.format("%d\t%s", i, mt.toString(false, print_sub_values_only)));
-			} else {
-				sb.append(String.format("%d\t%s", i, t.toString(false)));
-			}
+			MultiToken mt = t.toMultiToken();
+			sb.append(String.format("%d\t%s", i, mt.toString(false, print_sub_values_only)));
 
 			if (i != toks.length - 1) {
 				sb.append("\n");
@@ -180,14 +149,9 @@ public class KSentence {
 	}
 
 	public void writeObject(ObjectOutputStream oos) throws Exception {
-		oos.writeBoolean(is_multi_tok);
 		oos.writeInt(toks.length);
 		for (int i = 0; i < toks.length; i++) {
-			if (is_multi_tok) {
-				toks[i].toMultiToken().writeObject(oos);
-			} else {
-				toks[i].writeObject(oos);
-			}
+			toks[i].toMultiToken().writeObject(oos);
 		}
 	}
 

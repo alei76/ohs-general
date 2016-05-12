@@ -3,14 +3,12 @@ package ohs.nlp.pos;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import kr.co.shineware.util.common.file.FileUtil;
 import ohs.io.FileUtils;
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
 import ohs.types.Indexer;
-import ohs.utils.StrUtils;
 
 public class HMM {
 

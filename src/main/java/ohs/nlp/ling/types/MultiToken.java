@@ -32,16 +32,16 @@ public class MultiToken extends Token {
 		super(start, word);
 	}
 
-	public String[] getSubValues(int start, int end, TokenAttr attr) {
+	public String[] getSub(int start, int end, TokenAttr attr) {
 		String[] ret = new String[end - start];
-		for (int i = start; i < end; i++) {
-			ret[i] = toks[i].getValue(attr);
+		for (int i = start, j = 0; i < end; i++, j++) {
+			ret[j] = toks[i].get(attr);
 		}
 		return ret;
 	}
 
-	public String[] getSubValues(TokenAttr attr) {
-		return getSubValues(0, toks.length, attr);
+	public String[] getSub(TokenAttr attr) {
+		return getSub(0, toks.length, attr);
 	}
 
 	public Token getToken(int i) {
@@ -52,30 +52,13 @@ public class MultiToken extends Token {
 		return toks;
 	}
 
-	public String joinSubValues(int start, int end, TokenAttr attr, String delim) {
-		return StrUtils.join(delim, getSubValues(start, end, attr));
-	}
-
-	public String joinSubValues(TokenAttr attr) {
-		return StrUtils.join(DELIM_MULTI_TOKEN, getSubValues(0, toks.length, attr));
-	}
-
-	public String joinSubValues() {
-		String[] s = getSubValues(TokenAttr.values()[0]);
-		for (int i = 1; i < TokenAttr.size(); i++) {
-			StrUtils.join(Token.DELIM_TOKEN, s, getSubValues(TokenAttr.values()[i]), 0, s.length);
-		}
-		StrUtils.wrap(s);
-		return StrUtils.join(DELIM_MULTI_TOKEN, s);
-	}
-
 	@Override
-	public void read(ObjectInputStream ois) throws Exception {
-		super.read(ois);
+	public void readObject(ObjectInputStream ois) throws Exception {
+		super.readObject(ois);
 		toks = new Token[ois.readInt()];
 		for (int i = 0; i < toks.length; i++) {
 			Token t = new Token();
-			t.read(ois);
+			t.readObject(ois);
 			toks[i] = t;
 		}
 	}
@@ -84,9 +67,9 @@ public class MultiToken extends Token {
 		this.toks = toks;
 	}
 
-	public void setSubValue(TokenAttr attr, String[] values) {
+	public void setSub(TokenAttr attr, String[] values) {
 		for (int i = 0; i < toks.length; i++) {
-			toks[i].setValue(attr, values[i]);
+			toks[i].set(attr, values[i]);
 		}
 	}
 
@@ -115,17 +98,17 @@ public class MultiToken extends Token {
 
 		String[] s = new String[toks.length];
 		for (int i = 0; i < toks.length; i++) {
-			s[i] = StrUtils.join(Token.DELIM_TOKEN, StrUtils.replace(toks[i].getValues(), "", "X"));
+			s[i] = StrUtils.join(Token.DELIM_TOKEN, StrUtils.replace(toks[i].get(), "", "X"));
 		}
 		sb.append(StrUtils.join(DELIM_MULTI_TOKEN, StrUtils.wrap(s)));
 		return sb.toString();
 	}
 
-	public void write(ObjectOutputStream oos) throws Exception {
-		super.write(oos);
+	public void writeObject(ObjectOutputStream oos) throws Exception {
+		super.writeObject(oos);
 		oos.writeInt(toks.length);
 		for (int i = 0; i < toks.length; i++) {
-			toks[i].write(oos);
+			toks[i].writeObject(oos);
 		}
 	}
 

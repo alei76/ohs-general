@@ -17,7 +17,7 @@ import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.medical.general.SearcherUtils;
-import ohs.ling.struct.TextSpan;
+import ohs.nlp.ling.types.TextSpan;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Pair;
