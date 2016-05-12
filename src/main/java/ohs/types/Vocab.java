@@ -12,7 +12,7 @@ public class Vocab {
 
 	private int[] word_cnts;
 
-	private int[] word_doc_freqs;
+	private int[] doc_freqs;
 
 	private int num_docs;
 
@@ -22,10 +22,10 @@ public class Vocab {
 
 	}
 
-	public Vocab(Indexer<String> wordIndexer, int[] word_cnts, int[] word_doc_freqs, int num_docs) {
+	public Vocab(Indexer<String> wordIndexer, int[] word_cnts, int[] doc_freqs, int num_docs) {
 		this.wordIndexer = wordIndexer;
 		this.word_cnts = word_cnts;
-		this.word_doc_freqs = word_doc_freqs;
+		this.doc_freqs = doc_freqs;
 		this.num_docs = num_docs;
 		word_cnt_sum = ArrayMath.sum(word_cnts);
 	}
@@ -65,20 +65,20 @@ public class Vocab {
 	}
 
 	public double getWordDocFreq(int w) {
-		return word_doc_freqs[w];
+		return doc_freqs[w];
 	}
 
 	public int getWordDocFreq(String word) {
 		int w = wordIndexer.indexOf(word);
 		int ret = 0;
 		if (w > -1) {
-			ret = word_doc_freqs[w];
+			ret = doc_freqs[w];
 		}
 		return ret;
 	}
 
 	public int[] getWordDocFreqs() {
-		return word_doc_freqs;
+		return doc_freqs;
 	}
 
 	public Indexer<String> getWordIndexer() {
@@ -106,7 +106,7 @@ public class Vocab {
 		wordIndexer = FileUtils.readStrIndexer(ois);
 		num_docs = ois.readInt();
 		word_cnts = FileUtils.readIntArray(ois);
-		word_doc_freqs = FileUtils.readIntArray(ois);
+		doc_freqs = FileUtils.readIntArray(ois);
 		word_cnt_sum = ArrayMath.sum(word_cnts);
 	}
 
@@ -124,7 +124,7 @@ public class Vocab {
 		FileUtils.writeStrIndexer(oos, wordIndexer);
 		oos.writeInt(num_docs);
 		FileUtils.writeIntArray(oos, word_cnts);
-		FileUtils.writeIntArray(oos, word_doc_freqs);
+		FileUtils.writeIntArray(oos, doc_freqs);
 	}
 
 	public void write(String fileName) throws Exception {

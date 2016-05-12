@@ -87,7 +87,7 @@ public class TrecCdsDumper extends TextDumper {
 		int numDocs = 0;
 
 		while (reader.hasNext()) {
-			reader.print(10000);
+			reader.printProgress();
 			String line = reader.next();
 
 			// if (reader.getNumLines() < 37573) {
@@ -204,7 +204,7 @@ public class TrecCdsDumper extends TextDumper {
 				numValid++;
 			}
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 
 		writer.close();

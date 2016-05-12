@@ -69,7 +69,7 @@ public class CbeemDocumentSearcher {
 	private double[] getCollWordCountSums() {
 		double[] ret = new double[num_colls];
 		for (int i = 0; i < num_colls; i++) {
-			ret[i] = collWordCountBoxes[i].getCollectionCountSum();
+			ret[i] = collWordCountBoxes[i].getCountSum();
 		}
 		return ret;
 	}

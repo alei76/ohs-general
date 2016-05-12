@@ -33,6 +33,8 @@ public class TextFileReader {
 
 	private StopWatch stopWatch;
 
+	private int print_size = 10000;
+
 	public TextFileReader(File file) {
 		this(file.getPath(), FileUtils.UTF_8);
 	}
@@ -99,6 +101,10 @@ public class TextFileReader {
 		return num_nexts;
 	}
 
+	public StopWatch getStopWatch() {
+		return stopWatch;
+	}
+
 	public boolean hasNext() {
 		boolean ret = true;
 
@@ -125,7 +131,7 @@ public class TextFileReader {
 		return currentLine;
 	}
 
-	public void print(int amount) {
+	public void printProgress() {
 		if (stopWatch.startTime == 0) {
 			stopWatch.start();
 		}
@@ -133,35 +139,40 @@ public class TextFileReader {
 		int remain = 0;
 
 		if (print_nexts) {
-			remain = num_nexts % amount;
+			remain = num_nexts % print_size;
 		} else {
-			remain = num_lines % amount;
+			remain = num_lines % print_size;
 		}
 
 		if (remain == 0) {
-			System.out.print(String.format("\r[%d nexts, %s lines, %s]", num_nexts, num_lines, stopWatch.stop()));
+			if (print_nexts) {
+				System.out.print(String.format("\r[%d nexts, %d lines, %s]", num_nexts, num_lines, stopWatch.stop()));
+			} else {
+				System.out.print(String.format("\r[%s lines, %s]", num_lines, stopWatch.stop()));
+			}
+		} else if (currentLine == null) {
+			if (print_nexts) {
+				System.out.print(String.format("\r[%d nexts, %d lines, %s]\n", num_nexts, num_lines, stopWatch.stop()));
+			} else {
+				System.out.print(String.format("\r[%s lines, %s]\n", num_lines, stopWatch.stop()));
+			}
 		}
 	}
 
-	public void printLast() {
-		stopWatch.stop();
-		System.out.println(String.format("\r[%d nexts, %s lines, %s]", num_nexts, num_lines, stopWatch.toString()));
+	public void setMaxLines(int max_lines) {
+		this.max_lines = max_lines;
 	}
 
-	public void setMaxLines(int maxLines) {
-		this.max_lines = maxLines;
+	public void setMaxNexts(int max_nexts) {
+		this.max_nexts = max_nexts;
 	}
 
-	public void setMaxNexts(int maxNumNexts) {
-		this.max_nexts = maxNumNexts;
+	public void setPrintNexts(boolean print_nexts) {
+		this.print_nexts = print_nexts;
 	}
 
-	public void setPrintNexts(boolean printNexts) {
-		this.print_nexts = printNexts;
-	}
-
-	public StopWatch stopWatch() {
-		return stopWatch;
+	public void setPrintSize(int print_size) {
+		this.print_size = print_size;
 	}
 
 }

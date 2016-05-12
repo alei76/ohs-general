@@ -1,4 +1,4 @@
-package ohs.ir.wiki;
+package ohs.ir.medical.wiki;
 
 import java.io.ObjectInputStream;
 import java.util.Collections;
@@ -46,11 +46,7 @@ public class CategoryTreeBuilder {
 
 	private Set<Integer> mainCats;
 
-	private EditDistance<Character> ed = new EditDistance<Character>();
-
 	private Set<Integer> leaves;
-
-	private SetMap<Integer, Integer> pageToCats;
 
 	private Counter<Integer> subCatCnts;
 
@@ -185,7 +181,9 @@ public class CategoryTreeBuilder {
 		trie = Trie.newTrie();
 
 		/*
-		 * 349052 -> Diseases_and_disorders 198457 -> Medicine
+		 * 349052 -> Diseases_and_disorders
+		 * 
+		 * 198457 -> Medicine
 		 */
 
 		int[] roots = { 349052, 198457 };
@@ -214,7 +212,7 @@ public class CategoryTreeBuilder {
 		Set<String> res = Generics.newTreeSet();
 		res.addAll(catPaths);
 
-		FileUtils.writeStrCollection(MIRPath.WIKI_DIR + "wiki_cat_tree_top-down.txt", res);
+		FileUtils.writeStrCollection(MIRPath.WIKI_DIR + "wiki_cat_tree_top-down.txt.gz", res);
 	}
 
 	private boolean isValid(int catid) {
@@ -308,7 +306,7 @@ public class CategoryTreeBuilder {
 
 		Set<Integer> children = parentToChildren.get(parent_id, false);
 
-		if (children == null || catPath.size() >= 10) {
+		if (children == null || catPath.size() >= 5) {
 			if (pageCnts.getCount(parent_id) > 0) {
 				trie.insert(path);
 			}

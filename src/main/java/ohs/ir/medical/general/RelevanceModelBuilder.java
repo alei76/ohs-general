@@ -81,7 +81,7 @@ public class RelevanceModelBuilder {
 						int w = qLM.indexAtLoc(k);
 						double pr_w_in_query = qLM.valueAtLoc(k);
 						double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
-						double pr_w_in_coll = cnt_w_in_coll / wcb.getCollectionCountSum();
+						double pr_w_in_coll = cnt_w_in_coll / wcb.getCountSum();
 
 						double cnt_w_in_psg = psgWordCounts.valueAlways(w);
 						double cnt_sum_in_psg = psgWordCounts.sum();
@@ -132,7 +132,7 @@ public class RelevanceModelBuilder {
 		for (int j = 0; j < wcb.getCollWordCounts().size(); j++) {
 			int w = wcb.getCollWordCounts().indexAtLoc(j);
 			double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
-			double cnt_sum_in_coll = wcb.getCollectionCountSum();
+			double cnt_sum_in_coll = wcb.getCountSum();
 			double pr_w_in_coll = cnt_w_in_coll / cnt_sum_in_coll;
 
 			for (int k = 0; k < docScores.size() && k < num_fb_docs; k++) {
@@ -210,7 +210,7 @@ public class RelevanceModelBuilder {
 				int w = qLM.indexAtLoc(j);
 				double pr_w_in_query = qLM.valueAtLoc(j);
 				double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
-				double pr_w_in_coll = cnt_w_in_coll / wcb.getCollectionCountSum();
+				double pr_w_in_coll = cnt_w_in_coll / wcb.getCountSum();
 
 				double cnt_w_in_psg = psgWordCounts.valueAlways(w);
 				double cnt_sum_in_psg = psgWordCounts.sum();
@@ -231,7 +231,7 @@ public class RelevanceModelBuilder {
 		for (int j = 0; j < wcb.getCollWordCounts().size(); j++) {
 			int w = wcb.getCollWordCounts().indexAtLoc(j);
 			double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
-			double cnt_sum_in_coll = wcb.getCollectionCountSum();
+			double cnt_sum_in_coll = wcb.getCountSum();
 			double pr_w_in_coll = cnt_w_in_coll / cnt_sum_in_coll;
 
 			for (int k = 0; k < docScores.size() && k < num_fb_docs; k++) {
@@ -306,7 +306,7 @@ public class RelevanceModelBuilder {
 					int w = plm.indexAtLoc(k);
 					double pr_w_in_doc = plm.valueAtLoc(k);
 					double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
-					double coll_cnt_sum = wcb.getCollectionCountSum();
+					double coll_cnt_sum = wcb.getCountSum();
 					double pr_w_in_coll = cnt_w_in_coll / coll_cnt_sum;
 					pr_w_in_doc = (1 - coll_mixture) * pr_w_in_doc + coll_mixture * pr_w_in_coll;
 					plm.setAtLoc(k, pr_w_in_doc);
@@ -365,7 +365,7 @@ public class RelevanceModelBuilder {
 		for (int j = 0; j < wcb.getCollWordCounts().size(); j++) {
 			int w = wcb.getCollWordCounts().indexAtLoc(j);
 			double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
-			double cnt_sum_in_coll = wcb.getCollectionCountSum();
+			double cnt_sum_in_coll = wcb.getCountSum();
 			double pr_w_in_coll = cnt_w_in_coll / cnt_sum_in_coll;
 
 			for (int k = 0; k < docScores.size() && k < num_fb_docs; k++) {

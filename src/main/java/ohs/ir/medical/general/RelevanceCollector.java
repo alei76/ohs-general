@@ -218,12 +218,12 @@ public class RelevanceCollector {
 
 				WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docRels, wordIndexer);
 				SparseMatrix sm = wcb.getDocWordCounts();
-				SparseVector docFreqs = wcb.getCollDocFreqs();
+				SparseVector docFreqs = wcb.getDocFreqs();
 
 				for (int k = 0; k < sm.rowSize(); k++) {
 					int docId = sm.indexAtRowLoc(k);
 					SparseVector sv = sm.vectorAtRowLoc(k);
-					computeTFIDFs(sv, docFreqs, wcb.getNumDocsInCollection());
+					computeTFIDFs(sv, docFreqs, wcb.getNumDocs());
 				}
 
 				writer.write(String.format("#Query\t%d\t%s\n", j + 1, bq.toString()));

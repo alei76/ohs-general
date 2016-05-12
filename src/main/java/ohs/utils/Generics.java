@@ -312,7 +312,7 @@ public class Generics {
 		return new TreeSet<E>(comparator);
 	}
 
-	public static <E> TreeSet<E> newTreeSet(SortedSet<E> s) {
+	public static <E> TreeSet<E> newTreeSet(Collection<E> s) {
 		return new TreeSet<E>(s);
 	}
 

@@ -5,11 +5,13 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
 
 import ohs.io.FileUtils;
+import ohs.io.TextFileReader;
 import ohs.types.Counter;
 import ohs.types.SetMap;
 import ohs.types.StrPair;
@@ -21,39 +23,35 @@ public class KeywordLoader {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
-		KeywordData kwdData = new KeywordData();
-		kwdData.read(KPPath.KEYWORD_DATA_SER_FILE.replace("_data", "_data_clusters"));
 
-		KeywordLoader l = new KeywordLoader();
-		l.load(kwdData);
+		// {
+		// KeywordData kwdData = new KeywordData();
+		// kwdData.read(KPPath.KEYWORD_DATA_SER_FILE.replace("_data", "_data_clusters"));
+		//
+		// KeywordLoader l = new KeywordLoader();
+		// l.load(kwdData);
+		// }
+
+		{
+			KeywordLoader l = new KeywordLoader();
+			l.load(KPPath.KEYWORD_PATENT_FILE);
+		}
 
 		System.out.println("process ends.");
 	}
 
 	private Connection con;
 
-	private KeywordData kwdData;
+	private int batch_size = 10000;
 
-	public KeywordLoader() throws Exception {
+	public KeywordLoader() {
 
 	}
 
 	public void load(KeywordData kwdData) throws Exception {
-		this.kwdData = kwdData;
-
 		open();
 
-		{
-			DatabaseMetaData meta = con.getMetaData();
-			ResultSet resultSet = meta.getColumns(null, null, "Keywords", null);
-			while (resultSet.next()) {
-				String name = resultSet.getString("COLUMN_NAME");
-				String type = resultSet.getString("TYPE_NAME");
-				int size = resultSet.getInt("COLUMN_SIZE");
-
-				System.out.println("Column name: [" + name + "]; type: [" + type + "]; size: [" + size + "]");
-			}
-		}
+		printMetaData();
 
 		{
 			Statement stmt = con.createStatement();
@@ -84,8 +82,6 @@ public class KeywordLoader {
 			con.commit();
 			stmt.close();
 		}
-
-		int batch_size = 10000;
 
 		{
 
@@ -201,6 +197,53 @@ public class KeywordLoader {
 
 	}
 
+	public void load(String fileName) throws Exception {
+		open();
+
+		TextFileReader reader = new TextFileReader(fileName);
+		reader.setPrintNexts(false);
+		reader.setPrintSize(batch_size);
+
+		List<String> lines = Generics.newArrayList();
+
+		while (reader.hasNext()) {
+			reader.printProgress();
+
+			String line = reader.next();
+
+			if (lines.size() == batch_size) {
+				/*
+				 * cn, kwdid
+				 */
+				String sql = "insert into Keywords_Map values (?,?)";
+				PreparedStatement pstmt = con.prepareStatement(sql);
+
+				for (String s : lines) {
+					String[] parts = s.split("\t");
+					String cn = parts[0];
+					int kwdid = Integer.parseInt(parts[1]);
+
+					pstmt.setString(1, cn);
+					pstmt.setInt(2, kwdid);
+					pstmt.addBatch();
+				}
+
+				pstmt.executeBatch();
+				con.commit();
+				pstmt.close();
+
+				lines = null;
+				lines = Generics.newArrayList();
+			} else {
+				lines.add(line);
+			}
+		}
+		reader.printProgress();
+		reader.close();
+
+		con.close();
+	}
+
 	private void open() throws Exception {
 		Class.forName("com.mysql.jdbc.Driver");
 		String[] lines = FileUtils.readText(KPPath.DB_ACCOUNT_FILE).split("\t");
@@ -213,6 +256,18 @@ public class KeywordLoader {
 
 		con = DriverManager.getConnection(url, id, pwd);
 		con.setAutoCommit(false);
+	}
+
+	private void printMetaData() throws Exception {
+		DatabaseMetaData meta = con.getMetaData();
+		ResultSet resultSet = meta.getColumns(null, null, "Keywords", null);
+		while (resultSet.next()) {
+			String name = resultSet.getString("COLUMN_NAME");
+			String type = resultSet.getString("TYPE_NAME");
+			int size = resultSet.getInt("COLUMN_SIZE");
+
+			System.out.println("Column name: [" + name + "]; type: [" + type + "]; size: [" + size + "]");
+		}
 	}
 
 }

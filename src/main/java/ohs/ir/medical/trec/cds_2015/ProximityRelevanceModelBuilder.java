@@ -144,8 +144,8 @@ public class ProximityRelevanceModelBuilder {
 			// double mixture = 0.5;
 			// double cnt_sum_in_coll = wcb.getCountSumInCollection();
 
-			SparseVector docFreqs = wcb.getCollDocFreqs();
-			double num_docs = wcb.getNumDocsInCollection();
+			SparseVector docFreqs = wcb.getDocFreqs();
+			double num_docs = wcb.getNumDocs();
 
 			double cocnt_sum = cm.totalCount();
 
@@ -214,7 +214,7 @@ public class ProximityRelevanceModelBuilder {
 		for (int j = 0; j < wcb.getCollWordCounts().size(); j++) {
 			int w = wcb.getCollWordCounts().indexAtLoc(j);
 			double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
-			double prob_w_in_coll = cnt_w_in_coll / wcb.getCollectionCountSum();
+			double prob_w_in_coll = cnt_w_in_coll / wcb.getCountSum();
 
 			for (int k = 0; k < docScores.size() && k < num_fb_docs; k++) {
 				int docId = docScores.indexAtLoc(k);

@@ -87,7 +87,7 @@ public class KeyphraseExtractor {
 		int num_docs = 0;
 
 		while (reader.hasNext()) {
-			reader.print(100000);
+			reader.printProgress();
 
 			// if (num_docs > 10000) {
 			// break;
@@ -197,7 +197,7 @@ public class KeyphraseExtractor {
 				// }
 			}
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 		writer.close();
 	}
@@ -216,8 +216,7 @@ public class KeyphraseExtractor {
 		reader.setPrintNexts(false);
 
 		while (reader.hasNext()) {
-			reader.print(10000);
-
+			reader.printProgress();
 			String line = reader.next();
 			String[] parts = line.split("\t");
 
@@ -310,7 +309,7 @@ public class KeyphraseExtractor {
 			}
 
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 
 	}

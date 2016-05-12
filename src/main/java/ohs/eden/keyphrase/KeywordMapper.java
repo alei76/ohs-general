@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.apache.commons.math.linear.SparseRealVector;
 
+import edu.stanford.nlp.classify.GeneralizedExpectationObjectiveFunction;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
@@ -39,9 +40,9 @@ public class KeywordMapper {
 
 		kwdData.read(KPPath.KEYWORD_DATA_CLUSTER_SER_FILE);
 
-		CounterMap<String, String> cnToWordCnts = FileUtils.readStrCounterMap(KPPath.TITLE_DATA_FILE);
+		// CounterMap<String, String> cnToWordCnts = FileUtils.readStrCounterMap(KPPath.TITLE_DATA_FILE);
 
-		KeywordMapper kwdMapper = new KeywordMapper(kwdData, cnToWordCnts);
+		KeywordMapper kwdMapper = new KeywordMapper(kwdData, null);
 
 		TextFileReader reader = new TextFileReader(KPPath.SINGLE_DUMP_POS_FILE);
 		reader.setPrintNexts(false);
@@ -52,8 +53,7 @@ public class KeywordMapper {
 		int num_docs = 0;
 
 		while (reader.hasNext()) {
-			reader.print(100000);
-
+			reader.printProgress();
 			// if (num_docs > 10000) {
 			// break;
 			// }
@@ -115,26 +115,26 @@ public class KeywordMapper {
 					}
 				}
 
-				if (++num_docs > 1000) {
-					break;
-				}
+				// if (++num_docs > 1000) {
+				// break;
+				// }
 
-				Set<Integer> kwdids = kwdMapper.map(sb.toString().trim(), c);
+				Counter<Integer> kwdScores = kwdMapper.map(sb.toString().trim(), c);
 
-				sb = new StringBuffer();
-				sb.append(cn);
-				sb.append("\n" + korTitle);
+				// sb = new StringBuffer();
+				// sb.append(cn);
+				// sb.append("\n" + korTitle);
 
-				for (int kwdid : kwdids) {
+				for (int kwdid : kwdScores.keySet()) {
 					StrPair kwdp = kwdData.getKeywordIndexer().getObject(kwdid);
-					sb.append("\n" + String.format("%s\t%d", kwdp.toString(), kwdid));
+					// sb.append("\n" + String.format("%s\t%d", kwdp.toString(), kwdid));
+					// sb.append("\n" + String.format("%s\t%d", kwdp.toString(), kwdid));
+
+					writer.write(String.format("%s\t%d\n", cn, kwdid));
 				}
-
-				writer.write(sb.toString() + "\n\n");
-
 			}
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 		writer.close();
 
@@ -158,105 +158,104 @@ public class KeywordMapper {
 
 		buildDicts();
 
-		buildCentroids(cnToWordCnts);
+		// buildCentroids(cnToWordCnts);
 	}
 
-	public Set<Integer> map(String text, Counter<String> contexts) {
-		text = KeywordClusterer.normalize(text);
+	public Counter<Integer> map(String text, Counter<String> patentWordCnts) {
+		Character[] cs = StrUtils.asCharacters(KeywordClusterer.normalize(text));
 
-		Character[] cs = StrUtils.asCharacters(text);
-		Set<Integer> kwdids = Generics.newHashSet();
+		Counter<Integer> kwdScores = Generics.newCounter();
+
 		for (int i = 0; i < cs.length; i++) {
-
 			for (int j = i + 1; j < cs.length; j++) {
 				TSResult<Character> sr = korDict.search(cs, i, j);
 
 				if (sr.getMatchType() == MatchType.EXACT_KEYS_WITH_DATA) {
-					StringBuffer sb = new StringBuffer();
-
-					for (int k = i; k < j; k++) {
-						sb.append(cs[k].charValue());
-					}
-
-					String s = sb.toString();
-
-					System.out.println(s);
+					// StringBuffer sb = new StringBuffer();
+					// for (int k = i; k < j; k++) {
+					// sb.append(cs[k].charValue());
+					// }
+					// String s = sb.toString();
+					// System.out.println(s);
 
 					Set<Integer> set = (Set<Integer>) sr.getMatchNode().getData();
-					kwdids.addAll(set);
+
+					for (int kwdid : set) {
+						kwdScores.incrementCount(kwdid, 1);
+					}
+
 				} else if (sr.getMatchType() == MatchType.EXACT_KEYS_WITHOUT_DATA) {
 
 				} else {
 					break;
 				}
 			}
-
 		}
 
-		if (kwdids.size() == 0) {
-			return kwdids;
-		}
+		return kwdScores;
 
-		SetMap<Integer, Integer> clusterToKwds = Generics.newSetMap();
-
-		for (int kwdid : kwdids) {
-			StrPair kwdp = kwdData.getKeywordIndexer().getObject(kwdid);
-			System.out.println(kwdp);
-
-			clusterToKwds.put(kwdToCluster.get(kwdid), kwdid);
-		}
-
-		if (clusterToKwds.size() == 1) {
-			return kwdids;
-		}
-
-		SparseVector input = VectorUtils.toSparseVector(contexts, wordIndexer, false);
-
-		VectorMath.unitVector(input);
-
-		Counter<Integer> catCosines = Generics.newCounter();
-
-		for (int cid : clusterToKwds.keySet()) {
-			SparseVector cent = cents.get(cid);
-			if (cent == null) {
-				continue;
-			}
-
-			double cosine = VectorMath.cosine(input, cent, false);
-			catCosines.setCount(cid, cosine);
-		}
-
-		if (catCosines.size() > 1) {
-			List<Integer> cids = catCosines.getSortedKeys();
-
-			kwdids = Generics.newHashSet();
-
-			double cutoff = 0.5;
-
-			while (kwdids.isEmpty() && cutoff >= 0) {
-
-				for (int i = 0; i < cids.size(); i++) {
-					int cid = cids.get(i);
-					double cosine = catCosines.getCount(cid);
-
-					if (cosine < cutoff) {
-						break;
-					}
-
-					for (int kwdid : clusterToKwds.get(cid)) {
-						kwdids.add(kwdid);
-						// StrPair kwdp = kwdData.getKeywordIndexer().getObject(kwdid);
-						// System.out.println(kwdp);
-					}
-				}
-
-				cutoff -= 0.1;
-
-			}
-
-		}
-
-		return kwdids;
+		// if (kwdScores.size() == 0) {
+		// return kwdScores;
+		// }
+		//
+		// SetMap<Integer, Integer> clusterToKwds = Generics.newSetMap();
+		//
+		// for (int kwdid : kwdScores.keySet()) {
+		// // StrPair kwdp = kwdData.getKeywordIndexer().getObject(kwdid);
+		// clusterToKwds.put(kwdToCluster.get(kwdid), kwdid);
+		// }
+		//
+		// if (clusterToKwds.size() == 1) {
+		// return kwdScores;
+		// }
+		//
+		// SparseVector input = VectorUtils.toSparseVector(patentWordCnts, wordIndexer, false);
+		//
+		// VectorMath.unitVector(input);
+		//
+		// Counter<Integer> catCosines = Generics.newCounter();
+		//
+		// for (int cid : clusterToKwds.keySet()) {
+		// SparseVector cent = cents.get(cid);
+		// if (cent == null) {
+		// continue;
+		// }
+		//
+		// double cosine = VectorMath.cosine(input, cent, false);
+		// catCosines.setCount(cid, cosine);
+		// }
+		//
+		// if (catCosines.size() > 1) {
+		// List<Integer> cids = catCosines.getSortedKeys();
+		//
+		// kwdids = Generics.newHashSet();
+		//
+		// double cutoff = 0.5;
+		//
+		// while (kwdids.isEmpty() && cutoff >= 0) {
+		//
+		// for (int i = 0; i < cids.size(); i++) {
+		// int cid = cids.get(i);
+		// double cosine = catCosines.getCount(cid);
+		//
+		// if (cosine < cutoff) {
+		// break;
+		// }
+		//
+		// for (int kwdid : clusterToKwds.get(cid)) {
+		// kwdids.add(kwdid);
+		// // StrPair kwdp = kwdData.getKeywordIndexer().getObject(kwdid);
+		// // System.out.println(kwdp);
+		// }
+		// }
+		//
+		// cutoff -= 0.1;
+		//
+		// }
+		//
+		// }
+		//
+		// return kwdids;
 	}
 
 	private void buildCentroids(CounterMap<String, String> cnToWords) {

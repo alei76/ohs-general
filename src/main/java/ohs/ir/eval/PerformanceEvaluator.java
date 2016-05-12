@@ -10,6 +10,7 @@ import ohs.ir.medical.clef.ehealth_2014.EHPath;
 import ohs.ir.medical.clef.ehealth_2014.RelevanceJudgementReader;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
+import ohs.utils.Generics;
 
 public class PerformanceEvaluator {
 
@@ -45,14 +46,14 @@ public class PerformanceEvaluator {
 	}
 
 	public static CounterMap<String, String> readSearchResults(String fileName) {
-		CounterMap<String, String> ret = new CounterMap<String, String>();
+		CounterMap<String, String> ret = Generics.newCounterMap();
 		TextFileReader reader = new TextFileReader(fileName);
 		while (reader.hasNext()) {
 			String[] parts = reader.next().split("\t");
-			String qId = parts[0];
-			String docId = parts[1];
+			String qid = parts[0];
+			String docid = parts[1];
 			double score = Double.parseDouble(parts[2]);
-			ret.incrementCount(qId, docId, score);
+			ret.incrementCount(qid, docid, score);
 		}
 		reader.close();
 		return ret;

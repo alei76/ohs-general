@@ -146,7 +146,7 @@ public class VocabBuilder {
 		TextFileReader reader = new TextFileReader(KPPath.SINGLE_DUMP_POS_FILE);
 		reader.setPrintNexts(false);
 		while (reader.hasNext()) {
-			reader.print(10000);
+			reader.printProgress();
 
 			String line = reader.next();
 			String[] parts = line.split("\t");
@@ -198,7 +198,7 @@ public class VocabBuilder {
 				}
 			}
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 
 		int[] word_cnts = new int[wordIndexer.size()];

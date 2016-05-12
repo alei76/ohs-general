@@ -463,7 +463,7 @@ public class CBEEMSearcher {
 	private double[] getCollWordCountSums() {
 		double[] ret = new double[docWordCountBoxes.length];
 		for (int i = 0; i < docWordCountBoxes.length; i++) {
-			ret[i] = docWordCountBoxes[i].getCollectionCountSum();
+			ret[i] = docWordCountBoxes[i].getCountSum();
 		}
 		return ret;
 	}

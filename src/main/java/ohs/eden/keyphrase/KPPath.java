@@ -36,7 +36,7 @@ public class KPPath {
 
 	public static final String KEYWORD_POS_CNT_FILE = KEYPHRASE_DIR + "kwd_pos_seq_cnt.txt";
 
-	public static final String KEYWORD_PATENT_FILE = KEYPHRASE_DIR + "keyword_patent.txt";
+	public static final String KEYWORD_PATENT_FILE = KEYPHRASE_DIR + "keyword_patent.txt.gz";
 
 	public static final String VOCAB_FILE = KEYPHRASE_DIR + "vocab.ser.gz";
 

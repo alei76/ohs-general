@@ -83,7 +83,7 @@ public class ParsimoniousLanguageModelEstimator {
 				int w = wordCnts.indexAtLoc(j);
 				double cnt_w_in_doc = wordCnts.valueAtLoc(j);
 				double pr_w_in_doc = plm.valueAtLoc(j);
-				double pr_w_in_coll = wcb.getCollWordCounts().valueAlways(w) / wcb.getCollectionCountSum();
+				double pr_w_in_coll = wcb.getCollWordCounts().valueAlways(w) / wcb.getCountSum();
 				double e = cnt_w_in_doc * ((coll_mixture * pr_w_in_doc) / (coll_mixture * pr_w_in_doc + (1 - coll_mixture) * pr_w_in_coll));
 				plm.setAtLoc(j, e);
 			}

@@ -55,7 +55,7 @@ public class SentenceIndexer {
 		reader.setPrintNexts(false);
 
 		while (reader.hasNext()) {
-			reader.print(100000);
+			reader.printProgress();
 
 			String line = reader.next();
 			String[] parts = line.split("\t");
@@ -71,7 +71,7 @@ public class SentenceIndexer {
 
 			iw.addDocument(doc);
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 
 		iw.close();

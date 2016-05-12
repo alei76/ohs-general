@@ -1,4 +1,4 @@
-package com.medallia.word2vec;
+package ohs.ir.medical.wiki;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,8 +12,11 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 
+import com.medallia.word2vec.Searcher;
 import com.medallia.word2vec.Searcher.Match;
 import com.medallia.word2vec.Searcher.UnknownWordException;
+import com.medallia.word2vec.Word2VecModel;
+import com.medallia.word2vec.Word2VecTrainerBuilder;
 import com.medallia.word2vec.Word2VecTrainerBuilder.TrainingProgressListener;
 import com.medallia.word2vec.neuralnetwork.NeuralNetworkType;
 import com.medallia.word2vec.util.AutoLog;
@@ -32,10 +35,11 @@ public class Word2VecExamples {
 
 	public static Properties getDefaultProp() throws IOException {
 		Properties prop = new Properties();
-		prop.setProperty("input_file", "../../data/medical_ir/ohsumed/sents_stem.txt.gz");
-		prop.setProperty("output_file", "../../data/medical_ir/ohsumed/word2vec_model_stem.ser.gz");
+		prop.setProperty("input_file", "../../data/medical_ir/wiki/wiki_medical_contents.txt.gz");
+		prop.setProperty("output_file", "../../data/medical_ir/wiki/wiki_medical_word2vec_model.ser.gz");
+
 		prop.setProperty("network_type", "cbow");
-		prop.setProperty("threads", "1");
+		prop.setProperty("threads", "20");
 		prop.setProperty("min_freq", "5");
 		prop.setProperty("use_hierarchical_sofmax", "false");
 		prop.setProperty("window_size", "8");
@@ -70,20 +74,19 @@ public class Word2VecExamples {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		boolean isTrainMode = true;
 		Properties prop = getDefaultProp();
 
-		File propFile = new File("word2vec.prop");
-
-		if (propFile.exists()) {
-			FileInputStream fis = new FileInputStream(propFile);
-			prop.load(fis);
-			fis.close();
-		} else {
-			FileOutputStream fos = new FileOutputStream(propFile);
-			prop.store(fos, "word2vec prop");
-			fos.close();
-		}
+		// File propFile = new File("word2vec.prop");
+		//
+		// if (propFile.exists()) {
+		// FileInputStream fis = new FileInputStream(propFile);
+		// prop.load(fis);
+		// fis.close();
+		// } else {
+		// FileOutputStream fos = new FileOutputStream(propFile);
+		// prop.store(fos, "word2vec prop");
+		// fos.close();
+		// }
 
 		if (Boolean.parseBoolean(prop.getProperty("train_mode"))) {
 			Word2VecExamples e = new Word2VecExamples(prop);
@@ -96,29 +99,6 @@ public class Word2VecExamples {
 
 		System.out.println("process ends.");
 	}
-
-	// /** Example using Skip-Gram model */
-	// public static void skipGram() throws IOException, TException, InterruptedException, UnknownWordException {
-	// List<Integer[]> sents = new ArrayList<Integer[]>();
-	// Vocab vocab = new Vocab();
-	//
-	// readSentences(MIRPath.OHSUMED_SENTS_FILE, vocab, sents);
-	//
-	// Word2VecModel model = Word2VecModel.trainer().setMinVocabFrequency(100).useNumThreads(20).setWindowSize(7)
-	// .type(NeuralNetworkType.SKIP_GRAM).useHierarchicalSoftmax().setLayerSize(300).useNegativeSamples(0)
-	// .setDownSamplingRate(1e-3).setNumIterations(5).setListener(new TrainingProgressListener() {
-	// @Override
-	// public void update(Stage stage, double progress) {
-	// System.out.println(String.format("%s is %.2f%% complete", Format.formatEnum(stage), progress * 100));
-	// }
-	// }).train(vocab, sents);
-	//
-	// try (ProfilingTimer timer = ProfilingTimer.create(LOG, "Writing output to file")) {
-	// FileUtils.writeStringToFile(new File("300layer.20threads.5iter.model"), ThriftUtils.serializeJson(model.toThrift()));
-	// }
-	//
-	// interact(model.forSearch());
-	// }
 
 	private Properties prop;
 
@@ -157,101 +137,6 @@ public class Word2VecExamples {
 			num_train_sents = Integer.parseInt(prop.getProperty("num_train_sents"));
 		}
 
-		int[][] sents = null;
-		Vocab vocab = null;
-
-		{
-			int num_valid_sents = 0;
-
-			{
-				System.out.printf("read [%s]\n", inFileName);
-				Counter<String> wordCounts = new Counter<String>();
-				TextFileReader reader = new TextFileReader(inFileName);
-				reader.setPrintNexts(false);
-
-				while (reader.hasNext()) {
-					reader.printProgress();
-
-					String[] parts = reader.next().split("\t");
-
-					if (parts.length != 3) {
-						continue;
-					}
-
-					if (num_train_sents == num_valid_sents) {
-						break;
-					}
-
-					num_valid_sents++;
-
-					String[] words = parts[2].split("[\\text]+");
-
-					for (String word : words) {
-						wordCounts.incrementCount(word, 1);
-					}
-				}
-				reader.printProgress();
-				reader.close();
-
-				wordCounts.pruneKeysBelowThreshold(min_freq);
-
-				Indexer<String> wordIndexer = new Indexer<String>();
-				List<String> words = wordCounts.getSortedKeys();
-				int[] cnts = new int[words.size()];
-
-				for (int i = 0; i < words.size(); i++) {
-					String word = words.get(i);
-					int cnt = (int) wordCounts.getCount(word);
-
-					wordIndexer.add(word);
-					cnts[i] = cnt;
-				}
-
-				vocab = new Vocab(wordIndexer, cnts, new int[0], 0);
-			}
-
-			{
-
-				sents = new int[num_valid_sents][];
-
-				TextFileReader reader = new TextFileReader(inFileName);
-				reader.setPrintNexts(false);
-
-				int loc = 0;
-
-				while (reader.hasNext()) {
-					reader.printProgress();
-					String[] parts = reader.next().split("\t");
-
-					if (parts.length != 3) {
-						continue;
-					}
-
-					if (loc == num_train_sents) {
-						break;
-					}
-
-					String[] words = parts[2].split("[\\text]+");
-					List<Integer> ws = new ArrayList<Integer>();
-
-					for (int i = 0; i < words.length; i++) {
-						String word = words[i];
-						int w = vocab.getWordIndexer().indexOf(word);
-						if (w < 0) {
-							continue;
-						}
-						ws.add(w);
-					}
-
-					int[] ws2 = new int[ws.size()];
-					ArrayUtils.copy(ws, ws2);
-					sents[loc++] = ws2;
-				}
-				reader.printProgress();
-				reader.close();
-			}
-		}
-
 		Word2VecTrainerBuilder builder = Word2VecModel.trainer();
 
 		builder.setMinVocabFrequency(min_freq).useNumThreads(num_threads).
@@ -274,7 +159,13 @@ public class Word2VecExamples {
 			builder.useHierarchicalSoftmax();
 		}
 
-		Word2VecModel model = builder.train(vocab, sents);
+		SentenceGenerator sg = new SentenceGenerator();
+		sg.addTextLoc(1);
+		// sg.setMaxTrainSents(1000);
+
+		sg.process(inFileName);
+
+		Word2VecModel model = builder.train(sg.getVocab(), sg.getSentences());
 
 		// Writes model to a thrift file
 		// try (ProfilingTimer timer = ProfilingTimer.create(LOG, "Writing output to file")) {

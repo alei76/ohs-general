@@ -68,7 +68,7 @@ public class WikiDumper extends TextDumper {
 		int num_docs = 0;
 
 		while (reader.hasNext()) {
-			reader.print(100000);
+			reader.printProgress();
 			String line = reader.next();
 
 			if (line.trim().startsWith("<page>")) {
@@ -105,7 +105,7 @@ public class WikiDumper extends TextDumper {
 				}
 			}
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 		writer.close();
 

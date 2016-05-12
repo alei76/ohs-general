@@ -215,7 +215,7 @@ public class WordDataHandler {
 		reader.setPrintNexts(true);
 
 		while (reader.hasNext()) {
-			reader.print(1000);
+			reader.printProgress();
 
 			if (reader.getNumNexts() > 2000) {
 				break;
@@ -259,7 +259,7 @@ public class WordDataHandler {
 			}
 			ccm.incrementAll(cm);
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 
 		collWordCounts.normalize();

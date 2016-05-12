@@ -67,12 +67,12 @@ public class SearcherUtils {
 		return search(q, is, top_k);
 	}
 
-	public static void write(TextFileWriter writer, String queryId, SparseVector docScores) {
+	public static void write(TextFileWriter writer, String qid, SparseVector docScores) {
 		docScores.sortByValue();
 		for (int i = 0; i < docScores.size(); i++) {
 			int docId = docScores.indexAtLoc(i);
 			double score = docScores.valueAtLoc(i);
-			writer.write(queryId + "\t" + docId + "\t" + score + "\n");
+			writer.write(qid + "\t" + docId + "\t" + score + "\n");
 		}
 		docScores.sortByIndex();
 	}

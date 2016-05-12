@@ -94,7 +94,7 @@ public class TestDataGenerater {
 			reader.setPrintNexts(false);
 
 			while (reader.hasNext()) {
-				reader.print(100);
+				reader.printProgress();
 
 				String line = reader.next();
 				String[] parts = line.split("\t");
@@ -150,7 +150,8 @@ public class TestDataGenerater {
 
 				writer.write(sb.toString() + "\n\n");
 			}
-			reader.printLast();
+			reader.printProgress();
+			reader.close();
 		}
 
 		writer.close();

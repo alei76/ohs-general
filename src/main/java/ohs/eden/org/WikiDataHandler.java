@@ -74,7 +74,7 @@ public class WikiDataHandler {
 		CounterMap<String, String> cm1 = new CounterMap<String, String>();
 
 		while (reader.hasNext()) {
-			reader.print(100000);
+			reader.printProgress();
 			String line = reader.next();
 			String[] parts = line.split("\t");
 
@@ -101,7 +101,7 @@ public class WikiDataHandler {
 				}
 			}
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 
 		FileUtils.writeStrCounterMap(ENTPath.KOREAN_WIKI_REDIRECT_FILE, cm1);
@@ -132,7 +132,7 @@ public class WikiDataHandler {
 		int num_docs = 0;
 
 		while (reader.hasNext()) {
-			reader.print(100000);
+			reader.printProgress();
 			String line = reader.next();
 
 			if (line.trim().startsWith("<page>")) {
@@ -171,7 +171,7 @@ public class WikiDataHandler {
 				}
 			}
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 		// writer.close();
 

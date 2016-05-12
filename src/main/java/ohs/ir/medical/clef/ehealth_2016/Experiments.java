@@ -18,6 +18,7 @@ import ohs.eden.linker.Entity;
 import ohs.eden.linker.EntityLinker;
 import ohs.io.FileUtils;
 import ohs.io.TextFileWriter;
+import ohs.ir.eval.PerformanceEvaluator;
 import ohs.ir.lucene.common.AnalyzerUtils;
 import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
@@ -59,8 +60,8 @@ public class Experiments {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		Experiments e = new Experiments();
-		e.searchByQLD();
-		// e.searchByKLD();
+		// e.searchByQLD();
+		e.searchByKLD();
 		// e.searchByKLDFB();
 		// e.searchByKldFbPriors();
 		// e.searchByCBEEM();
@@ -81,21 +82,23 @@ public class Experiments {
 
 	private MedicalEnglishAnalyzer analyzer = MedicalEnglishAnalyzer.newAnalyzer();
 
-	private String[] queryFileNames = MIRPath.QueryFileNames;
+	private String queryFileName = MIRPath.CLEF_EHEALTH_QUERY_2016_FILE;
 
-	private String[] indexDirNames = MIRPath.IndexDirNames;
+	private String indexDirName = MIRPath.CLUEWEB_INDEX_DIR;
 
-	private String[] resDirNames = MIRPath.ResultDirNames;
+	private String resDirName = MIRPath.CLEF_EHEALTH_OUTPUT_RESULT_2016_DIR;
 
-	private String[] docIdMapFileNames = MIRPath.DocIdMapFileNames;
+	private String docIdMapFileNames = MIRPath.CLUEWEB_DOC_ID_MAP_FIE;
 
-	private String[] logDirNames = MIRPath.LogDirNames;
+	// private String[] logDirNames = MIRPath.LogDirNames;
+	//
+	// private String[] relFileNames = MIRPath.RelevanceFileNames;
 
-	private String[] relFileNames = MIRPath.RelevanceFileNames;
+	private IndexSearcher is = SearcherUtils.getIndexSearcher(indexDirName);
 
-	private IndexSearcher[] iss = SearcherUtils.getIndexSearchers(indexDirNames);
+	private List<BaseQuery> bqs = QueryReader.readQueries(queryFileName);
 
-	private String[] docPriorFileNames = MIRPath.DocPriorFileNames;
+	// private String[] docPriorFileNames = MIRPath.DocPriorFileNames;
 
 	public Experiments() throws Exception {
 
@@ -236,7 +239,7 @@ public class Experiments {
 
 		DenseVector[] docPriorData = new DenseVector[iss.length];
 
-		for (int i = 0; i < indexDirNames.length; i++) {
+		for (int i = 0; i < indexDirName.length; i++) {
 			File inputFile = new File(docPriorFileNames[i]);
 			DenseVector docPriors = null;
 			if (inputFile.exists()) {
@@ -257,9 +260,9 @@ public class Experiments {
 
 		HyperParameter hp = new HyperParameter();
 
-		for (int i = 0; i < queryFileNames.length; i++) {
-			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
-			String outputFileName = resDirNames[i] + "cbeem.txt";
+		for (int i = 0; i < queryFileName.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(queryFileName[i]);
+			String outputFileName = resDirName[i] + "cbeem.txt";
 			CbeemDocumentSearcher cbeemSearcher = new CbeemDocumentSearcher(iss, docPriorData, hp, analyzer, false);
 			cbeemSearcher.search(i, bqs, null, outputFileName, null);
 		}
@@ -273,8 +276,8 @@ public class Experiments {
 		el.read("../../data/entity_iden/wiki/entity-linker_all.ser.gz");
 		el.setTopK(10);
 
-		for (int i = 0; i < queryFileNames.length; i++) {
-			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
+		for (int i = 0; i < queryFileName.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(queryFileName[i]);
 
 			String outputFileName = String.format("%s/%d.txt", dirPath, i);
 
@@ -302,49 +305,54 @@ public class Experiments {
 	public void searchByKLD() throws Exception {
 		System.out.println("search by KLD.");
 
-		for (int i = 0; i < queryFileNames.length; i++) {
-			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
-			IndexSearcher is = iss[i];
+		CounterMap<String, String> sr = PerformanceEvaluator.readSearchResults(resDirName + "qld.txt.gz");
 
-			String outputFileName = resDirNames[i] + "kld.txt";
+		String outputFileName = resDirName + "kld.txt.gz";
 
-			TextFileWriter writer = new TextFileWriter(outputFileName);
+		TextFileWriter writer = new TextFileWriter(outputFileName);
 
-			for (int j = 0; j < bqs.size(); j++) {
-				BaseQuery bq = bqs.get(j);
-				System.out.println(bq);
+		for (int i = 0; i < bqs.size(); i++) {
+			BaseQuery bq = bqs.get(i);
+			System.out.println(bq);
 
-				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
-				SparseVector docScores = SearcherUtils.search(lbq, is, 1000);
-				docScores.normalizeAfterSummation();
+			BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
 
-				Indexer<String> wordIndexer = new Indexer<String>();
-				Counter qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+			Counter<String> r = sr.getCounter(bq.getId());
+			SparseVector docScores = new SparseVector(r.size());
+			int loc = 0;
 
-				SparseVector qlm = VectorUtils.toSparseVector(qwcs, wordIndexer, true);
-				qlm.normalize();
-
-				WordCountBox wcb = WordCountBox.getWordCountBox(is.getIndexReader(), docScores, wordIndexer);
-
-				KLDivergenceScorer scorer = new KLDivergenceScorer();
-				docScores = scorer.score(wcb, qlm);
-
-				SearcherUtils.write(writer, bq.getId(), docScores);
+			for (Entry<String, Double> e : r.entrySet()) {
+				docScores.incrementAtLoc(loc, Integer.parseInt(e.getKey()), e.getValue());
+				loc++;
 			}
-			writer.close();
+			docScores.sortByIndex();
+
+			Indexer<String> wordIndexer = Generics.newIndexer();
+			Counter<String> qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+
+			SparseVector qlm = VectorUtils.toSparseVector(qwcs, wordIndexer, true);
+			qlm.normalize();
+
+			WordCountBox wcb = WordCountBox.getWordCountBox(is.getIndexReader(), docScores, wordIndexer);
+
+			KLDivergenceScorer scorer = new KLDivergenceScorer();
+			docScores = scorer.score(wcb, qlm);
+
+			SearcherUtils.write(writer, bq.getId(), docScores);
 		}
+		writer.close();
 
 	}
 
 	public void searchByKLDFB() throws Exception {
 		System.out.println("search by KLD FB.");
 
-		for (int i = 0; i < queryFileNames.length; i++) {
-			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
+		for (int i = 0; i < queryFileName.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(queryFileName[i]);
 			IndexSearcher is = iss[i];
 			IndexReader ir = is.getIndexReader();
 
-			String outputFileName = resDirNames[i] + "kld-fb.txt";
+			String outputFileName = resDirName[i] + "kld-fb.txt";
 
 			TextFileWriter writer = new TextFileWriter(outputFileName);
 
@@ -391,12 +399,12 @@ public class Experiments {
 	public void searchByKldFbPriors() throws Exception {
 		System.out.println("search by KLD FB Priors.");
 
-		for (int i = 0; i < queryFileNames.length; i++) {
-			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
+		for (int i = 0; i < queryFileName.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(queryFileName[i]);
 			IndexSearcher is = iss[i];
 			IndexReader ir = is.getIndexReader();
 
-			String outputFileName = resDirNames[i] + "kld-fb_prior.txt";
+			String outputFileName = resDirName[i] + "kld-fb_prior.txt";
 
 			TextFileWriter writer = new TextFileWriter(outputFileName);
 
@@ -449,12 +457,12 @@ public class Experiments {
 
 		Set<String> stopPrefixes = WikiXmlDataHandler.getStopPrefixes();
 
-		for (int i = 0; i < queryFileNames.length; i++) {
-			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
+		for (int i = 0; i < queryFileName.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(queryFileName[i]);
 			IndexSearcher is = iss[i];
 			IndexReader ir = is.getIndexReader();
 
-			String outputFileName = resDirNames[i] + "kld-fb-wiki.txt";
+			String outputFileName = resDirName[i] + "kld-fb-wiki.txt";
 
 			TextFileWriter writer = new TextFileWriter(outputFileName);
 
@@ -533,12 +541,12 @@ public class Experiments {
 		Word2VecSearcher vSearcher = new Word2VecSearcher(
 				Word2VecModel.fromSerFile("../../data/medical_ir/ohsumed/word2vec_model_stem.ser.gz"));
 
-		for (int i = 0; i < queryFileNames.length; i++) {
-			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
+		for (int i = 0; i < queryFileName.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(queryFileName[i]);
 			IndexSearcher is = iss[i];
 			IndexReader ir = is.getIndexReader();
 
-			String outputFileName = resDirNames[i] + "kld-fb_wv-exp.txt";
+			String outputFileName = resDirName[i] + "kld-fb_wv-exp.txt";
 
 			TextFileWriter writer = new TextFileWriter(outputFileName);
 
@@ -597,12 +605,12 @@ public class Experiments {
 		Word2VecSearcher vSearcher = new Word2VecSearcher(
 				Word2VecModel.fromSerFile("../../data/medical_ir/trec_cds/word2vec_model_stem.ser.gz"));
 
-		for (int i = 0; i < queryFileNames.length; i++) {
-			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
+		for (int i = 0; i < queryFileName.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(queryFileName[i]);
 			IndexSearcher is = iss[i];
 			IndexReader ir = is.getIndexReader();
 
-			String outputFileName = resDirNames[i] + "kld-fb_wv-exp_2.txt";
+			String outputFileName = resDirName[i] + "kld-fb_wv-exp_2.txt";
 
 			TextFileWriter writer = new TextFileWriter(outputFileName);
 
@@ -720,14 +728,14 @@ public class Experiments {
 
 		Word2VecSearcher vSearcher = new Word2VecSearcher(
 				Word2VecModel.fromSerFile("../../data/medical_ir/ohsumed/word2vec_model_stem.ser.gz"));
-		for (int i = 0; i < queryFileNames.length; i++) {
-			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
+		for (int i = 0; i < queryFileName.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(queryFileName[i]);
 			IndexSearcher is = iss[i];
 			IndexReader ir = is.getIndexReader();
 
-			String outputFileName = resDirNames[i] + "kld-fb_wv-priors.txt";
+			String outputFileName = resDirName[i] + "kld-fb_wv-priors.txt";
 
-			// FileUtils.deleteFilesUnder(resDirNames[i]);
+			// FileUtils.deleteFilesUnder(resDirName[i]);
 
 			TextFileWriter writer = new TextFileWriter(outputFileName);
 
@@ -821,12 +829,12 @@ public class Experiments {
 		Word2VecSearcher vSearcher = new Word2VecSearcher(
 				Word2VecModel.fromSerFile("../../data/medical_ir/ohsumed/word2vec_model_stem.ser.gz"));
 
-		for (int i = 0; i < queryFileNames.length; i++) {
-			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
+		for (int i = 0; i < queryFileName.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(queryFileName[i]);
 			IndexSearcher is = iss[i];
 			IndexReader ir = is.getIndexReader();
 
-			String outputFileName = resDirNames[i] + "kld-fb_wv.txt";
+			String outputFileName = resDirName[i] + "kld-fb_wv.txt";
 
 			TextFileWriter writer = new TextFileWriter(outputFileName);
 
@@ -889,24 +897,19 @@ public class Experiments {
 	public void searchByQLD() throws Exception {
 		System.out.println("search by QLD.");
 
-		for (int i = 4; i < queryFileNames.length; i++) {
-			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
-			IndexSearcher is = iss[i];
+		FileUtils.deleteFilesUnder(resDirName);
 
-			FileUtils.deleteFilesUnder(resDirNames[i]);
+		String outFileName = resDirName + "qld.txt.gz";
 
-			String outFileName = resDirNames[i] + "qld.txt";
+		TextFileWriter writer = new TextFileWriter(outFileName);
 
-			TextFileWriter writer = new TextFileWriter(outFileName);
-
-			for (int j = 0; j < bqs.size(); j++) {
-				BaseQuery bq = bqs.get(j);
-				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
-				SparseVector docScores = SearcherUtils.search(lbq, is, 1000);
-				SearcherUtils.write(writer, bq.getId(), docScores);
-			}
-			writer.close();
+		for (int j = 0; j < bqs.size(); j++) {
+			BaseQuery bq = bqs.get(j);
+			BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
+			SparseVector docScores = SearcherUtils.search(lbq, is, 10000);
+			SearcherUtils.write(writer, bq.getId(), docScores);
 		}
+		writer.close();
 	}
 
 	public void searchSentsByKldFb() throws Exception {
@@ -914,16 +917,16 @@ public class Experiments {
 
 		IndexSearcher[] siss = SearcherUtils.getIndexSearchers(MIRPath.SentIndexDirNames);
 
-		for (int i = 0; i < queryFileNames.length; i++) {
-			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
+		for (int i = 0; i < queryFileName.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(queryFileName[i]);
 			IndexSearcher sis = siss[i];
 
-			String outFileName = resDirNames[i].replace("result", "result_sent") + "kld-fb.txt";
+			String outFileName = resDirName[i].replace("result", "result_sent") + "kld-fb.txt";
 			String logFileName = logDirNames[i].replace("log", "log_sent") + "kld-fb.txt";
 
 			BidMap<String, String> docIdMap = DocumentIdMapper.readDocumentIdMap(docIdMapFileNames[i]);
 
-			// FileUtils.deleteFilesUnder(resDirNames[i]);
+			// FileUtils.deleteFilesUnder(resDirName[i]);
 
 			TextFileWriter resWriter = new TextFileWriter(outFileName);
 			// TextFileWriter logWriter = new TextFileWriter(logFileName);
@@ -982,8 +985,7 @@ public class Experiments {
 
 				expQLM = VectorMath.addAfterScale(qlm, 1 - mixture, rm, mixture);
 
-				WordCountBox wcb2 = WordCountBox.getWordCountBox(iss[i].getIndexReader(), docScores, wordIndexer,
-						CommonFieldNames.CONTENT);
+				WordCountBox wcb2 = WordCountBox.getWordCountBox(iss[i].getIndexReader(), docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 				KLDivergenceScorer scorer = new KLDivergenceScorer();
 				docScores = scorer.score(wcb2, expQLM);
@@ -1000,16 +1002,16 @@ public class Experiments {
 
 		IndexSearcher[] siss = SearcherUtils.getIndexSearchers(MIRPath.SentIndexDirNames);
 
-		for (int i = 0; i < queryFileNames.length; i++) {
-			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
+		for (int i = 0; i < queryFileName.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(queryFileName[i]);
 			IndexSearcher sis = siss[i];
 
-			String outputFileName = resDirNames[i].replace("result", "result_sent") + "qld.txt";
+			String outputFileName = resDirName[i].replace("result", "result_sent") + "qld.txt";
 			String logFileName = logDirNames[i].replace("log", "log_sent") + "gld.txt";
 
 			BidMap<String, String> docIdMap = DocumentIdMapper.readDocumentIdMap(docIdMapFileNames[i]);
 
-			// FileUtils.deleteFilesUnder(resDirNames[i]);
+			// FileUtils.deleteFilesUnder(resDirName[i]);
 
 			TextFileWriter resWriter = new TextFileWriter(outputFileName);
 			TextFileWriter logWriter = new TextFileWriter(logFileName);
@@ -1060,8 +1062,8 @@ public class Experiments {
 
 		Set<String> stopPrefixes = WikiXmlDataHandler.getStopPrefixes();
 
-		for (int i = 0; i < queryFileNames.length; i++) {
-			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
+		for (int i = 0; i < queryFileName.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(queryFileName[i]);
 			IndexSearcher is = iss[i];
 			IndexReader ir = is.getIndexReader();
 

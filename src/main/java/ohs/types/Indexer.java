@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ohs.math.ArrayUtils;
+import ohs.utils.Generics;
+
 public class Indexer<E> extends AbstractList<E> implements Serializable {
 	private static final long serialVersionUID = -8769544079136550516L;
 	protected List<E> objs;
@@ -135,10 +138,32 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 		return ret;
 	}
 
+	public int[] indexesOfKnown(E[] objs) {
+		List<Integer> ret = Generics.newArrayList();
+		for (Object obj : objs) {
+			int id = indexOf(obj);
+			if (id > -1) {
+				ret.add(id);
+			}
+		}
+		return ArrayUtils.copy(ret);
+	}
+
 	public List<Integer> indexesOf(Collection<Object> objs, int unknown) {
 		List<Integer> ret = new ArrayList<>(objs.size());
 		for (Object obj : objs) {
-			ret.add(indexOf(obj));
+			ret.add(indexOf(obj, unknown));
+		}
+		return ret;
+	}
+
+	public List<Integer> indexesOfKnown(Collection<Object> objs) {
+		List<Integer> ret = new ArrayList<>(objs.size());
+		for (Object obj : objs) {
+			int id = indexOf(obj);
+			if (id > -1) {
+				ret.add(id);
+			}
 		}
 		return ret;
 	}

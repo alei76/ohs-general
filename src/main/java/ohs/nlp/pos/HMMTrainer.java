@@ -7,6 +7,7 @@ import ohs.io.FileUtils;
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 import ohs.math.CommonFuncs;
+import ohs.ml.neuralnet.Word2Vec;
 import ohs.nlp.ling.types.KDocument;
 import ohs.nlp.ling.types.KDocumentCollection;
 import ohs.nlp.ling.types.KSentence;
@@ -76,7 +77,7 @@ public class HMMTrainer {
 
 		KDocumentCollection coll = new KDocumentCollection();
 
-		SejongReader r = new SejongReader(NLPPath.POS_DATA_FILE, NLPPath.POS_TAG_SET_FILE);
+		SejongReader r = new SejongReader(NLPPath.POS_DATA_FILE);
 		while (r.hasNext()) {
 			if (coll.size() == 1000) {
 				break;
@@ -90,7 +91,7 @@ public class HMMTrainer {
 		for (KDocument doc : coll) {
 			for (KSentence sent : doc.getSentences()) {
 				for (MultiToken mt : sent.toMultiTokens()) {
-					String text = mt.getText();
+					String text = mt.getValue(TokenAttr.WORD);
 					String text2 = UnicodeUtils.decomposeToJamoStr(text);
 
 					System.out.println(text + "\t" + text2 + "\t" + String.valueOf(text2.getBytes()));

@@ -164,11 +164,6 @@ public class WikiXmlDataHandler {
 			}
 
 			String catStr = ir.document(i).get(CommonFieldNames.CATEGORY).toLowerCase();
-			String redirect = ir.document(i).get(CommonFieldNames.REDIRECT_TITLE);
-
-			if (redirect.length() > 0) {
-				continue;
-			}
 
 			for (String cat : catStr.split("\n")) {
 				cat = cat.replaceAll("[\\d]+", "<D>");
@@ -205,7 +200,7 @@ public class WikiXmlDataHandler {
 
 			// String catStr =
 			// ir.document(i).get(CommonFieldNames.CATEGORY).toLowerCase();
-			String titleTo = ir.document(i).get(CommonFieldNames.REDIRECT_TITLE);
+			String titleTo = ir.document(i).get(CommonFieldNames.REDIRECTS);
 			// String content = ir.document(i).get(CommonFieldNames.CONTENT);
 
 			if (titleTo.length() > 0 && accept(stopPrefixes, titleTo)) {
@@ -391,7 +386,7 @@ public class WikiXmlDataHandler {
 		int num_docs = 0;
 
 		while (reader.hasNext()) {
-			reader.print(100000);
+			reader.printProgress();
 			String line = reader.next();
 
 			if (line.trim().startsWith("<page>")) {
@@ -430,7 +425,7 @@ public class WikiXmlDataHandler {
 				}
 			}
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 		// writer.close();
 

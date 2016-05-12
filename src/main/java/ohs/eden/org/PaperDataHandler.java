@@ -46,7 +46,7 @@ public class PaperDataHandler {
 		CounterMap<String, String> cm = new CounterMap<String, String>();
 
 		while (reader.hasNext()) {
-			reader.print(1000000);
+			reader.printProgress();
 
 			String line = reader.next();
 
@@ -68,7 +68,7 @@ public class PaperDataHandler {
 			cm.incrementCount(aid, auk, 1);
 
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 
 		TextFileWriter writer = new TextFileWriter(ENTPath.AUTHOR_NAME_FILE);
@@ -172,7 +172,7 @@ public class PaperDataHandler {
 		CounterMap<String, String> cm2 = new CounterMap<String, String>();
 
 		while (reader.hasNext()) {
-			reader.print(1000000);
+			reader.printProgress();
 
 			String line = reader.next();
 
@@ -201,7 +201,7 @@ public class PaperDataHandler {
 			cm2.incrementCount(aid, name, 1);
 
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 
 		// System.out.println(cm2.toString());

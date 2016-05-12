@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ohs.classifier.centroid.CentroidClassifier;
 import ohs.eden.org.OrganizationDetector.UnivComponent;
 import ohs.eden.org.data.struct.BilingualText;
 import ohs.eden.org.data.struct.Organization;
@@ -18,6 +17,7 @@ import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
+import ohs.ml.centroid.CentroidClassifier;
 import ohs.string.search.ppss.Gram;
 import ohs.string.search.ppss.GramGenerator;
 import ohs.string.search.ppss.GramOrderer;
@@ -73,7 +73,7 @@ public class OrganizationIdentificationKernel implements Serializable {
 			reader.setPrintNexts(false);
 
 			while (reader.hasNext()) {
-				reader.print(100);
+				reader.printProgress();
 
 				String line = reader.next();
 				String[] parts = line.split("\t");
@@ -120,7 +120,7 @@ public class OrganizationIdentificationKernel implements Serializable {
 				writer.write(sb.toString() + "\n\n");
 			}
 			writer.close();
-			reader.printLast();
+			reader.printProgress();
 		}
 
 		{

@@ -87,7 +87,7 @@ public class DataHandler {
 		reader.setPrintNexts(false);
 
 		while (reader.hasNext()) {
-			reader.print(10000);
+			reader.printProgress();
 
 			String line = reader.next();
 			String[] parts = line.split("\t");
@@ -125,7 +125,7 @@ public class DataHandler {
 				}
 			}
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 
 		FileUtils.writeStrCounter(KPPath.KEYWORD_POS_CNT_FILE, patCnts);
@@ -187,7 +187,7 @@ public class DataHandler {
 		List<String> labels = Generics.newArrayList();
 
 		while (reader.hasNext()) {
-			reader.print(100000);
+			reader.printProgress();
 
 			String line = reader.next();
 
@@ -244,7 +244,7 @@ public class DataHandler {
 				}
 			}
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 
 		FileUtils.writeStrSetMap(KPPath.KEYWORD_DATA_FILE, kwdToDocs);
@@ -262,7 +262,7 @@ public class DataHandler {
 		reader.setPrintNexts(false);
 
 		while (reader.hasNext()) {
-			reader.print(10000);
+			reader.printProgress();
 			String line = reader.next();
 			String[] parts = line.split("\t");
 
@@ -317,7 +317,7 @@ public class DataHandler {
 				}
 			}
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 		// writer.close();
 
@@ -417,7 +417,7 @@ public class DataHandler {
 		int num_docs = 0;
 
 		while (reader.hasNext()) {
-			reader.print(100000);
+			reader.printProgress();
 
 			// if (num_docs > 10000) {
 			// break;
@@ -476,7 +476,7 @@ public class DataHandler {
 				num_docs++;
 			}
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 		writer.close();
 	}

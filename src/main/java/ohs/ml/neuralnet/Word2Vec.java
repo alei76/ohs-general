@@ -1,78 +1,63 @@
 package ohs.ml.neuralnet;
 
-import ohs.math.ArrayMath;
+import java.util.List;
+
+import ohs.io.FileUtils;
+import ohs.ir.medical.general.MIRPath;
+import ohs.ir.medical.general.NLPUtils;
+import ohs.ml.neuralnet.Word2VecParam.Type;
+import ohs.types.Indexer;
+import ohs.types.IntegerArrayList;
+import ohs.utils.Generics;
 
 public class Word2Vec {
 
-	public static void main(String[] args) {
-		Word2Vec nn = new Word2Vec();
+	public static void main(String[] args) throws Exception {
+		System.out.println("process begins.");
 
-		int num_data = 100;
-		int num_labels = 5;
+		String text = FileUtils.readText(MIRPath.WIKI_DIR + "wiki_cancer.txt");
 
-		double[][] xs = ArrayMath.random(0, 1, num_data, num_labels);
-		double[][] ys = new double[num_data][num_labels];
+		Indexer<String> wordIndexer = Generics.newIndexer();
+		List<String> sents = NLPUtils.tokenize(text);
+		List<IntegerArrayList> data = Generics.newArrayList();
 
-		int[] labels = ArrayMath.random(0, 4, num_data);
+		for (int i = 0; i < sents.size(); i++) {
+			String[] words = sents.get(i).split(" ");
+			IntegerArrayList ws = new IntegerArrayList();
+			for (int j = 0; j < words.length; j++) {
+				ws.add(wordIndexer.getIndex(words[j]));
+			}
 
-		for (int i = 0; i < ys.length; i++) {
-			int label = labels[i];
-			ys[i][label] = 1;
+			ws.trimToSize();
+			data.add(ws);
 		}
 
-		nn.train(xs, ys);
+		Word2VecParam param = new Word2VecParam(10, Type.SKIP_GRAM);
 
+		Word2Vec word2Vec = new Word2Vec(param);
+		word2Vec.train(wordIndexer, data);
+
+		System.out.println("process ends.");
 	}
 
-	private double[][] W1;
+	private Word2VecParam param;
 
-	private double[][] W2;
+	private Indexer<String> wordIndexer;
 
-	private double[] b1;
+	private int voc_size;
 
-	private double[] b2;
+	private double[][] wordVecs;
 
-	private NeuralNetParams param = new NeuralNetParams();
-
-	public Word2Vec() {
-		W1 = new double[param.getNumInputNeurons()][param.getNumHiddenNeurons()];
-		W2 = new double[param.getNumHiddenNeurons()][param.getNumOutputNeurons()];
-		b1 = new double[param.getNumHiddenNeurons()];
-		b2 = new double[param.getNumOutputNeurons()];
-
-		ArrayMath.random(0, 1, W1);
-		ArrayMath.random(0, 1, W2);
-		ArrayMath.random(0, 1, b1);
-		ArrayMath.random(0, 1, b2);
-
+	public Word2Vec(Word2VecParam param) {
+		this.param = param;
 	}
 
-	public void train(double[][] xs, double[][] ys) {
-		double[] h = new double[param.getNumHiddenNeurons()];
-		double[] z1 = new double[h.length];
-		double[] z2 = new double[param.getNumOutputNeurons()];
+	public void train(Indexer<String> wordIndexer, List<IntegerArrayList> sents) {
+		this.wordIndexer = wordIndexer;
 
-		double[] yh = new double[param.getNumOutputNeurons()];
-		double cost = 0;
-		
+		voc_size = wordIndexer.size();
 
-		for (int i = 0; i < xs.length; i++) {
-			ArrayMath.product(W1, xs[i], z1);
-			ArrayMath.add(z1, b1, z1);
-			ArrayMath.sigmoid(z1, h);
-
-			ArrayMath.product(W2, h, z2);
-			ArrayMath.add(z2, b2, z2);
-			ArrayMath.softmax(z2, yh);
-			cost -= ArrayMath.crossEntropy(ys[i], yh);
-		}
-		
-		
+		wordVecs = new double[voc_size][param.getVectorSize()];
 	}
-	
-	public void train2(double[] x, double[] y) {
-		
-	}
-
 
 }

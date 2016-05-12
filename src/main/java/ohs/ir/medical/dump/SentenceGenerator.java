@@ -104,7 +104,7 @@ public class SentenceGenerator {
 		reader.setPrintNexts(false);
 
 		while (reader.hasNext()) {
-			reader.print(100000);
+			reader.printProgress();
 
 			String line = reader.next();
 			String[] parts = line.split("\t");
@@ -122,7 +122,7 @@ public class SentenceGenerator {
 				writer.write(output + "\n");
 			}
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 
 		writer.close();
@@ -139,7 +139,7 @@ public class SentenceGenerator {
 		long num_sents = 0;
 
 		while (reader.hasNext()) {
-			reader.print(100000);
+			reader.printProgress();
 
 			String line = reader.next();
 			String[] parts = line.split("\t");
@@ -170,7 +170,7 @@ public class SentenceGenerator {
 
 			num_sents += sents.size();
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 
 		writer.close();
@@ -185,7 +185,7 @@ public class SentenceGenerator {
 		reader.setPrintNexts(false);
 
 		while (reader.hasNext()) {
-			reader.print(100000);
+			reader.printProgress();
 			String line = reader.next();
 			String[] parts = line.split("\t");
 
@@ -214,7 +214,7 @@ public class SentenceGenerator {
 				writer.write(output + "\n");
 			}
 		}
-		reader.printLast();
+		reader.printProgress();
 		writer.close();
 	}
 
@@ -224,7 +224,8 @@ public class SentenceGenerator {
 		reader.setPrintNexts(false);
 
 		while (reader.hasNext()) {
-			reader.print(5000);
+			reader.printProgress();
+
 			String line = reader.next();
 			String[] parts = line.split("\t");
 
@@ -247,6 +248,7 @@ public class SentenceGenerator {
 				writer.write(output + "\n");
 			}
 		}
+		reader.printProgress();
 		reader.close();
 		writer.close();
 	}

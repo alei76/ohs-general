@@ -149,7 +149,7 @@ public class DataHandler {
 			List<String> labels = Generics.newArrayList();
 
 			while (reader.hasNext()) {
-				reader.print(100000);
+				reader.printProgress();
 
 				String line = reader.next();
 
@@ -199,7 +199,7 @@ public class DataHandler {
 					}
 				}
 			}
-			reader.printLast();
+			reader.printProgress();
 			reader.close();
 		}
 
@@ -210,7 +210,7 @@ public class DataHandler {
 			List<String> labels = Generics.newArrayList();
 
 			while (reader.hasNext()) {
-				reader.print(100000);
+				reader.printProgress();
 
 				String line = reader.next();
 
@@ -289,7 +289,7 @@ public class DataHandler {
 					}
 				}
 			}
-			reader.printLast();
+			reader.printProgress();
 			reader.close();
 		}
 

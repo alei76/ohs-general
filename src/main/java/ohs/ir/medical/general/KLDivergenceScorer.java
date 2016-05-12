@@ -40,7 +40,7 @@ public class KLDivergenceScorer {
 				int w = qlm.indexAtLoc(j);
 				double pr_w_in_query = qlm.valueAtLoc(j);
 				double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
-				double pr_w_in_coll = cnt_w_in_coll / wcb.getCollectionCountSum();
+				double pr_w_in_coll = cnt_w_in_coll / wcb.getCountSum();
 
 				double cnt_w_in_doc = wcs.valueAlways(w);
 				double cnt_sum_in_doc = wcs.sum();
@@ -98,7 +98,7 @@ public class KLDivergenceScorer {
 					int w = qLM.indexAtLoc(k);
 					double pr_w_in_query = qLM.valueAtLoc(k);
 					double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
-					double pr_w_in_coll = cnt_w_in_coll / wcb.getCollectionCountSum();
+					double pr_w_in_coll = cnt_w_in_coll / wcb.getCountSum();
 
 					double cnt_w_in_psg = psgWordCounts.valueAlways(w);
 					double cnt_sum_in_psg = psgWordCounts.sum();
@@ -171,7 +171,7 @@ public class KLDivergenceScorer {
 					int w = plm.indexAtLoc(k);
 					double pr_w_in_doc = plm.valueAtLoc(k);
 					double mixture_for_coll = dirichlet_prior / (dirichlet_prior + psg_len);
-					double pr_w_in_coll = wcb.getCollWordCounts().valueAlways(w) / wcb.getCollectionCountSum();
+					double pr_w_in_coll = wcb.getCollWordCounts().valueAlways(w) / wcb.getCountSum();
 					pr_w_in_doc = (1 - mixture_for_coll) * pr_w_in_doc + mixture_for_coll * pr_w_in_coll;
 					plm.setAtLoc(k, pr_w_in_doc);
 				}
@@ -223,7 +223,7 @@ public class KLDivergenceScorer {
 					int w = qLM.indexAtLoc(j);
 					double pr_w_in_query = qLM.valueAtLoc(j);
 					double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
-					double pr_w_in_coll = cnt_w_in_coll / wcb.getCollectionCountSum();
+					double pr_w_in_coll = cnt_w_in_coll / wcb.getCountSum();
 
 					double cnt_w_in_doc = wordCounts.valueAlways(w);
 					double cnt_sum_in_doc = wordCounts.sum();
@@ -270,7 +270,7 @@ public class KLDivergenceScorer {
 						int w = qLM.indexAtLoc(k);
 						double pr_w_in_query = qLM.valueAtLoc(k);
 						double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
-						double pr_w_in_coll = cnt_w_in_coll / wcb.getCollectionCountSum();
+						double pr_w_in_coll = cnt_w_in_coll / wcb.getCountSum();
 
 						double cnt_w_in_psg = psgWordCounts.valueAlways(w);
 						double cnt_sum_in_psg = psgWordCounts.sum();

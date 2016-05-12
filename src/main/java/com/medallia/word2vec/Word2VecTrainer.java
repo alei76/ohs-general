@@ -21,12 +21,6 @@ class Word2VecTrainer {
 	/**
 	 * @return {@link Multiset} containing unique tokens and their counts
 	 */
-	private static Multiset<String> count(Iterable<String> tokens) {
-		Multiset<String> counts = HashMultiset.create();
-		for (String token : tokens)
-			counts.add(token);
-		return counts;
-	}
 
 	private final Vocab vocab;
 

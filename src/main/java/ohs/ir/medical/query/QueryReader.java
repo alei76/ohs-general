@@ -63,12 +63,12 @@ public class QueryReader {
 	}
 
 	public static List<BaseQuery> readClefEHealthQueries(String queryFileName, String dischargeDirName) throws Exception {
-		List<BaseQuery> ret = new ArrayList<BaseQuery>();
+		List<BaseQuery> ret = Generics.newArrayList();
 
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder parser = dbf.newDocumentBuilder();
 
-		Document xmlDoc = parser.parse(new InputSource(new StringReader(FileUtils.readText(queryFileName))));
+		Document xmlDoc = parser.parse(new InputSource(new StringReader(FileUtils.readText(queryFileName).replace("&", "and"))));
 
 		Element docElem = xmlDoc.getDocumentElement();
 		NodeList nodeList = null;
@@ -206,8 +206,8 @@ public class QueryReader {
 		 * .W Information request
 		 */
 
-		List<BaseQuery> ret = new ArrayList<BaseQuery>();
-		Map<String, String> map = new HashMap<String, String>();
+		List<BaseQuery> ret = Generics.newArrayList();
+		Map<String, String> map = Generics.newHashMap();
 		TextFileReader reader = new TextFileReader(fileName);
 
 		while (reader.hasNext()) {
@@ -250,7 +250,8 @@ public class QueryReader {
 	}
 
 	public static List<BaseQuery> readQueries(String fileName) throws Exception {
-		List<BaseQuery> ret = new ArrayList<BaseQuery>();
+		List<BaseQuery> ret = Generics.newArrayList();
+
 		if (fileName.contains("trec_cds")) {
 			ret = readTrecCdsQueries(fileName);
 		} else if (fileName.contains("clef_ehealth")) {
@@ -264,7 +265,7 @@ public class QueryReader {
 	}
 
 	public static List<BaseQuery> readTrecCdsQueries(String fileName) throws Exception {
-		List<BaseQuery> ret = new ArrayList<BaseQuery>();
+		List<BaseQuery> ret = Generics.newArrayList();
 
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder parser = dbf.newDocumentBuilder();
@@ -309,7 +310,7 @@ public class QueryReader {
 	}
 
 	public static List<BaseQuery> readTrecGenomicsQueries(String queryFileName) throws Exception {
-		List<BaseQuery> ret = new ArrayList<BaseQuery>();
+		List<BaseQuery> ret = Generics.newArrayList();
 		List<String> lines = FileUtils.readLines(queryFileName);
 
 		for (int i = 0; i < lines.size(); i++) {

@@ -45,8 +45,9 @@ import ohs.types.Vocab;
  * <ul>
  * <li>The original version includes an unnecessary normalization of the vector for the input query which may lead to tiny inaccuracies.
  * This Java port foregoes this superfluous operation.
- * <li>The original version has an O(n * k) algorithm for finding top matches and is hardcoded to 40 matches. This Java port uses Google'text
- * lovely {@link com.google.common.collect.Ordering#greatestOf(java.util.Iterator, int)} which is O(n + k log k) and takes in arbitrary k.
+ * <li>The original version has an O(n * k) algorithm for finding top matches and is hardcoded to 40 matches. This Java port uses
+ * Google'text lovely {@link com.google.common.collect.Ordering#greatestOf(java.util.Iterator, int)} which is O(n + k log k) and takes in
+ * arbitrary k.
  * </ul>
  * <li>The k-means clustering option is excluded in the Java port
  * </ul>

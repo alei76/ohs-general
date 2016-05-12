@@ -120,7 +120,7 @@ public class DocumentIndexer {
 		reader.setPrintNexts(false);
 
 		while (reader.hasNext()) {
-			reader.print(100000);
+			reader.printProgress();
 
 			String line = reader.next();
 			String[] parts = line.split("\t");
@@ -138,7 +138,7 @@ public class DocumentIndexer {
 
 			iw.addDocument(doc);
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 
 		iw.close();
@@ -147,9 +147,9 @@ public class DocumentIndexer {
 	public void indexClueWeb12() throws Exception {
 		System.out.println("index ClueWeb12.");
 
-		IndexWriter iw = getIndexWriter(MIRPath.CLUEWEB12_INDEX_DIR);
+		IndexWriter iw = getIndexWriter(MIRPath.CLUEWEB_INDEX_DIR);
 
-		List<File> files = FileUtils.getFilesUnder(MIRPath.CLUEWEB12_TEXT_DIR);
+		List<File> files = FileUtils.getFilesUnder(MIRPath.CLUEWEB_TEXT_DIR);
 
 		for (int i = 0; i < files.size(); i++) {
 
@@ -246,7 +246,7 @@ public class DocumentIndexer {
 		reader.setPrintNexts(false);
 
 		while (reader.hasNext()) {
-			reader.print(100000);
+			reader.printProgress();
 
 			String line = reader.next();
 			String[] parts = line.split("\t");
@@ -273,7 +273,7 @@ public class DocumentIndexer {
 			doc.add(new MyTextField(CommonFieldNames.CONTENT, title + "\n" + abs, Field.Store.YES));
 			iw.addDocument(doc);
 		}
-		reader.printLast();
+		reader.printProgress();
 		iw.close();
 	}
 
@@ -285,7 +285,7 @@ public class DocumentIndexer {
 		reader.setPrintNexts(false);
 
 		while (reader.hasNext()) {
-			reader.print(100000);
+			reader.printProgress();
 			String line = reader.next();
 			String[] parts = line.split("\t");
 
@@ -317,7 +317,7 @@ public class DocumentIndexer {
 			doc.add(new MyTextField(CommonFieldNames.CONTENT, content, Store.YES));
 			iw.addDocument(doc);
 		}
-		reader.printLast();
+		reader.printProgress();
 		iw.close();
 	}
 
@@ -327,7 +327,7 @@ public class DocumentIndexer {
 		reader.setPrintNexts(false);
 
 		while (reader.hasNext()) {
-			reader.print(5000);
+			reader.printProgress();
 			String line = reader.next();
 			String[] parts = line.split("\t");
 
@@ -431,7 +431,7 @@ public class DocumentIndexer {
 		MediaWikiParser parser = factory.createParser();
 
 		while (reader.hasNext()) {
-			reader.print(10000);
+			reader.printProgress();
 
 			String line = reader.next();
 
@@ -545,7 +545,7 @@ public class DocumentIndexer {
 			doc.add(new MyTextField(CommonFieldNames.CONTENT, content, Store.YES));
 			iw.addDocument(doc);
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 		iw.close();
 
@@ -563,7 +563,7 @@ public class DocumentIndexer {
 		MediaWikiParser parser = factory.createParser();
 
 		while (reader.hasNext()) {
-			reader.print(100000);
+			reader.printProgress();
 
 			String line = reader.next();
 			String[] parts = line.split("\t");
@@ -648,7 +648,7 @@ public class DocumentIndexer {
 			doc.add(new MyTextField(CommonFieldNames.CATEGORY, sb2.toString(), Store.YES));
 			iw.addDocument(doc);
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 
 		iw.close();
