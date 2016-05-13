@@ -374,7 +374,7 @@ public class StrUtils {
 		return sb.toString();
 	}
 
-	// public static String join(String glue, Collection<String> c, int start, int end) {
+	// public static String join(String glue, SentenceCollection<String> c, int start, int end) {
 	// return join(glue, c, start, end);
 	// }
 

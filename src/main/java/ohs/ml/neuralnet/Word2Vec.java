@@ -5,6 +5,7 @@ import java.util.List;
 import ohs.io.FileUtils;
 import ohs.ir.medical.general.MIRPath;
 import ohs.ir.medical.general.NLPUtils;
+import ohs.math.ArrayMath;
 import ohs.ml.neuralnet.Word2VecParam.Type;
 import ohs.types.Indexer;
 import ohs.types.IntegerArrayList;
@@ -19,23 +20,11 @@ public class Word2Vec {
 
 		Indexer<String> wordIndexer = Generics.newIndexer();
 		List<String> sents = NLPUtils.tokenize(text);
-		List<IntegerArrayList> data = Generics.newArrayList();
 
-		for (int i = 0; i < sents.size(); i++) {
-			String[] words = sents.get(i).split(" ");
-			IntegerArrayList ws = new IntegerArrayList();
-			for (int j = 0; j < words.length; j++) {
-				ws.add(wordIndexer.getIndex(words[j]));
-			}
-
-			ws.trimToSize();
-			data.add(ws);
-		}
-
-		Word2VecParam param = new Word2VecParam(10, Type.SKIP_GRAM);
+		Word2VecParam param = new Word2VecParam(Type.SKIP_GRAM, 10, 5);
 
 		Word2Vec word2Vec = new Word2Vec(param);
-		word2Vec.train(wordIndexer, data);
+		// word2Vec.train(wordIndexer, data);
 
 		System.out.println("process ends.");
 	}
@@ -44,9 +33,15 @@ public class Word2Vec {
 
 	private Indexer<String> wordIndexer;
 
+	private double[][] inWordVecs;
+
+	private double[][] outWordVecs;
+
+	private double[][] grad;
+
 	private int voc_size;
 
-	private double[][] wordVecs;
+	private int num_sents;
 
 	public Word2Vec(Word2VecParam param) {
 		this.param = param;
@@ -54,10 +49,16 @@ public class Word2Vec {
 
 	public void train(Indexer<String> wordIndexer, List<IntegerArrayList> sents) {
 		this.wordIndexer = wordIndexer;
+		this.num_sents = sents.size();
+		this.voc_size = wordIndexer.size();
 
-		voc_size = wordIndexer.size();
+		inWordVecs = new double[voc_size][param.getVectorSize()];
+		outWordVecs = new double[voc_size][param.getVectorSize()];
 
-		wordVecs = new double[voc_size][param.getVectorSize()];
+		ArrayMath.random(0, 1, inWordVecs);
+
+		ArrayMath.add(inWordVecs, -0.5, inWordVecs);
+
 	}
 
 }

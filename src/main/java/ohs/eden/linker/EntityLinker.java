@@ -260,7 +260,7 @@ public class EntityLinker implements Serializable {
 				double cosine = 0;
 
 				if (isv.size() > 0 && esv != null) {
-					cosine = VectorMath.cosine(isv, esv, false);
+					cosine = VectorMath.cosine(isv, esv);
 				}
 				scores.setCount(eid, score * Math.exp(cosine));
 			}

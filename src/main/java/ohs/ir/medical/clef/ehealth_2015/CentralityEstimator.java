@@ -45,8 +45,8 @@ public class CentralityEstimator {
 		List<Integer> docIds = new ArrayList<Integer>();
 
 		for (int i = 0; i < docConceptWeightData.rowSize(); i++) {
-			int docId = docConceptWeightData.indexAtRowLoc(i);
-			SparseVector v = docConceptWeightData.vectorAtRowLoc(i);
+			int docId = docConceptWeightData.indexAtLoc(i);
+			SparseVector v = docConceptWeightData.rowAtLoc(i);
 			weightVectors.add(v);
 			docIds.add(docId);
 		}

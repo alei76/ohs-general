@@ -221,8 +221,8 @@ public class RelevanceCollector {
 				SparseVector docFreqs = wcb.getDocFreqs();
 
 				for (int k = 0; k < sm.rowSize(); k++) {
-					int docId = sm.indexAtRowLoc(k);
-					SparseVector sv = sm.vectorAtRowLoc(k);
+					int docId = sm.indexAtLoc(k);
+					SparseVector sv = sm.rowAtLoc(k);
 					computeTFIDFs(sv, docFreqs, wcb.getNumDocs());
 				}
 

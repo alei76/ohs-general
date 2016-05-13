@@ -201,7 +201,7 @@ public class RelevanceModelBuilder {
 		SparseVector psgScores = new SparseVector(docPsgWordCounts.rowSize());
 
 		for (int i = 0; i < docPsgWordCounts.rowSize(); i++) {
-			int docId = docPsgWordCounts.indexAtRowLoc(i);
+			int docId = docPsgWordCounts.indexAtLoc(i);
 			SparseVector psgWordCounts = docPsgWordCounts.rowAtLoc(i);
 
 			double div_sum = 0;

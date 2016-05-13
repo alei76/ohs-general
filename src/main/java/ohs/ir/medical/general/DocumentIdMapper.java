@@ -47,7 +47,7 @@ public class DocumentIdMapper {
 				}
 				counter.setCount(Integer.parseInt(indexId), score);
 			}
-			SparseVector sv = new SparseVector(counter, -1, -1);
+			SparseVector sv = new SparseVector(counter, -1);
 			ret.add(sv);
 		}
 

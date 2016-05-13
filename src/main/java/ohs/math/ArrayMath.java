@@ -6,6 +6,9 @@ import java.util.Random;
 
 import org.apache.commons.math.stat.inference.TTestImpl;
 
+import ohs.types.Counter;
+import ohs.utils.Generics;
+
 /**
  * @author Heung-Seon Oh
  * 
@@ -804,6 +807,17 @@ public class ArrayMath {
 		System.out.println("process begins.");
 
 		{
+
+			Counter<Double> c = Generics.newCounter();
+
+			for (double s : random(0f, 5f, 1000)) {
+				c.incrementCount(s, 1);
+			}
+			System.out.println(c.toString());
+			System.err.println();
+		}
+
+		{
 			double a = Double.MAX_VALUE;
 			System.out.println(a);
 
@@ -1393,6 +1407,14 @@ public class ArrayMath {
 		return sum;
 	}
 
+	/**
+	 * @param min
+	 *            inclusive
+	 * @param max
+	 *            exclusive
+	 * @param x
+	 * @return
+	 */
 	public static double random(double min, double max, double[] x) {
 		Random random = new Random();
 		double range = max - min;
@@ -1418,6 +1440,10 @@ public class ArrayMath {
 		return x;
 	}
 
+	public static double random(double min, double max) {
+		return random(min, max, 1)[0];
+	}
+
 	public static double[][] random(double min, double max, int rows, int columns) {
 		double[][] x = new double[rows][columns];
 		random(min, max, x);
@@ -1430,9 +1456,22 @@ public class ArrayMath {
 		return x;
 	}
 
+	public static int random(int min, int max) {
+		return random(min, max, 1)[0];
+	}
+
+	/**
+	 * @param min
+	 *            inclusive
+	 * @param max
+	 *            exclusive
+	 * @param x
+	 * @return
+	 */
 	public static int random(int min, int max, int[] x) {
 		Random random = new Random();
-		double range = max - min + 1;
+		// double range = max - min - 1;
+		double range = max - min;
 		int sum = 0;
 		for (int i = 0; i < x.length; i++) {
 			x[i] = (int) (range * random.nextDouble()) + min;
@@ -1601,6 +1640,14 @@ public class ArrayMath {
 		for (int i = 0; i < a.length; i++) {
 			b[i] = a[i] * ac;
 			sum += b[i];
+		}
+		return sum;
+	}
+
+	public static double scale(double[][] a, double ac, double[][] b) {
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			sum += scale(a[i], ac, b[i]);
 		}
 		return sum;
 	}

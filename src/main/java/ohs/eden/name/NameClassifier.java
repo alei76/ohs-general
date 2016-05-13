@@ -89,7 +89,6 @@ public class NameClassifier {
 
 				if (featCnts.size() > 0) {
 					SparseVector sv = VectorUtils.toSparseVector(featCnts, featIndexer, true);
-					sv.setLabel(i);
 					sv.scale(cnt);
 
 					// data.add(sv);

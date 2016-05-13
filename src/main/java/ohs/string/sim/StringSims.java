@@ -42,7 +42,7 @@ public class StringSims {
 	public static double CosineSimilarity(String s, String t) {
 		SparseVector sv = VectorUtils.toSparseVector(getCharacterCounts(s));
 		SparseVector tv = VectorUtils.toSparseVector(getCharacterCounts(t));
-		return VectorMath.cosine(sv, tv, false);
+		return VectorMath.cosine(sv, tv);
 	}
 
 	public static int DamerauLevenshteinDistance(String s, String t) {

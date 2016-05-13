@@ -160,7 +160,7 @@ public class IntegerArrayMatrix implements RandomAccess, Cloneable, Serializable
 	 *
 	 * @param e
 	 *            element to be appended to this list
-	 * @return <tt>true</tt> (as specified by {@link Collection#add})
+	 * @return <tt>true</tt> (as specified by {@link SentenceCollection#add})
 	 */
 	public boolean add(IntegerArrayList e) {
 		ensureCapacityInternal(size + 1); // Increments modCount!!

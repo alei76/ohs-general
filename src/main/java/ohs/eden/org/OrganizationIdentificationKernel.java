@@ -29,6 +29,7 @@ import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
 import ohs.types.Pair;
+import ohs.utils.Generics;
 import ohs.utils.StopWatch;
 import ohs.utils.StrUtils;
 
@@ -188,6 +189,7 @@ public class OrganizationIdentificationKernel implements Serializable {
 
 			Indexer<String> featIndexer = new Indexer<String>();
 			List<SparseVector> trainData = new ArrayList<SparseVector>();
+			List<Integer> trainLabels = Generics.newArrayList();
 
 			{
 				List<StringRecord> srs = searcher.getStringRecords();
@@ -203,12 +205,12 @@ public class OrganizationIdentificationKernel implements Serializable {
 						c.incrementCount(f, 1);
 					}
 					SparseVector v = VectorUtils.toSparseVector(c);
-					v.setLabel(sr.getId());
+					trainLabels.add(sr.getId());
 					trainData.add(v);
 				}
 			}
 
-			CentroidClassifier classifier = CentroidClassifier.train(trainData);
+			CentroidClassifier classifier = CentroidClassifier.train(trainData, trainLabels);
 			classifier.setFeatureIndexer(featIndexer);
 
 			// int maxIter = 20;

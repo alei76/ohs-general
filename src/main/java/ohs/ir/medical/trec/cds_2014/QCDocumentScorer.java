@@ -127,11 +127,11 @@ public class QCDocumentScorer {
 		Counter<Integer> ret = new Counter<Integer>();
 
 		for (int i = 0; i < docWordCountsData.rowSize(); i++) {
-			SparseVector docWordCounts = docWordCountsData.vectorAtRowLoc(i);
+			SparseVector docWordCounts = docWordCountsData.rowAtLoc(i);
 			SparseVector docTypeScores = queryClassifier.score(docWordCounts);
 			docTypeScoresData.add(docTypeScores);
 
-			int docId = docWordCountsData.indexAtRowLoc(i);
+			int docId = docWordCountsData.indexAtLoc(i);
 			double prevScore = docScores.valueAlways(docId);
 			double cosine = ArrayMath.cosine(queryTypeScores.values(), docTypeScores.values());
 			double newScore = prevScore * cosine;

@@ -186,7 +186,7 @@ public class KeywordClusterer {
 
 		for (int kwdid : kwdCents.keySet()) {
 			int kwd_freq = kwdData.getKeywordFreqs()[kwdid];
-			ret.setCount(kwdid, kwd_freq * VectorMath.dotProduct(avgCent, kwdCents.get(kwdid), false));
+			ret.setCount(kwdid, kwd_freq * VectorMath.dotProduct(avgCent, kwdCents.get(kwdid)));
 		}
 		ret.normalize();
 		return ret;

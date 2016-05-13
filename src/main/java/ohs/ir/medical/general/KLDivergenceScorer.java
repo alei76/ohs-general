@@ -32,7 +32,7 @@ public class KLDivergenceScorer {
 		SparseVector ret = new SparseVector(wcb.getDocWordCounts().rowSize());
 
 		for (int i = 0; i < wcb.getDocWordCounts().rowSize(); i++) {
-			int docId = wcb.getDocWordCounts().indexAtRowLoc(i);
+			int docId = wcb.getDocWordCounts().indexAtLoc(i);
 			SparseVector wcs = wcb.getDocWordCounts().rowAtLoc(i);
 			double div_sum = 0;
 
@@ -66,7 +66,7 @@ public class KLDivergenceScorer {
 		int num_passages = 1;
 
 		for (int i = 0; i < wcb.getDocWordCounts().rowSize(); i++) {
-			int docId = wcb.getDocWordCounts().indexAtRowLoc(i);
+			int docId = wcb.getDocWordCounts().indexAtLoc(i);
 			// SparseVector wordCounts = wcb.getDocWordCounts().rowAtLoc(i);
 
 			List<Integer> words = wcb.getDocWords().get(docId);
@@ -132,7 +132,7 @@ public class KLDivergenceScorer {
 		System.out.println(VectorUtils.toCounter(qLM, wcb.getWordIndexer()));
 
 		for (int i = 0; i < wcb.getDocWordCounts().rowSize(); i++) {
-			int docId = wcb.getDocWordCounts().indexAtRowLoc(i);
+			int docId = wcb.getDocWordCounts().indexAtLoc(i);
 			List<Integer> words = wcb.getDocWords().get(docId);
 			List<Pair<Integer, Integer>> locWords = PlmUtils.getQueryLocsInDocument(qLM, words);
 
@@ -204,7 +204,7 @@ public class KLDivergenceScorer {
 		PassageGenerator psgGenerator = new PassageGenerator();
 
 		for (int i = 0; i < wcb.getDocWordCounts().rowSize(); i++) {
-			int docId = wcb.getDocWordCounts().indexAtRowLoc(i);
+			int docId = wcb.getDocWordCounts().indexAtLoc(i);
 			// SparseVector wordCounts = wcb.getDocWordCounts().rowAtLoc(i);
 
 			List<Integer> dWords = wcb.getDocWords().get(docId);

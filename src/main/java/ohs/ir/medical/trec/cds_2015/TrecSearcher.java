@@ -350,7 +350,7 @@ public class TrecSearcher {
 			File inputFile = new File(docPriorFileNames[i]);
 			DenseVector docPriors = null;
 			if (inputFile.exists()) {
-				docPriors = DenseVector.read(inputFile.getPath());
+				docPriors = DenseVector.readObject(inputFile.getPath());
 				double uniform_prior = 1f / docPriors.size();
 				for (int j = 0; j < docPriors.size(); j++) {
 					if (docPriors.value(j) == 0) {

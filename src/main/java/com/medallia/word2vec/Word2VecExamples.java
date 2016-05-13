@@ -184,7 +184,7 @@ public class Word2VecExamples {
 
 					num_valid_sents++;
 
-					String[] words = parts[2].split("[\\text]+");
+					String[] words = parts[2].split("[\t]+");
 
 					for (String word : words) {
 						wordCounts.incrementCount(word, 1);
@@ -207,7 +207,7 @@ public class Word2VecExamples {
 					cnts[i] = cnt;
 				}
 
-				vocab = new Vocab(wordIndexer, cnts, new int[0], 0);
+				vocab = new Vocab(wordIndexer, cnts, new int[0], 0, 0);
 			}
 
 			{

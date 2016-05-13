@@ -76,9 +76,9 @@ public class VectorMath {
 		}
 	}
 
-	public static double cosine(Vector a, Vector b, boolean normalizeBefore) {
+	public static double cosine(Vector a, Vector b) {
 		double[] norms = new double[2];
-		double dot_product = dotProduct(a, b, normalizeBefore, norms);
+		double dot_product = dotProduct(a, b, norms);
 		return ArrayMath.cosine(dot_product, norms[0], norms[1]);
 	}
 
@@ -101,14 +101,10 @@ public class VectorMath {
 	}
 
 	public static double dotProduct(Vector a, Vector b) {
-		return dotProduct(a, b, false, new double[0]);
+		return dotProduct(a, b, new double[0]);
 	}
 
-	public static double dotProduct(Vector a, Vector b, boolean normalizeBefore) {
-		return dotProduct(a, b, normalizeBefore, new double[0]);
-	}
-
-	public static double dotProduct(Vector a, Vector b, boolean normalizeBefore, double[] norms) {
+	public static double dotProduct(Vector a, Vector b, double[] norms) {
 		// if (a.dim() != b.dim()) {
 		// new IllegalArgumentException("different dimension");
 		// }
@@ -475,25 +471,42 @@ public class VectorMath {
 		}
 	}
 
-	public static void product(Matrix a, DenseVector b, DenseVector c) {
+	public static void product(Matrix a, Vector b, Vector c) {
 		if (!VectorChecker.isProductable(a, b, c)) {
 			new IllegalArgumentException("different dimension");
 		}
 
+		if (isSparse(c)) {
+			Counter<Integer> cc = Generics.newCounter();
+			for (int loc = 0; loc < a.rowSize(); loc++) {
+				cc.setCount(a.indexAtLoc(loc), dotProduct(a.rowAtLoc(loc), b));
+			}
+			VectorUtils.copy(VectorUtils.toSparseVector(cc), c);
+		} else {
+			double dot_product = 0;
+			double sum = 0;
+			for (int loc = 0; loc < a.rowSize(); loc++) {
+				dot_product = dotProduct(a.rowAtLoc(loc), b);
+				sum += dot_product;
+				c.set(a.indexAtLoc(loc), dot_product);
+			}
+			c.setSum(sum);
+		}
+
 		if (isSparse(a)) {
-			SparseMatrix m = (SparseMatrix) a;
+			SparseMatrix a2 = (SparseMatrix) a;
 			double sum = 0;
 			int prevRowIndex = -1;
 
-			for (int i = 0; i < m.rowDim(); i++) {
-				int rowIndex = m.indexAtRowLoc(i);
-				SparseVector row = m.vectorAtRowLoc(i);
+			for (int i = 0; i < a2.rowDim(); i++) {
+				int rowIndex = a2.indexAtLoc(i);
+				SparseVector row = a2.rowAtLoc(i);
 
 				for (int j = prevRowIndex + 1; j < rowIndex; j++) {
 					c.set(j, 0);
 				}
 
-				double dotProduct = dotProduct(row, b, false);
+				double dotProduct = dotProduct(row, b);
 				c.set(rowIndex, dotProduct);
 				sum += dotProduct;
 
@@ -505,7 +518,7 @@ public class VectorMath {
 			double sum = 0;
 
 			for (int i = 0; i < m.rowDim(); i++) {
-				double dotProduct = dotProduct(m.row(i), b, false);
+				double dotProduct = dotProduct(m.row(i), b);
 				c.set(i, dotProduct);
 				sum += dotProduct;
 			}
@@ -527,7 +540,7 @@ public class VectorMath {
 				Vector column = b.column(j);
 				for (int i = 0; i < a.rowDim(); i++) {
 					Vector row = a.row(i);
-					double dotProduct = dotProduct(row, column, false);
+					double dotProduct = dotProduct(row, column);
 					c.set(i, j, dotProduct);
 				}
 			}
@@ -547,8 +560,7 @@ public class VectorMath {
 	 * @param damping_factor
 	 * @return
 	 */
-	public static void randomWalk(SparseMatrix trans_probs, double[] cents, int max_iter, double min_dist,
-			double damping_factor) {
+	public static void randomWalk(SparseMatrix trans_probs, double[] cents, int max_iter, double min_dist, double damping_factor) {
 
 		double tran_prob = 0;
 		double dot_product = 0;
@@ -561,7 +573,7 @@ public class VectorMath {
 		for (int m = 0; m < max_iter; m++) {
 			for (int i = 0; i < trans_probs.rowSize(); i++) {
 				dot_product = 0;
-				SparseVector sv = trans_probs.vectorAtRowLoc(i);
+				SparseVector sv = trans_probs.rowAtLoc(i);
 				for (int j = 0; j < sv.size(); j++) {
 					tran_prob = damping_factor * sv.valueAtLoc(j);
 					dot_product += tran_prob * old_cents[sv.indexAtLoc(j)];

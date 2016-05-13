@@ -2,12 +2,14 @@ package ohs.types;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.List;
+import java.util.Set;
 
 import ohs.io.FileUtils;
 import ohs.math.ArrayMath;
+import ohs.utils.Generics;
 
 public class Vocab {
-
 	private Indexer<String> wordIndexer;
 
 	private int[] word_cnts;
@@ -16,10 +18,14 @@ public class Vocab {
 
 	private int num_docs;
 
-	private int word_cnt_sum;
+	private int num_toks;
 
 	public Vocab() {
 
+	}
+
+	public Vocab(Indexer<String> wordIndexer, int[] word_cnts) {
+		this(wordIndexer, word_cnts, new int[0], 0);
 	}
 
 	public Vocab(Indexer<String> wordIndexer, int[] word_cnts, int[] doc_freqs, int num_docs) {
@@ -27,7 +33,7 @@ public class Vocab {
 		this.word_cnts = word_cnts;
 		this.doc_freqs = doc_freqs;
 		this.num_docs = num_docs;
-		word_cnt_sum = ArrayMath.sum(word_cnts);
+		num_toks = ArrayMath.sum(word_cnts);
 	}
 
 	public int getNumDocs() {
@@ -61,7 +67,7 @@ public class Vocab {
 	}
 
 	public int getWordCountSum() {
-		return word_cnt_sum;
+		return num_toks;
 	}
 
 	public double getWordDocFreq(int w) {
@@ -86,7 +92,7 @@ public class Vocab {
 	}
 
 	public double getWordProb(int w) {
-		return 1f * word_cnts[w] / word_cnt_sum;
+		return 1f * word_cnts[w] / num_toks;
 	}
 
 	public double getWordProb(String word) {
@@ -102,17 +108,17 @@ public class Vocab {
 		return wordIndexer.indexOf(word);
 	}
 
-	public void read(ObjectInputStream ois) throws Exception {
+	public void readObject(ObjectInputStream ois) throws Exception {
 		wordIndexer = FileUtils.readStrIndexer(ois);
 		num_docs = ois.readInt();
 		word_cnts = FileUtils.readIntArray(ois);
 		doc_freqs = FileUtils.readIntArray(ois);
-		word_cnt_sum = ArrayMath.sum(word_cnts);
+		num_toks = ArrayMath.sum(word_cnts);
 	}
 
-	public void read(String fileName) throws Exception {
+	public void readObject(String fileName) throws Exception {
 		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
-		read(ois);
+		readObject(ois);
 		ois.close();
 	}
 
@@ -120,16 +126,24 @@ public class Vocab {
 		return wordIndexer.size();
 	}
 
-	public void write(ObjectOutputStream oos) throws Exception {
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append(String.format("voc size:\t%d\n", wordIndexer.size()));
+		sb.append(String.format("docs:\t%d\n", num_docs));
+		sb.append(String.format("toks:\t%d\n", num_toks));
+		return sb.toString();
+	}
+
+	public void writeObject(ObjectOutputStream oos) throws Exception {
 		FileUtils.writeStrIndexer(oos, wordIndexer);
 		oos.writeInt(num_docs);
 		FileUtils.writeIntArray(oos, word_cnts);
 		FileUtils.writeIntArray(oos, doc_freqs);
 	}
 
-	public void write(String fileName) throws Exception {
+	public void writeObject(String fileName) throws Exception {
 		ObjectOutputStream ois = FileUtils.openObjectOutputStream(fileName);
-		write(ois);
+		writeObject(ois);
 		ois.close();
 
 	}

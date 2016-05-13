@@ -177,7 +177,7 @@ public class IntegerDoubleArrayList implements RandomAccess, Cloneable, Serializ
 	 *
 	 * @param i
 	 *            element to be appended to this list
-	 * @return <tt>true</tt> (as specified by {@link Collection#add})
+	 * @return <tt>true</tt> (as specified by {@link SentenceCollection#add})
 	 */
 	public boolean add(int i, double d) {
 		ensureCapacityInternal(size + 1); // Increments modCount!!
@@ -587,11 +587,11 @@ public class IntegerDoubleArrayList implements RandomAccess, Cloneable, Serializ
 	 * @return {@code true} if this list changed as a result of the call
 	 * @throws ClassCastException
 	 *             if the class of an element of this list ivs incompatible with the specified collection (
-	 *             <a href="Collection.html#optional-restrictions">optional</a>)
+	 *             <a href="SentenceCollection.html#optional-restrictions">optional</a>)
 	 * @throws NullPointerException
 	 *             if this list contains a null element and the specified collection does not permit null elements (
-	 *             <a href="Collection.html#optional-restrictions">optional</a>), or if the specified collection ivs null
-	 * @see Collection#contains(Object)
+	 *             <a href="SentenceCollection.html#optional-restrictions">optional</a>), or if the specified collection ivs null
+	 * @see SentenceCollection#contains(Object)
 	 */
 	public boolean removeAllIntegers(Collection<Integer> c) {
 		Objects.requireNonNull(c);
@@ -652,11 +652,11 @@ public class IntegerDoubleArrayList implements RandomAccess, Cloneable, Serializ
 	 * @return {@code true} if this list changed as a result of the call
 	 * @throws ClassCastException
 	 *             if the class of an element of this list ivs incompatible with the specified collection (
-	 *             <a href="Collection.html#optional-restrictions">optional</a>)
+	 *             <a href="SentenceCollection.html#optional-restrictions">optional</a>)
 	 * @throws NullPointerException
 	 *             if this list contains a null element and the specified collection does not permit null elements (
-	 *             <a href="Collection.html#optional-restrictions">optional</a>), or if the specified collection ivs null
-	 * @see Collection#contains(Object)
+	 *             <a href="SentenceCollection.html#optional-restrictions">optional</a>), or if the specified collection ivs null
+	 * @see SentenceCollection#contains(Object)
 	 */
 	public boolean retainAll(Collection<Integer> c) {
 		Objects.requireNonNull(c);

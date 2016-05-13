@@ -1,13 +1,9 @@
 package ohs.matrix;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import ohs.io.FileUtils;
@@ -20,96 +16,11 @@ public class DenseVector implements Vector {
 	 */
 	private static final long serialVersionUID = 1185683442330052104L;
 
-	public static DenseVector read(String fileName) throws Exception {
-		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
-		DenseVector ret = readStream(ois);
-		ois.close();
-		return ret;
-	}
-
-	public static List<DenseVector> readList(ObjectInputStream ois) throws Exception {
-		List<DenseVector> ret = new ArrayList<DenseVector>();
-		int size = ois.readInt();
-		for (int i = 0; i < size; i++) {
-			DenseVector vector = readStream(ois);
-			ret.add(vector);
-		}
-		return ret;
-	}
-
-	public static List<DenseVector> readList(String fileName) throws Exception {
-		System.out.printf("read [%s].\n", fileName);
-		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
-		List<DenseVector> ret = readList(ois);
-		ois.close();
-		System.out.printf("read [%d] vectors.\n", ret.size());
-		return ret;
-	}
-
-	public static Map<Integer, List<DenseVector>> readMap(String fileName) throws Exception {
-		System.out.printf("read [%s].\n", fileName);
-		Map<Integer, List<DenseVector>> ret = new HashMap<Integer, List<DenseVector>>();
-		List<DenseVector> allVectors = readList(fileName);
-
-		for (int i = 0; i < allVectors.size(); i++) {
-			DenseVector vector = allVectors.get(i);
-			int topicId = vector.label();
-			List<DenseVector> vectors = ret.get(topicId);
-
-			if (vectors == null) {
-				vectors = new ArrayList<DenseVector>();
-				ret.put(topicId, vectors);
-			}
-			vectors.add(vector);
-		}
-		System.out.printf("read [%d] topics.\n", ret.keySet().size());
-		return ret;
-	}
-
-	public static Map<Integer, List<DenseVector>> readMappedList(String fileName) throws Exception {
-		System.out.printf("read [%s].\n", fileName);
-		Map<Integer, List<DenseVector>> ret = new HashMap<Integer, List<DenseVector>>();
-		List<DenseVector> allVectors = readList(fileName);
-
-		for (int i = 0; i < allVectors.size(); i++) {
-			DenseVector vector = allVectors.get(i);
-			int topicId = vector.label();
-			List<DenseVector> vectors = ret.get(topicId);
-
-			if (vectors == null) {
-				vectors = new ArrayList<DenseVector>();
-				ret.put(topicId, vectors);
-			}
-			vectors.add(vector);
-		}
-
-		System.out.printf("read [%d] topics.\n", ret.keySet().size());
-		return ret;
-	}
-
-	public static DenseVector readStream(ObjectInputStream ois) throws Exception {
-		int size = ois.readInt();
-		int label = ois.readInt();
-		int sizeOfNonzero = ois.readInt();
-		double sum = 0;
-
-		DenseVector ret = new DenseVector(size, label);
-		for (int i = 0; i < sizeOfNonzero; i++) {
-			int index = ois.readInt();
-			double value = ois.readDouble();
-			ret.set(index, value);
-			sum += value;
-		}
-		ret.setSum(sum);
-
-		return ret;
-	}
-
 	public static void write(ObjectOutputStream oos, List<DenseVector> xs) throws Exception {
 		oos.writeInt(xs.size());
 		for (int i = 0; i < xs.size(); i++) {
 			DenseVector x = xs.get(i);
-			x.write(oos);
+			x.writeObject(oos);
 		}
 	}
 
@@ -125,24 +36,17 @@ public class DenseVector implements Vector {
 
 	private double sum;
 
-	private int label;
-
 	public DenseVector(double[] values) {
-		this(values, -1);
-	}
-
-	public DenseVector(double[] values, int label) {
 		this.values = values;
-		this.label = label;
 		this.sum = 0;
 	}
 
 	public DenseVector(int size) {
-		this(size, -1);
+		this(new double[size]);
 	}
 
-	public DenseVector(int size, int label) {
-		this(new double[size], label);
+	public DenseVector() {
+		
 	}
 
 	@Override
@@ -162,7 +66,7 @@ public class DenseVector implements Vector {
 
 	@Override
 	public DenseVector copy() {
-		DenseVector ret = new DenseVector(ArrayUtils.copy(values), label);
+		DenseVector ret = new DenseVector(ArrayUtils.copy(values));
 		ret.setSum(sum);
 		return ret;
 	}
@@ -228,11 +132,6 @@ public class DenseVector implements Vector {
 		DenseVector x2 = x1.toDenseVector();
 		this.values = x2.values();
 		this.sum = x2.sum();
-	}
-
-	@Override
-	public int label() {
-		return label;
 	}
 
 	@Override
@@ -331,6 +230,17 @@ public class DenseVector implements Vector {
 		return ret;
 	}
 
+	public void readObject(ObjectInputStream ois) throws Exception {
+		values = FileUtils.readDoubleArray(ois);
+		summation();
+	}
+
+	public void readObject(String fileName) throws Exception {
+		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
+		readObject(ois);
+		ois.close();
+	}
+
 	@Override
 	public void scale(double factor) {
 		ArrayMath.scale(values, factor, values);
@@ -387,11 +297,6 @@ public class DenseVector implements Vector {
 	}
 
 	@Override
-	public void setLabel(int label) {
-		this.label = label;
-	}
-
-	@Override
 	public void setSum(double sum) {
 		this.sum = sum;
 	}
@@ -442,17 +347,17 @@ public class DenseVector implements Vector {
 				loc++;
 			}
 		}
-		SparseVector ret = new SparseVector(newIndexes, newValues, label(), dim());
+		SparseVector ret = new SparseVector(newIndexes, newValues, dim());
 		ret.setSum(sum);
 		return ret;
 	}
 
 	@Override
 	public String toString() {
-		return toString(20, true, true, null);
+		return toString(20, true, null);
 	}
 
-	public String toString(int numKeys, boolean printSparsely, boolean printLabel, NumberFormat nf) {
+	public String toString(int numKeys, boolean printSparsely, NumberFormat nf) {
 		if (nf == null) {
 			nf = NumberFormat.getInstance();
 			nf.setMinimumFractionDigits(4);
@@ -460,12 +365,7 @@ public class DenseVector implements Vector {
 		}
 
 		StringBuffer sb = new StringBuffer();
-
-		if (printLabel) {
-			sb.append(String.format("%d (%d/%d, %s) ->", label, sizeOfNonzero(), values.length, nf.format(sum)));
-		} else {
-			sb.append(String.format("(%d/%d, %s) ->", sizeOfNonzero(), values.length, nf.format(sum)));
-		}
+		sb.append(String.format("(%d/%d, %s) ->", sizeOfNonzero(), values.length, nf.format(sum)));
 
 		// int numPrint = 0;
 
@@ -512,30 +412,15 @@ public class DenseVector implements Vector {
 	}
 
 	@Override
-	public void write(ObjectOutputStream oos) throws IOException {
-		int size = size();
-		int label = label();
-		int sizeOfNonzero = sizeOfNonzero();
-
-		oos.writeInt(size);
-		oos.writeInt(label);
-		oos.writeInt(sizeOfNonzero);
-
-		for (int i = 0; i < size; i++) {
-			double value = value(i);
-			if (value == 0) {
-				continue;
-			}
-			oos.writeInt(i);
-			oos.writeDouble(value);
-		}
+	public void writeObject(ObjectOutputStream oos) throws Exception {
+		FileUtils.writeDoubleArray(oos, values);
 	}
 
 	@Override
-	public void write(String fileName) throws Exception {
+	public void writeObject(String fileName) throws Exception {
 		System.out.printf("write to [%s].\n", fileName);
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
-		write(oos);
+		writeObject(oos);
 		oos.close();
 	}
 }

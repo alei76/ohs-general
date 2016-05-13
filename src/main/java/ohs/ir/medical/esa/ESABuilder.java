@@ -1,8 +1,8 @@
 package ohs.ir.medical.esa;
 
 import java.util.List;
+import java.util.Set;
 
-import edu.stanford.nlp.stats.IntCounter;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.AnalyzerUtils;
@@ -13,6 +13,7 @@ import ohs.tree.trie.hash.Trie;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
+import ohs.utils.Generics;
 
 public class ESABuilder {
 
@@ -34,7 +35,7 @@ public class ESABuilder {
 	public void build() throws Exception {
 		System.out.println("build ESA model.");
 
-		IntCounter docFreqs = new IntCounter();
+		Counter<Integer> docFreqs = new Counter<Integer>();
 		double num_docs = 0;
 
 		TextFileReader reader = new TextFileReader(MIRPath.ICD10_HIERARCHY_PAGE_FILE);
@@ -63,14 +64,14 @@ public class ESABuilder {
 
 			Node<String> node = trie.insert(keys);
 
-			IntCounter c = (IntCounter) node.getData();
+			Counter<Integer> c = (Counter<Integer>) node.getData();
 
 			if (c == null) {
-				c = new IntCounter();
+				c = new Counter<Integer>();
 				node.setData(c);
 			}
 
-			IntHashSet wordSet = new IntHashSet();
+			Set<Integer> wordSet = Generics.newHashSet();
 
 			String[] lines = wikiText.split("<NL>");
 
@@ -102,11 +103,13 @@ public class ESABuilder {
 
 		List<Node<String>> leafNodes = trie.getLeafNodes();
 
-		CounterMap<Integer, Integer> cm = new IntCounterMap();
+		CounterMap<Integer, Integer> cm = Generics.newCounterMap();
 
-		for (int i = 0; i < leafNodes.size(); i++) {
+		for (
+
+		int i = 0; i < leafNodes.size(); i++) {
 			Node<String> node = leafNodes.get(i);
-			IntCounter c = (IntCounter) node.getData();
+			Counter<Integer> c = (Counter<Integer>) node.getData();
 
 			if (node.getDepth() != 5 || c.size() == 0) {
 				continue;

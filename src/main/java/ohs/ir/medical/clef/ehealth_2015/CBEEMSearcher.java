@@ -92,7 +92,7 @@ public class CBEEMSearcher {
 			File inputFile = new File(docPriorFileNames[i]);
 			DenseVector docPriors = null;
 			if (inputFile.exists()) {
-				docPriors = DenseVector.read(inputFile.getPath());
+				docPriors = DenseVector.readObject(inputFile.getPath());
 				double uniform_prior = 1f / docPriors.size();
 				for (int j = 0; j < docPriors.size(); j++) {
 					if (docPriors.value(j) == 0) {
@@ -686,7 +686,7 @@ public class CBEEMSearcher {
 			double prob_w_in_all_colls = cnt_w_in_all_colls / cnt_sum_in_all_colls;
 
 			for (int j = 0; j < docWordCountBox.rowSize(); j++) {
-				int docId = docWordCountBox.indexAtRowLoc(j);
+				int docId = docWordCountBox.indexAtLoc(j);
 				SparseVector wordCounts = docWordCountBox.rowAtLoc(j);
 				double cnt_w_in_doc = wordCounts.valueAlways(w);
 				double cnt_sum_in_doc = wordCounts.sum();

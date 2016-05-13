@@ -176,7 +176,7 @@ public class DocumentScorer {
 			SparseVector transModel = transModels.rowAlways(w);
 
 			for (int j = 0; j < docWordCounts.rowSize(); j++) {
-				int docId = docWordCounts.indexAtRowLoc(j);
+				int docId = docWordCounts.indexAtLoc(j);
 				SparseVector dwc = docWordCounts.rowAtLoc(j);
 
 				double count_w_in_doc = dwc.valueAlways(w);
@@ -330,8 +330,8 @@ public class DocumentScorer {
 		CounterMap<Integer, Integer> ret = new CounterMap<Integer, Integer>();
 
 		for (int i = 0; i < docWordCounts.rowSize(); i++) {
-			int docId = docWordCounts.indexAtRowLoc(i);
-			SparseVector dwc = docWordCounts.vectorAtRowLoc(i);
+			int docId = docWordCounts.indexAtLoc(i);
+			SparseVector dwc = docWordCounts.rowAtLoc(i);
 			Counter<Integer> trwp = new Counter<Integer>();
 
 			for (int j = 0; j < dwc.size(); j++) {
@@ -374,9 +374,9 @@ public class DocumentScorer {
 		Indexer<Integer> newWordIndexer = new Indexer<Integer>();
 
 		for (int i = 0; i < co.rowSize(); i++) {
-			int w1 = co.indexAtRowLoc(i);
+			int w1 = co.indexAtLoc(i);
 			newWordIndexer.add(w1);
-			for (int w2 : co.vectorAtRowLoc(i).indexes()) {
+			for (int w2 : co.rowAtLoc(i).indexes()) {
 				newWordIndexer.add(w2);
 			}
 		}
@@ -386,10 +386,10 @@ public class DocumentScorer {
 		double[][] transMat = ArrayUtils.matrix(max_words, 0);
 
 		for (int i = 0; i < co.rowSize(); i++) {
-			int w1 = co.indexAtRowLoc(i);
+			int w1 = co.indexAtLoc(i);
 			int nw1 = newWordIndexer.indexOf(w1);
 
-			SparseVector sv = co.vectorAtRowLoc(i);
+			SparseVector sv = co.rowAtLoc(i);
 			for (int j = i + 1; j < sv.size(); j++) {
 				int w2 = sv.indexAtLoc(j);
 				int nw2 = newWordIndexer.indexOf(w2);

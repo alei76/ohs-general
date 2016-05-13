@@ -197,8 +197,8 @@ public class MakeSemanticVectors {
 		conceptCategoryWeights.setRowDim(conceptIndexer.size());
 		conceptCategoryWeights.setColDim(categoryIndexer.size());
 
-		wordConceptWeights.write(CDSPath.ICD10_WORD_CONCEPT_MAP_FILE);
-		conceptCategoryWeights.write(CDSPath.ICD10_CONCEPT_CATEGORY_MAP_FILE);
+		wordConceptWeights.writeObject(CDSPath.ICD10_WORD_CONCEPT_MAP_FILE);
+		conceptCategoryWeights.writeObject(CDSPath.ICD10_CONCEPT_CATEGORY_MAP_FILE);
 
 		FileUtils.writeStrIndexer(CDSPath.ICD10_CONCEPT_INDEXER_FILE, conceptIndexer);
 		FileUtils.writeStrIndexer(CDSPath.ICD10_CATEGORY_INDEXER_FILE, categoryIndexer);

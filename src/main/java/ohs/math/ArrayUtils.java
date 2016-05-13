@@ -764,15 +764,26 @@ public class ArrayUtils {
 			throw new IllegalArgumentException();
 		}
 		double sum = 0;
-		for (int i = 0, k = 0; i < a.length; i++) {
-			for (int j = 0; j < b[i].length; j++) {
-				b[i][j] = a[k];
-				sum += a[k];
-				k++;
-			}
-		}
 
+		int a_size = b.length;
+		int b_rows = b.length;
+		int b_cols = b[0].length;
+		int i = 0;
+		int j = 0;
+
+		for (int k = 0; k < a.length; k++) {
+			i = k / b_rows;
+			j = k % b_rows;
+			b[i][j] = a[k];
+			sum += a[i];
+		}
 		return sum;
+	}
+
+	public static double[] reshape(double[][] a) {
+		double[] b = new double[sizeOfEntries(a)];
+		reshape(a, b);
+		return b;
 	}
 
 	public static double reshape(double[][] a, double[] b) {

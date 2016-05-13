@@ -65,9 +65,9 @@ public class ResultsAnalyzer {
 			double[] correlations = new double[results.rowSize()];
 
 			for (int j = 0; j < results.rowSize(); j++) {
-				int qId = results.indexAtRowLoc(j);
-				SparseVector docScores1 = baseline.vectorAtRowLoc(j);
-				SparseVector docScores2 = results.vectorAtRowLoc(j);
+				int qId = results.indexAtLoc(j);
+				SparseVector docScores1 = baseline.rowAtLoc(j);
+				SparseVector docScores2 = results.rowAtLoc(j);
 
 				double[] ranking1 = docScores1.ranking().values();
 				double[] ranking2 = docScores2.ranking().values();

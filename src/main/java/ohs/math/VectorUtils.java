@@ -12,7 +12,6 @@ import ohs.matrix.Vector;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
-import ohs.types.ListMap;
 import ohs.utils.Generics;
 
 public class VectorUtils {
@@ -46,7 +45,6 @@ public class VectorUtils {
 			counter.incrementCount(freq, 1);
 		}
 		SparseVector ret = toSparseVector(counter);
-		ret.setLabel(x.label());
 		return ret;
 	}
 
@@ -180,15 +178,6 @@ public class VectorUtils {
 		return ret;
 	}
 
-	public static ListMap<Integer, SparseVector> toIndexedList(List<SparseVector> xs) {
-		ListMap<Integer, SparseVector> ret = new ListMap<Integer, SparseVector>();
-		for (int i = 0; i < xs.size(); i++) {
-			SparseVector vector = xs.get(i);
-			ret.put(vector.label(), vector);
-		}
-		return ret;
-	}
-
 	public static double[][] toMatrix(CounterMap<Integer, Integer> a, int dim) {
 		double[][] ret = new double[dim][dim];
 		copy(a, ret);
@@ -216,17 +205,16 @@ public class VectorUtils {
 	}
 
 	public static SparseMatrix toSparseMatrix(CounterMap<Integer, Integer> cm) {
-		int[] rowids = new int[cm.keySet().size()];
+		int[] rowIndexes = new int[cm.keySet().size()];
 		SparseVector[] rows = new SparseVector[cm.keySet().size()];
 
 		int loc = 0;
 		for (int key : cm.keySet()) {
-			rowids[loc] = key;
+			rowIndexes[loc] = key;
 			rows[loc] = toSparseVector(cm.getCounter(key));
 			loc++;
 		}
-
-		SparseMatrix ret = new SparseMatrix(-1, -1, -1, rowids, rows);
+		SparseMatrix ret = new SparseMatrix(-1, -1, rowIndexes, rows);
 		ret.sortByRowIndex();
 		return ret;
 	}
@@ -260,7 +248,7 @@ public class VectorUtils {
 			rowIds[i] = rs1.get(i);
 			rows[i] = rs2.get(i);
 		}
-		SparseMatrix ret = new SparseMatrix(-1, -1, -1, rowIds, rows);
+		SparseMatrix ret = new SparseMatrix(-1, -1, rowIds, rows);
 		ret.sortByRowIndex();
 		return ret;
 	}
@@ -338,13 +326,12 @@ public class VectorUtils {
 		for (int index : cm.keySet()) {
 			rowIds[loc] = index;
 			rows[loc] = toSparseVector(cm.getCounter(index));
-			rows[loc].setLabel(index);
 			if (rows[loc].size() > colDim) {
 				colDim = rows[loc].size();
 			}
 			loc++;
 		}
-		SparseMatrix ret = new SparseMatrix(rowDim, colDim, label, rowIds, rows);
+		SparseMatrix ret = new SparseMatrix(rowDim, colDim, rowIds, rows);
 		ret.sortByRowIndex();
 		return ret;
 	}
@@ -357,7 +344,6 @@ public class VectorUtils {
 		}
 
 		StringBuffer sb = new StringBuffer();
-		sb.append(x.label());
 		for (int i = 0; i < x.size(); i++) {
 			sb.append(String.format(" %d:%s", x.indexAtLoc(i), nf.format(x.valueAtLoc(i))));
 		}

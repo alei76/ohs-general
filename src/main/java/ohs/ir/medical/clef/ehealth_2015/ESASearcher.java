@@ -223,7 +223,7 @@ public class ESASearcher {
 		wordDocFreqs = VectorUtils.toSparseVector(c3);
 
 		for (int i = 0; i < docWordWeightData.rowSize(); i++) {
-			SparseVector wordCounts = docWordWeightData.vectorAtRowLoc(i);
+			SparseVector wordCounts = docWordWeightData.rowAtLoc(i);
 			for (int j = 0; j < wordCounts.size(); j++) {
 				int w = wordCounts.indexAtLoc(j);
 				double cnt = wordCounts.valueAtLoc(j);
@@ -359,8 +359,8 @@ public class ESASearcher {
 		} else {
 			SparseVector docCosines = new SparseVector(docScores.size());
 			for (int i = 0; i < docConceptWeightData.rowSize(); i++) {
-				int docId = docConceptWeightData.indexAtRowLoc(i);
-				SparseVector docConceptWeights = docConceptWeightData.vectorAtRowLoc(i);
+				int docId = docConceptWeightData.indexAtLoc(i);
+				SparseVector docConceptWeights = docConceptWeightData.rowAtLoc(i);
 				double cosine = VectorMath.cosine(queryConceptWeights, docConceptWeights, false);
 				docCosines.incrementAtLoc(i, docId, cosine);
 			}

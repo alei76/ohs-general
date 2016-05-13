@@ -85,10 +85,10 @@ public class DocumentCentralityEstimator {
 		double[][] trans_probs = ArrayUtils.matrix(num_docs);
 
 		for (int i = 0; i < num_docs; i++) {
-			SparseVector dwcs1 = docWordCountData.vectorAtRowLoc(i);
+			SparseVector dwcs1 = docWordCountData.rowAtLoc(i);
 
 			for (int j = i + 1; j < num_docs; j++) {
-				SparseVector dcwc2 = docWordCountData.vectorAtRowLoc(j);
+				SparseVector dcwc2 = docWordCountData.rowAtLoc(j);
 				double forward_div_sum = getKLD(dwcs1, dcwc2);
 				double backward_div_sum = getKLD(dcwc2, dwcs1);
 

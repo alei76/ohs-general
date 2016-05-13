@@ -75,8 +75,8 @@ public class ProximityScorer {
 		SparseVector ret = new SparseVector(docWordCounts.rowSize());
 
 		for (int i = 0; i < docWordCounts.rowSize(); i++) {
-			int docId = docWordCounts.indexAtRowLoc(i);
-			SparseVector wordCounts = docWordCounts.vectorAtRowLoc(i);
+			int docId = docWordCounts.indexAtLoc(i);
+			SparseVector wordCounts = docWordCounts.rowAtLoc(i);
 			List<Integer> words = wcb.getDocWords().get(docId);
 			ListMap<Integer, Integer> wordLocs = docWordLocs.get(docId);
 

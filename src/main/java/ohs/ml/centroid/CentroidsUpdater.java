@@ -4,6 +4,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import ohs.matrix.SparseVector;
 import ohs.utils.StopWatch;
@@ -48,16 +49,26 @@ public class CentroidsUpdater {
 
 	private List<SparseVector> testData;
 
+	private List<Integer> trainLabels;
+
+	private List<Integer> testLabels;
+
 	private List<Integer> docLocs;
 
 	private NumberFormat nf;
 
-	public CentroidsUpdater(CentroidClassifier classifier, List<SparseVector> trainData, List<SparseVector> testData,
+	public CentroidsUpdater(CentroidClassifier classifier,
 
-	boolean printLog, boolean useBatchMode, int maxIter, double weight, double learningRate, double minMargin) {
+			List<SparseVector> trainData, List<Integer> trainLabels,
+
+			List<SparseVector> testData, List<Integer> testLabels,
+
+			boolean printLog, boolean useBatchMode, int maxIter, double weight, double learningRate, double minMargin) {
 		this.classifier = classifier;
 		this.trainData = trainData;
 		this.testData = testData;
+		this.trainLabels = trainLabels;
+		this.testLabels = testLabels;
 		this.printLog = printLog;
 		this.useBatchMode = useBatchMode;
 		this.max_iter = maxIter;
@@ -104,7 +115,7 @@ public class CentroidsUpdater {
 				}
 
 				SparseVector query = trainData.get(docLoc);
-				int answer = query.label();
+				int answer = trainLabels.get(docLoc);
 
 				SparseVector predScores = classifier.score(query);
 				double answer_score = predScores.value(answer);

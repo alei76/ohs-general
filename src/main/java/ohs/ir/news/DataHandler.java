@@ -206,7 +206,7 @@ public class DataHandler {
 		int num_files_in_dir = 100;
 
 		while (reader.hasNext()) {
-			reader.print(100000);
+			reader.printProgress();
 			String line = reader.next();
 			String[] parts = line.split("\t");
 
@@ -266,7 +266,7 @@ public class DataHandler {
 		// write("news_title", newsTitleData, num_news_dirs);
 		// write("blog_title", blogTitleData, num_blog_dirs);
 
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 	}
 
@@ -375,7 +375,7 @@ public class DataHandler {
 		reader.setPrintNexts(false);
 
 		while (reader.hasNext()) {
-			reader.print(10000);
+			reader.printProgress();
 			String line = reader.next();
 
 			JSONParser jsonParser = new JSONParser();
@@ -401,7 +401,7 @@ public class DataHandler {
 				writer.write(StrUtils.join("\t", values) + "\n");
 			}
 		}
-		reader.printLast();
+		reader.printProgress();
 		reader.close();
 		writer.close();
 	}

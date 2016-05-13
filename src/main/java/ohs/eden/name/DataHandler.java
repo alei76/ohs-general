@@ -99,8 +99,6 @@ public class DataHandler {
 
 				if (cc.size() > 0) {
 					SparseVector sv = VectorUtils.toSparseVector(cc, featIndexer, true);
-					sv.setLabel(i);
-
 					data.add(sv);
 
 					ccc.incrementCount(i, 1);

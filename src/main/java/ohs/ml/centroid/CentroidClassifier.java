@@ -32,20 +32,18 @@ public class CentroidClassifier {
 		return ret;
 	}
 
-	public static CentroidClassifier train(List<SparseVector> trainData) {
+	public static CentroidClassifier train(List<SparseVector> trainData, List<Integer> labels) {
 		ListMap<Integer, SparseVector> labelDocs = new ListMap<Integer, SparseVector>();
 		Counter<Integer> docFreqs = new Counter<Integer>();
 
 		TermWeighting.computeTFIDFs(trainData);
 
 		for (int i = 0; i < trainData.size(); i++) {
-			SparseVector v = trainData.get(i);
-			labelDocs.put(v.label(), v);
+			labelDocs.put(labels.get(i), trainData.get(i));
 		}
 
 		Map<Integer, SparseVector> centroids = new TreeMap<Integer, SparseVector>();
 		SparseVector labelPriors = new SparseVector(labelDocs.size());
-		List<Integer> labels = new ArrayList<Integer>(labelDocs.keySet());
 
 		for (int i = 0; i < labels.size(); i++) {
 			int label = labels.get(i);
@@ -60,7 +58,6 @@ public class CentroidClassifier {
 			}
 			SparseVector centroid = VectorUtils.toSparseVector(c);
 			centroid.scale(1f / docs.size());
-			centroid.setLabel(label);
 
 			centroids.put(label, centroid);
 			labelPriors.incrementAtLoc(i, label, docs.size());
@@ -92,7 +89,7 @@ public class CentroidClassifier {
 
 	public CentroidClassifier(Indexer<String> labelIndexer, Indexer<String> featIndexer,
 
-	Map<Integer, SparseVector> centroids, SparseVector labelBias, int scoreType, KernelType kernelType, double gamma, double coef0,
+			Map<Integer, SparseVector> centroids, SparseVector labelBias, int scoreType, KernelType kernelType, double gamma, double coef0,
 			int degree) {
 		this.labelBias = labelBias;
 
@@ -126,7 +123,6 @@ public class CentroidClassifier {
 		for (int i = 0; i < inputData.size(); i++) {
 			SparseVector input = inputData.get(i);
 			SparseVector output = score(input);
-			output.setLabel(input.label());
 			outputData.add(output);
 		}
 		return outputData;
@@ -186,14 +182,14 @@ public class CentroidClassifier {
 
 			switch (kernelType) {
 			case LINEAR:
-				sim = VectorMath.dotProduct(x, c, false);
+				sim = VectorMath.dotProduct(x, c);
 				break;
 			case POLY:
-				dot_product = VectorMath.dotProduct(x, c, false);
+				dot_product = VectorMath.dotProduct(x, c);
 				sim = powi(gamma * dot_product + coef0, degree);
 				break;
 			case SIGMOD:
-				dot_product = VectorMath.dotProduct(x, c, false);
+				dot_product = VectorMath.dotProduct(x, c);
 				sim = Math.tanh(gamma * dot_product + coef0);
 			default:
 				break;

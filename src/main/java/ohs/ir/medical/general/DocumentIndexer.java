@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.ObjectInputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -150,6 +151,8 @@ public class DocumentIndexer {
 		IndexWriter iw = getIndexWriter(MIRPath.CLUEWEB_INDEX_DIR);
 
 		List<File> files = FileUtils.getFilesUnder(MIRPath.CLUEWEB_TEXT_DIR);
+		
+		Collections.sort(files);
 
 		for (int i = 0; i < files.size(); i++) {
 

@@ -47,7 +47,7 @@ public class LA {
 	}
 
 	public static Matrix asParametricVectorForm(Matrix U) {
-		Matrix ret = new SparseMatrix(U.rowDim(), U.colDim(), 0, null);
+		Matrix ret = new SparseMatrix(U.rowDim(), U.colDim(), null);
 
 		return ret;
 	}
@@ -254,17 +254,17 @@ public class LA {
 		}
 		double ret =
 
-		a[0][0] * a[1][1] * a[2][2]
+				a[0][0] * a[1][1] * a[2][2]
 
-				+ a[0][1] * a[1][2] * a[2][0]
+						+ a[0][1] * a[1][2] * a[2][0]
 
-				+ a[0][2] * a[1][0] * a[2][1]
+						+ a[0][2] * a[1][0] * a[2][1]
 
-				- a[0][2] * a[1][1] * a[2][0]
+						- a[0][2] * a[1][1] * a[2][0]
 
-				- a[0][1] * a[1][0] * a[2][2]
+						- a[0][1] * a[1][0] * a[2][2]
 
-				- a[0][0] * a[1][2] * a[2][1];
+						- a[0][0] * a[1][2] * a[2][1];
 
 		return ret;
 
@@ -1167,17 +1167,17 @@ public class LA {
 		{
 			double[][] a =
 
-			{ { 3, -7, 8, 9, -6 }
+					{ { 3, -7, 8, 9, -6 }
 
-					, { 0, 2, -5, 7, 3 }
+							, { 0, 2, -5, 7, 3 }
 
-					, { 0, 0, 1, 5, 0 }
+							, { 0, 0, 1, 5, 0 }
 
-					, { 0, 0, 2, 4, -1 }
+							, { 0, 0, 2, 4, -1 }
 
-					, { 0, 0, 0, -2, 0 }
+							, { 0, 0, 0, -2, 0 }
 
-			};
+					};
 
 			// System.out.println(determinant(a));
 		}

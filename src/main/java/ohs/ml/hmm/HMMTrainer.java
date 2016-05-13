@@ -1,4 +1,4 @@
-package ohs.nlp.pos;
+package ohs.ml.hmm;
 
 import java.util.List;
 import java.util.Set;
@@ -13,6 +13,8 @@ import ohs.nlp.ling.types.KSentence;
 import ohs.nlp.ling.types.MultiToken;
 import ohs.nlp.ling.types.Token;
 import ohs.nlp.ling.types.TokenAttr;
+import ohs.nlp.pos.NLPPath;
+import ohs.nlp.pos.SejongReader;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.utils.Conditions;

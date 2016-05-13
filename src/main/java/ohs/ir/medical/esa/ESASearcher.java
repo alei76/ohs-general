@@ -15,7 +15,6 @@ import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.util.BytesRef;
 
-import edu.stanford.nlp.stats.IntCounter;
 import ohs.io.TextFileWriter;
 import ohs.ir.lucene.common.CommonFieldNames;
 import ohs.ir.medical.clef.ehealth_2015.CentralityEstimator;
@@ -26,13 +25,15 @@ import ohs.math.VectorUtils;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
 import ohs.types.Counter;
+import ohs.types.CounterMap;
+import ohs.types.Indexer;
 import ohs.utils.CounterUtils;
 import ohs.utils.StopWatch;
 
 public class ESASearcher {
 
-	public static void doReranking(ESASearcher esaSearcher, StrCounterMap queryModels, StrCounterMap searchResult, File outputFile)
-			throws Exception {
+	public static void doReranking(ESASearcher esaSearcher, CounterMap<String, String> queryModels, CounterMap<String, String> searchResult,
+			File outputFile) throws Exception {
 		System.out.printf("process for [%s]\n", outputFile.getName());
 
 		List<String> queryIds = new ArrayList<String>(new TreeSet<String>(queryModels.keySet()));
@@ -74,7 +75,7 @@ public class ESASearcher {
 
 	private Counter<String> queryModel;
 
-	private StrIndexer wordIndexer;
+	private Indexer<String> wordIndexer;
 
 	private SparseMatrix wordConceptWeights;
 
@@ -102,9 +103,9 @@ public class ESASearcher {
 
 	private void computeDocumentWordWeights() throws Exception {
 		IndexReader indexReader = indexSearcher.getIndexReader();
-		IntCounterMap c1 = new IntCounterMap();
-		IntCounter c2 = new IntCounter();
-		IntCounter c3 = new IntCounter();
+		CounterMap<Integer, Integer> c1 = new CounterMap<Integer, Integer>();
+		Counter<Integer> c2 = new Counter<Integer>();
+		Counter<Integer> c3 = new Counter<Integer>();
 
 		for (int j = 0; j < docScores.size(); j++) {
 			int docId = docScores.indexAtLoc(j);
@@ -121,7 +122,7 @@ public class ESASearcher {
 			TermsEnum iterator = termVector.iterator();
 			BytesRef ref = null;
 			DocsAndPositionsEnum docsAndPositions = null;
-			IntCounter wordCounts = new IntCounter();
+			Counter<Integer> wordCounts = new Counter<Integer>();
 			List<Integer> words = new ArrayList<Integer>();
 
 			while ((ref = iterator.next()) != null) {
@@ -157,7 +158,7 @@ public class ESASearcher {
 		wordDocFreqs = VectorUtils.toSparseVector(c3);
 
 		for (int i = 0; i < docWordWeightData.rowSize(); i++) {
-			SparseVector wordCounts = docWordWeightData.vectorAtRowLoc(i);
+			SparseVector wordCounts = docWordWeightData.rowAtLoc(i);
 			for (int j = 0; j < wordCounts.size(); j++) {
 				int w = wordCounts.indexAtLoc(j);
 				double cnt = wordCounts.valueAtLoc(j);
@@ -197,7 +198,7 @@ public class ESASearcher {
 		SparseVector queryConceptWeights = null;
 
 		{
-			IntCounter c = new IntCounter();
+			Counter<Integer> c = new Counter<Integer>();
 
 			for (int i = 0; i < queryWordWeights.size(); i++) {
 				int q = queryWordWeights.indexAtLoc(i);
@@ -219,7 +220,7 @@ public class ESASearcher {
 		for (int i = 0; i < docScores.size(); i++) {
 			int docId = docScores.indexAtLoc(i);
 			SparseVector docWordWeights = docWordWeightData.rowAlways(docId);
-			IntCounter cc = new IntCounter();
+			Counter<Integer> cc = new Counter<Integer>();
 
 			for (int j = 0; j < docWordWeights.size(); j++) {
 				int w = docWordWeights.indexAtLoc(j);
@@ -249,9 +250,9 @@ public class ESASearcher {
 		} else {
 			SparseVector docCosines = new SparseVector(docScores.size());
 			for (int i = 0; i < docConceptWeightData.rowSize(); i++) {
-				int docId = docConceptWeightData.indexAtRowLoc(i);
-				SparseVector docConceptWeights = docConceptWeightData.vectorAtRowLoc(i);
-				double cosine = VectorMath.cosine(queryConceptWeights, docConceptWeights, false);
+				int docId = docConceptWeightData.indexAtLoc(i);
+				SparseVector docConceptWeights = docConceptWeightData.rowAtLoc(i);
+				double cosine = VectorMath.cosine(queryConceptWeights, docConceptWeights);
 				docCosines.incrementAtLoc(i, docId, cosine);
 			}
 

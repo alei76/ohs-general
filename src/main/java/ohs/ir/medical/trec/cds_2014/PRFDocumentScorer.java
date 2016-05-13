@@ -63,7 +63,7 @@ public class PRFDocumentScorer {
 			double prob_w_in_collection = collWordCounts.probAlways(w);
 
 			for (int j = 0; j < docWordCounts.rowSize(); j++) {
-				int docId = docWordCounts.indexAtRowLoc(j);
+				int docId = docWordCounts.indexAtLoc(j);
 				SparseVector dwc = docWordCounts.rowAtLoc(j);
 
 				double count_w_in_doc = dwc.valueAlways(w);

@@ -113,8 +113,7 @@ public class EntityContextGenerator {
 				continue;
 			}
 
-			Counter<String> wcs = WordCountBox.getWordCounts(is.getIndexReader(), ent.getId(),
-					CommonFieldNames.CONTENT);
+			Counter<String> wcs = WordCountBox.getWordCounts(is.getIndexReader(), ent.getId(), CommonFieldNames.CONTENT);
 
 			MedicalEnglishAnalyzer analyzer = el.getAnalyzer();
 
@@ -138,7 +137,6 @@ public class EntityContextGenerator {
 			double avg_idf = idf_sum / wcs.size();
 
 			SparseVector sv = VectorUtils.toSparseVector(wcs1, wordIndexer, true);
-			sv.setLabel(ent.getId());
 
 			contVecs.put(ent.getId(), sv);
 		}
@@ -147,7 +145,7 @@ public class EntityContextGenerator {
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(outputFileName);
 
 		EntityContexts entContexts = new EntityContexts(wordIndexer, contVecs);
-		entContexts.write(oos);
+		entContexts.writeObject(oos);
 		oos.close();
 	}
 

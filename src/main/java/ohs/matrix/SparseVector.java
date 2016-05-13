@@ -27,73 +27,10 @@ public class SparseVector implements Vector {
 	 */
 	private static final long serialVersionUID = -6671749703272005320L;
 
-	public static SparseVector read(String fileName) throws Exception {
-		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
-		SparseVector ret = readStream(ois);
-		ois.close();
-		return ret;
-	}
-
-	public static ListMap<Integer, SparseVector> readIndexedList(String fileName) throws Exception {
-		ListMap<Integer, SparseVector> ret = new ListMap<Integer, SparseVector>();
-		List<SparseVector> dataList = readList(fileName);
-		for (int i = 0; i < dataList.size(); i++) {
-			SparseVector vector = dataList.get(i);
-			ret.put(vector.label(), vector);
-		}
-		return ret;
-	}
-
-	public static List<SparseVector> readList(ObjectInputStream ois) throws Exception {
-		List<SparseVector> ret = new ArrayList<SparseVector>();
-		int size = ois.readInt();
-		for (int i = 0; i < size; i++) {
-			SparseVector vector = readStream(ois);
-			ret.add(vector);
-		}
-		return ret;
-	}
-
-	public static List<SparseVector> readList(String fileName) throws Exception {
-		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
-		List<SparseVector> ret = readList(ois);
-		ois.close();
-		System.out.printf("read [%d] vectors from [%s].\n", ret.size(), fileName);
-		return ret;
-	}
-
-	public static ListMap<Integer, SparseVector> readMap(String fileName) throws Exception {
-		ListMap<Integer, SparseVector> ret = new ListMap<Integer, SparseVector>();
-		for (SparseVector vector : readList(fileName)) {
-			ret.put(vector.label(), vector);
-		}
-		return ret;
-	}
-
-	public static SparseVector readStream(ObjectInputStream ois) throws IOException {
-		int size = ois.readInt();
-		int[] indexes = new int[size];
-		double[] values = new double[size];
-		int label = ois.readInt();
-		int dim = ois.readInt();
-
-		double sum = 0;
-		for (int i = 0; i < size; i++) {
-			int index = ois.readInt();
-			double value = ois.readDouble();
-			indexes[i] = index;
-			values[i] = value;
-			sum += value;
-		}
-		SparseVector ret = new SparseVector(indexes, values, label, dim);
-		ret.setSum(sum);
-		return ret;
-	}
-
 	public static void write(ObjectOutputStream oos, List<SparseVector> vs) throws Exception {
 		oos.writeInt(vs.size());
 		for (int i = 0; i < vs.size(); i++) {
-			vs.get(i).write(oos);
+			vs.get(i).writeObject(oos);
 		}
 	}
 
@@ -108,21 +45,19 @@ public class SparseVector implements Vector {
 
 	private double[] values;
 
-	private int label;
-
 	private double sum;
 
 	private int dim;
 
 	public SparseVector() {
-		this(0, 0);
+
 	}
 
 	public SparseVector(Counter<Integer> c) {
-		this(c, 0, 0);
+		this(c, 0);
 	}
 
-	public SparseVector(Counter<Integer> c, int label, int dim) {
+	public SparseVector(Counter<Integer> c, int dim) {
 		indexes = new int[c.size()];
 		values = new double[c.size()];
 		sum = 0;
@@ -130,52 +65,31 @@ public class SparseVector implements Vector {
 		for (Entry<Integer, Double> e : c.entrySet()) {
 			incrementAtLoc(loc++, e.getKey(), e.getValue());
 		}
-		this.label = label;
 		this.dim = dim;
 		sortByIndex();
 	}
 
 	public SparseVector(int size) {
-		this(new int[size], new double[size], -1, size);
+		this(new int[size], new double[size], size);
 	}
 
-	public SparseVector(int size, int label) {
-		this(new int[size], new double[size], label, size);
+	public SparseVector(int size, int dim) {
+		this(new int[size], new double[size], dim);
 	}
 
 	public SparseVector(int[] indexes) {
-		this(indexes, new double[indexes.length], -1, indexes.length);
+		this(indexes, new double[indexes.length], indexes.length);
 	}
 
-	public SparseVector(int[] indexes, double[] values, int label) {
-		this(indexes, values, label, indexes.length);
+	public SparseVector(int[] indexes, double[] values) {
+		this(indexes, values, indexes.length);
 	}
 
-	public SparseVector(int[] indexes, double[] values, int label, int dim) {
+	public SparseVector(int[] indexes, double[] values, int dim) {
 		this.indexes = indexes;
 		this.values = values;
-		this.label = label;
 		this.sum = 0;
 		this.dim = dim;
-		// sortByIndex();
-	}
-
-	public SparseVector(int[] indexes, int label) {
-		this(indexes, new double[indexes.length], label, indexes.length);
-	}
-
-	public SparseVector(String svmFeatStr) {
-		String[] parts = svmFeatStr.split("[\\text]+");
-		label = Integer.parseInt(parts[0]);
-		indexes = new int[parts.length - 1];
-		values = new double[parts.length - 1];
-		sum = 0;
-
-		for (int i = 1; i < parts.length; i++) {
-			String[] toks = parts[i].split(":");
-			incrementAtLoc(i - 1, Integer.parseInt(toks[0]), Double.parseDouble(toks[1]));
-		}
-		// sortByIndex();
 	}
 
 	@Override
@@ -198,7 +112,7 @@ public class SparseVector implements Vector {
 
 	@Override
 	public SparseVector copy() {
-		SparseVector ret = new SparseVector(ArrayUtils.copy(indexes), ArrayUtils.copy(values), label, dim);
+		SparseVector ret = new SparseVector(ArrayUtils.copy(indexes), ArrayUtils.copy(values), dim);
 		ret.setSum(sum);
 		return ret;
 	}
@@ -298,11 +212,6 @@ public class SparseVector implements Vector {
 			values = newValues;
 			sortByIndex();
 		}
-	}
-
-	@Override
-	public int label() {
-		return label;
 	}
 
 	/**
@@ -446,7 +355,6 @@ public class SparseVector implements Vector {
 
 	public void read(ObjectInputStream ois) throws Exception {
 		int size = ois.readInt();
-		label = ois.readInt();
 		dim = ois.readInt();
 		indexes = new int[size];
 		values = new double[size];
@@ -456,6 +364,25 @@ public class SparseVector implements Vector {
 			values[i] = ois.readDouble();
 			sum += values[i];
 		}
+	}
+
+	public void readObject(ObjectInputStream ois) throws IOException {
+		int size = ois.readInt();
+		indexes = new int[size];
+		values = new double[size];
+		dim = ois.readInt();
+		sum = 0;
+		for (int i = 0; i < size; i++) {
+			indexes[i] = ois.readInt();
+			values[i] = ois.readDouble();
+			sum += values[i];
+		}
+	}
+
+	public void readObject(String fileName) throws Exception {
+		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
+		readObject(ois);
+		ois.close();
 	}
 
 	public void removeZeros() {
@@ -557,11 +484,6 @@ public class SparseVector implements Vector {
 	}
 
 	@Override
-	public void setLabel(int label) {
-		this.label = label;
-	}
-
-	@Override
 	public void setSum(double sum) {
 		this.sum = sum;
 	}
@@ -613,7 +535,7 @@ public class SparseVector implements Vector {
 	}
 
 	public DenseVector toDenseVector() {
-		DenseVector ret = new DenseVector(dim, label);
+		DenseVector ret = new DenseVector(dim);
 		for (int i = 0; i < indexes.length; i++) {
 			int index = indexes[i];
 			double value = values[i];
@@ -624,20 +546,16 @@ public class SparseVector implements Vector {
 
 	@Override
 	public String toString() {
-		return toString(false, 20, null, null);
+		return toString(false, 20, null);
 	}
 
-	public String toString(boolean vertical, int numKeys, Indexer<String> labelIndexer, Indexer<String> featIndexer) {
+	public String toString(boolean vertical, int numKeys, Indexer<String> featIndexer) {
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMinimumFractionDigits(4);
 		nf.setGroupingUsed(false);
 
 		StringBuffer sb = new StringBuffer();
-		if (labelIndexer == null) {
-			sb.append(String.format("%d (%d/%d, %s) ->", label, size(), dim(), nf.format(sum)));
-		} else {
-			sb.append(String.format("%s (%d/%d, %s) ->", labelIndexer.getObject(label), size(), dim(), nf.format(sum)));
-		}
+		sb.append(String.format("(%d/%d, %s) ->", size(), dim(), nf.format(sum)));
 
 		// sortByValue();
 
@@ -667,7 +585,6 @@ public class SparseVector implements Vector {
 
 	public String toSvmString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append(label);
 		for (int i = 0; i < size(); i++) {
 			sb.append(String.format(" %d:%s", indexes[i], values[i] + ""));
 			if (i != size() - 1) {
@@ -708,20 +625,20 @@ public class SparseVector implements Vector {
 	}
 
 	@Override
-	public void write(ObjectOutputStream oos) throws Exception {
-		oos.writeInt(size());
-		oos.writeInt(label());
-		oos.writeInt(dim());
-		for (int i = 0; i < size(); i++) {
-			oos.writeInt(indexAtLoc(i));
-			oos.writeDouble(valueAtLoc(i));
+	public void writeObject(ObjectOutputStream oos) throws Exception {
+		oos.writeInt(values.length);
+		oos.writeInt(dim);
+
+		for (int i = 0; i < values.length; i++) {
+			oos.writeInt(indexes[i]);
+			oos.writeDouble(values[i]);
 		}
 	}
 
 	@Override
-	public void write(String fileName) throws Exception {
+	public void writeObject(String fileName) throws Exception {
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
-		write(oos);
+		writeObject(oos);
 		oos.close();
 	}
 }

@@ -24,58 +24,25 @@ public class DenseMatrix implements Matrix {
 		System.out.println();
 	}
 
-	public static DenseMatrix read(ObjectInputStream ois) throws Exception {
-		int rowDim = ois.readInt();
-		int colDim = ois.readInt();
-		int label = ois.readInt();
-
-		DenseVector[] rowVectors = new DenseVector[rowDim];
-		for (int i = 0; i < rowDim; i++) {
-			rowVectors[i] = DenseVector.readStream(ois);
-		}
-		return new DenseMatrix(label, rowVectors);
-	}
-
-	public static DenseMatrix read(String fileName) throws Exception {
-		System.out.printf("read [%s].\n", fileName);
-		DenseMatrix ret = null;
-		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
-		ret = read(ois);
-		ois.close();
-		return ret;
-	}
-
 	private DenseVector[] rows;
 
-	private int label;
+	public DenseMatrix(DenseVector[] rows) {
+		this.rows = rows;
+	}
 
 	public DenseMatrix(double[][] values) {
-		this(-1, values);
+		rows = new DenseVector[values.length];
+		for (int i = 0; i < values.length; i++) {
+			rows[i] = new DenseVector(values[i]);
+		}
 	}
 
 	public DenseMatrix(int dim) {
-		this(dim, dim, -1);
-	}
-
-	public DenseMatrix(int label, DenseVector[] rows) {
-		this.rows = rows;
-		this.label = label;
-	}
-
-	public DenseMatrix(int label, double[][] values) {
-		rows = new DenseVector[values.length];
-		for (int i = 0; i < values.length; i++) {
-			rows[i] = new DenseVector(values[i], i);
-		}
-		this.label = label;
+		this(dim, dim);
 	}
 
 	public DenseMatrix(int rowDim, int colDim) {
-		this(rowDim, colDim, -1);
-	}
-
-	public DenseMatrix(int rowDim, int colDim, int label) {
-		this(label, new double[rowDim][colDim]);
+		this(new double[rowDim][colDim]);
 	}
 
 	@Override
@@ -84,17 +51,17 @@ public class DenseMatrix implements Matrix {
 	}
 
 	@Override
-	public DenseVector column(int colId) {
-		DenseVector ret = new DenseVector(rowDim(), label());
+	public DenseVector column(int j) {
+		DenseVector ret = new DenseVector(rowDim());
 		for (int i = 0; i < rowDim(); i++) {
-			ret.set(i, row(i).value(colId));
+			ret.set(i, row(i).value(j));
 		}
 		return ret;
 	}
 
 	@Override
 	public DenseVector columnSums() {
-		DenseVector ret = new DenseVector(rowDim(), label());
+		DenseVector ret = new DenseVector(rowDim());
 		for (int i = 0; i < rowDim(); i++) {
 			DenseVector vector = row(i);
 			for (int j = 0; j < vector.size(); j++) {
@@ -109,28 +76,22 @@ public class DenseMatrix implements Matrix {
 		for (int i = 0; i < rowDim(); i++) {
 			rows[i] = row(i).copy();
 		}
-		return new DenseMatrix(label(), rows);
+		return new DenseMatrix(rows);
 	}
 
-	public void increment(int row, int col, double value) {
-		rows[row].increment(col, value);
+	public void increment(int i, int j, double value) {
+		rows[i].increment(j, value);
 	}
 
 	@Override
-	public int indexAtRowLoc(int rowLoc) {
-		new UnsupportedOperationException("unsupported");
-		return 0;
+	public int indexAtLoc(int row_loc) {
+		return row_loc;
 	}
 
 	@Override
 	public String info() {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	@Override
-	public int label() {
-		return label;
 	}
 
 	@Override
@@ -151,9 +112,31 @@ public class DenseMatrix implements Matrix {
 		}
 	}
 
+	public void readObject(ObjectInputStream ois) throws Exception {
+		int size = ois.readInt();
+		rows = new DenseVector[size];
+		for (int i = 0; i < size; i++) {
+			DenseVector v = new DenseVector();
+			v.readObject(ois);
+			rows[i] = v;
+		}
+	}
+
+	public void readObject(String fileName) throws Exception {
+		System.out.printf("read [%s].\n", fileName);
+		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
+		readObject(ois);
+		ois.close();
+	}
+
 	@Override
 	public DenseVector row(int row) {
 		return rows[row];
+	}
+
+	@Override
+	public Vector rowAtLoc(int rowLoc) {
+		return row(rowLoc);
 	}
 
 	@Override
@@ -186,7 +169,7 @@ public class DenseMatrix implements Matrix {
 
 	@Override
 	public DenseVector rowSums() {
-		DenseVector ret = new DenseVector(rowDim(), label());
+		DenseVector ret = new DenseVector(rowDim());
 		for (int i = 0; i < rowDim(); i++) {
 			DenseVector vector = row(i);
 			vector.summation();
@@ -212,11 +195,6 @@ public class DenseMatrix implements Matrix {
 
 	}
 
-	@Override
-	public void setLabel(int label) {
-		this.label = label;
-	}
-
 	public void setRow(int row, DenseVector vector) {
 		rows[row] = vector;
 	}
@@ -228,77 +206,32 @@ public class DenseMatrix implements Matrix {
 	}
 
 	@Override
+	public void setRowAtLoc(int loc, Vector x) {
+		setRow(loc, x);
+	}
+
+	@Override
 	public void setRowDim(int rowDim) {
 		new UnsupportedOperationException("unsupported");
 
 	}
 
 	@Override
-	public void setVectorAtRowLoc(int loc, Vector x) {
-		setRow(loc, x);
-	}
-
-	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("[label:\t%d]\n", label));
 		sb.append(String.format("[row:\t%d]\n", rowDim()));
 		sb.append(String.format("[col:\t%d]\n", colDim()));
 
 		for (int i = 0; i < 15 && i < rowDim(); i++) {
 			DenseVector vector = rows[i];
-			sb.append(String.format("%dth: %s\n", i, vector.toString(20, true, false, null)));
+			sb.append(String.format("%dth: %s\n", i, vector.toString(20, true, null)));
 		}
 
 		return sb.toString().trim();
 	}
 
-	/**
-	 * @added Eunyoung Kim
-	 * 
-	 *        transpose this matrix
-	 */
-	public void transpose() {
-		DenseVector[] tRowVectors = new DenseVector[colDim()];
-		for (int i = 0; i < colDim(); i++) {
-			DenseVector vector = new DenseVector(rowDim(), i);
-			double sum = 0;
-			for (int j = 0; j < rowDim(); j++) {
-				double value = row(j).value(i);
-				vector.set(j, value);
-				sum += value;
-			}
-			vector.setSum(sum);
-			tRowVectors[i] = vector;
-		}
-		rows = tRowVectors;
-	}
-
 	public double value(int row, int col) {
 		return row(row).value(col);
-	}
-
-	@Override
-	public Vector vectorAtRowLoc(int rowLoc) {
-		return row(rowLoc);
-	}
-
-	@Override
-	public void write(ObjectOutputStream oos) throws Exception {
-		oos.writeInt(rowDim());
-		oos.writeInt(colDim());
-		oos.writeInt(label());
-		for (int i = 0; i < rowDim(); i++) {
-			row(i).write(oos);
-		}
-	}
-
-	@Override
-	public void write(String fileName) throws Exception {
-		System.out.printf("write to [%s].\n", fileName);
-		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
-		write(oos);
-		oos.close();
 	}
 
 	@Override
@@ -308,6 +241,22 @@ public class DenseMatrix implements Matrix {
 			ret[i] = rows[i].values();
 		}
 		return ret;
+	}
+
+	@Override
+	public void writeObject(ObjectOutputStream oos) throws Exception {
+		oos.writeInt(rows.length);
+		for (int i = 0; i < rows.length; i++) {
+			rows[i].writeObject(oos);
+		}
+	}
+
+	@Override
+	public void writeObject(String fileName) throws Exception {
+		System.out.printf("write to [%s].\n", fileName);
+		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
+		writeObject(oos);
+		oos.close();
 	}
 
 }

@@ -85,13 +85,13 @@ public class DocumentCentralityEstimator {
 
 		for (int i = 0; i < num_docs; i++) {
 			int docId1 = docIndexer.getObject(i);
-			SparseVector dwc1 = docWordCounts.vectorAtRowLoc(i);
+			SparseVector dwc1 = docWordCounts.rowAtLoc(i);
 
 			SparseVector sv = new SparseVector(num_docs);
 
 			for (int j = i + 1; j < num_docs; j++) {
 				int docId2 = docIndexer.getObject(j);
-				SparseVector dwc2 = docWordCounts.vectorAtRowLoc(j);
+				SparseVector dwc2 = docWordCounts.rowAtLoc(j);
 
 				double forward_div_sum = computeKLDivergence(dwc1, dwc2);
 				double backward_div_sum = computeKLDivergence(dwc2, dwc1);

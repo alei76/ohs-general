@@ -3,6 +3,7 @@ package ohs.eden.linker;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import ohs.io.FileUtils;
 import ohs.math.VectorMath;
@@ -34,16 +35,17 @@ public class EntityContexts {
 		return wordIndexer;
 	}
 
-	public void read(ObjectInputStream ois) throws Exception {
+	public void readObject(ObjectInputStream ois) throws Exception {
 		StopWatch stopWatch = StopWatch.newStopWatch();
 		stopWatch.start();
 
 		wordIndexer = FileUtils.readStrIndexer(ois);
 		int size = ois.readInt();
 		for (int i = 0; i < size; i++) {
+			int id = ois.readInt();
 			SparseVector sv = new SparseVector();
 			sv.read(ois);
-			contVecs.put(sv.label(), sv);
+			contVecs.put(id, sv);
 
 			VectorMath.unitVector(sv);
 		}
@@ -52,7 +54,7 @@ public class EntityContexts {
 
 	public void read(String fileName) throws Exception {
 		ObjectInputStream ois = FileUtils.openObjectInputStream(fileName);
-		read(ois);
+		readObject(ois);
 		ois.close();
 	}
 
@@ -64,14 +66,15 @@ public class EntityContexts {
 		this.wordIndexer = wordIndexer;
 	}
 
-	public void write(ObjectOutputStream oos) throws Exception {
+	public void writeObject(ObjectOutputStream oos) throws Exception {
 		StopWatch stopWatch = StopWatch.newStopWatch();
 		stopWatch.start();
 
 		FileUtils.writeStrIndexer(oos, wordIndexer);
 		oos.writeInt(contVecs.size());
-		for (SparseVector sv : contVecs.values()) {
-			sv.write(oos);
+		for (Entry<Integer, SparseVector> e : contVecs.entrySet()) {
+			oos.writeInt(e.getKey());
+			e.getValue().writeObject(oos);
 		}
 
 		System.out.printf("write [%s] - [%s]\n", this.getClass().getName(), stopWatch.stop());
@@ -79,7 +82,7 @@ public class EntityContexts {
 
 	public void write(String fileName) throws Exception {
 		ObjectOutputStream oos = FileUtils.openObjectOutputStream(fileName);
-		write(oos);
+		writeObject(oos);
 		oos.close();
 	}
 }

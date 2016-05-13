@@ -1,4 +1,4 @@
-package ohs.nlp.pos;
+package ohs.ml.hmm;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -37,7 +37,7 @@ public class HMM {
 	 */
 	private int V;
 
-	private SparseMatrix bigramProbs = new SparseMatrix(0, 0, 0, new int[0], new SparseVector[0]);
+	private SparseMatrix bigramProbs = new SparseMatrix(0, 0, new int[0], new SparseVector[0]);
 
 	private Indexer<String> stateIndexer;
 

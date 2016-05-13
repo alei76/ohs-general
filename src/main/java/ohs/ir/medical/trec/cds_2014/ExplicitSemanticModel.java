@@ -16,15 +16,15 @@ public class ExplicitSemanticModel {
 		Indexer<String> conceptIndexer = FileUtils.readStrIndexer(CDSPath.ICD10_CONCEPT_INDEXER_FILE);
 		Indexer<String> categoryIndexer = FileUtils.readStrIndexer(CDSPath.ICD10_CATEGORY_INDEXER_FILE);
 
-		SparseMatrix wordConceptWeights = SparseMatrix.read(CDSPath.ICD10_WORD_CONCEPT_MAP_FILE);
-		SparseMatrix conceptCategoryWeights = SparseMatrix.read(CDSPath.ICD10_CONCEPT_CATEGORY_MAP_FILE);
+		SparseMatrix wordConceptWeights = SparseMatrix.readObject(CDSPath.ICD10_WORD_CONCEPT_MAP_FILE);
+		SparseMatrix conceptCategoryWeights = SparseMatrix.readObject(CDSPath.ICD10_CONCEPT_CATEGORY_MAP_FILE);
 
 		for (int i = 0; i < wordConceptWeights.rowSize(); i++) {
-			wordConceptWeights.vectorAtRowLoc(i).sortByValue();
+			wordConceptWeights.rowAtLoc(i).sortByValue();
 		}
 
 		for (int i = 0; i < conceptCategoryWeights.rowSize(); i++) {
-			conceptCategoryWeights.vectorAtRowLoc(i).sortByValue();
+			conceptCategoryWeights.rowAtLoc(i).sortByValue();
 		}
 
 		return new ExplicitSemanticModel(wordIndexer, conceptIndexer, categoryIndexer, wordDocFreqs, wordConceptWeights,

@@ -132,8 +132,8 @@ public class VocabBuilder {
 			word_doc_freqs[i] = (int) wordDocFreqs.getCount(i);
 		}
 
-		Vocab vocab = new Vocab(wordIndexer, word_cnts, word_doc_freqs, num_docs);
-		vocab.write(KPPath.VOCAB_FILE.replace(".ser", "_all.ser"));
+		Vocab vocab = new Vocab(wordIndexer, word_cnts, word_doc_freqs, num_docs, 0);
+		vocab.writeObject(KPPath.VOCAB_FILE.replace(".ser", "_all.ser"));
 	}
 
 	public static void buildVocabPos() throws Exception {
@@ -209,8 +209,8 @@ public class VocabBuilder {
 			word_doc_freqs[i] = (int) wordDocFreqs.getCount(i);
 		}
 
-		Vocab vocab = new Vocab(wordIndexer, word_cnts, word_doc_freqs, num_docs);
-		vocab.write(KPPath.VOCAB_FILE.replace(".ser", "_pos.ser"));
+		Vocab vocab = new Vocab(wordIndexer, word_cnts, word_doc_freqs, num_docs, 0);
+		vocab.writeObject(KPPath.VOCAB_FILE.replace(".ser", "_pos.ser"));
 	}
 
 	public static void main(String[] args) throws Exception {

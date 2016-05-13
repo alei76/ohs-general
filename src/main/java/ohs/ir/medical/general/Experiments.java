@@ -229,7 +229,9 @@ public class Experiments {
 			File inputFile = new File(docPriorFileNames[i]);
 			DenseVector docPriors = null;
 			if (inputFile.exists()) {
-				docPriors = DenseVector.read(inputFile.getPath());
+				docPriors = new DenseVector();
+				docPriors.readObject(inputFile.getPath());
+				
 				double uniform_prior = 1f / docPriors.size();
 				for (int j = 0; j < docPriors.size(); j++) {
 					if (docPriors.value(j) == 0) {
@@ -744,7 +746,7 @@ public class Experiments {
 
 				for (int k = 0; k < num_ret_docs; k++) {
 					int docId = docScores.indexAtLoc(k);
-					SparseVector dwcs = wcb.getDocWordCounts().vectorAtRowLoc(k);
+					SparseVector dwcs = wcb.getDocWordCounts().rowAtLoc(k);
 					double[] dwv = getVectorSum(ir, vSearcher, VectorUtils.toCounter(dwcs, wordIndexer));
 					dwvs[k] = dwv;
 				}
@@ -855,7 +857,7 @@ public class Experiments {
 
 				for (int k = 0; k < docScores.size(); k++) {
 					int docId = docScores.indexAtLoc(k);
-					SparseVector dwcs = wcb.getDocWordCounts().vectorAtRowLoc(k);
+					SparseVector dwcs = wcb.getDocWordCounts().rowAtLoc(k);
 					double[] dwv = getVectorSum(ir, vSearcher, VectorUtils.toCounter(dwcs, wordIndexer));
 					double cosine = ArrayMath.cosine(qwv, dwv);
 					docScores2.setAtLoc(k, cosine);

@@ -92,7 +92,7 @@ public class BuildAbbreviationModel {
 		ret.setRowDim(wordIndexer.size());
 		ret.normalizeRows();
 
-		ret.write(CDSPath.ABBREVIATION_MODEL_FILE);
+		ret.writeObject(CDSPath.ABBREVIATION_MODEL_FILE);
 	}
 
 }

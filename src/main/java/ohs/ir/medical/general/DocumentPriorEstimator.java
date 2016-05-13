@@ -209,7 +209,7 @@ public class DocumentPriorEstimator {
 
 			docPriors.normalizeAfterSummation();
 
-			docPriors.write(docPriorFileNames[i]);
+			docPriors.writeObject(docPriorFileNames[i]);
 
 		}
 	}

@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
 
-import edu.stanford.nlp.stats.IntCounter;
 import ohs.io.FileUtils;
 import ohs.ir.lucene.common.AnalyzerUtils;
 import ohs.ir.lucene.common.MedicalEnglishAnalyzer;
@@ -16,6 +15,7 @@ import ohs.math.VectorUtils;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
 import ohs.types.Counter;
+import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.utils.StrUtils;
 
@@ -32,15 +32,15 @@ public class ESA {
 			BaseQuery bq = bqs.get(i);
 			System.out.println(bq.toString());
 			Counter<String> c = esa.getConceptVectorAsCounter(bq.getSearchText());
-			System.out.println(c.toStringSortedByValues(true, true, 20));
+//			System.out.println(c.toStringSortedByValues(true, true, 20));
 			System.out.println();
 		}
 
 	}
 
-	private StrIndexer wordIndexer;
+	private Indexer<String> wordIndexer;
 
-	private StrIndexer conceptIndexer;
+	private Indexer<String> conceptIndexer;
 
 	private SparseMatrix wordConceptWeights;
 
@@ -58,7 +58,7 @@ public class ESA {
 		Counter<String> ret = new Counter<String>();
 
 		SparseVector q = VectorUtils.toSparseVector(c, wordIndexer);
-		IntCounter cc = new IntCounter();
+		Counter<Integer> cc = new Counter<Integer>();
 
 		for (int i = 0; i < q.size(); i++) {
 			int w = q.indexAtLoc(i);
@@ -94,10 +94,10 @@ public class ESA {
 	}
 
 	public void read(String esaModelFileName) throws Exception {
-		wordIndexer = new StrIndexer();
-		conceptIndexer = new StrIndexer();
+		wordIndexer = new Indexer<String>();
+		conceptIndexer = new Indexer<String>();
 
-		IntCounterMap cm = new IntCounterMap();
+		CounterMap<Integer, Integer> cm = new CounterMap<Integer, Integer>();
 
 		// TextFileReader reader = new TextFileReader(esaModelFileName);
 
@@ -136,7 +136,7 @@ public class ESA {
 				String line = reader.readLine();
 				String[] parts = line.split("\t");
 
-				IntCounter c = new IntCounter();
+				Counter<Integer> c = new Counter<Integer>();
 
 				int cpt = Integer.parseInt(parts[0]);
 

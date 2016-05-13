@@ -112,7 +112,7 @@ public class ESADocumentScorer {
 		ret.setColDim(wordIndexer.size());
 
 		for (int i = 0; i < ret.rowSize(); i++) {
-			ret.vectorAtRowLoc(i).setDim(wordIndexer.size());
+			ret.rowAtLoc(i).setDim(wordIndexer.size());
 		}
 
 		return ret;
@@ -147,7 +147,7 @@ public class ESADocumentScorer {
 		Counter<Integer> ret = new Counter<Integer>();
 
 		for (int i = 0; i < docWordCounts.rowSize(); i++) {
-			int docId = docWordCounts.indexAtRowLoc(i);
+			int docId = docWordCounts.indexAtLoc(i);
 			SparseVector wordCounts = docWordCounts.rowAtLoc(i);
 			SparseVector wordWeights4Document = esm.getWordWeights(wordCounts);
 			SparseVector conceptWeights4Document = esm.getConceptWeights(wordCounts);

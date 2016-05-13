@@ -335,7 +335,7 @@ public class SearchDocuments {
 
 		VocabularyData vocData = VocabularyData.read(vocDir);
 
-		SparseMatrix abbrTransModel = SparseMatrix.read(CDSPath.ABBREVIATION_MODEL_FILE);
+		SparseMatrix abbrTransModel = SparseMatrix.readObject(CDSPath.ABBREVIATION_MODEL_FILE);
 
 		PRFDocumentScorer docScorer = new PRFDocumentScorer(indexSearcher.getIndexReader(), analyzer, vocData, abbrTransModel);
 

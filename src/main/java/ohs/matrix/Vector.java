@@ -1,5 +1,6 @@
 package ohs.matrix;
 
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Set;
@@ -36,8 +37,6 @@ public interface Vector extends Serializable {
 	public void keepAbove(double cutoff);
 
 	public void keepTopN(int topN);
-
-	public int label();
 
 	public int location(int index);
 
@@ -83,8 +82,6 @@ public interface Vector extends Serializable {
 
 	public void setIndexes(int[] indexes);
 
-	public void setLabel(int label);
-
 	public void setSum(double sum);
 
 	public void setValues(double[] values);
@@ -105,8 +102,12 @@ public interface Vector extends Serializable {
 
 	public double[] values();
 
-	public void write(ObjectOutputStream oos) throws Exception;
+	public void writeObject(ObjectOutputStream oos) throws Exception;
 
-	public void write(String fileName) throws Exception;
+	public void writeObject(String fileName) throws Exception;
+
+	public void readObject(ObjectInputStream ois) throws Exception;
+
+	public void readObject(String fileName) throws Exception;
 
 }

@@ -232,8 +232,8 @@ public class WordCountBox {
 		FileUtils.writeStrIndexer(oos, wordIndexer);
 		FileUtils.writeIntListMap(oos, docWords);
 
-		collWordCnts.write(oos);
-		collDocFreqs.write(oos);
+		collWordCnts.writeObject(oos);
+		collDocFreqs.writeObject(oos);
 
 		oos.writeDouble(cnt_sum_in_coll);
 		oos.writeDouble(num_docs_in_coll);

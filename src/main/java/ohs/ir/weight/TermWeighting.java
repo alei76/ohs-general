@@ -256,15 +256,6 @@ public class TermWeighting {
 		return docFreqs(docs, maxWordIndex(docs) + 1);
 	}
 
-	public static ListMap<Integer, Integer> groupByLabel(List<SparseVector> docs) {
-		ListMap<Integer, Integer> ret = new ListMap<Integer, Integer>();
-		for (int i = 0; i < docs.size(); i++) {
-			SparseVector x = docs.get(i);
-			ret.put(x.label(), i);
-		}
-		return ret;
-	}
-
 	public static double idf(double num_docs, double doc_freq) {
 		return Math.log((num_docs + 1) / (doc_freq));
 	}
@@ -363,75 +354,75 @@ public class TermWeighting {
 		return Math.log(word_cnt) + 1;
 	}
 
-	public static void tf_rf(List<SparseVector> xs, int termSize) {
-		System.out.println("weight by tf-rf");
-		int[][] term_doc = makeInvertedIndex(xs, termSize);
-		ListMap<Integer, Integer> label_doc = groupByLabel(xs);
-
-		double N = xs.size();
-
-		for (int labelId : label_doc.keySet()) {
-			Set<Integer> termSet = new HashSet<Integer>();
-			List<Integer> docIds4Label = label_doc.get(labelId);
-
-			for (int docId : docIds4Label) {
-				SparseVector x = xs.get(docId);
-				for (int i = 0; i < x.size(); i++) {
-					int termId = x.indexAtLoc(i);
-					termSet.add(termId);
-				}
-			}
-
-			SparseVector term_rf = new SparseVector(termSet.size());
-			int loc = 0;
-
-			for (int termId : termSet) {
-				int[] docIds4Term = term_doc[termId];
-				double N11 = 0;
-				double N01 = 0;
-				double N10 = 0;
-				double N00 = 0;
-
-				int loc1 = 0, loc2 = 0;
-
-				while (loc1 < docIds4Label.size() && loc2 < docIds4Term.length) {
-					int docId1 = docIds4Label.get(loc1);
-					int docId2 = docIds4Term[loc2];
-
-					if (docId1 == docId2) {
-						N11++;
-						loc1++;
-						loc2++;
-					} else if (docId1 > docId2) {
-						N01++;
-						loc2++;
-					} else if (docId1 < docId2) {
-						N10++;
-						loc1++;
-					}
-				}
-
-				N00 = N - (N11 + N01 + N10);
-				double chisquare = CommonFuncs.chisquare(N11, N10, N01, N00);
-				double rf = CommonFuncs.log2(2 + N11 / (Math.max(1, N01)));
-				term_rf.setAtLoc(loc++, termId, rf);
-			}
-
-			term_rf.sortByIndex();
-
-			for (int docId : docIds4Label) {
-				SparseVector x = xs.get(docId);
-				for (int i = 0; i < x.size(); i++) {
-					int termId = x.indexAtLoc(i);
-					double count = x.valueAtLoc(i);
-					double rf = term_rf.valueAlways(termId);
-					x.setAtLoc(i, count * rf);
-				}
-
-				VectorMath.unitVector(x);
-			}
-		}
-	}
+	// public static void tf_rf(List<SparseVector> xs, int termSize) {
+	// System.out.println("weight by tf-rf");
+	// int[][] term_doc = makeInvertedIndex(xs, termSize);
+	// ListMap<Integer, Integer> label_doc = groupByLabel(xs);
+	//
+	// double N = xs.size();
+	//
+	// for (int labelId : label_doc.keySet()) {
+	// Set<Integer> termSet = new HashSet<Integer>();
+	// List<Integer> docIds4Label = label_doc.get(labelId);
+	//
+	// for (int docId : docIds4Label) {
+	// SparseVector x = xs.get(docId);
+	// for (int i = 0; i < x.size(); i++) {
+	// int termId = x.indexAtLoc(i);
+	// termSet.add(termId);
+	// }
+	// }
+	//
+	// SparseVector term_rf = new SparseVector(termSet.size());
+	// int loc = 0;
+	//
+	// for (int termId : termSet) {
+	// int[] docIds4Term = term_doc[termId];
+	// double N11 = 0;
+	// double N01 = 0;
+	// double N10 = 0;
+	// double N00 = 0;
+	//
+	// int loc1 = 0, loc2 = 0;
+	//
+	// while (loc1 < docIds4Label.size() && loc2 < docIds4Term.length) {
+	// int docId1 = docIds4Label.get(loc1);
+	// int docId2 = docIds4Term[loc2];
+	//
+	// if (docId1 == docId2) {
+	// N11++;
+	// loc1++;
+	// loc2++;
+	// } else if (docId1 > docId2) {
+	// N01++;
+	// loc2++;
+	// } else if (docId1 < docId2) {
+	// N10++;
+	// loc1++;
+	// }
+	// }
+	//
+	// N00 = N - (N11 + N01 + N10);
+	// double chisquare = CommonFuncs.chisquare(N11, N10, N01, N00);
+	// double rf = CommonFuncs.log2(2 + N11 / (Math.max(1, N01)));
+	// term_rf.setAtLoc(loc++, termId, rf);
+	// }
+	//
+	// term_rf.sortByIndex();
+	//
+	// for (int docId : docIds4Label) {
+	// SparseVector x = xs.get(docId);
+	// for (int i = 0; i < x.size(); i++) {
+	// int termId = x.indexAtLoc(i);
+	// double count = x.valueAtLoc(i);
+	// double rf = term_rf.valueAlways(termId);
+	// x.setAtLoc(i, count * rf);
+	// }
+	//
+	// VectorMath.unitVector(x);
+	// }
+	// }
+	// }
 
 	public static double tfidf(double word_cnt, double num_docs, double doc_freq) {
 		return tf(word_cnt) * idf(num_docs, doc_freq);

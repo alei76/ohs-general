@@ -27,7 +27,10 @@ public class ClueWebDumper extends TextDumper {
 
 		private Stack<File> dirs;
 
-		public DumpWorker(Stack<File> dirs) {
+		private int id;
+
+		public DumpWorker(int id, Stack<File> dirs) {
+			this.id = id;
 			this.dirs = dirs;
 		}
 
@@ -240,23 +243,30 @@ public class ClueWebDumper extends TextDumper {
 		public void run() {
 			try {
 
-				File f = null;
+				while (true) {
+					File f = null;
 
-				synchronized (dirs) {
-					if (!dirs.isEmpty()) {
-						f = dirs.pop();
+					synchronized (dirs) {
+						if (!dirs.isEmpty()) {
+							f = dirs.pop();
+						}
 					}
-				}
 
-				if (f != null) {
-					dump(f);
+					if (f != null) {
+						dump(f);
+					} else {
+						break;
+					}
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		}
 
+			System.out.printf("worker-[%d] ends.\n", id);
+		}
 	}
+
+	private int num_workers = 200;
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
@@ -289,13 +299,15 @@ public class ClueWebDumper extends TextDumper {
 			}
 		}
 
-		// fileNameWriter = new TextFileWriter(MIRPath.CLUEWEB_FILE_NAME_FILE, FileUtils.UTF_8, false);
+		// fileNameWriter = new TextFileWriter(MIRPath.CLUEWEB_FILE_NAME_FILE,
+		// FileUtils.UTF_8, false);
 		//
 		// for (String fileName : Generics.newTreeSet(fileNames)) {
 		// fileNameWriter.write(fileName + "\n");
 		// }
 
-		// FileUtils.deleteFilesUnder(inputDirName.replace("2012_disk_b", "2012_disk_b_text"));
+		// FileUtils.deleteFilesUnder(inputDirName.replace("2012_disk_b",
+		// "2012_disk_b_text"));
 
 		Stack<File> dataDirs = Generics.newStack();
 
@@ -307,17 +319,19 @@ public class ClueWebDumper extends TextDumper {
 			}
 		}
 
+		Collections.sort(dataDirs);
+
 		List<Thread> workers = Generics.newArrayList();
 
-		for (int i = 0; i < 5; i++) {
-			workers.add(new Thread(new DumpWorker(dataDirs)));
+		for (int i = 0; i < num_workers; i++) {
+			workers.add(new Thread(new DumpWorker(i, dataDirs)));
 		}
 
 		for (int i = 0; i < workers.size(); i++) {
 			workers.get(i).start();
 		}
 
-		for (int i = 0; i < dataDirs.size(); i++) {
+		for (int i = 0; i < workers.size(); i++) {
 			try {
 				workers.get(i).join();
 			} catch (Exception e) {

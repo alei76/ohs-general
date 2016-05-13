@@ -52,7 +52,7 @@ public class ParsimoniousLanguageModelEstimator {
 		SparseMatrix docWordCounts = wcb.getDocWordCounts();
 
 		for (int i = 0; i < docWordCounts.rowSize(); i++) {
-			SparseVector wordCnts = docWordCounts.vectorAtRowLoc(i);
+			SparseVector wordCnts = docWordCounts.rowAtLoc(i);
 			SparseVector wordProbs = wordCnts.copy();
 
 			estimate(wordCnts);

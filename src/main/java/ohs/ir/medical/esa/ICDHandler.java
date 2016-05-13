@@ -149,7 +149,7 @@ public class ICDHandler {
 
 		MediaWikiParser parser = new MediaWikiParserFactory().createParser();
 
-		StrArrayList chapterItems = new StrArrayList();
+		ArrayList<String> chapterItems = new ArrayList<String>();
 
 		for (int i = 0; i < lines.length; i++) {
 			String line = lines[i];
@@ -175,7 +175,7 @@ public class ICDHandler {
 
 			page.setName(title);
 
-			StrArrayList pageItems = new StrArrayList();
+			ArrayList<String> pageItems = new ArrayList<String>();
 			pageItems.add(chapter);
 
 			for (int k = 0; k < page.getSections().size(); k++) {
@@ -189,7 +189,7 @@ public class ICDHandler {
 
 				System.out.println(secTitle);
 
-				StrArrayList secItems = new StrArrayList();
+				ArrayList<String> secItems = new ArrayList<String>();
 				secItems.add(String.format("Section Name:\t%s", secTitle));
 
 				List<NestedListContainer> containers = section.getNestedLists();
@@ -284,7 +284,7 @@ public class ICDHandler {
 
 		System.out.println(codeLocs);
 
-		ListMap<String, String> map = new ListMap<String, String>(true);
+		ListMap<String, String> map = new ListMap<String, String>();
 
 		for (int i = 0; i < codeLocs.size() - 1; i++) {
 			String chater = items.get(chapterLocs.get(i));

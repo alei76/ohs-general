@@ -205,7 +205,7 @@ public class KeyphraseExtractor {
 	public static void run2() throws Exception {
 
 		Vocab vocab = new Vocab();
-		vocab.read(KPPath.VOCAB_FILE.replace(".ser", "_pos.ser"));
+		vocab.readObject(KPPath.VOCAB_FILE.replace(".ser", "_pos.ser"));
 
 		CandidateSearcher candSearcher = new CandidateSearcher(KPPath.KEYWORD_POS_CNT_FILE);
 
