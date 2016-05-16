@@ -2,12 +2,9 @@ package ohs.types;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.List;
-import java.util.Set;
 
 import ohs.io.FileUtils;
 import ohs.math.ArrayMath;
-import ohs.utils.Generics;
 
 public class Vocab {
 	private Indexer<String> wordIndexer;
@@ -18,7 +15,7 @@ public class Vocab {
 
 	private int num_docs;
 
-	private int num_toks;
+	private int word_cnt_sum;
 
 	public Vocab() {
 
@@ -33,7 +30,7 @@ public class Vocab {
 		this.word_cnts = word_cnts;
 		this.doc_freqs = doc_freqs;
 		this.num_docs = num_docs;
-		num_toks = ArrayMath.sum(word_cnts);
+		word_cnt_sum = ArrayMath.sum(word_cnts);
 	}
 
 	public int getNumDocs() {
@@ -67,7 +64,7 @@ public class Vocab {
 	}
 
 	public int getWordCountSum() {
-		return num_toks;
+		return word_cnt_sum;
 	}
 
 	public double getWordDocFreq(int w) {
@@ -92,7 +89,7 @@ public class Vocab {
 	}
 
 	public double getWordProb(int w) {
-		return 1f * word_cnts[w] / num_toks;
+		return 1f * word_cnts[w] / word_cnt_sum;
 	}
 
 	public double getWordProb(String word) {
@@ -113,7 +110,7 @@ public class Vocab {
 		num_docs = ois.readInt();
 		word_cnts = FileUtils.readIntArray(ois);
 		doc_freqs = FileUtils.readIntArray(ois);
-		num_toks = ArrayMath.sum(word_cnts);
+		word_cnt_sum = ArrayMath.sum(word_cnts);
 	}
 
 	public void readObject(String fileName) throws Exception {
@@ -130,7 +127,7 @@ public class Vocab {
 		StringBuffer sb = new StringBuffer();
 		sb.append(String.format("voc size:\t%d\n", wordIndexer.size()));
 		sb.append(String.format("docs:\t%d\n", num_docs));
-		sb.append(String.format("toks:\t%d\n", num_toks));
+		sb.append(String.format("toks:\t%d\n", word_cnt_sum));
 		return sb.toString();
 	}
 

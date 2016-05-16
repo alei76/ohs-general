@@ -51,6 +51,8 @@ public class SentenceGenerator {
 			locs.addAll(textLocs);
 		}
 
+		Indexer<String> wordIndexer = Generics.newIndexer();
+
 		{
 			System.out.printf("read [%s]\n", fileName);
 			Counter<String> wordCnts = Generics.newCounter();
@@ -98,22 +100,18 @@ public class SentenceGenerator {
 
 			wordCnts.pruneKeysBelowThreshold(cutoff_cnt);
 
-			Indexer<String> wordIndexer = Generics.newIndexer();
 			List<String> words = wordCnts.getSortedKeys();
-			int[] cnts = new int[words.size()];
 
 			for (int i = 0; i < words.size(); i++) {
-				String word = words.get(i);
-				wordIndexer.add(word);
-				cnts[i] = (int) wordCnts.getCount(word);
+				wordIndexer.add(words.get(i));
 			}
-
-			vocab = new Vocab(wordIndexer, cnts, new int[0], 0);
 		}
 
 		{
 
 			sents = new int[num_train_sents][];
+			int[] word_cnts = new int[wordIndexer.size()];
+			int[] sent_freqs = new int[wordIndexer.size()];
 
 			TextFileReader reader = new TextFileReader(fileName);
 			reader.setPrintNexts(false);
@@ -131,8 +129,19 @@ public class SentenceGenerator {
 
 					for (String sent : s.split("\n")) {
 						sent = sent.toLowerCase();
-						int[] ws = vocab.getWordIndexer().indexesOfKnown(sent.split(" "));
+						int[] ws = wordIndexer.indexesOfKnown(sent.split(" "));
 						sents[num_sents++] = ws;
+
+						Set<Integer> wordSet = Generics.newHashSet();
+
+						for (int w : ws) {
+							word_cnts[w]++;
+							wordSet.add(w);
+						}
+
+						for (int w : wordSet) {
+							sent_freqs[w]++;
+						}
 
 						if (num_sents == num_train_sents) {
 							break;
@@ -142,14 +151,17 @@ public class SentenceGenerator {
 						break;
 					}
 				}
-				
+
 				if (num_sents == num_train_sents) {
 					break;
 				}
 			}
 			reader.printProgress();
 			reader.close();
+
+			vocab = new Vocab(wordIndexer, word_cnts, sent_freqs, sents.length);
 		}
+
 	}
 
 	public void setMaxTrainSents(int max_train_sents) {

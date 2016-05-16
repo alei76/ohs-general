@@ -56,6 +56,7 @@ public class Word2VecExamples {
 				if (word.equals("EXIT")) {
 					break;
 				}
+
 				List<Match> matches = searcher.getMatches(word, 20);
 				System.out.println(Strings.joinObjects("\n", matches));
 			}
@@ -207,7 +208,7 @@ public class Word2VecExamples {
 					cnts[i] = cnt;
 				}
 
-				vocab = new Vocab(wordIndexer, cnts, new int[0], 0, 0);
+				vocab = new Vocab(wordIndexer, cnts, new int[0], 0);
 			}
 
 			{

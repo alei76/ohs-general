@@ -25,24 +25,11 @@ public class StochasticGradientDescent {
 		double grad = 0;
 		double cost = 0;
 		double step = 0;
-
-		for (int i = 0; i < x.length; i++) {
-			v = x[i];
-			grad = 0;
-			cost = 0;
-			step = this.step;
-
-			for (int j = 1; j <= num_iters; j++) {
-				cost = f.value(v);
-				grad = f.gradient(v);
-				v -= step * grad;
-
-				if (j % anneal_step == 0) {
-					step *= 0.5;
-				}
-			}
-			y[i] = v;
+		
+		for(int i = 0; i < num_iters;i++){
+			
 		}
+
 	}
 
 }

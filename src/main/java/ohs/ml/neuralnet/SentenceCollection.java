@@ -1,9 +1,13 @@
 package ohs.ml.neuralnet;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.Lists;
+
 import ohs.math.ArrayMath;
+import ohs.math.ArrayUtils;
 import ohs.types.Indexer;
 import ohs.types.Vocab;
 import ohs.utils.Generics;
@@ -20,12 +24,14 @@ public class SentenceCollection {
 
 	private int[][] sents;
 
+	private int[] samples;
+
 	public SentenceCollection() {
 
 	}
 
-	public void build(List<String> docs) {
-		Indexer<String> wordIndexer = Generics.newIndexer();
+	public void create(List<String> docs) {
+		wordIndexer = Generics.newIndexer();
 
 		int num_sents = 0;
 
@@ -33,12 +39,12 @@ public class SentenceCollection {
 			num_sents += doc.split("[\n]+").length;
 		}
 
-		sents = new int[ ][];
+		sents = new int[num_sents][];
 		int loc = 0;
 
 		for (String doc : docs) {
 			for (String sent : doc.split("[\n]+")) {
-				sents[loc] = wordIndexer.getIndexes(sent.split("[ ]+"));
+				sents[loc] = wordIndexer.getIndexes(sent.toLowerCase().split("[ ]+"));
 				loc++;
 			}
 		}
@@ -59,7 +65,42 @@ public class SentenceCollection {
 				doc_freqs[w]++;
 			}
 		}
-		
+	}
+
+	public int[] getRandomContext(int[] loc, int context_size) {
+		// int sloc = ArrayMath.random(0, sents.length);
+		// int wloc = ArrayMath.random(0, sents[sloc].length);
+
+		int sloc = loc[0];
+		int wloc = loc[1];
+
+		int[] sent = sents[sloc];
+
+		List<String> words = Arrays.asList(wordIndexer.getObjects(sent));
+
+		List<Integer> context = Generics.newArrayList();
+
+		int start = Math.max(0, wloc - context_size);
+		for (int i = start; i < wloc; i++) {
+			context.add(sent[i]);
+		}
+
+		if (wloc + 1 < sent.length) {
+			int end = Math.min(sent.length, wloc + context_size + 1);
+			for (int i = wloc + 1; i < end; i++) {
+				context.add(sent[i]);
+			}
+		}
+
+		int[] ret = ArrayUtils.copy(context);
+
+		return ret;
+	}
+
+	public int[] getRandomWordLoc() {
+		int sloc = ArrayMath.random(0, sents.length);
+		int wloc = ArrayMath.random(0, sents[sloc].length);
+		return new int[] { sloc, wloc };
 	}
 
 	public int[][] getSents() {
@@ -70,15 +111,20 @@ public class SentenceCollection {
 		return new Vocab(wordIndexer, word_cnts, doc_freqs, num_docs);
 	}
 
-	public void getRandomContext(int context_size) {
+	public int getWord(int[] loc) {
+		return sents[loc[0]][loc[1]];
+	}
 
-		int sloc = ArrayMath.random(0, sents.length);
-		int wloc = ArrayMath.random(0, sents[sloc].length);
+	public void makeSampleTable(int table_size) {
+		double[] probs = new double[wordIndexer.size()];
+		ArrayUtils.copy(word_cnts, probs);
+		ArrayMath.pow(probs, 0.75, probs);
+		ArrayMath.cumulateAfterNormalize(probs, probs);
+		samples = ArrayMath.sample(probs, table_size);
+	}
 
-		{
-			int start = Math.max(0, wloc - context_size);
-		}
-
+	public int sampleWord() {
+		return ArrayMath.sampleRandom(samples);
 	}
 
 }

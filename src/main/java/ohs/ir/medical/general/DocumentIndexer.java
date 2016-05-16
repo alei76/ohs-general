@@ -103,7 +103,7 @@ public class DocumentIndexer {
 		// di.indexOhsumed();
 		// di.indexTrecGenomics();
 		// di.indexWikiDbDump();
-		// di.indexClueWeb12();
+		di.indexClueWeb12();
 		di.makeDocumentIdMap();
 
 		System.out.println("process ends.");
@@ -151,7 +151,7 @@ public class DocumentIndexer {
 		IndexWriter iw = getIndexWriter(MIRPath.CLUEWEB_INDEX_DIR);
 
 		List<File> files = FileUtils.getFilesUnder(MIRPath.CLUEWEB_TEXT_DIR);
-		
+
 		Collections.sort(files);
 
 		for (int i = 0; i < files.size(); i++) {
@@ -218,7 +218,7 @@ public class DocumentIndexer {
 						if (idx > -1) {
 							String type = link.substring(0, idx);
 							String url = link.substring(idx + 1);
-							if (url.length() > 0) {
+							if (url.length() > 0 && url.startsWith("http")) {
 								links.add(url);
 							}
 						}
@@ -228,7 +228,7 @@ public class DocumentIndexer {
 				Document doc = new Document();
 				doc.add(new StringField(CommonFieldNames.DOCUMENT_ID, id, Field.Store.YES));
 				doc.add(new StringField(CommonFieldNames.URL, uri, Field.Store.YES));
-				doc.add(new MyTextField(CommonFieldNames.CONTENT, text, Store.YES));
+				doc.add(new MyTextField(CommonFieldNames.CONTENT, sb.toString(), Store.YES));
 				doc.add(new TextField(CommonFieldNames.LINKS, StrUtils.join("\n", links), Store.YES));
 
 				iw.addDocument(doc);

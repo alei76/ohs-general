@@ -6,6 +6,7 @@ import java.util.Random;
 
 import org.apache.commons.math.stat.inference.TTestImpl;
 
+import edu.stanford.nlp.optimization.AbstractStochasticCachingDiffFunction.SamplingMethod;
 import ohs.types.Counter;
 import ohs.utils.Generics;
 
@@ -444,6 +445,17 @@ public class ArrayMath {
 			b[i] = sum;
 		}
 		return b[b.length - 1];
+	}
+
+	public static double[] cumulateAfterNormalize(double[] a) {
+		double[] b = new double[a.length];
+		cumulateAfterNormalize(a, b);
+		return b;
+	}
+
+	public static double cumulateAfterNormalize(double[] a, double[] b) {
+		cumulate(a, b);
+		return normalize(b, b);
 	}
 
 	public static void distribute(double[] a, double sum, double[] b) {
@@ -897,8 +909,29 @@ public class ArrayMath {
 		}
 
 		{
-			double[] probs = new double[100];
-			int[] samples = new int[probs.length];
+			double[] probs = new double[] { 1, 2, 3, 4, 5, 6, 7 };
+			int[] samples = new int[200];
+
+			normalize(probs, probs);
+			cumulate(probs, probs);
+
+			sample(probs, samples);
+
+			int[] randoms = new int[1000];
+
+			Counter<Integer> c = Generics.newCounter();
+
+			for (int s : samples) {
+				c.incrementCount(s, 1);
+			}
+
+			System.out.println(c.toString());
+			System.out.println();
+		}
+
+		{
+			double[] probs = new double[10];
+			int[] samples = new int[200];
 
 			random(0, 1, probs);
 
@@ -908,6 +941,13 @@ public class ArrayMath {
 
 			sample(probs, samples);
 
+			Counter<Integer> c = Generics.newCounter();
+
+			for (int s : samples) {
+				c.incrementCount(s, 1);
+			}
+
+			System.out.println(c.toString());
 			System.out.println();
 		}
 
@@ -1407,6 +1447,10 @@ public class ArrayMath {
 		return sum;
 	}
 
+	public static double random(double min, double max) {
+		return random(min, max, 1)[0];
+	}
+
 	/**
 	 * @param min
 	 *            inclusive
@@ -1440,24 +1484,20 @@ public class ArrayMath {
 		return x;
 	}
 
-	public static double random(double min, double max) {
-		return random(min, max, 1)[0];
-	}
-
 	public static double[][] random(double min, double max, int rows, int columns) {
 		double[][] x = new double[rows][columns];
 		random(min, max, x);
 		return x;
 	}
 
+	public static int random(int min, int max) {
+		return random(min, max, 1)[0];
+	}
+
 	public static int[] random(int min, int max, int size) {
 		int[] x = new int[size];
 		random(min, max, x);
 		return x;
-	}
-
-	public static int random(int min, int max) {
-		return random(min, max, 1)[0];
 	}
 
 	/**
@@ -1579,57 +1619,96 @@ public class ArrayMath {
 		return sum;
 	}
 
-	public static int[] sample(double[] cumulated_probs, int size) {
+	/**
+	 * @param probs
+	 *            cumulated
+	 * @param size
+	 * @return
+	 */
+	public static int[] sample(double[] probs, int size) {
 		int[] samples = new int[size];
-		sample(cumulated_probs, samples);
+		sample(probs, samples);
 		return samples;
 	}
 
-	public static void sample(double[] cumulated_probs, int[] samples) {
-		Random random = new Random();
-		double sum = cumulated_probs[cumulated_probs.length - 1];
+	/**
+	 * @param probs
+	 *            cumulated after normalized
+	 * @param samples
+	 */
+	public static void sample(double[] probs, int[] samples) {
+		int size = samples.length;
 
-		for (int i = 0; i < samples.length; i++) {
-			double rv = sum * random.nextDouble();
-			for (int j = 0; j < cumulated_probs.length; j++) {
-				if (rv <= cumulated_probs[j]) {
-					samples[i] = j;
-					break;
-				}
+		double[] probs2 = new double[probs.length];
+
+		scale(probs, samples.length, probs2);
+
+		for (int i = 0, j = 0; i < samples.length; i++) {
+			while (i > size * probs2[j]) {
+				j += 1;
 			}
+			samples[i] = j;
 		}
 	}
 
-	public static void sample(int[] indexes, double[] values, int[] samples, boolean cumulate) {
+	public static int[] sample(int[] indexes, double[] values, int size) {
+		int[] samples = new int[size];
+		sample(indexes, values, samples);
+		return samples;
+	}
+
+	/**
+	 * @param indexes
+	 * @param values
+	 *            cumulated after normalized
+	 * @param samples
+	 */
+	public static void sample(int[] indexes, double[] values, int[] samples) {
 		if (!ArrayChecker.isEqualDim(indexes, values) || !ArrayChecker.isEqualDim(indexes, samples)) {
 			throw new IllegalArgumentException();
 		}
 
-		double[] x = values;
-
-		if (cumulate) {
-			x = new double[values.length];
-			cumulate(values, x);
-		}
-
-		Random random = new Random();
-		double sum = x[x.length - 1];
+		sample(values, samples);
 
 		for (int i = 0; i < samples.length; i++) {
-			double rv = sum * random.nextDouble();
-			for (int j = 0; j < x.length; j++) {
-				if (rv <= x[j]) {
-					samples[i] = indexes[i];
-					break;
-				}
-			}
+			samples[i] = indexes[samples[i]];
 		}
 	}
 
-	public static int[] samples(int[] indexes, double[] values, boolean cumulate, int size) {
-		int[] samples = new int[size];
-		sample(indexes, values, samples, cumulate);
-		return samples;
+	// /**
+	// * @param probs
+	// * cumulated
+	// * @param samples
+	// */
+	// public static void sample(double[] probs, int[] samples) {
+	// Random random = new Random();
+	// double sum = probs[probs.length - 1];
+	//
+	// for (int i = 0; i < samples.length; i++) {
+	// double rv = sum * random.nextDouble();
+	// for (int j = 0; j < probs.length; j++) {
+	// if (rv <= probs[j]) {
+	// samples[i] = j;
+	// break;
+	// }
+	// }
+	// }
+	// }
+
+	public static int sampleRandom(int[] samples) {
+		return samples[random(0, samples.length)];
+	}
+
+	public static int[] sampleRandom(int[] samples, int size) {
+		int[] rndSamples = new int[size];
+		sampleRandom(samples, rndSamples);
+		return rndSamples;
+	}
+
+	public static void sampleRandom(int[] samples, int[] rndSamples) {
+		for (int i = 0; i < rndSamples.length; i++) {
+			rndSamples[i] = samples[random(0, samples.length)];
+		}
 	}
 
 	public static double scale(double[] a, double ac, double[] b) {

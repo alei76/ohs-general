@@ -1,6 +1,5 @@
 package ohs.ir.lucene.common;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -12,7 +11,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.TermQuery;
 
 import ohs.types.Counter;
-import ohs.types.Indexer;
+import ohs.utils.Generics;
 
 public class AnalyzerUtils {
 
@@ -82,23 +81,12 @@ public class AnalyzerUtils {
 		return ret;
 	}
 
-	public static List<Integer> getWordIndexes(List<String> words, Indexer<String> wordIndexer) {
-		List<Integer> ret = new ArrayList<Integer>();
-
-		for (String word : words) {
-			int w = wordIndexer.indexOf(word);
-			ret.add(w);
-		}
-
-		return ret;
-	}
-
 	public static List<String> getWords(String text, Analyzer analyzer) throws Exception {
 		TokenStream ts = analyzer.tokenStream(CommonFieldNames.CONTENT, text);
 		CharTermAttribute attr = ts.addAttribute(CharTermAttribute.class);
 		ts.reset();
 
-		List<String> ret = new ArrayList<String>();
+		List<String> ret = Generics.newArrayList();
 		while (ts.incrementToken()) {
 			String word = attr.toString();
 			ret.add(word);

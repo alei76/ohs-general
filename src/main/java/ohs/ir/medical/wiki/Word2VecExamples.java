@@ -3,6 +3,7 @@ package ohs.ir.medical.wiki;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Properties;
 
@@ -18,6 +19,8 @@ import com.medallia.word2vec.neuralnetwork.NeuralNetworkType;
 import com.medallia.word2vec.util.AutoLog;
 import com.medallia.word2vec.util.Format;
 import com.medallia.word2vec.util.Strings;
+
+import ohs.io.FileUtils;
 
 /** Example usages of {@link Word2VecModel} */
 public class Word2VecExamples {
@@ -38,7 +41,7 @@ public class Word2VecExamples {
 		prop.setProperty("iterations", "5");
 		prop.setProperty("down_sample_rate", "1e-4");
 		prop.setProperty("num_train_sents", "10000");
-		prop.setProperty("train_mode", "false");
+		prop.setProperty("train_mode", "true");
 		return prop;
 	}
 
@@ -151,24 +154,19 @@ public class Word2VecExamples {
 
 		SentenceGenerator sg = new SentenceGenerator();
 		sg.addTextLoc(1);
-		// sg.setMaxTrainSents(1000);
+		// sg.setMaxTrainSents(10000);
 
 		sg.process(inFileName);
 
 		Word2VecModel model = builder.train(sg.getVocab(), sg.getSentences());
 
-		// Writes model to a thrift file
-		// try (ProfilingTimer timer = ProfilingTimer.create(LOG, "Writing output to file")) {
-		// FileUtils.writeStringToFile(new File("text8.model"), ThriftUtils.serializeJson(model.toThrift()));
-		// }
+		ObjectOutputStream oos = FileUtils.openObjectOutputStream(outFileName);
 
-		// Alternatively, you can write the model to a bin file that'text compatible with the C
-		// implementation.
-		// try (final OutputStream os = Files.newOutputStream(Paths.get("text8.bin"))) {
-		// model.toBinFile(os);
-		// }
+		sg.getVocab().writeObject(oos);
 
-		model.toSerFile(outFileName);
+		FileUtils.writeDoubleMatrix(oos, model.getVectors());
+
+		oos.close();
 
 		// interact(model.forSearch());
 	}

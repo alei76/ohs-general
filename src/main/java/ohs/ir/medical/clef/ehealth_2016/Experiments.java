@@ -61,7 +61,7 @@ public class Experiments {
 		System.out.println("process begins.");
 		Experiments e = new Experiments();
 		// e.searchByQLD();
-		e.searchByKLD();
+		// e.searchByKLD();
 		// e.searchByKLDFB();
 		// e.searchByKldFbPriors();
 		// e.searchByCBEEM();
@@ -243,7 +243,9 @@ public class Experiments {
 			File inputFile = new File(docPriorFileNames[i]);
 			DenseVector docPriors = null;
 			if (inputFile.exists()) {
-				docPriors = DenseVector.readObject(inputFile.getPath());
+				docPriors = new DenseVector();
+				docPriors.readObject(inputFile.getPath());
+
 				double uniform_prior = 1f / docPriors.size();
 				for (int j = 0; j < docPriors.size(); j++) {
 					if (docPriors.value(j) == 0) {
@@ -302,6 +304,17 @@ public class Experiments {
 		}
 	}
 
+	private SparseVector toSparseVector(Counter<String> c) {
+		SparseVector ret = new SparseVector(c.size());
+		int loc = 0;
+		for (Entry<String, Double> e : c.entrySet()) {
+			ret.incrementAtLoc(loc, Integer.parseInt(e.getKey()), e.getValue());
+			loc++;
+		}
+		ret.sortByIndex();
+		return ret;
+	}
+
 	public void searchByKLD() throws Exception {
 		System.out.println("search by KLD.");
 
@@ -315,17 +328,7 @@ public class Experiments {
 			BaseQuery bq = bqs.get(i);
 			System.out.println(bq);
 
-			BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
-
-			Counter<String> r = sr.getCounter(bq.getId());
-			SparseVector docScores = new SparseVector(r.size());
-			int loc = 0;
-
-			for (Entry<String, Double> e : r.entrySet()) {
-				docScores.incrementAtLoc(loc, Integer.parseInt(e.getKey()), e.getValue());
-				loc++;
-			}
-			docScores.sortByIndex();
+			SparseVector docScores = toSparseVector(sr.getCounter(bq.getId()));
 
 			Indexer<String> wordIndexer = Generics.newIndexer();
 			Counter<String> qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
@@ -347,53 +350,50 @@ public class Experiments {
 	public void searchByKLDFB() throws Exception {
 		System.out.println("search by KLD FB.");
 
-		for (int i = 0; i < queryFileName.length; i++) {
-			List<BaseQuery> bqs = QueryReader.readQueries(queryFileName[i]);
-			IndexSearcher is = iss[i];
-			IndexReader ir = is.getIndexReader();
+		CounterMap<String, String> sr = PerformanceEvaluator.readSearchResults(resDirName + "qld.txt.gz");
 
-			String outputFileName = resDirName[i] + "kld-fb.txt";
+		String outputFileName = resDirName + "kld-fb.txt.gz";
 
-			TextFileWriter writer = new TextFileWriter(outputFileName);
+		TextFileWriter writer = new TextFileWriter(outputFileName);
 
-			for (int j = 0; j < bqs.size(); j++) {
-				BaseQuery bq = bqs.get(j);
+		List<BaseQuery> bqs = QueryReader.readQueries(queryFileName);
+		IndexReader ir = is.getIndexReader();
 
-				Indexer<String> wordIndexer = new Indexer<String>();
-				Counter<String> qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+		for (int i = 0; i < bqs.size(); i++) {
+			BaseQuery bq = bqs.get(i);
 
-				SparseVector qlm = VectorUtils.toSparseVector(qwcs, wordIndexer, true);
-				qlm.normalize();
+			Indexer<String> wordIndexer = Generics.newIndexer();
+			Counter<String> qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
 
-				SparseVector eqlm = qlm.copy();
-				SparseVector docScores = null;
+			SparseVector qlm = VectorUtils.toSparseVector(qwcs, wordIndexer, true);
+			qlm.normalize();
 
-				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(eqlm, wordIndexer));
-				docScores = SearcherUtils.search(lbq, is, 1000);
+			SparseVector eqlm = qlm.copy();
 
-				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, CommonFieldNames.CONTENT);
+			SparseVector docScores = toSparseVector(sr.getCounter(bq.getId()));
 
-				RelevanceModelBuilder rmb = new RelevanceModelBuilder();
-				SparseVector rm = rmb.getRelevanceModel(wcb, docScores);
-				// SparseVector prm = rmb.getPositionalRelevanceModel(qLM, wcb3,
-				// docScores);
+			WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
-				double rm_mixture = 0.5;
+			RelevanceModelBuilder rmb = new RelevanceModelBuilder();
+			SparseVector rm = rmb.getRelevanceModel(wcb, docScores);
+			// SparseVector prm = rmb.getPositionalRelevanceModel(qLM, wcb3,
+			// docScores);
 
-				eqlm = VectorMath.addAfterScale(qlm, 1 - rm_mixture, rm, rm_mixture);
+			double rm_mixture = 0.5;
 
-				KLDivergenceScorer scorer = new KLDivergenceScorer();
-				docScores = scorer.score(wcb, eqlm);
+			eqlm = VectorMath.addAfterScale(qlm, 1 - rm_mixture, rm, rm_mixture);
 
-				System.out.println(bq);
-				System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(qlm, wordIndexer));
-				System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(eqlm, wordIndexer));
+			KLDivergenceScorer scorer = new KLDivergenceScorer();
+			docScores = scorer.score(wcb, eqlm);
 
-				SearcherUtils.write(writer, bq.getId(), docScores);
-			}
+			System.out.println(bq);
+			System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(qlm, wordIndexer));
+			System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(eqlm, wordIndexer));
 
-			writer.close();
+			SearcherUtils.write(writer, bq.getId(), docScores);
 		}
+
+		writer.close();
 	}
 
 	public void searchByKldFbPriors() throws Exception {
@@ -905,155 +905,13 @@ public class Experiments {
 
 		for (int j = 0; j < bqs.size(); j++) {
 			BaseQuery bq = bqs.get(j);
-			BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
-			SparseVector docScores = SearcherUtils.search(lbq, is, 10000);
+
+			BooleanQuery lbq = AnalyzerUtils.getQuery(AnalyzerUtils.getWords(bq.getSearchText(), analyzer));
+
+			SparseVector docScores = SearcherUtils.search(lbq, is, 5000);
 			SearcherUtils.write(writer, bq.getId(), docScores);
 		}
 		writer.close();
-	}
-
-	public void searchSentsByKldFb() throws Exception {
-		System.out.println("search by KLD FB.");
-
-		IndexSearcher[] siss = SearcherUtils.getIndexSearchers(MIRPath.SentIndexDirNames);
-
-		for (int i = 0; i < queryFileName.length; i++) {
-			List<BaseQuery> bqs = QueryReader.readQueries(queryFileName[i]);
-			IndexSearcher sis = siss[i];
-
-			String outFileName = resDirName[i].replace("result", "result_sent") + "kld-fb.txt";
-			String logFileName = logDirNames[i].replace("log", "log_sent") + "kld-fb.txt";
-
-			BidMap<String, String> docIdMap = DocumentIdMapper.readDocumentIdMap(docIdMapFileNames[i]);
-
-			// FileUtils.deleteFilesUnder(resDirName[i]);
-
-			TextFileWriter resWriter = new TextFileWriter(outFileName);
-			// TextFileWriter logWriter = new TextFileWriter(logFileName);
-
-			for (int j = 0; j < bqs.size(); j++) {
-				BaseQuery bq = bqs.get(j);
-				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
-				SparseVector sentScores = SearcherUtils.search(lbq, sis, 1000);
-
-				// logWriter.write(bq.toString());
-
-				CounterMap<String, Integer> cm = new CounterMap<String, Integer>();
-
-				for (int k = 0; k < sentScores.size(); k++) {
-					int sentId = sentScores.indexAtLoc(k);
-					double score = sentScores.valueAtLoc(k);
-					Document doc = sis.doc(sentId);
-					String sent = doc.get(CommonFieldNames.CONTENT);
-					String docId = doc.get(CommonFieldNames.DOCUMENT_ID);
-					// logWriter.write(String.format("\n%d\t%s\t%s\t%s", k + 1,
-					// did, score, sent));
-					cm.incrementCount(docId, sentId, score);
-				}
-				// logWriter.write("\n\n");
-
-				Counter<Integer> c = new Counter<Integer>();
-
-				for (String docId : cm.keySet()) {
-					String s = docIdMap.getKey(docId);
-					if (s == null) {
-						continue;
-					}
-					int indexId = Integer.parseInt(s);
-					c.incrementCount(indexId, cm.getCounter(docId).max());
-				}
-
-				SparseVector docScores = VectorUtils.toSparseVector(c);
-
-				Indexer<String> wordIndexer = new Indexer<String>();
-				Counter<String> qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
-
-				SparseVector qlm = VectorUtils.toSparseVector(qwcs, wordIndexer, true);
-				qlm.normalize();
-
-				SparseVector expQLM = qlm.copy();
-
-				WordCountBox wcb1 = WordCountBox.getWordCountBox(siss[i].getIndexReader(), sentScores, wordIndexer,
-						CommonFieldNames.CONTENT);
-
-				RelevanceModelBuilder rmb = new RelevanceModelBuilder(10, 15, 20);
-				SparseVector rm = rmb.getRelevanceModel(wcb1, sentScores);
-				// SparseVector prm = rmb.getPositionalRelevanceModel(qLM, wcb3,
-				// docScores);
-
-				double mixture = 0.5;
-
-				expQLM = VectorMath.addAfterScale(qlm, 1 - mixture, rm, mixture);
-
-				WordCountBox wcb2 = WordCountBox.getWordCountBox(iss[i].getIndexReader(), docScores, wordIndexer, CommonFieldNames.CONTENT);
-
-				KLDivergenceScorer scorer = new KLDivergenceScorer();
-				docScores = scorer.score(wcb2, expQLM);
-
-				SearcherUtils.write(resWriter, bq.getId(), docScores);
-			}
-			resWriter.close();
-			// logWriter.close();
-		}
-	}
-
-	public void searchSentsByQLD() throws Exception {
-		System.out.println("search by QLD.");
-
-		IndexSearcher[] siss = SearcherUtils.getIndexSearchers(MIRPath.SentIndexDirNames);
-
-		for (int i = 0; i < queryFileName.length; i++) {
-			List<BaseQuery> bqs = QueryReader.readQueries(queryFileName[i]);
-			IndexSearcher sis = siss[i];
-
-			String outputFileName = resDirName[i].replace("result", "result_sent") + "qld.txt";
-			String logFileName = logDirNames[i].replace("log", "log_sent") + "gld.txt";
-
-			BidMap<String, String> docIdMap = DocumentIdMapper.readDocumentIdMap(docIdMapFileNames[i]);
-
-			// FileUtils.deleteFilesUnder(resDirName[i]);
-
-			TextFileWriter resWriter = new TextFileWriter(outputFileName);
-			TextFileWriter logWriter = new TextFileWriter(logFileName);
-
-			for (int j = 0; j < bqs.size(); j++) {
-				BaseQuery bq = bqs.get(j);
-				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
-				SparseVector sentScores = SearcherUtils.search(lbq, sis, 1000);
-
-				logWriter.write(bq.toString());
-
-				CounterMap<String, Integer> cm = new CounterMap<String, Integer>();
-
-				for (int k = 0; k < sentScores.size(); k++) {
-					int sentId = sentScores.indexAtLoc(k);
-					double score = sentScores.valueAtLoc(k);
-					Document doc = sis.doc(sentId);
-					String sent = doc.get(CommonFieldNames.CONTENT);
-					String docId = doc.get(CommonFieldNames.DOCUMENT_ID);
-					logWriter.write(String.format("\n%d\t%s\t%s\t%s", k + 1, docId, score, sent));
-					cm.incrementCount(docId, sentId, score);
-				}
-				logWriter.write("\n\n");
-
-				Counter<Integer> c = new Counter<Integer>();
-
-				for (String docId : cm.keySet()) {
-					String s = docIdMap.getKey(docId);
-					if (s == null) {
-						continue;
-					}
-					int indexId = Integer.parseInt(s);
-					c.incrementCount(indexId, cm.getCounter(docId).average());
-				}
-
-				SparseVector docScores = VectorUtils.toSparseVector(c);
-
-				SearcherUtils.write(resWriter, bq.getId(), docScores);
-			}
-			resWriter.close();
-			logWriter.close();
-		}
 	}
 
 	public void testKLDFBWiki() throws Exception {

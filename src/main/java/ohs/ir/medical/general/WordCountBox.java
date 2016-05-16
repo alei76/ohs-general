@@ -90,6 +90,8 @@ public class WordCountBox {
 			double score = docScores.valueAtLoc(j);
 			Document doc = ir.document(docid);
 
+			String content = doc.get(CommonFieldNames.CONTENT);
+
 			Terms t = ir.getTermVector(docid, field);
 			int word_size = (int) t.size();
 
