@@ -1,6 +1,5 @@
 package ohs.ml.neuralnet;
 
-import ohs.math.ArrayChecker;
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 
@@ -9,6 +8,7 @@ public class NeuralNetTrainer {
 	public static void main(String[] args) {
 		System.out.println("process begins.");
 		NeuralNetParams param = new NeuralNetParams();
+		// param.setNumHiddenNeurons(50);
 
 		NeuralNetTrainer nn = new NeuralNetTrainer(param);
 
@@ -19,7 +19,7 @@ public class NeuralNetTrainer {
 		double[][] X = ArrayMath.random(0, 1, data_size, feat_size);
 		double[][] Y = new double[data_size][label_size];
 
-		int[] labels = ArrayMath.random(0, label_size - 1, data_size);
+		int[] labels = ArrayMath.random(0, label_size, data_size);
 
 		for (int i = 0; i < Y.length; i++) {
 			int label = labels[i];
@@ -27,7 +27,7 @@ public class NeuralNetTrainer {
 		}
 
 		// nn.trainFullBatch(X, Y, 100);
-		nn.trainStachastic(X, Y, 1000);
+		nn.trainMiniBatch(X, Y, 100);
 
 		System.out.println("process ends.");
 	}
@@ -60,115 +60,6 @@ public class NeuralNetTrainer {
 		b2 = model.getB2();
 	}
 
-	public NeuralNetModel trainStachastic(double[][] X, double[][] Y, int num_iters) {
-		double[][] GW2 = new double[param.getNumHiddenNeurons()][param.getNumOutputNeurons()];
-		double[][] GW1 = new double[param.getNumOutputNeurons()][param.getNumHiddenNeurons()];
-		double[] gb1 = new double[param.getNumHiddenNeurons()];
-		double[] gb2 = new double[param.getNumOutputNeurons()];
-
-		double[][] tGW2 = new double[param.getNumHiddenNeurons()][param.getNumOutputNeurons()];
-		double[][] tGW1 = new double[param.getNumOutputNeurons()][param.getNumHiddenNeurons()];
-		double[] tgb1 = new double[param.getNumHiddenNeurons()];
-		double[] tgb2 = new double[param.getNumOutputNeurons()];
-
-		double[] x;
-		double[] y;
-		double[] h = new double[param.getNumHiddenNeurons()];
-		double[] yh = new double[param.getNumOutputNeurons()];
-		double[] d2 = new double[param.getNumOutputNeurons()];
-		double[] d1 = new double[param.getNumHiddenNeurons()];
-
-		double cost = 0;
-		double batch_cost = 0;
-		double correct = 0;
-
-		int batch_size = 10;
-		int current_batch_size = 0;
-		double scale_factor = 0;
-
-		double weight_decay = 0;
-
-		for (int iter = 0; iter < num_iters; iter++) {
-			batch_cost = 0;
-			correct = 0;
-			cost = 0;
-
-			for (int i = 0; i < X.length; i++) {
-				x = X[i];
-				y = Y[i];
-
-				ArrayMath.product(x, W1, h);
-				ArrayMath.add(h, b1, h);
-				ArrayMath.sigmoid(h, h);
-
-				ArrayMath.product(h, W2, yh);
-				ArrayMath.add(yh, b2, yh);
-				ArrayMath.softmax(yh, yh);
-
-				if (ArrayUtils.zeroIndexes(yh).length > 0) {
-					System.out.println();
-				}
-
-				if (ArrayMath.argMax(y) == ArrayMath.argMax(yh)) {
-					correct++;
-				}
-
-				for (int k = 0; k < y.length; k++) {
-					if (y[k] != 0) {
-						batch_cost -= Math.log(yh[k]);
-					}
-				}
-
-				ArrayMath.substract(yh, y, d2);
-				ArrayMath.outerProduct(h, d2, tGW2);
-				ArrayMath.sumColumns(tGW2, tgb2);
-
-				ArrayMath.product(W2, d2, d1);
-
-				ArrayMath.sigmoidGradient(h, h);
-				ArrayMath.multiply(d1, h, d1);
-
-				ArrayMath.outerProduct(x, d1, tGW1);
-				ArrayMath.sumColumns(tGW1, tgb1);
-
-				ArrayMath.add(tGW1, GW1, GW1);
-				ArrayMath.add(tGW2, GW2, GW2);
-				ArrayMath.add(tgb1, gb1, gb1);
-				ArrayMath.add(tgb2, gb2, gb2);
-
-				int mod = (i + 1) % batch_size;
-
-				current_batch_size = mod == 0 ? batch_size : mod;
-
-				if (mod == 0 || i == X.length - 1) {
-					weight_decay = (1 - param.getLearningRate() * param.getRegularizeMixture() / current_batch_size);
-
-					scale_factor = -param.getLearningRate() / current_batch_size;
-
-					ArrayMath.addAfterScale(W1, weight_decay, GW1, scale_factor, W1);
-					ArrayMath.addAfterScale(W2, weight_decay, GW2, scale_factor, W2);
-
-					ArrayMath.addAfterScale(b1, 1, gb1, scale_factor, b1);
-					ArrayMath.addAfterScale(b2, 1, gb2, scale_factor, b2);
-
-					cost += (batch_cost / current_batch_size);
-
-					batch_cost = 0;
-
-					ArrayUtils.setAll(GW1, 0);
-					ArrayUtils.setAll(GW2, 0);
-					ArrayUtils.setAll(gb1, 0);
-					ArrayUtils.setAll(gb2, 0);
-				}
-			}
-
-			System.out.printf("cost:\t%f, correct\t%f\n", cost, correct);
-
-		}
-
-		return model;
-	}
-
 	public NeuralNetModel trainFullBatch(double[][] X, double[][] Y, int num_iters) {
 		double[][] H = new double[X.length][param.getNumHiddenNeurons()];
 		double[][] Yh = new double[X.length][param.getNumOutputNeurons()];
@@ -182,6 +73,10 @@ public class NeuralNetTrainer {
 		double[] gb2 = new double[param.getNumOutputNeurons()];
 
 		double weight_decay = (1 - param.getLearningRate() * param.getRegularizeMixture() / X.length);
+		double scale_factor = -param.getLearningRate() / X.length;
+
+		double cost = 0;
+		int num_correct = 0;
 
 		for (int i = 0; i < num_iters; i++) {
 			ArrayMath.product(X, W1, H);
@@ -192,15 +87,15 @@ public class NeuralNetTrainer {
 			ArrayMath.add(Yh, b2, Yh);
 			ArrayMath.softmax(Yh, Yh);
 
-			double cost = 0;
-			double correct = 0;
+			cost = 0;
+			num_correct = 0;
 
 			for (int j = 0; j < Y.length; j++) {
 				int ans = ArrayMath.argMax(Y[j]);
 				int pred = ArrayMath.argMax(Yh[j]);
 
 				if (ans == pred) {
-					correct++;
+					num_correct++;
 				}
 
 				for (int k = 0; k < Y[j].length; k++) {
@@ -209,11 +104,14 @@ public class NeuralNetTrainer {
 					}
 				}
 			}
-			System.out.printf("cost:\t%f, correct\t%f\n", cost, correct);
+
+			double accuracy = 1f * num_correct / X.length;
+
+			System.out.printf("cost:\t%f, accuracy:\t%f (%d/%d)\n", cost, accuracy, num_correct, X.length);
 
 			// double[][] D2 = new double[X.length][param.getNumOutputNeurons()];
 
-			ArrayMath.substract(Yh, Y, D2);
+			ArrayMath.subtract(Yh, Y, D2);
 			// ArrayMath.product(ArrayMath.transpose(H), D2, GW2);
 			ArrayMath.productNonsyncA(H, D2, GW2);
 			ArrayMath.sumColumns(GW2, gb2);
@@ -234,11 +132,115 @@ public class NeuralNetTrainer {
 			ArrayMath.productNonsyncA(X, D1, GW1);
 			ArrayMath.sumColumns(GW1, gb1);
 
-			ArrayMath.addAfterScale(W1, weight_decay, GW1, -param.getLearningRate(), W1);
-			ArrayMath.addAfterScale(W2, weight_decay, GW2, -param.getLearningRate(), W2);
+			ArrayMath.addAfterScale(W1, weight_decay, GW1, scale_factor, W1);
+			ArrayMath.addAfterScale(W2, weight_decay, GW2, scale_factor, W2);
 
-			ArrayMath.addAfterScale(b1, 1, gb1, -param.getLearningRate(), b1);
-			ArrayMath.addAfterScale(b2, 1, gb2, -param.getLearningRate(), b2);
+			ArrayMath.addAfterScale(b1, 1, gb1, scale_factor, b1);
+			ArrayMath.addAfterScale(b2, 1, gb2, scale_factor, b2);
+		}
+
+		return model;
+	}
+
+	public NeuralNetModel trainMiniBatch(double[][] X, double[][] Y, int num_iters) {
+		double[][] GW2 = new double[param.getNumHiddenNeurons()][param.getNumOutputNeurons()];
+		double[][] GW1 = new double[param.getNumOutputNeurons()][param.getNumHiddenNeurons()];
+		double[] gb1 = new double[param.getNumHiddenNeurons()];
+		double[] gb2 = new double[param.getNumOutputNeurons()];
+
+		double[][] tmpGW2 = new double[param.getNumHiddenNeurons()][param.getNumOutputNeurons()];
+		double[][] tmpGW1 = new double[param.getNumOutputNeurons()][param.getNumHiddenNeurons()];
+
+		double[] x;
+		double[] y;
+		double[] h = new double[param.getNumHiddenNeurons()];
+		double[] yh = new double[param.getNumOutputNeurons()];
+		double[] d2 = new double[param.getNumOutputNeurons()];
+		double[] d1 = new double[param.getNumHiddenNeurons()];
+
+		double cost = 0;
+		double batch_cost = 0;
+		int num_correct = 0;
+
+		int mini_batch_size = 10;
+		int current_mini_batch_size = 0;
+		double scale_factor = 0;
+
+		double weight_decay = (1 - param.getLearningRate() * param.getRegularizeMixture() / X.length);
+
+		for (int iter = 0; iter < num_iters; iter++) {
+			batch_cost = 0;
+			num_correct = 0;
+			cost = 0;
+
+			for (int i = 0; i < X.length; i++) {
+				x = X[i];
+				y = Y[i];
+
+				ArrayMath.product(x, W1, h);
+				ArrayMath.add(h, b1, h);
+				ArrayMath.sigmoid(h, h);
+
+				ArrayMath.product(h, W2, yh);
+				ArrayMath.add(yh, b2, yh);
+				ArrayMath.softmax(yh, yh);
+
+				if (ArrayMath.argMax(y) == ArrayMath.argMax(yh)) {
+					num_correct++;
+				}
+
+				for (int k = 0; k < y.length; k++) {
+					if (y[k] != 0) {
+						batch_cost -= Math.log(yh[k]);
+					}
+				}
+
+				ArrayMath.subtract(yh, y, d2);
+
+				ArrayMath.outerProduct(h, d2, tmpGW2);
+
+				ArrayMath.product(W2, d2, d1);
+
+				ArrayMath.sigmoidGradient(h, h);
+
+				ArrayMath.multiply(d1, h, d1);
+
+				ArrayMath.outerProduct(x, d1, tmpGW1);
+
+				ArrayMath.add(tmpGW1, GW1, GW1);
+				ArrayMath.add(tmpGW2, GW2, GW2);
+
+				int mod = (i + 1) % mini_batch_size;
+
+				current_mini_batch_size = mod == 0 ? mini_batch_size : mod;
+
+				if (mod == 0 || i == X.length - 1) {
+					scale_factor = -param.getLearningRate() / current_mini_batch_size;
+
+					ArrayMath.sumColumns(GW1, gb1);
+					ArrayMath.sumColumns(GW2, gb2);
+
+					ArrayMath.addAfterScale(W1, weight_decay, GW1, scale_factor, W1);
+					ArrayMath.addAfterScale(W2, weight_decay, GW2, scale_factor, W2);
+
+					ArrayMath.addAfterScale(b1, 1, gb1, scale_factor, b1);
+					ArrayMath.addAfterScale(b2, 1, gb2, scale_factor, b2);
+
+					cost += (batch_cost / current_mini_batch_size);
+
+					batch_cost = 0;
+
+					ArrayUtils.setAll(GW1, 0);
+					ArrayUtils.setAll(GW2, 0);
+					ArrayUtils.setAll(gb1, 0);
+					ArrayUtils.setAll(gb2, 0);
+				}
+			}
+
+			double accuracy = 1f * num_correct / X.length;
+
+			System.out.printf("cost:\t%f, accuracy:\t%f (%d/%d)\n", cost, accuracy, num_correct, X.length);
+
 		}
 
 		return model;

@@ -1969,16 +1969,11 @@ public class ArrayMath {
 		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
-		int max_loc = argMax(a);
-		double max = a[max_loc];
+		double max = max(a);
 		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			b[i] = Math.exp(a[i] - max);
 			sum += b[i];
-
-			if (b[i] == 0) {
-				System.out.println();
-			}
 		}
 		return scale(b, 1f / sum, b);
 	}
@@ -2022,7 +2017,7 @@ public class ArrayMath {
 		return sum;
 	}
 
-	public static double substract(double[] a, double[] b, double[] c) {
+	public static double subtract(double[] a, double[] b, double[] c) {
 		if (!ArrayChecker.isEqualDim(a, b, c)) {
 			throw new IllegalArgumentException();
 		}
@@ -2034,7 +2029,7 @@ public class ArrayMath {
 		return sum;
 	}
 
-	public static double substract(double[][] a, double[][] b, double[][] c) {
+	public static double subtract(double[][] a, double[][] b, double[][] c) {
 		return addAfterScale(a, 1, b, -1, c);
 	}
 

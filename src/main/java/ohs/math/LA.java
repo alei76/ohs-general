@@ -674,7 +674,7 @@ public class LA {
 
 				ArrayMath.add(temp, uk, uk);
 			}
-			ArrayMath.substract(vk, uk, uk);
+			ArrayMath.subtract(vk, uk, uk);
 			ArrayUtils.copyColumn(uk, b, k);
 		}
 	}
@@ -686,7 +686,7 @@ public class LA {
 
 		for (int u = 0; u < MAX_ITER; u++) {
 			product(a, x, ax);
-			ArrayMath.substract(b, ax, r);
+			ArrayMath.subtract(b, ax, r);
 			solve(a, r, z, false);
 
 			if (ArrayChecker.isZeroVector(z)) {
@@ -1335,7 +1335,7 @@ public class LA {
 		}
 
 		projection(a, b, c);
-		ArrayMath.substract(b, c, c);
+		ArrayMath.subtract(b, c, c);
 	}
 
 	public static void outerProduct(double[] a, double[] b, double[][] c) {

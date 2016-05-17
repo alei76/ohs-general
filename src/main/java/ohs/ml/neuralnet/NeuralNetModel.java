@@ -72,8 +72,8 @@ public class NeuralNetModel {
 
 		ArrayMath.add(W1, -0.5, W1);
 		ArrayMath.add(W2, -0.5, W2);
-		ArrayMath.add(b1, -0.5, b1);
-		ArrayMath.add(b2, -0.5, b2);
+		// ArrayMath.add(b1, -0.5, b1);
+		// ArrayMath.add(b2, -0.5, b2);
 	}
 
 	public double[] predict(double[] x) {

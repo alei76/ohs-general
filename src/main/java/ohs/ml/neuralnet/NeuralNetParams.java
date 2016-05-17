@@ -1,7 +1,5 @@
 package ohs.ml.neuralnet;
 
-import ohs.math.ArrayMath;
-
 public class NeuralNetParams {
 
 	private int input_neuron_size = 10;
@@ -10,7 +8,7 @@ public class NeuralNetParams {
 
 	private int output_neuron_size = 10;
 
-	private double learning_rate = 0.05;
+	private double learning_rate = 0.1;
 
 	private double regularize_mixture = 0.1;
 
@@ -25,8 +23,6 @@ public class NeuralNetParams {
 		this.output_neuron_size = num_output_neurons;
 		this.learning_rate = learning_rate;
 	}
-
-
 
 	public double getRegularizeMixture() {
 		return regularize_mixture;
