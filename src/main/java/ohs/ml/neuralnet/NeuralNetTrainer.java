@@ -64,11 +64,12 @@ public class NeuralNetTrainer {
 		double[][] H = new double[X.length][param.getNumHiddenNeurons()];
 		double[][] Yh = new double[X.length][param.getNumOutputNeurons()];
 
-		double[][] D2 = new double[X.length][param.getNumOutputNeurons()];
 		double[][] D1 = new double[X.length][param.getNumHiddenNeurons()];
+		double[][] D2 = new double[X.length][param.getNumOutputNeurons()];
 
-		double[][] GW2 = new double[param.getNumHiddenNeurons()][param.getNumOutputNeurons()];
 		double[][] GW1 = new double[param.getNumOutputNeurons()][param.getNumHiddenNeurons()];
+		double[][] GW2 = new double[param.getNumHiddenNeurons()][param.getNumOutputNeurons()];
+
 		double[] gb1 = new double[param.getNumHiddenNeurons()];
 		double[] gb2 = new double[param.getNumOutputNeurons()];
 
@@ -143,20 +144,21 @@ public class NeuralNetTrainer {
 	}
 
 	public NeuralNetModel trainMiniBatch(double[][] X, double[][] Y, int num_iters) {
+		double[][] GW1 = new double[param.getNumInputNeurons()][param.getNumHiddenNeurons()];
 		double[][] GW2 = new double[param.getNumHiddenNeurons()][param.getNumOutputNeurons()];
-		double[][] GW1 = new double[param.getNumOutputNeurons()][param.getNumHiddenNeurons()];
+
 		double[] gb1 = new double[param.getNumHiddenNeurons()];
 		double[] gb2 = new double[param.getNumOutputNeurons()];
 
+		double[][] tmpGW1 = new double[param.getNumInputNeurons()][param.getNumHiddenNeurons()];
 		double[][] tmpGW2 = new double[param.getNumHiddenNeurons()][param.getNumOutputNeurons()];
-		double[][] tmpGW1 = new double[param.getNumOutputNeurons()][param.getNumHiddenNeurons()];
 
 		double[] x;
 		double[] y;
 		double[] h = new double[param.getNumHiddenNeurons()];
 		double[] yh = new double[param.getNumOutputNeurons()];
-		double[] d2 = new double[param.getNumOutputNeurons()];
 		double[] d1 = new double[param.getNumHiddenNeurons()];
+		double[] d2 = new double[param.getNumOutputNeurons()];
 
 		double cost = 0;
 		double batch_cost = 0;
