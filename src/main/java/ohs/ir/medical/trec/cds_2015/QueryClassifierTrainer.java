@@ -314,7 +314,7 @@ public class QueryClassifierTrainer {
 			prob.y[i] = x.label();
 		}
 
-		Model model = Linear.train(prob, getSVMParamter());
+		Model model = Linear.train0(prob, getSVMParamter());
 
 		CounterMap<Integer, Integer> cm = new CounterMap<Integer, Integer>();
 
@@ -356,7 +356,7 @@ public class QueryClassifierTrainer {
 		Collections.shuffle(testData);
 
 		LibSvmTrainer trainer = new LibSvmTrainer();
-		LibSvmWrapper wrapper = trainer.train(labelIndexer, featureIndexer, trainData);
+		LibSvmWrapper wrapper = trainer.trainFullBatch(labelIndexer, featureIndexer, trainData);
 		wrapper.evalute(testData);
 
 	}

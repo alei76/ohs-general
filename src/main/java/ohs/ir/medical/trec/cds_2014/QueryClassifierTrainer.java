@@ -340,7 +340,7 @@ public class QueryClassifierTrainer {
 			prob.y[i] = x.label();
 		}
 
-		model = Linear.train(prob, getSVMParamter());
+		model = Linear.train0(prob, getSVMParamter());
 	}
 
 	private void write() throws Exception {

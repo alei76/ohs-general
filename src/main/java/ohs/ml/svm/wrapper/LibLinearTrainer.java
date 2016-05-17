@@ -57,9 +57,11 @@ public class LibLinearTrainer {
 		this.param = param;
 	}
 
-	public LibLinearWrapper train(Indexer<String> labelIndexer, Indexer<String> featIndexer, List<SparseVector> xs) {
+	public LibLinearWrapper train(Indexer<String> labelIndexer, Indexer<String> featIndexer,
+
+			List<SparseVector> trainData, List<Integer> trainLabels) {
 		Problem prob = new Problem();
-		prob.l = xs.size();
+		prob.l = trainData.size();
 		prob.n = featIndexer.size() + 1;
 		prob.y = new double[prob.l];
 		prob.x = new Feature[prob.l][];
@@ -69,10 +71,10 @@ public class LibLinearTrainer {
 			prob.n++;
 		}
 
-		for (int i = 0; i < xs.size(); i++) {
-			SparseVector x = xs.get(i);
+		for (int i = 0; i < trainData.size(); i++) {
+			SparseVector x = trainData.get(i);
 			prob.x[i] = LibLinearWrapper.toFeatureNodes(x, prob.n, prob.bias);
-			prob.y[i] = x.label();
+			prob.y[i] = trainLabels.get(i);
 		}
 
 		Model model = Linear.train(prob, param);

@@ -116,7 +116,7 @@ public class DataHandler {
 		List<SparseVector> testData = twoSets[1];
 
 		LibLinearTrainer t = new LibLinearTrainer();
-		LibLinearWrapper wrapper = t.train(labelIndexer, featIndexer, trainData);
+		LibLinearWrapper wrapper = t.trainFullBatch(labelIndexer, featIndexer, trainData);
 		wrapper.write(NamePath.SVM_MODEL_FILE);
 
 		String res = wrapper.evalute(testData);

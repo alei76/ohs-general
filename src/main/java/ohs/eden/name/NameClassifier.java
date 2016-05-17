@@ -111,7 +111,7 @@ public class NameClassifier {
 		// List<SparseVector> testData = two[1];
 
 		LibLinearTrainer t = new LibLinearTrainer();
-		LibLinearWrapper wrapper = t.train(labelIndexer, featIndexer, data);
+		LibLinearWrapper wrapper = t.trainFullBatch(labelIndexer, featIndexer, data);
 		return new NameClassifier(wrapper);
 	}
 

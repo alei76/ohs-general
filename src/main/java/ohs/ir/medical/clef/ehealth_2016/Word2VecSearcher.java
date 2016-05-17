@@ -13,22 +13,22 @@ public class Word2VecSearcher {
 
 	private Word2VecModel model;
 
-	private double[] qVec;
+	private double[] q;
 
-	private SparseVector simVec;
+	private SparseVector sims;
 
 	public Word2VecSearcher(Word2VecModel model) {
 		this.model = model;
 
-		qVec = new double[model.sizeOfVector()];
+		q = new double[model.sizeOfVector()];
 
-		simVec = new SparseVector(ArrayUtils.arrayRange(model.getVocab().size()));
+		sims = new SparseVector(ArrayUtils.arrayRange(model.getVocab().size()));
 	}
 
 	public Counter<String> search(List<String> words, int top_k) {
 		int num_words = 0;
 
-		ArrayUtils.setAll(qVec, 0);
+		ArrayUtils.setAll(q, 0);
 
 		Counter<String> wordCnts = Generics.newCounter();
 
@@ -53,7 +53,7 @@ public class Word2VecSearcher {
 
 			double[] vec = model.getVector(word);
 			if (vec.length > 0) {
-				ArrayMath.addAfterScale(vec, 1, qVec, 1, qVec);
+				ArrayMath.add(vec, q, q);
 				num_words++;
 			}
 		}
@@ -62,18 +62,18 @@ public class Word2VecSearcher {
 
 		if (num_words > 0) {
 
-			ArrayMath.scale(qVec, 1f / num_words, qVec);
+			ArrayMath.scale(q, 1f / num_words, q);
 
-			computeSimilarity(qVec);
+			computeSimilarity(q);
 
-			simVec.sortByValue();
+			sims.sortByValue();
 
 			for (int i = 0; i < top_k && i < model.getVocab().size(); i++) {
-				int w = simVec.indexAtLoc(i);
-				double sim = simVec.valueAtLoc(i);
+				int w = sims.indexAtLoc(i);
+				double sim = sims.valueAtLoc(i);
 				ret.setCount(model.getVocab().getWord(w), sim);
 			}
-			simVec.sortByIndex();
+			sims.sortByIndex();
 		}
 
 		return ret;
@@ -81,11 +81,11 @@ public class Word2VecSearcher {
 	}
 
 	public void computeSimilarity(double[] qVec) {
-		simVec.setAll(0);
+		sims.setAll(0);
 
 		for (int i = 0; i < model.getVocab().size(); i++) {
-			// simVec.setAtLoc(i, ArrayMath.dotProduct(qVec, model.getVector(i)));
-			simVec.setAtLoc(i, ArrayMath.cosine(qVec, model.getVector(i)));
+			// sims.setAtLoc(i, ArrayMath.dotProduct(q, model.getVector(i)));
+			sims.setAtLoc(i, ArrayMath.cosine(qVec, model.getVector(i)));
 		}
 	}
 

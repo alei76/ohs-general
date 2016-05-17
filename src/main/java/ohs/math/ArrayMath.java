@@ -6,7 +6,6 @@ import java.util.Random;
 
 import org.apache.commons.math.stat.inference.TTestImpl;
 
-import edu.stanford.nlp.optimization.AbstractStochasticCachingDiffFunction.SamplingMethod;
 import ohs.types.Counter;
 import ohs.utils.Generics;
 
@@ -696,28 +695,11 @@ public class ArrayMath {
 		return ret;
 	}
 
-	/**
-	 * Maths.java in mallet
-	 * 
-	 * @param a
-	 * @param b
-	 * @return
-	 */
 	public static double klDivergence(double[] a, double[] b) {
 		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
-		double ret = 0;
-
-		for (int i = 0; i < a.length; ++i) {
-			if (a[i] == 0) {
-				continue;
-			}
-			if (b[i] == 0) {
-				return Double.POSITIVE_INFINITY;
-			}
-			ret += a[i] * Math.log(a[i] / b[i]);
-		}
+		double ret = crossEntropy(a, b);
 		return ret * CommonFuncs.LOG_2_OF_E; // moved this division out of the
 												// loop
 												// -DM
@@ -817,6 +799,38 @@ public class ArrayMath {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
+
+		{
+			double[][] a = { { 1, 2, 3 }, { 2, 3, 5 } };
+			double[][] b = { { 1, 2 }, { 2, 3 }, { 1, 2 } };
+
+			double[][] c1 = product(a, b);
+			double[][] c2 = ArrayUtils.copy(c1);
+			double[][] c3 = ArrayUtils.copy(c1);
+
+			productNonsyncA(transpose(a), b, c2);
+
+			productNonsyncB(a, transpose(b), c3);
+
+			System.out.println(ArrayUtils.toString(c1));
+			System.out.println();
+
+			System.out.println(ArrayUtils.toString(c2));
+			System.out.println();
+
+			System.out.println(ArrayUtils.toString(c3));
+			System.out.println();
+
+			if (ArrayChecker.isEqual(c1, c2)) {
+				System.out.println("Work!");
+			}
+
+			if (ArrayChecker.isEqual(c1, c3)) {
+				System.out.println("Work!");
+			}
+
+			System.exit(0);
+		}
 
 		{
 
@@ -1380,6 +1394,14 @@ public class ArrayMath {
 		return ret;
 	}
 
+	/**
+	 * @param a
+	 *            1 x N
+	 * @param b
+	 *            N x K
+	 * @param c
+	 *            1 x K
+	 */
 	public static void product(double[] a, double[][] b, double[] c) {
 		double[][] aa = new double[1][];
 		aa[0] = a;
@@ -1399,6 +1421,15 @@ public class ArrayMath {
 		return c;
 	}
 
+	/**
+	 * @param a
+	 *            M x N
+	 * @param b
+	 *            N x 1
+	 * @param c
+	 *            M x 1
+	 * @return
+	 */
 	public static double product(double[][] a, double[] b, double[] c) {
 		if (!ArrayChecker.isProductable(a, b, c)) {
 			throw new IllegalArgumentException();
@@ -1412,6 +1443,13 @@ public class ArrayMath {
 		return sum;
 	}
 
+	/**
+	 * @param a
+	 *            M x N
+	 * @param b
+	 *            N x K
+	 * @return
+	 */
 	public static double[][] product(double[][] a, double[][] b) {
 		if (!ArrayChecker.isProductable(a, b)) {
 			throw new IllegalArgumentException();
@@ -1424,17 +1462,24 @@ public class ArrayMath {
 		return c;
 	}
 
+	/**
+	 * @param a
+	 *            M x N
+	 * @param b
+	 *            N x K
+	 * @param c
+	 *            M x K
+	 * @return
+	 */
 	public static double product(double[][] a, double[][] b, double[][] c) {
 		if (!ArrayChecker.isProductable(a, b, c)) {
 			throw new IllegalArgumentException();
 		}
-
 		int a_rows = a.length;
 		int a_cols = a[0].length;
 		int b_rows = b.length;
 		int b_cols = b[0].length;
 		double sum = 0;
-
 		double[] bc = new double[b_rows]; // column j of B
 
 		for (int j = 0; j < b_cols; j++) {
@@ -1442,6 +1487,86 @@ public class ArrayMath {
 			for (int i = 0; i < a_rows; i++) {
 				c[i][j] = dotProduct(a[i], bc);
 				sum += c[i][j];
+			}
+		}
+		return sum;
+	}
+
+	/**
+	 * 
+	 * 
+	 * @param a
+	 *            M x N
+	 * @param b
+	 *            M x K
+	 * @param c
+	 *            N x K
+	 * @return
+	 */
+	public static double productNonsyncA(double[][] a, double[][] b, double[][] c) {
+		int a_rows = a.length;
+		int a_cols = a[0].length;
+		int b_rows = b.length;
+		int b_cols = b[0].length;
+		int c_rows = c.length;
+		int c_cols = c[0].length;
+
+		if (a_rows == b_rows && a_cols == c_rows && b_cols == c_cols) {
+
+		} else {
+			throw new IllegalArgumentException();
+		}
+
+		double sum = 0;
+		double[] bc = new double[b_rows]; // column j of B
+		double dot_product = 0;
+
+		for (int bj = 0; bj < b_cols; bj++) {
+			ArrayUtils.copyColumn(b, bj, bc);
+
+			for (int aj = 0; aj < a_cols; aj++) {
+				dot_product = 0;
+				for (int ai = 0; ai < a_rows; ai++) {
+					dot_product += bc[ai] * a[ai][aj];
+				}
+				c[aj][bj] = dot_product;
+				sum += c[aj][bj];
+			}
+		}
+		return sum;
+	}
+
+	/**
+	 * 
+	 * 
+	 * @param a
+	 *            M x N
+	 * @param b
+	 *            K x N
+	 * @param c
+	 *            M x K
+	 * @return
+	 */
+	public static double productNonsyncB(double[][] a, double[][] b, double[][] c) {
+		int a_rows = a.length;
+		int a_cols = a[0].length;
+		int b_rows = b.length;
+		int b_cols = b[0].length;
+		int c_rows = c.length;
+		int c_cols = c[0].length;
+
+		if (a_cols == b_cols && a_rows == c_rows && b_rows == c_cols) {
+
+		} else {
+			throw new IllegalArgumentException();
+		}
+
+		double sum = 0;
+
+		for (int ai = 0; ai < a_rows; ai++) {
+			for (int bi = 0; bi < b_rows; bi++) {
+				c[ai][bi] = dotProduct(a[ai], b[bi]);
+				sum += c[ai][bi];
 			}
 		}
 		return sum;
@@ -1844,11 +1969,16 @@ public class ArrayMath {
 		if (!ArrayChecker.isEqualDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
-		double max = max(a);
+		int max_loc = argMax(a);
+		double max = a[max_loc];
 		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			b[i] = Math.exp(a[i] - max);
 			sum += b[i];
+
+			if (b[i] == 0) {
+				System.out.println();
+			}
 		}
 		return scale(b, 1f / sum, b);
 	}

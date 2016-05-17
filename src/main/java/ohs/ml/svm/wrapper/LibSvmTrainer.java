@@ -51,7 +51,8 @@ public class LibSvmTrainer {
 		this.param = param;
 	}
 
-	public LibSvmWrapper train(Indexer<String> labelIndexer, Indexer<String> featureIndexer, List<SparseVector> trainData) {
+	public LibSvmWrapper train(Indexer<String> labelIndexer, Indexer<String> featureIndexer, List<SparseVector> trainData,
+			List<Integer> trainLabels) {
 		svm_problem problem = new svm_problem();
 		problem.l = trainData.size();
 		problem.x = new svm_node[problem.l][];
@@ -61,11 +62,13 @@ public class LibSvmTrainer {
 
 		for (int i = 0; i < trainData.size(); i++) {
 			SparseVector sv = trainData.get(i);
+			int label = trainLabels.get(i);
+
 			svm_node input[] = new svm_node[sv.size()];
 			for (int j = 0; j < sv.size(); j++) {
 				int index = sv.indexAtLoc(j) + 1; // add if feat index
-														// starts
-														// with 0.
+													// starts
+													// with 0.
 
 				assert index > 0;
 
@@ -81,7 +84,7 @@ public class LibSvmTrainer {
 			}
 
 			problem.x[i] = input;
-			problem.y[i] = sv.label();
+			problem.y[i] = label;
 		}
 
 		// int max_index = termIndexer.size();

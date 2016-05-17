@@ -57,18 +57,18 @@ public class LibLinearWrapper implements Serializable {
 		this.featIndexer = featIndexer;
 	}
 
-	public String evalute(List<SparseVector> xs) {
+	public String evalute(List<SparseVector> testData, List<Integer> testLabels) {
 		SparseVector correct = new SparseVector(ArrayUtils.copy(model.getLabels()));
 		correct.sortByIndex();
 
 		SparseVector anss = correct.copy();
 		SparseVector preds = correct.copy();
 
-		for (int i = 0; i < xs.size(); i++) {
-			SparseVector x = xs.get(i);
+		for (int i = 0; i < testData.size(); i++) {
+			SparseVector x = testData.get(i);
 			SparseVector scores = score(x);
 			int pred = scores.argMax();
-			int ans = x.label();
+			int ans = testLabels.get(i);
 
 			if (pred == ans) {
 				correct.increment(ans, 1);
@@ -114,7 +114,6 @@ public class LibLinearWrapper implements Serializable {
 		for (int i = 0; i < xs.size(); i++) {
 			SparseVector x = xs.get(i);
 			SparseVector scores = score(x);
-			scores.setLabel(x.label());
 			ret.add(scores);
 		}
 		return ret;
@@ -130,9 +129,8 @@ public class LibLinearWrapper implements Serializable {
 
 		Linear.predictValues(model, fs, prob_estimates);
 
-		SparseVector ret = new SparseVector(labels, prob_estimates, x.label());
+		SparseVector ret = new SparseVector(labels, prob_estimates);
 		VectorMath.softmax(ret);
-
 		return ret;
 	}
 

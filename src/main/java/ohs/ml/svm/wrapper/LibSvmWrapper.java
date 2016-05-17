@@ -181,7 +181,7 @@ public class LibSvmWrapper implements Serializable {
 		this.termIndexer = termIndexer;
 	}
 
-	public String evalute(List<SparseVector> testData) {
+	public String evalute(List<SparseVector> testData, List<Integer> testLabels) {
 		SparseVector label_correct = new SparseVector(ArrayUtils.copy(model.label));
 
 		SparseVector label_answer = label_correct.copy();
@@ -191,7 +191,7 @@ public class LibSvmWrapper implements Serializable {
 			SparseVector query = testData.get(i);
 			SparseVector label_score = score(query);
 			int predictId = label_score.argMax();
-			int answerId = query.label();
+			int answerId = testLabels.get(i);
 
 			if (predictId == answerId) {
 				label_correct.increment(answerId, 1);

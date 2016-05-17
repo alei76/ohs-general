@@ -15,10 +15,10 @@ import ohs.utils.StrUtils;
 
 public class TopicEval {
 
-	public static String evalute(Indexer<String> labelIndexer, List<SparseVector> results) {
+	public static String evalute(Indexer<String> labelIndexer, List<SparseVector> testData, List<Integer> testLabels) {
 		Set<Integer> labelSet = new TreeSet<Integer>();
-		for (SparseVector x : results) {
-			labelSet.add(x.label());
+		for (int label : testLabels) {
+			labelSet.add(label);
 		}
 
 		int[] indexes = new int[labelSet.size()];
@@ -28,9 +28,9 @@ public class TopicEval {
 		SparseVector label_predict = label_answer.copy();
 		SparseVector label_correct = label_answer.copy();
 
-		for (int j = 0; j < results.size(); j++) {
-			SparseVector global_score = results.get(j);
-			int answerId = global_score.label();
+		for (int j = 0; j < testData.size(); j++) {
+			SparseVector global_score = testData.get(j);
+			int answerId = testLabels.get(j);
 			int predictId = global_score.argMax();
 
 			label_answer.increment(answerId, 1);
@@ -70,8 +70,8 @@ public class TopicEval {
 
 			sb.append(String.format("%s\t%d\t%d\t%d\t%s\t%s\t%s\n",
 
-			label == null ? labelId : label, (int) numAnswer, (int) numPredict, (int) numCorrect, nf.format(prf[0]), nf.format(prf[1]),
-					nf.format(prf[2])));
+					label == null ? labelId : label, (int) numAnswer, (int) numPredict, (int) numCorrect, nf.format(prf[0]),
+					nf.format(prf[1]), nf.format(prf[2])));
 
 			macroPrecision += prf[0];
 			macroRecall += prf[1];
@@ -90,12 +90,13 @@ public class TopicEval {
 
 		sb.append(String.format("%s\t%d\t%d\t%d\t%s\t%s\t%s\n",
 
-		"Macro", (int) totalAnswer, (int) totalPredict, (int) totalCorrect, nf.format(macroPrecision), nf.format(macroRecall),
+				"Macro", (int) totalAnswer, (int) totalPredict, (int) totalCorrect, nf.format(macroPrecision), nf.format(macroRecall),
 				nf.format(macroF1)));
 
 		sb.append(String.format("%s\t%d\t%d\t%d\t%s\t%s\t%s\n",
 
-		"Micro", (int) totalAnswer, (int) totalPredict, (int) totalCorrect, nf.format(prf[0]), nf.format(prf[1]), nf.format(prf[2])));
+				"Micro", (int) totalAnswer, (int) totalPredict, (int) totalCorrect, nf.format(prf[0]), nf.format(prf[1]),
+				nf.format(prf[2])));
 
 		return sb.toString().trim();
 	}
@@ -254,9 +255,9 @@ public class TopicEval {
 
 			list.add(String.format("%s\t%d\t%d\t%d\t%s\t%s\t%s",
 
-			topic, (int) numAnswer, (int) numPredict, (int) numCorrect,
+					topic, (int) numAnswer, (int) numPredict, (int) numCorrect,
 
-			nf.format(precision), nf.format(recall), nf.format(f1)));
+					nf.format(precision), nf.format(recall), nf.format(f1)));
 		}
 
 		int numTotalAnswers = (int) topic_answerCount.totalCount();
@@ -269,9 +270,9 @@ public class TopicEval {
 
 		list.add(String.format("%s\t%d\t%d\t%d\t%s\t%s\t%s", "macro",
 
-		numTotalAnswers, numTotalPredict, numTotalCorrect,
+				numTotalAnswers, numTotalPredict, numTotalCorrect,
 
-		nf.format(macroPrecision), nf.format(macroRecall), nf.format(macroF1)));
+				nf.format(macroPrecision), nf.format(macroRecall), nf.format(macroF1)));
 
 		double[] scores = getPrecisionRecallF1(numTotalAnswers, numTotalPredict, numTotalCorrect);
 		double microPrecision = scores[0];
@@ -280,9 +281,9 @@ public class TopicEval {
 
 		list.add(String.format("%s\t%d\t%d\t%d\t%s\t%s\t%s", "micro",
 
-		numTotalAnswers, numTotalPredict, numTotalCorrect,
+				numTotalAnswers, numTotalPredict, numTotalCorrect,
 
-		nf.format(microPrecision), nf.format(microRecall), nf.format(microF1)));
+				nf.format(microPrecision), nf.format(microRecall), nf.format(microF1)));
 		output = StrUtils.join("\n", list);
 
 		this.macroF1 = macroF1;
