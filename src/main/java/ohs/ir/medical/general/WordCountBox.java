@@ -8,18 +8,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.index.PostingsEnum;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermContext;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.util.BytesRef;
 
 import ohs.io.FileUtils;
 import ohs.ir.lucene.common.CommonFieldNames;
+import ohs.math.ArrayMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
@@ -27,11 +29,17 @@ import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
+import ohs.types.Pair;
 import ohs.utils.Generics;
+import ohs.utils.StopWatch;
 
 public class WordCountBox {
 
-	public static Counter<String> getDocFreqs(IndexReader ir, String field) throws Exception {
+	public static Map<Integer, Pair<Integer, Integer>> cache = Generics.newWeakHashMap();
+
+	public static Counter<String> getDocFreqs(IndexSearcher is, String field) throws Exception {
+		IndexReader ir = is.getIndexReader();
+
 		Counter<String> ret = new Counter<String>();
 
 		Fields fs = MultiFields.getFields(ir);
@@ -54,7 +62,8 @@ public class WordCountBox {
 		return ret;
 	}
 
-	public static Counter<String> getDocFreqs(IndexReader ir, String field, Collection<String> c) throws Exception {
+	public static Counter<String> getDocFreqs(IndexSearcher is, String field, Collection<String> c) throws Exception {
+		IndexReader ir = is.getIndexReader();
 		Counter<String> ret = new Counter<String>();
 		for (String word : c) {
 			Term term = new Term(field, word);
@@ -64,7 +73,8 @@ public class WordCountBox {
 		return ret;
 	}
 
-	public static SparseVector getDocFreqs(IndexReader ir, String field, Indexer<String> wordIndexer) throws Exception {
+	public static SparseVector getDocFreqs(IndexSearcher is, String field, Indexer<String> wordIndexer) throws Exception {
+		IndexReader ir = is.getIndexReader();
 		SparseVector ret = new SparseVector(wordIndexer.size());
 		for (int i = 0; i < wordIndexer.size(); i++) {
 			String word = wordIndexer.getObject(i);
@@ -75,36 +85,41 @@ public class WordCountBox {
 		return ret;
 	}
 
-	public static WordCountBox getWordCountBox(IndexReader ir, SparseVector docScores, Indexer<String> wordIndexer) throws Exception {
-		return getWordCountBox(ir, docScores, wordIndexer, CommonFieldNames.CONTENT);
+	public static WordCountBox getWordCountBox(IndexSearcher is, SparseVector docScores, Indexer<String> wordIndexer) throws Exception {
+		return getWordCountBox(is, docScores, wordIndexer, CommonFieldNames.CONTENT);
 	}
 
-	public static WordCountBox getWordCountBox(IndexReader ir, SparseVector docScores, Indexer<String> wordIndexer, String field)
+	public static WordCountBox getWordCountBox(IndexSearcher is, SparseVector docScores, Indexer<String> wordIndexer, String field)
 			throws Exception {
-		Set<Integer> fbWords = Generics.newHashSet();
-		CounterMap<Integer, Integer> cm = Generics.newCounterMap(docScores.size());
-		ListMap<Integer, Integer> docWords = Generics.newListMap(docScores.size());
+
+		IndexReader ir = is.getIndexReader();
+		Set<Integer> wordSet = Generics.newHashSet();
+		Map<Integer, SparseVector> docToWordCnts = Generics.newHashMap();
+		ListMap<Integer, Integer> docToWords = Generics.newListMap(docScores.size());
+		// StopWatch stopWatch = StopWatch.newStopWatch();
 
 		for (int j = 0; j < docScores.size(); j++) {
 			int docid = docScores.indexAtLoc(j);
-			double score = docScores.valueAtLoc(j);
-			Document doc = ir.document(docid);
-
-			String content = doc.get(CommonFieldNames.CONTENT);
+			// double score = docScores.valueAtLoc(j);
+			// Document doc = ir.document(docid);
+			// String content = doc.get(CommonFieldNames.CONTENT);
 
 			Terms t = ir.getTermVector(docid, field);
-			int word_size = (int) t.size();
 
 			if (t == null) {
 				continue;
 			}
 
+			int vec_size = (int) t.size();
+
 			TermsEnum ts = t.iterator();
 
 			BytesRef br = null;
 			PostingsEnum pe = null;
-			Counter<Integer> wcs = Generics.newCounter(word_size);
-			Map<Integer, Integer> locWords = Generics.newHashMap();
+
+			int loc = 0;
+			SparseVector wordCnts = new SparseVector(vec_size);
+			Map<Integer, Integer> locToWord = Generics.newHashMap();
 
 			while ((br = ts.next()) != null) {
 				pe = ts.postings(pe, PostingsEnum.ALL);
@@ -122,52 +137,72 @@ public class WordCountBox {
 				// }
 
 				int w = wordIndexer.getIndex(word);
-				int freq = pe.freq();
-				wcs.incrementCount(w, freq);
+				int cnt = pe.freq();
+				int doc_freq = ts.docFreq();
 
-				for (int k = 0; k < freq; k++) {
-					final int position = pe.nextPosition();
-					locWords.put(position, w);
+				wordCnts.incrementAtLoc(loc++, w, cnt);
+
+				for (int k = 0; k < cnt; k++) {
+					// System.out.printf("%d\t%s\n", position, word);
+					locToWord.put(pe.nextPosition(), w);
 				}
 			}
-			cm.setCounter(docid, wcs);
+			wordCnts.sortByIndex();
 
-			List<Integer> locs = Generics.newArrayList(locWords.keySet());
+			docToWordCnts.put(docid, wordCnts);
+
+			List<Integer> locs = Generics.newArrayList(locToWord.keySet());
 			Collections.sort(locs);
 
-			List<Integer> words = Generics.newArrayList();
+			List<Integer> words = Generics.newArrayList(locToWord.size());
 
-			for (int loc : locs) {
-				words.add(locWords.get(loc));
+			for (int l : locs) {
+				words.add(locToWord.get(l));
 			}
 
-			docWords.put(docid, words);
+			docToWords.put(docid, words);
 
-			for (int w : wcs.keySet()) {
-				fbWords.add(w);
+			for (int w : wordCnts.indexes()) {
+				wordSet.add(w);
 			}
 		}
 
-		SparseMatrix dwcs = VectorUtils.toSpasreMatrix(cm);
+		SparseMatrix dwcs = new SparseMatrix(docToWordCnts);
 
-		Counter<Integer> c1 = Generics.newCounter();
-		Counter<Integer> c2 = Generics.newCounter();
+		SparseVector collWordCnts = new SparseVector(wordSet.size());
+		SparseVector docFreqs = new SparseVector(wordSet.size());
+		int loc = 0;
 
-		for (int w : fbWords) {
-			String word = wordIndexer.getObject(w);
-			Term term = new Term(field, word);
-			double cnt = ir.totalTermFreq(term);
-			double df = ir.docFreq(term);
-			c1.setCount(w, cnt);
-			c2.setCount(w, df);
+		// if (doc_freq > 1) {
+		// System.out.println();
+		// }
+
+		for (int w : wordSet) {
+			Pair<Integer, Integer> p = cache.get(w);
+			int cnt = 0;
+			int doc_freq = 0;
+
+			if (p == null) {
+				String word = wordIndexer.getObject(w);
+				Term term = new Term(field, word);
+				TermContext termContext = TermContext.build(is.getTopReaderContext(), term);
+				cnt = (int) termContext.totalTermFreq();
+				doc_freq = termContext.docFreq();
+			} else {
+				cnt = p.getFirst();
+				doc_freq = p.getSecond();
+			}
+
+			collWordCnts.incrementAtLoc(loc, w, cnt);
+			docFreqs.incrementAtLoc(loc, w, doc_freq);
+			loc++;
 		}
 
-		SparseVector collWordCounts = VectorUtils.toSparseVector(c1);
-		SparseVector docFreqs = VectorUtils.toSparseVector(c2);
+		// System.out.println(stopWatch.stop());
 
 		double cnt_sum_in_coll = ir.getSumTotalTermFreq(CommonFieldNames.CONTENT);
 
-		WordCountBox ret = new WordCountBox(dwcs, collWordCounts, cnt_sum_in_coll, docFreqs, ir.maxDoc(), docWords);
+		WordCountBox ret = new WordCountBox(dwcs, collWordCnts, cnt_sum_in_coll, docFreqs, ir.maxDoc(), docToWords);
 		ret.setWordIndexer(wordIndexer);
 		return ret;
 	}
@@ -218,88 +253,47 @@ public class WordCountBox {
 
 	private Indexer<String> wordIndexer;
 
-	private SparseMatrix docWordCnts;
+	private SparseMatrix docToWordCnts;
 
 	private SparseVector collWordCnts;
 
-	private SparseVector collDocFreqs;
+	private SparseVector docFreqs;
 
-	private ListMap<Integer, Integer> docWords;
+	private ListMap<Integer, Integer> docToWords;
 
 	private double cnt_sum_in_coll;
 
 	private double num_docs_in_coll;
 
-	public void write(ObjectOutputStream oos) throws Exception {
-		FileUtils.writeStrIndexer(oos, wordIndexer);
-		FileUtils.writeIntListMap(oos, docWords);
-
-		collWordCnts.writeObject(oos);
-		collDocFreqs.writeObject(oos);
-
-		oos.writeDouble(cnt_sum_in_coll);
-		oos.writeDouble(num_docs_in_coll);
-	}
-
-	public void read(ObjectInputStream ois) throws Exception {
-		wordIndexer = FileUtils.readStrIndexer(ois);
-		docWords = FileUtils.readIntListMap(ois);
-
-		{
-			CounterMap<Integer, Integer> cm = Generics.newCounterMap();
-
-			for (int docid : docWords.keySet()) {
-				Counter<Integer> c = Generics.newCounter();
-
-				for (int w : docWords.get(docid)) {
-					c.incrementCount(w, 1);
-				}
-				cm.setCounter(docid, c);
-			}
-
-			docWordCnts = VectorUtils.toSparseMatrix(cm);
-		}
-
-		collWordCnts = new SparseVector();
-		collWordCnts.read(ois);
-
-		collDocFreqs = new SparseVector();
-		collDocFreqs.read(ois);
-
-		cnt_sum_in_coll = ois.readDouble();
-		num_docs_in_coll = ois.readDouble();
-
-	}
-
-	public WordCountBox(SparseMatrix docWordCounts, SparseVector collWordCounts, double cnt_sum_in_coll, SparseVector docFreqs,
-			double num_docs_in_coll, ListMap<Integer, Integer> docWords) {
+	public WordCountBox(SparseMatrix docWordCnts, SparseVector collWordCnts, double cnt_sum_in_coll, SparseVector docFreqs,
+			double num_docs_in_coll, ListMap<Integer, Integer> docToWords) {
 		super();
-		this.docWordCnts = docWordCounts;
-		this.collWordCnts = collWordCounts;
+		this.docToWordCnts = docWordCnts;
+		this.collWordCnts = collWordCnts;
 		this.cnt_sum_in_coll = cnt_sum_in_coll;
-		this.collDocFreqs = docFreqs;
+		this.docFreqs = docFreqs;
 		this.num_docs_in_coll = num_docs_in_coll;
-		this.docWords = docWords;
-	}
-
-	public SparseVector getDocFreqs() {
-		return collDocFreqs;
-	}
-
-	public double getCountSum() {
-		return cnt_sum_in_coll;
+		this.docToWords = docToWords;
 	}
 
 	public SparseVector getCollWordCounts() {
 		return collWordCnts;
 	}
 
-	public SparseMatrix getDocWordCounts() {
-		return docWordCnts;
+	public double getCountSum() {
+		return cnt_sum_in_coll;
 	}
 
-	public ListMap<Integer, Integer> getDocWords() {
-		return docWords;
+	public SparseVector getDocFreqs() {
+		return docFreqs;
+	}
+
+	public SparseMatrix getDocToWordCounts() {
+		return docToWordCnts;
+	}
+
+	public ListMap<Integer, Integer> getDocToWords() {
+		return docToWords;
 	}
 
 	public double getNumDocs() {
@@ -310,16 +304,46 @@ public class WordCountBox {
 		return wordIndexer;
 	}
 
-	public void setCollWordCounts(SparseVector collWordCounts) {
-		this.collWordCnts = collWordCounts;
+	public void readObject(ObjectInputStream ois) throws Exception {
+		wordIndexer = FileUtils.readStrIndexer(ois);
+		docToWords = FileUtils.readIntListMap(ois);
+
+		{
+			CounterMap<Integer, Integer> cm = Generics.newCounterMap();
+
+			for (int docid : docToWords.keySet()) {
+				Counter<Integer> c = Generics.newCounter();
+
+				for (int w : docToWords.get(docid)) {
+					c.incrementCount(w, 1);
+				}
+				cm.setCounter(docid, c);
+			}
+
+			docToWordCnts = VectorUtils.toSparseMatrix(cm);
+		}
+
+		collWordCnts = new SparseVector();
+		collWordCnts.read(ois);
+
+		docFreqs = new SparseVector();
+		docFreqs.read(ois);
+
+		cnt_sum_in_coll = ois.readDouble();
+		num_docs_in_coll = ois.readDouble();
+
+	}
+
+	public void setCollWordCounts(SparseVector collWordCnts) {
+		this.collWordCnts = collWordCnts;
 	}
 
 	public void setCountSum(double cnt_sum_in_col) {
 		this.cnt_sum_in_coll = cnt_sum_in_col;
 	}
 
-	public void setDocWordCounts(SparseMatrix docWordCounts) {
-		this.docWordCnts = docWordCounts;
+	public void setDocToWordCounts(SparseMatrix docToWordCnts) {
+		this.docToWordCnts = docToWordCnts;
 	}
 
 	public void setWordIndexer(Indexer<String> wordIndexer) {
@@ -331,6 +355,17 @@ public class WordCountBox {
 		StringBuffer sb = new StringBuffer();
 
 		return sb.toString();
+	}
+
+	public void writeObject(ObjectOutputStream oos) throws Exception {
+		FileUtils.writeStrIndexer(oos, wordIndexer);
+		FileUtils.writeIntListMap(oos, docToWords);
+
+		collWordCnts.writeObject(oos);
+		docFreqs.writeObject(oos);
+
+		oos.writeDouble(cnt_sum_in_coll);
+		oos.writeDouble(num_docs_in_coll);
 	}
 
 }

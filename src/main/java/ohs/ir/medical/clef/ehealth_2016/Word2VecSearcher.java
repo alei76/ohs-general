@@ -1,8 +1,8 @@
 package ohs.ir.medical.clef.ehealth_2016;
 
 import java.util.List;
+import java.util.Set;
 
-import ohs.ir.weight.TermWeighting;
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 import ohs.matrix.SparseVector;
@@ -17,39 +17,44 @@ public class Word2VecSearcher {
 
 	private SparseVector sims;
 
-	public Word2VecSearcher(Word2VecModel model) {
+	private Set<String> stopwords;
+
+	public Word2VecSearcher(Word2VecModel model, Set<String> stopwords) {
 		this.model = model;
+		this.stopwords = stopwords;
 
 		q = new double[model.sizeOfVector()];
 
 		sims = new SparseVector(ArrayUtils.arrayRange(model.getVocab().size()));
 	}
 
-	public Counter<String> search(List<String> words, int top_k) {
-		int num_words = 0;
+	public void computeSimilarity(double[] q) {
+		sims.setAll(0);
 
+		for (int i = 0; i < model.getVocab().size(); i++) {
+			// sims.setAtLoc(i, ArrayMath.dotProduct(q, model.getVector(i)));
+			sims.setAtLoc(i, ArrayMath.cosine(q, model.getVector(i)));
+		}
+	}
+
+	public Word2VecModel getModel() {
+		return model;
+	}
+
+	public Counter<String> search(Counter<String> wordCnts, int top_k) {
+		int num_words = 0;
 		ArrayUtils.setAll(q, 0);
 
-		Counter<String> wordCnts = Generics.newCounter();
-
-		for (String word : words) {
-			wordCnts.incrementCount(word, 1);
-		}
-
 		for (String word : wordCnts.keySet()) {
+			if (stopwords.contains(word)) {
+				continue;
+			}
+
 			int w = model.getVocab().indexOf(word);
 
 			if (w < 0) {
 				continue;
 			}
-
-			// double word_cnt = wordCnts.getCount(word);
-			// double sent_freq = model.getVocab().getWordDocFreq(w);
-			// double num_sents = model.getVocab().getNumDocs();
-			//
-			// double tf = TermWeighting.tf(word_cnt);
-			// double idf = TermWeighting.idf(num_sents, sent_freq);
-			// double tfidf = tf * idf;
 
 			double[] vec = model.getVector(word);
 			if (vec.length > 0) {
@@ -61,7 +66,6 @@ public class Word2VecSearcher {
 		Counter<String> ret = Generics.newCounter();
 
 		if (num_words > 0) {
-
 			ArrayMath.scale(q, 1f / num_words, q);
 
 			computeSimilarity(q);
@@ -77,16 +81,16 @@ public class Word2VecSearcher {
 		}
 
 		return ret;
-
 	}
 
-	public void computeSimilarity(double[] qVec) {
-		sims.setAll(0);
-
-		for (int i = 0; i < model.getVocab().size(); i++) {
-			// sims.setAtLoc(i, ArrayMath.dotProduct(q, model.getVector(i)));
-			sims.setAtLoc(i, ArrayMath.cosine(qVec, model.getVector(i)));
+	public Counter<String> search(List<String> words, int top_k) {
+		Counter<String> wordCnts = Generics.newCounter();
+		for (String word : words) {
+			word = word.toLowerCase();
+			wordCnts.incrementCount(word, 1);
 		}
+		return search(wordCnts, top_k);
+
 	}
 
 	public Counter<String> search(String word, int top_k) {

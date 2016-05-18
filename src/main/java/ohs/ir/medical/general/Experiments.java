@@ -231,7 +231,7 @@ public class Experiments {
 			if (inputFile.exists()) {
 				docPriors = new DenseVector();
 				docPriors.readObject(inputFile.getPath());
-				
+
 				double uniform_prior = 1f / docPriors.size();
 				for (int j = 0; j < docPriors.size(); j++) {
 					if (docPriors.value(j) == 0) {
@@ -315,7 +315,7 @@ public class Experiments {
 				SparseVector qlm = VectorUtils.toSparseVector(qwcs, wordIndexer, true);
 				qlm.normalize();
 
-				WordCountBox wcb = WordCountBox.getWordCountBox(is.getIndexReader(), docScores, wordIndexer);
+				WordCountBox wcb = WordCountBox.getWordCountBox(is, docScores, wordIndexer);
 
 				KLDivergenceScorer scorer = new KLDivergenceScorer();
 				docScores = scorer.score(wcb, qlm);
@@ -354,7 +354,7 @@ public class Experiments {
 				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(eqlm, wordIndexer));
 				docScores = SearcherUtils.search(lbq, is, 1000);
 
-				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, CommonFieldNames.CONTENT);
+				WordCountBox wcb = WordCountBox.getWordCountBox(is, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 				RelevanceModelBuilder rmb = new RelevanceModelBuilder();
 				SparseVector rm = rmb.getRelevanceModel(wcb, docScores);
@@ -406,7 +406,7 @@ public class Experiments {
 				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(eqlm, wordIndexer));
 				docScores = SearcherUtils.search(lbq, is, 1000);
 
-				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, CommonFieldNames.CONTENT);
+				WordCountBox wcb = WordCountBox.getWordCountBox(is, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 				DocumentCentralityEstimator dce = new DocumentCentralityEstimator(wcb);
 				SparseVector docPriors = dce.estimate();
@@ -491,7 +491,7 @@ public class Experiments {
 				lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(qlm, wordIndexer));
 				docScores = SearcherUtils.search(lbq, is, 500);
 
-				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, CommonFieldNames.CONTENT);
+				WordCountBox wcb = WordCountBox.getWordCountBox(is, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 				RelevanceModelBuilder rmb = new RelevanceModelBuilder();
 				SparseVector rm = rmb.getRelevanceModel(wcb, docScores);
@@ -552,7 +552,7 @@ public class Experiments {
 				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(qlm1, wordIndexer));
 				SparseVector docScores = SearcherUtils.search(lbq, is, num_ret_docs);
 
-				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, CommonFieldNames.CONTENT);
+				WordCountBox wcb = WordCountBox.getWordCountBox(is, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 				KLDivergenceScorer scorer = new KLDivergenceScorer();
 				// scorer.score(wcb, qlm1);
@@ -675,7 +675,7 @@ public class Experiments {
 				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(qlm1, wordIndexer));
 				SparseVector docScores = SearcherUtils.search(lbq, is, num_ret_docs);
 
-				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, CommonFieldNames.CONTENT);
+				WordCountBox wcb = WordCountBox.getWordCountBox(is, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 				KLDivergenceScorer scorer = new KLDivergenceScorer();
 				// scorer.score(wcb, qlm1);
@@ -739,14 +739,14 @@ public class Experiments {
 				SparseVector docScores = SearcherUtils.search(lbq, is, num_ret_docs);
 				SparseVector docPriors = docScores.copy();
 
-				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, CommonFieldNames.CONTENT);
+				WordCountBox wcb = WordCountBox.getWordCountBox(is, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 				double[] qwv = getVectorSum(ir, vSearcher, qwcs);
 				double[][] dwvs = new double[num_ret_docs][];
 
 				for (int k = 0; k < num_ret_docs; k++) {
 					int docId = docScores.indexAtLoc(k);
-					SparseVector dwcs = wcb.getDocWordCounts().rowAtLoc(k);
+					SparseVector dwcs = wcb.getDocToWordCounts().rowAtLoc(k);
 					double[] dwv = getVectorSum(ir, vSearcher, VectorUtils.toCounter(dwcs, wordIndexer));
 					dwvs[k] = dwv;
 				}
@@ -835,7 +835,7 @@ public class Experiments {
 				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(eqlm, wordIndexer));
 				SparseVector docScores = SearcherUtils.search(lbq, is, 1000);
 
-				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, CommonFieldNames.CONTENT);
+				WordCountBox wcb = WordCountBox.getWordCountBox(is, docScores, wordIndexer, CommonFieldNames.CONTENT);
 
 				ParsimoniousLanguageModelEstimator e = new ParsimoniousLanguageModelEstimator(wcb);
 				e.estimate();
@@ -857,7 +857,7 @@ public class Experiments {
 
 				for (int k = 0; k < docScores.size(); k++) {
 					int docId = docScores.indexAtLoc(k);
-					SparseVector dwcs = wcb.getDocWordCounts().rowAtLoc(k);
+					SparseVector dwcs = wcb.getDocToWordCounts().rowAtLoc(k);
 					double[] dwv = getVectorSum(ir, vSearcher, VectorUtils.toCounter(dwcs, wordIndexer));
 					double cosine = ArrayMath.cosine(qwv, dwv);
 					docScores2.setAtLoc(k, cosine);
@@ -897,91 +897,6 @@ public class Experiments {
 				SearcherUtils.write(writer, bq.getId(), docScores);
 			}
 			writer.close();
-		}
-	}
-
-	public void searchSentsByKldFb() throws Exception {
-		System.out.println("search by KLD FB.");
-
-		IndexSearcher[] siss = SearcherUtils.getIndexSearchers(MIRPath.SentIndexDirNames);
-
-		for (int i = 0; i < queryFileNames.length; i++) {
-			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
-			IndexSearcher sis = siss[i];
-
-			String outFileName = resDirNames[i].replace("result", "result_sent") + "kld-fb.txt";
-			String logFileName = logDirNames[i].replace("log", "log_sent") + "kld-fb.txt";
-
-			BidMap<String, String> docIdMap = DocumentIdMapper.readDocumentIdMap(docIdMapFileNames[i]);
-
-			// FileUtils.deleteFilesUnder(resDirNames[i]);
-
-			TextFileWriter resWriter = new TextFileWriter(outFileName);
-			// TextFileWriter logWriter = new TextFileWriter(logFileName);
-
-			for (int j = 0; j < bqs.size(); j++) {
-				BaseQuery bq = bqs.get(j);
-				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
-				SparseVector sentScores = SearcherUtils.search(lbq, sis, 1000);
-
-				// logWriter.write(bq.toString());
-
-				CounterMap<String, Integer> cm = new CounterMap<String, Integer>();
-
-				for (int k = 0; k < sentScores.size(); k++) {
-					int sentId = sentScores.indexAtLoc(k);
-					double score = sentScores.valueAtLoc(k);
-					Document doc = sis.doc(sentId);
-					String sent = doc.get(CommonFieldNames.CONTENT);
-					String docId = doc.get(CommonFieldNames.DOCUMENT_ID);
-					// logWriter.write(String.format("\n%d\t%s\t%s\t%s", k + 1,
-					// did, score, sent));
-					cm.incrementCount(docId, sentId, score);
-				}
-				// logWriter.write("\n\n");
-
-				Counter<Integer> c = new Counter<Integer>();
-
-				for (String docId : cm.keySet()) {
-					String s = docIdMap.getKey(docId);
-					if (s == null) {
-						continue;
-					}
-					int indexId = Integer.parseInt(s);
-					c.incrementCount(indexId, cm.getCounter(docId).max());
-				}
-
-				SparseVector docScores = VectorUtils.toSparseVector(c);
-
-				Indexer<String> wordIndexer = new Indexer<String>();
-				Counter<String> qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
-
-				SparseVector qlm = VectorUtils.toSparseVector(qwcs, wordIndexer, true);
-				qlm.normalize();
-
-				SparseVector expQLM = qlm.copy();
-
-				WordCountBox wcb1 = WordCountBox.getWordCountBox(siss[i].getIndexReader(), sentScores, wordIndexer,
-						CommonFieldNames.CONTENT);
-
-				RelevanceModelBuilder rmb = new RelevanceModelBuilder(10, 15, 20);
-				SparseVector rm = rmb.getRelevanceModel(wcb1, sentScores);
-				// SparseVector prm = rmb.getPositionalRelevanceModel(qLM, wcb3,
-				// docScores);
-
-				double mixture = 0.5;
-
-				expQLM = VectorMath.addAfterScale(qlm, 1 - mixture, rm, mixture);
-
-				WordCountBox wcb2 = WordCountBox.getWordCountBox(iss[i].getIndexReader(), docScores, wordIndexer, CommonFieldNames.CONTENT);
-
-				KLDivergenceScorer scorer = new KLDivergenceScorer();
-				docScores = scorer.score(wcb2, expQLM);
-
-				SearcherUtils.write(resWriter, bq.getId(), docScores);
-			}
-			resWriter.close();
-			// logWriter.close();
 		}
 	}
 

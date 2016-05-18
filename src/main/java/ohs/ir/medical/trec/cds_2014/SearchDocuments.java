@@ -263,7 +263,7 @@ public class SearchDocuments {
 	}
 
 	public void rankByESA() throws Exception {
-		System.out.println("rank documents using ESA.");
+		System.out.println("rank documents using ESAModel.");
 
 		BidMap<String, Integer> documentIdMap = readDocumentIdMap();
 

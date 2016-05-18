@@ -45,7 +45,7 @@ public class ESABuilder {
 	}
 
 	public void build1() throws Exception {
-		System.out.println("build ESA using TRIE.");
+		System.out.println("build ESAModel using TRIE.");
 
 		Counter<String> wordConceptFreqs = new Counter<String>();
 		double num_concepts = 0;
@@ -150,7 +150,7 @@ public class ESABuilder {
 	}
 
 	public void build2() throws Exception {
-		System.out.println("build ESA.");
+		System.out.println("build ESAModel.");
 		double num_concepts = 0;
 
 		CounterMap<String, String> conceptWordCounts = Generics.newCounterMap();

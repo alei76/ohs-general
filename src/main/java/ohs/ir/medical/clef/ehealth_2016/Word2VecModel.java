@@ -5,10 +5,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.util.List;
+import java.util.Set;
 
 import com.medallia.word2vec.Searcher.UnknownWordException;
 
 import ohs.io.FileUtils;
+import ohs.ir.medical.general.MIRPath;
+import ohs.ir.medical.general.SearcherUtils;
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 import ohs.types.Counter;
@@ -19,8 +22,7 @@ import ohs.utils.StrUtils;
 
 public class Word2VecModel {
 
-	public static void interact(Word2VecModel model) throws IOException, UnknownWordException {
-		Word2VecSearcher searcher = new Word2VecSearcher(model);
+	public static void interact(Word2VecSearcher searcher) throws Exception {
 
 		try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
 			while (true) {
@@ -48,10 +50,14 @@ public class Word2VecModel {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
+		Set<String> stopwords = FileUtils.readStrSet(MIRPath.STOPWORD_INQUERY_FILE);
+
 		Word2VecModel model = new Word2VecModel();
 		model.readObject("../../data/medical_ir/wiki/wiki_medical_word2vec_model.ser.gz");
 
-		interact(model);
+		Word2VecSearcher searcher = new Word2VecSearcher(model, stopwords);
+
+		interact(searcher);
 
 		System.out.println("process ends.");
 	}
@@ -74,6 +80,10 @@ public class Word2VecModel {
 
 	public Vocab getVocab() {
 		return vocab;
+	}
+
+	public int indexOf(String word) {
+		return vocab.getWordIndexer().indexOf(word);
 	}
 
 	public void readObject(ObjectInputStream ois) throws Exception {

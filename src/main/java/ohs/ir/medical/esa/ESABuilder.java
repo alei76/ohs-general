@@ -33,7 +33,7 @@ public class ESABuilder {
 	}
 
 	public void build() throws Exception {
-		System.out.println("build ESA model.");
+		System.out.println("build ESAModel model.");
 
 		Counter<Integer> docFreqs = new Counter<Integer>();
 		double num_docs = 0;

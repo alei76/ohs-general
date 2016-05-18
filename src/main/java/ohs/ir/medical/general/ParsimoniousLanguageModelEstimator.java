@@ -49,7 +49,7 @@ public class ParsimoniousLanguageModelEstimator {
 
 	public void estimate() {
 
-		SparseMatrix docWordCounts = wcb.getDocWordCounts();
+		SparseMatrix docWordCounts = wcb.getDocToWordCounts();
 
 		for (int i = 0; i < docWordCounts.rowSize(); i++) {
 			SparseVector wordCnts = docWordCounts.rowAtLoc(i);
@@ -71,7 +71,7 @@ public class ParsimoniousLanguageModelEstimator {
 		nf.setMinimumFractionDigits(2);
 		nf.setGroupingUsed(false);
 
-		wcb.getDocWordCounts();
+		wcb.getDocToWordCounts();
 
 		System.out.println("<=== start ===>");
 		System.out.println(VectorUtils.toCounter(plm, wcb.getWordIndexer()));

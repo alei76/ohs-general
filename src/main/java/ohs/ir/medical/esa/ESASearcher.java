@@ -91,10 +91,10 @@ public class ESASearcher {
 
 	private boolean useRandomWalk = false;
 
-	private ESA esa;
+	private ESAModel eSAModel;
 
-	public ESASearcher(ESA esa, File indexDir) throws Exception {
-		this.esa = esa;
+	public ESASearcher(ESAModel eSAModel, File indexDir) throws Exception {
+		this.eSAModel = eSAModel;
 
 		indexSearcher = SearcherUtils.getIndexSearcher(indexDir.getPath());
 		cnt_sum_in_coll = indexSearcher.getIndexReader().getSumTotalTermFreq(CommonFieldNames.CONTENT);

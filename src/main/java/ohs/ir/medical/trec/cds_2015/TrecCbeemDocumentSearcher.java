@@ -89,7 +89,7 @@ public class TrecCbeemDocumentSearcher {
 			SparseVector docScores = collDocScores[i];
 			docScores.sortByValue();
 
-			SparseMatrix docWordCountBox = collWordCountBoxes[i].getDocWordCounts();
+			SparseMatrix docWordCountBox = collWordCountBoxes[i].getDocToWordCounts();
 			SparseVector collWordCounts = collWordCountBoxes[i].getCollWordCounts();
 			DenseVector docPriors = collDocPriors[i];
 
@@ -155,7 +155,7 @@ public class TrecCbeemDocumentSearcher {
 		double[] cnt_sum_in_each_coll = getCollWordCountSums();
 		double cnt_sum_in_all_colls = ArrayMath.sum(cnt_sum_in_each_coll);
 
-		SparseMatrix docWordCountBox = collWordCountBoxes[colId].getDocWordCounts();
+		SparseMatrix docWordCountBox = collWordCountBoxes[colId].getDocToWordCounts();
 		SparseVector collWordCounts = collWordCountBoxes[colId].getCollWordCounts();
 
 		double dirichlet_prior = hyperParam.getDirichletPrior();

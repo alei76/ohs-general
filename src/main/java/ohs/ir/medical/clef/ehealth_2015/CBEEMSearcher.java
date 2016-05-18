@@ -399,7 +399,7 @@ public class CBEEMSearcher {
 			SparseVector docScores = docScoreData[i];
 			docScores.sortByValue();
 
-			SparseMatrix docWordCountBox = docWordCountBoxes[i].getDocWordCounts();
+			SparseMatrix docWordCountBox = docWordCountBoxes[i].getDocToWordCounts();
 			SparseVector collWordCounts = docWordCountBoxes[i].getCollWordCounts();
 			DenseVector docPriors = docPriorData[i];
 
@@ -658,7 +658,7 @@ public class CBEEMSearcher {
 		double[] cnt_sum_in_each_coll = getCollWordCountSums();
 		double cnt_sum_in_all_colls = ArrayMath.sum(cnt_sum_in_each_coll);
 
-		SparseMatrix docWordCountBox = docWordCountBoxes[targetId].getDocWordCounts();
+		SparseMatrix docWordCountBox = docWordCountBoxes[targetId].getDocToWordCounts();
 		SparseVector collWordCounts = docWordCountBoxes[targetId].getCollWordCounts();
 
 		double dirichlet_prior = hyperParam.getDirichletPrior();

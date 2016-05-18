@@ -132,7 +132,7 @@ public class VocabBuilder {
 			word_doc_freqs[i] = (int) wordDocFreqs.getCount(i);
 		}
 
-		Vocab vocab = new Vocab(wordIndexer, word_cnts, word_doc_freqs, num_docs, 0);
+		Vocab vocab = new Vocab(wordIndexer, word_cnts, word_doc_freqs, num_docs);
 		vocab.writeObject(KPPath.VOCAB_FILE.replace(".ser", "_all.ser"));
 	}
 
@@ -209,7 +209,7 @@ public class VocabBuilder {
 			word_doc_freqs[i] = (int) wordDocFreqs.getCount(i);
 		}
 
-		Vocab vocab = new Vocab(wordIndexer, word_cnts, word_doc_freqs, num_docs, 0);
+		Vocab vocab = new Vocab(wordIndexer, word_cnts, word_doc_freqs, num_docs);
 		vocab.writeObject(KPPath.VOCAB_FILE.replace(".ser", "_pos.ser"));
 	}
 

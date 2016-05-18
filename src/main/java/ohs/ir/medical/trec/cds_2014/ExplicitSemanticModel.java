@@ -11,7 +11,7 @@ import ohs.types.Indexer;
 public class ExplicitSemanticModel {
 
 	public static ExplicitSemanticModel read(Indexer<String> wordIndexer, SparseVector wordDocFreqs, int numDocs) throws Exception {
-		System.out.println("read ESA.");
+		System.out.println("read ESAModel.");
 
 		Indexer<String> conceptIndexer = FileUtils.readStrIndexer(CDSPath.ICD10_CONCEPT_INDEXER_FILE);
 		Indexer<String> categoryIndexer = FileUtils.readStrIndexer(CDSPath.ICD10_CATEGORY_INDEXER_FILE);

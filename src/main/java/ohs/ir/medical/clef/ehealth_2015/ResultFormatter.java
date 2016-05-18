@@ -29,25 +29,25 @@ public class ResultFormatter {
 		/*
 		 * run1: unigram language model with dirichlet prior
 		 * 
-		 * run2: unigram language model with dirichlet prior + ESA based on
+		 * run2: unigram language model with dirichlet prior + ESAModel based on
 		 * ICD-10
 		 * 
-		 * run3: unigram language model with dirichlet prior + ESA with document
+		 * run3: unigram language model with dirichlet prior + ESAModel with document
 		 * centrality based on ICD-10
 		 * 
 		 * run4: unigram language model with dirichlet prior + CBEEM
 		 * 
-		 * run5: unigram language model with dirichlet prior + CBEEM + ESA based
+		 * run5: unigram language model with dirichlet prior + CBEEM + ESAModel based
 		 * on ICD-10
 		 * 
-		 * run6: unigram language model with dirichlet prior + CBEEM + ESA with
+		 * run6: unigram language model with dirichlet prior + CBEEM + ESAModel with
 		 * document centrality based on ICD-10
 		 * 
 		 * run7: unigram language model with dirichlet prior + CBEEM + expanded
-		 * query by CBEEM + ESA based on ICD-10
+		 * query by CBEEM + ESAModel based on ICD-10
 		 * 
 		 * run8: unigram language model with dirichlet prior + CBEEM + +
-		 * expanded query by CBEEM + ESA with document centrality based on
+		 * expanded query by CBEEM + ESAModel with document centrality based on
 		 * ICD-10
 		 */
 
@@ -59,7 +59,7 @@ public class ResultFormatter {
 																		// with
 																		// dirichlet
 																		// prior
-																		// + ESA
+																		// + ESAModel
 																		// based
 																		// on
 																		// ICD-10
@@ -69,7 +69,7 @@ public class ResultFormatter {
 																	// with
 																	// dirichlet
 																	// prior +
-																	// ESA with
+																	// ESAModel with
 																	// document
 																	// centrality
 																	// based on

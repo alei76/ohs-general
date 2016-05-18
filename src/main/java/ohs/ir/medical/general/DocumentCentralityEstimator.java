@@ -45,7 +45,7 @@ public class DocumentCentralityEstimator {
 	public SparseVector estimate() {
 		double[][] trans_probs = getTransProbMatrix();
 
-		SparseVector ret = new SparseVector(ArrayUtils.copy(wcb.getDocWordCounts().rowIndexes()));
+		SparseVector ret = new SparseVector(ArrayUtils.copy(wcb.getDocToWordCounts().rowIndexes()));
 		double[] cents = ret.values();
 		ArrayUtils.setAll(cents, 1f / cents.length);
 		ArrayMath.randomWalk(trans_probs, cents, 10, 0.0000001, 0.85);
@@ -79,7 +79,7 @@ public class DocumentCentralityEstimator {
 	}
 
 	private double[][] getTransProbMatrix() {
-		SparseMatrix docWordCountData = wcb.getDocWordCounts();
+		SparseMatrix docWordCountData = wcb.getDocToWordCounts();
 		int num_docs = docWordCountData.rowSize();
 
 		double[][] trans_probs = ArrayUtils.matrix(num_docs);

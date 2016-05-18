@@ -151,7 +151,7 @@ public class RelevanceCollector {
 
 		String[] queryDocFileNames = MIRPath.QueryDocFileNames;
 
-		IndexSearcher[] indexSearchers = SearcherUtils.getIndexSearchers(indexDirNames);
+		IndexSearcher[] iss = SearcherUtils.getIndexSearchers(indexDirNames);
 
 		Analyzer analyzer = MedicalEnglishAnalyzer.newAnalyzer();
 
@@ -191,7 +191,7 @@ public class RelevanceCollector {
 
 			List<SparseVector> docRelData = DocumentIdMapper.mapDocIdsToIndexIds(bqs, queryRels, docIdMap);
 
-			IndexReader indexReader = indexSearchers[i].getIndexReader();
+			IndexSearcher is = iss[i];
 
 			if (bqs.size() != docRelData.size()) {
 				throw new Exception();
@@ -210,14 +210,14 @@ public class RelevanceCollector {
 				SparseVector q = VectorUtils.toSparseVector(qs.get(j), wordIndexer, true);
 
 				{
-					SparseVector docFreqs = VectorUtils.toSparseVector(
-							WordCountBox.getDocFreqs(indexReader, CommonFieldNames.CONTENT, qs.get(j).keySet()), wordIndexer, true);
-					computeTFIDFs(q, docFreqs, indexReader.maxDoc());
+					SparseVector docFreqs = VectorUtils
+							.toSparseVector(WordCountBox.getDocFreqs(is, CommonFieldNames.CONTENT, qs.get(j).keySet()), wordIndexer, true);
+					computeTFIDFs(q, docFreqs, is.getIndexReader().maxDoc());
 
 				}
 
-				WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docRels, wordIndexer);
-				SparseMatrix sm = wcb.getDocWordCounts();
+				WordCountBox wcb = WordCountBox.getWordCountBox(is, docRels, wordIndexer);
+				SparseMatrix sm = wcb.getDocToWordCounts();
 				SparseVector docFreqs = wcb.getDocFreqs();
 
 				for (int k = 0; k < sm.rowSize(); k++) {
@@ -239,9 +239,9 @@ public class RelevanceCollector {
 						continue;
 					}
 
-					Document doc = indexReader.document(docId);
+					Document doc = is.getIndexReader().document(docId);
 
-					List<Integer> ws = wcb.getDocWords().get(docId);
+					List<Integer> ws = wcb.getDocToWords().get(docId);
 
 					StringBuffer sb = new StringBuffer();
 

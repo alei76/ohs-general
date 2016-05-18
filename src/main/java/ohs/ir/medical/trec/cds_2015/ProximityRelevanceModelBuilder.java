@@ -59,7 +59,7 @@ public class ProximityRelevanceModelBuilder {
 	}
 
 	public void computeWordProximities(SparseVector queryModel, SparseVector docScores, WordCountBox wcb) {
-		setDocWordLocs(wcb.getDocWords());
+		setDocWordLocs(wcb.getDocToWords());
 
 		num_query_words = queryModel.size();
 
@@ -67,14 +67,14 @@ public class ProximityRelevanceModelBuilder {
 
 		logBuf = new StringBuffer();
 
-		SparseMatrix docWordCounts = wcb.getDocWordCounts();
+		SparseMatrix docWordCounts = wcb.getDocToWordCounts();
 
 		CounterMap<Integer, Integer> gcm = new CounterMap<Integer, Integer>();
 
 		for (int i = 0; i < docWordCounts.rowSize(); i++) {
 			int docId = docWordCounts.indexAtLoc(i);
 			SparseVector wordCounts = docWordCounts.rowAtLoc(i);
-			List<Integer> words = wcb.getDocWords().get(docId);
+			List<Integer> words = wcb.getDocToWords().get(docId);
 			ListMap<Integer, Integer> wordLocs = docWordLocs.get(docId, false);
 
 			// for (int j = 0; j < words.size(); j++) {
@@ -239,7 +239,7 @@ public class ProximityRelevanceModelBuilder {
 
 				// SparseVector fbProxes = fbWordToWordProxes.rowAlways(qw);
 
-				SparseVector wordCounts = wcb.getDocWordCounts().rowAlways(docId);
+				SparseVector wordCounts = wcb.getDocToWordCounts().rowAlways(docId);
 				double cnt_w_in_doc = wordCounts.valueAlways(w);
 				double cnt_sum_in_doc = wordCounts.sum();
 				double mixture_for_coll = dirichlet_prior / (cnt_sum_in_doc + dirichlet_prior);

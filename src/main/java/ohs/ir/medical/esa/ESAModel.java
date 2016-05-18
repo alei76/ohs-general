@@ -19,19 +19,19 @@ import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.utils.StrUtils;
 
-public class ESA {
+public class ESAModel {
 
 	public static void main(String[] args) throws Exception {
 
-		ESA esa = new ESA(MedicalEnglishAnalyzer.newAnalyzer());
-		esa.read(MIRPath.ICD10_ESA_FILE);
+		ESAModel eSAModel = new ESAModel(MedicalEnglishAnalyzer.newAnalyzer());
+		eSAModel.read(MIRPath.ICD10_ESA_FILE);
 
 		List<BaseQuery> bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2015_A_FILE);
 
 		for (int i = 0; i < bqs.size(); i++) {
 			BaseQuery bq = bqs.get(i);
 			System.out.println(bq.toString());
-			Counter<String> c = esa.getConceptVectorAsCounter(bq.getSearchText());
+			Counter<String> c = eSAModel.getConceptVectorAsCounter(bq.getSearchText());
 //			System.out.println(c.toStringSortedByValues(true, true, 20));
 			System.out.println();
 		}
@@ -46,7 +46,7 @@ public class ESA {
 
 	private Analyzer analyzer;
 
-	public ESA(Analyzer analyzer) throws Exception {
+	public ESAModel(Analyzer analyzer) throws Exception {
 		this.analyzer = analyzer;
 	}
 

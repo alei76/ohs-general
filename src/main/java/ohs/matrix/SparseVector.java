@@ -243,7 +243,7 @@ public class SparseVector implements Vector {
 
 	@Override
 	public void normalizeAfterSummation() {
-		sum = ArrayMath.scale(values, ArrayMath.sum(values), values);
+		sum = ArrayMath.scale(values, 1f / ArrayMath.sum(values), values);
 	}
 
 	@Override

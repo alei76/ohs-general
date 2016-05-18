@@ -316,22 +316,22 @@ public class VectorUtils {
 	}
 
 	public static SparseMatrix toSpasreMatrix(CounterMap<Integer, Integer> cm) {
-		return toSpasreMatrix(cm, -1, -1, -1);
+		return toSpasreMatrix(cm, -1, -1);
 	}
 
-	public static SparseMatrix toSpasreMatrix(CounterMap<Integer, Integer> cm, int rowDim, int colDim, int label) {
+	public static SparseMatrix toSpasreMatrix(CounterMap<Integer, Integer> cm, int row_dim, int col_dim) {
 		int[] rowIds = new int[cm.keySet().size()];
 		SparseVector[] rows = new SparseVector[rowIds.length];
 		int loc = 0;
 		for (int index : cm.keySet()) {
 			rowIds[loc] = index;
 			rows[loc] = toSparseVector(cm.getCounter(index));
-			if (rows[loc].size() > colDim) {
-				colDim = rows[loc].size();
+			if (rows[loc].size() > col_dim) {
+				col_dim = rows[loc].size();
 			}
 			loc++;
 		}
-		SparseMatrix ret = new SparseMatrix(rowDim, colDim, rowIds, rows);
+		SparseMatrix ret = new SparseMatrix(row_dim, col_dim, rowIds, rows);
 		ret.sortByRowIndex();
 		return ret;
 	}

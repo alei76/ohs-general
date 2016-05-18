@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import antlr.TokenWithIndex;
 import ohs.io.FileUtils;
 import ohs.io.TextFileReader;
 import ohs.ir.weight.TermWeighting;
@@ -45,6 +46,7 @@ public class DataHandler {
 		labelIndexer.add("Organization");
 
 		List<SparseVector> data = Generics.newArrayList();
+		List<Integer> labels = Generics.newArrayList();
 
 		Counter<Integer> ccc = Generics.newCounter();
 
@@ -101,6 +103,8 @@ public class DataHandler {
 					SparseVector sv = VectorUtils.toSparseVector(cc, featIndexer, true);
 					data.add(sv);
 
+					labels.add(i);
+
 					ccc.incrementCount(i, 1);
 				}
 			}
@@ -110,16 +114,34 @@ public class DataHandler {
 
 		TermWeighting.computeTFIDFs(data);
 
-		List<SparseVector>[] twoSets = DataSplitter.splitInOrder(data, ArrayUtils.array(0.8, 0.2));
+		List<Integer> locs = Generics.newArrayList();
 
-		List<SparseVector> trainData = twoSets[0];
-		List<SparseVector> testData = twoSets[1];
+		for (int i = 0; i < data.size(); i++) {
+			locs.add(i);
+		}
+
+		List<Integer>[] twoSets = DataSplitter.splitInOrder(locs, ArrayUtils.array(0.8, 0.2));
+
+		List<SparseVector> trainData = Generics.newArrayList();
+		List<SparseVector> testData = Generics.newArrayList();
+		List<Integer> trainLabels = Generics.newArrayList();
+		List<Integer> testLabels = Generics.newArrayList();
+
+		for (int loc : twoSets[0]) {
+			trainData.add(data.get(loc));
+			trainLabels.add(labels.get(loc));
+		}
+
+		for (int loc : twoSets[1]) {
+			testData.add(data.get(loc));
+			testLabels.add(labels.get(loc));
+		}
 
 		LibLinearTrainer t = new LibLinearTrainer();
-		LibLinearWrapper wrapper = t.trainFullBatch(labelIndexer, featIndexer, trainData);
+		LibLinearWrapper wrapper = t.train(labelIndexer, featIndexer, trainData, trainLabels);
 		wrapper.write(NamePath.SVM_MODEL_FILE);
 
-		String res = wrapper.evalute(testData);
+		String res = wrapper.evalute(testData, testLabels);
 
 		System.out.println(res);
 	}

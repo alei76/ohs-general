@@ -87,7 +87,7 @@ public class EntityContextGenerator {
 		StopWatch stopWatch = StopWatch.newStopWatch();
 		stopWatch.start();
 
-		Counter<String> docFreqs = WordCountBox.getDocFreqs(is.getIndexReader(), CommonFieldNames.CONTENT);
+		Counter<String> docFreqs = WordCountBox.getDocFreqs(is, CommonFieldNames.CONTENT);
 
 		for (int i = 0; i < ents.size(); i++) {
 

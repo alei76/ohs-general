@@ -2,6 +2,7 @@ package ohs.eden.name;
 
 import java.util.List;
 
+import edu.stanford.nlp.classify.GeneralizedExpectationObjectiveFunction;
 import ohs.io.FileUtils;
 import ohs.ir.weight.TermWeighting;
 import ohs.math.VectorUtils;
@@ -53,7 +54,8 @@ public class NameClassifier {
 
 		// List<SparseVector>[] datasets = new List[fileNames.length];
 
-		ListMap<Integer, SparseVector> lm = Generics.newListMap();
+		List<SparseVector> data = Generics.newArrayList();
+		List<Integer> labels = Generics.newArrayList();
 
 		NameFeatureExtractor ext = new NameFeatureExtractor();
 
@@ -91,18 +93,12 @@ public class NameClassifier {
 					SparseVector sv = VectorUtils.toSparseVector(featCnts, featIndexer, true);
 					sv.scale(cnt);
 
-					// data.add(sv);
-
-					lm.put(i, sv);
+					data.add(sv);
+					labels.add(i);
 				}
 			}
 		}
 
-		List<SparseVector> data = Generics.newArrayList();
-
-		for (int label : lm.keySet()) {
-			data.addAll(lm.get(label));
-		}
 		TermWeighting.computeTFIDFs(data);
 
 		// List<SparseVector>[] two = DataSplitter.splitInOrder(data, ArrayUtils.array(0.8, 0.2));
@@ -111,7 +107,7 @@ public class NameClassifier {
 		// List<SparseVector> testData = two[1];
 
 		LibLinearTrainer t = new LibLinearTrainer();
-		LibLinearWrapper wrapper = t.trainFullBatch(labelIndexer, featIndexer, data);
+		LibLinearWrapper wrapper = t.train(labelIndexer, featIndexer, data, labels);
 		return new NameClassifier(wrapper);
 	}
 

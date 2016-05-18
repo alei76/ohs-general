@@ -66,18 +66,18 @@ public class ProximityScorer {
 	}
 
 	public SparseVector score(WordCountBox wcb, SparseVector queryModel) {
-		setDocWordLocs(wcb.getDocWords());
+		setDocWordLocs(wcb.getDocToWords());
 
 		logBuf = new StringBuffer();
 
-		SparseMatrix docWordCounts = wcb.getDocWordCounts();
+		SparseMatrix docWordCounts = wcb.getDocToWordCounts();
 
 		SparseVector ret = new SparseVector(docWordCounts.rowSize());
 
 		for (int i = 0; i < docWordCounts.rowSize(); i++) {
 			int docId = docWordCounts.indexAtLoc(i);
 			SparseVector wordCounts = docWordCounts.rowAtLoc(i);
-			List<Integer> words = wcb.getDocWords().get(docId);
+			List<Integer> words = wcb.getDocToWords().get(docId);
 			ListMap<Integer, Integer> wordLocs = docWordLocs.get(docId);
 
 			CounterMap<Integer, Integer> cm1 = new CounterMap<Integer, Integer>();
